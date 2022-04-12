@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - 9000:3000
+      - 9229:9229
+    environment:
+      - MONGO_HOST=mongo
+    volumes:
+      - ./:/usr/src/app
+      - /usr/src/app/dist/
+      - /usr/src/app/node_modules/
+      - type: bind
+        source: C:\media
+        target: /opt/app/media
+    command: npm run start:dev
+
+  mongo:
+    image: mongo:4.4
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb:/data/db
+      - mongodb_config:/data/configdb
+volumes:
+  mongodb:
+  mongodb_config:
