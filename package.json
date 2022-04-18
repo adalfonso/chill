@@ -3,21 +3,8 @@
   "version": "0.0.0",
   "description": "DIY Home Media Server",
   "author": "Anthony Dalfonso <anthonyjdalfonso@gmail.com>",
-  "keywords": [
-    "docker",
-    "eslint",
-    "hmr",
-    "jest",
-    "mongodb",
-    "node",
-    "nyc",
-    "prettier",
-    "react",
-    "sass",
-    "typescript",
-    "webpack"
-  ],
   "scripts": {
+    "autogen": "npx mtgen ./server/models/*.ts",
     "build": "npm run clean-dist && npm run build:client && npm run build:server",
     "build:client": "webpack --config=configs/webpack/client-prod.config.js",
     "build:dev": "npm run clean-dist && webpack --config configs/webpack/server-dev.config.js",
@@ -40,6 +27,7 @@
     "axios": "^0.26.1",
     "express": "^4.17.3",
     "mongodb": "^4.5.0",
+    "mongoose": "^6.3.0",
     "music-metadata": "^7.12.3",
     "react": "^17.0.2"
   },
@@ -69,6 +57,7 @@
     "html-webpack-plugin": "^5.5.0",
     "image-webpack-loader": "^8.1.0",
     "jest": "^27.5.1",
+    "mongoose-tsgen": "^9.0.5",
     "node-sass": "^7.0.1",
     "nodemon": "^2.0.15",
     "pm2": "^5.2.0",

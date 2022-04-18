@@ -1,55 +1,52 @@
 import * as fs from "fs/promises";
 import * as mm from "music-metadata";
 import * as path from "path";
-import { Nullable } from "@server/types";
+import { MediaFile as MediaFileType } from "@server/models/autogen";
+import { MediaFile } from "@server/models/MediaFile";
 
+/** Config options used by the crawler */
 interface MediaCrawlerConfig {
   workers: number;
   file_types: string[];
 }
 
-interface MediaFile {
-  path: string;
-  artist: Nullable<string>;
-  title: Nullable<string>;
-  track: Nullable<number>;
-  genre: Nullable<string>;
-  year: Nullable<number>;
-  modified: Date;
-  file_type: string;
-}
-
+/** Output statistics from the crawler */
 interface CrawlStats {
   start: Date;
   dirs: string[];
-  files: MediaFile[];
+  files: MediaFileTemplate[];
   end: Date | null;
 }
+
+type MediaFileTemplate = Omit<
+  MediaFileType,
+  "_id" | "created_at" | "updated_at"
+>;
 
 /** Traverse a directory and extract all media information */
 export class MediaCrawler {
   /** If the crawler is currently running */
   private _busy = false;
 
-  /** Stores processed meta data */
-  private _store: unknown[] = [];
-
   /** Stores files paths to be processed */
   private _queue: string[] = [];
 
-  /** Number of available threads */
-  private _available_threads;
+  /** Number of available workers */
+  private _available_workers;
 
   /** Stores statistics about a crawl */
   private _crawl_stats: CrawlStats;
 
-  /** Holder the promise resolver for the public-facing crawl call */
+  /** Holds the promise resolver for the public-facing crawl call */
   private _resolution: (value: CrawlStats) => void;
 
+  /**
+   * @param _config crawler config
+   */
   constructor(private _config: MediaCrawlerConfig) {}
 
   /**
-   * Crawl a directory and get file meta data
+   * Crawl a directory, get file meta data, and store in the DB
    *
    * @param dir directory to start from
    * @returns crawler results
@@ -59,17 +56,14 @@ export class MediaCrawler {
       return;
     }
 
+    // TODO: remove this is temp
+    await MediaFile.deleteMany();
+
     this._busy = true;
-    this._available_threads = this._config.workers;
+    this._available_workers = this._config.workers;
+    this._crawl_stats = { start: new Date(), dirs: [], files: [], end: null };
 
-    this._crawl_stats = {
-      start: new Date(),
-      dirs: [],
-      files: [],
-      end: null,
-    };
-
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       this._resolution = resolve;
       this._crawl(dir);
     });
@@ -89,7 +83,7 @@ export class MediaCrawler {
     }
 
     this._crawl_stats.dirs.push(dir);
-    this._available_threads++;
+    this._available_workers++;
     this._process();
   }
 
@@ -97,15 +91,14 @@ export class MediaCrawler {
    * Initiate processing event for the crawl
    *
    * This will get called periodically whenver it is time to further process the
-   * crawl. This typically happens after a dir is read or metadata are
-   * processed.
+   * crawl. This typically happens after a dir is read or metadata areprocessed.
    */
   private async _process() {
     const { workers } = this._config;
 
     // Process more queue items
-    while (this._available_threads > 0 && this._queue.length) {
-      this._available_threads--;
+    while (this._available_workers > 0 && this._queue.length) {
+      this._available_workers--;
       const file_path = this._queue.shift();
       const stats = await fs.stat(file_path);
 
@@ -119,7 +112,7 @@ export class MediaCrawler {
     // End the crawl
     if (
       this._queue.length === 0 &&
-      this._available_threads === workers &&
+      this._available_workers === workers &&
       this._crawl_stats.end === null
     ) {
       this._complete();
@@ -136,7 +129,7 @@ export class MediaCrawler {
 
     // Not a valid file
     if (!this._config.file_types.includes(file_type)) {
-      this._available_threads++;
+      this._available_workers++;
       return this._process();
     }
 
@@ -145,7 +138,7 @@ export class MediaCrawler {
 
       const meta = {
         ...(await this._getMetadata(file_path)),
-        modified: ctime,
+        file_modified: ctime,
         file_type,
       };
 
@@ -154,7 +147,7 @@ export class MediaCrawler {
       console.error(e);
     }
 
-    this._available_threads++;
+    this._available_workers++;
     this._process();
   }
 
@@ -173,6 +166,7 @@ export class MediaCrawler {
       artist: result.common.artist,
       title: result.common.title,
       track: result.common.track.no,
+      album: result.common.album,
       genre: result.common.genre[0] ?? null,
       year: result.common.year,
     };
@@ -181,9 +175,11 @@ export class MediaCrawler {
   /** Complete crawling */
   private _complete() {
     this._crawl_stats.end = new Date();
-    this._available_threads = this._config.workers;
+    this._available_workers = this._config.workers;
     this._queue = [];
     this._busy = false;
+
+    MediaFile.insertMany(this._crawl_stats.files);
 
     this._resolution(this._crawl_stats);
   }

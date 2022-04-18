@@ -12,6 +12,7 @@ module.exports = {
 
     alias: {
       "@server": resolve(__dirname, "../../server/"),
+      "@common": resolve(__dirname, "../../common/"),
     },
   },
   output: {

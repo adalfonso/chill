@@ -1,4 +1,6 @@
-# React, TypeScript, Node, and Webpack Starter with HMR
+# Chill
+
+DIY media platform
 
 ## Installation
 

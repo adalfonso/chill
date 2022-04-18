@@ -1,40 +1,45 @@
-import { MongoClient } from "mongodb";
+import * as mongoose from "mongoose";
 
-/**
- * Create a mongodb client
- *
- * @param host - mongo host name
- * @param port - mongo port
- *
- * @returns client
- */
-export const create = (host: string, port: string) => {
-  const uri = `mongodb://${host}:${port}`;
+/** Singleton DB connection instance */
+export class Connection {
+  /** Database Connection */
+  private static _instance: Connection;
 
-  return new MongoClient(uri);
-};
+  /**
+   * Create a new connection
+   *
+   * @param host DB host
+   * @param port DB port
+   * @throws when DB already connected or fails to connect
+   */
+  static async create(host: string, port: string) {
+    if (Connection._instance) {
+      throw new Error("Database is already connected");
+    }
 
-/**
- * Connect to mongodb
- *
- * @param host - mongo host name
- * @param port - mongo port
- *
- * @returns client
- * @throws when it can't conneect
- */
-export const connect = async (host: string, port: string) => {
-  const client = create(host, port);
+    try {
+      const uri = `mongodb://${host}:${port}`;
+      Connection._instance = await mongoose.connect(uri);
+      console.info("Connected to mongodb");
 
-  try {
-    await client.connect();
+      return Connection._instance;
+    } catch (err) {
+      console.error(`Unable to connect to mongo: ${err}`);
 
-    console.info("Connected to mongodb");
-
-    return client;
-  } catch (e) {
-    console.error(`Unable to connect to mongo: ${e}`);
-
-    throw new Error("Unable to connect to mongo");
+      throw new Error("Unable to connect to mongo");
+    }
   }
-};
+
+  /**
+   * Get the DB connection
+   *
+   * @returns DB conection
+   */
+  static instance() {
+    if (!Connection._instance) {
+      throw new Error("Failed to get DB connection instance.");
+    }
+
+    return Connection._instance;
+  }
+}

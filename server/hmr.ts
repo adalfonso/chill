@@ -1,6 +1,11 @@
-import { Express } from "express";
 import * as webpack from "webpack";
+import { Express } from "express";
 
+/**
+ * Enable hot module replacement for an application
+ *
+ * @param app express app
+ */
 export const enableHmr = (app: Express) => {
   const config = require("../configs/webpack/client-dev.config.js");
   const compiler = webpack(config);
