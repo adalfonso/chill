@@ -29,7 +29,5 @@ export const Toolbar = () => {
 };
 
 const triggerScan = async () => {
-  const result = await axios.get("/media/scan");
-
-  console.log({ result });
+  await axios.get("/media/scan");
 };
