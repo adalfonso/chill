@@ -2,10 +2,9 @@ import "core-js";
 import "regenerator-runtime";
 import * as dotenv from "dotenv";
 import * as express from "express";
-import { ArtistController } from "./controllers/ArtistController";
 import { Connection } from "./db/Client";
-import { MediaFileController } from "./controllers/MediaFileController";
 import { enableHmr } from "./hmr";
+import { registerRoutes } from "./routes";
 
 dotenv.config();
 
@@ -32,12 +31,8 @@ app.listen(process.env.NODE_PORT, () => {
   console.info(`Serving content from /${process.env.SOURCE_DIR}/`);
 });
 
-// Routes
-// TODO: move this someplace better
-app.get("/media/scan", MediaFileController.scan);
-app.get("/media", MediaFileController.get);
-
-app.get("/api/artist/:artist", ArtistController.get);
+// Setup routing
+registerRoutes(app);
 
 // Connect to the database
 Connection.create(process.env.MONGO_HOST, process.env.MONGO_PORT);
