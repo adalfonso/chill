@@ -2,7 +2,7 @@ import * as mongoose from "mongoose";
 
 const { Schema } = mongoose;
 
-const MediaFileSchema = new Schema({
+export const MediaFileSchema = new Schema({
   path: { type: String, required: true, index: true },
   artist: { type: String, default: null },
   album: { type: String, default: null },

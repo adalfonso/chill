@@ -1,22 +1,24 @@
 import "./MediaTile.scss";
 import * as React from "react";
 import { useHistory } from "react-router-dom";
-
-interface MediaTileProps {
-  file: { _id: string };
-  type: string;
+export interface TileData {
+  _id: string[];
+  _group_by: string[];
+  _count: number;
 }
 
-export const MediaTile = ({ file, type }: MediaTileProps) => {
+interface MediaTileProps {
+  file: TileData;
+  url: (file: TileData) => string;
+  displayAs: (file: TileData) => string;
+}
+
+export const MediaTile = ({ file, url, displayAs }: MediaTileProps) => {
   const history = useHistory();
 
   return (
-    <div
-      className="media-tile"
-      key={file._id}
-      onClick={() => history.push(`/${type}/${file._id}`)}
-    >
-      <div>{file._id}</div>
+    <div className="media-tile" onClick={() => history.push(url(file))}>
+      <div>{displayAs(file)}</div>
     </div>
   );
 };

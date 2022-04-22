@@ -1,6 +1,6 @@
 import "./MediaViewer.scss";
 import * as React from "react";
-import { MediaTile } from "./MediaTile/MediaTile";
+import { MediaTile, TileData } from "./MediaTile/MediaTile";
 import { MediaTypeApi } from "@client/api/MediaTypeApi";
 import { MediaTypeFilter as Filter } from "@common/MediaType/types";
 import { useState } from "react";
@@ -25,10 +25,13 @@ export const MusicLibrary = () => {
       });
   };
 
+  const displayAs = (file: TileData) => file._id[0];
+  const url = (file: TileData) => `/${filter}/${file._id[0]}`;
+
   React.useEffect(() => loadMediaFiles(filter), []);
 
   return (
-    <div id="media-viewer">
+    <>
       <div className="toolbar">
         <select onChange={changeMediaFilter} value={filter}>
           {Object.values(Filter).map((filter_option) => {
@@ -42,9 +45,14 @@ export const MusicLibrary = () => {
       </div>
       <div className="media-tiles">
         {media_files.map((file) => (
-          <MediaTile key={file._id} file={file} type={filter} />
+          <MediaTile
+            key={file._id}
+            file={file}
+            displayAs={displayAs}
+            url={url}
+          />
         ))}
       </div>
-    </div>
+    </>
   );
 };

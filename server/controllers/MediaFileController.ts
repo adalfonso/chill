@@ -1,23 +1,18 @@
 import { AudioType } from "@server/media/types";
 import { MediaCrawler } from "@server/media/MediaCrawler";
 import { MediaFile } from "@server/models/MediaFile";
-import { Request, Response } from "express";
 import { MediaTypeFilter } from "@common/MediaType/types";
+import { Request, Response } from "express";
+import { getAsGroup } from "@server/db/utils";
 
 export const MediaFileController = {
   /** Get media files */
   get: async (req: Request, res: Response) => {
     try {
-      const filter = req.query.filter ?? "artist";
-      const results = await MediaFile.aggregate([
-        {
-          $group: {
-            // TODO: add validation
-            _id: getGroupingByFilter(filter as MediaTypeFilter),
-            count: { $sum: 1 },
-          },
-        },
-      ]).sort({ _id: "asc" });
+      const filter = (req.query.filter ?? "artist") as string;
+      const grouping = getGroupingByFilter(filter as MediaTypeFilter);
+      const options = { match: { [filter]: { $ne: null } } };
+      const results = await getAsGroup(MediaFile, grouping, options);
 
       res.json(results);
     } catch (e) {
@@ -48,7 +43,7 @@ export const MediaFileController = {
  */
 const getGroupingByFilter = (filter: MediaTypeFilter) =>
   ({
-    ["artist"]: ["$artist"],
-    ["album"]: ["$album", "$artist", "$year"],
-    ["genre"]: ["$genre"],
+    artist: ["artist"],
+    album: ["album", "artist", "year"],
+    genre: ["genre"],
   }[filter]);
