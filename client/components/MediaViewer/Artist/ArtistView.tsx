@@ -18,7 +18,7 @@ export const ArtistView = () => {
       });
   }, []);
 
-  const url = (file: TileData) => `/albums/${file._id[0]}`;
+  const url = (file: TileData) => `/album/${file._id[0]}`;
 
   const displayAs = (file: TileData) => {
     const [album, artist, year] = file._id as string[];

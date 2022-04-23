@@ -17,6 +17,7 @@ import mongoose from "mongoose";
  */
 export type Media = {
   path: string;
+  duration: number;
   artist?: string;
   album?: string;
   title?: string;
@@ -102,6 +103,7 @@ export type MediaDocument = mongoose.Document<
 > &
   MediaMethods & {
     path: string;
+    duration: number;
     artist?: string;
     album?: string;
     title?: string;

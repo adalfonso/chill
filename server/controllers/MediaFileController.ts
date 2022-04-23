@@ -28,8 +28,7 @@ export const MediaFileController = {
         res.json(await Media.find(match));
       }
     } catch (e) {
-      console.error(e);
-      res.status(500);
+      res.status(500).send("Failed to query Media");
     }
   },
 
@@ -43,7 +42,7 @@ export const MediaFileController = {
     try {
       res.json(await crawler.crawl("/opt/app/media"));
     } catch (_) {
-      res.status(500);
+      res.status(500).send("Failed when scanning media");
     }
   },
 };

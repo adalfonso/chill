@@ -156,10 +156,11 @@ export class MediaCrawler {
    * @throws if it can't read meta data
    */
   private async _getMetadata(file_path: string) {
-    const result = await mm.parseFile(file_path);
+    const result = await mm.parseFile(file_path, { duration: true });
 
     return {
       path: file_path,
+      duration: result.format.duration,
       artist: result.common.artist,
       title: result.common.title,
       track: result.common.track.no,

@@ -4,6 +4,7 @@ const { Schema } = mongoose;
 
 export const MediaSchema = new Schema({
   path: { type: String, required: true, index: true },
+  duration: { type: Number, required: true },
   artist: { type: String, default: null },
   album: { type: String, default: null },
   title: { type: String, default: null },

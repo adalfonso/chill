@@ -1,49 +1,49 @@
 import "./MediaViewer.scss";
 import * as React from "react";
 import { MediaApi } from "@client/api/MediaApi";
+import { MediaMatch as Match } from "@common/MediaType/types";
 import { MediaTile, TileData } from "./MediaTile/MediaTile";
-import { MediaTypeFilter as Filter } from "@common/MediaType/types";
 import { useState } from "react";
 
-const ApiMap: Record<Filter, () => Promise<unknown>> = {
-  [Filter.Artist]: MediaApi.getGroupedByArtist,
-  [Filter.Album]: MediaApi.getGroupedByAlbum,
-  [Filter.Genre]: MediaApi.getGroupedByGenre,
+const ApiMap: Record<Match, () => Promise<unknown>> = {
+  [Match.Artist]: MediaApi.getGroupedByArtist,
+  [Match.Album]: MediaApi.getGroupedByAlbum,
+  [Match.Genre]: MediaApi.getGroupedByGenre,
 };
 
 export const MusicLibrary = () => {
-  const [filter, setFilter] = useState<Filter>(Filter.Artist);
+  const [match, setMatch] = useState<Match>(Match.Artist);
   const [media_files, setMediaFiles] = useState([]);
 
-  const changeMediaFilter = (e) => {
+  const changeMediaMatch = (e) => {
     const { value } = e.target;
-    setFilter(value);
+    setMatch(value);
     loadMediaFiles(value);
   };
 
-  const loadMediaFiles = (filter: Filter) => {
-    ApiMap[filter]()
+  const loadMediaFiles = (match: Match) => {
+    ApiMap[match]()
       .then(({ data }) => {
         setMediaFiles(data);
       })
       .catch((_) => {
-        console.error(`Failed to load media files with filter "${filter}"`);
+        console.error(`Failed to load media files with match "${match}"`);
       });
   };
 
-  const displayAs = (file: TileData) => file[filter];
-  const url = (file: TileData) => `/${filter}/${file._id[0]}`;
+  const displayAs = (file: TileData) => file[match];
+  const url = (file: TileData) => `/${match}/${file._id[0]}`;
 
-  React.useEffect(() => loadMediaFiles(filter), []);
+  React.useEffect(() => loadMediaFiles(match), []);
 
   return (
     <>
       <div className="toolbar">
-        <select onChange={changeMediaFilter} value={filter}>
-          {Object.values(Filter).map((filter_option) => {
+        <select onChange={changeMediaMatch} value={match}>
+          {Object.values(Match).map((option) => {
             return (
-              <option key={filter_option} value={filter_option}>
-                {filter_option}
+              <option key={option} value={option}>
+                {option}
               </option>
             );
           })}

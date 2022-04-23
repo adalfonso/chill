@@ -1,4 +1,4 @@
-export enum MediaTypeFilter {
+export enum MediaMatch {
   Artist = "artist",
   Album = "album",
   Genre = "genre",

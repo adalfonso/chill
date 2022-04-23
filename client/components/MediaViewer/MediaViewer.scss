@@ -13,3 +13,28 @@
     flex-wrap: wrap;
   }
 }
+
+.panel-list {
+  display: grid;
+  grid-template-columns: fit-content(4em) 1fr fit-content(6em);
+
+  .row {
+    display: contents;
+
+    &:hover > div {
+      background-color: rgba(115, 115, 115, 0.95);
+    }
+  }
+
+  .header {
+    font-weight: bold;
+  }
+
+  .mono {
+    text-align: right;
+  }
+
+  div {
+    padding: 0.6rem 1rem;
+  }
+}

@@ -1,16 +1,10 @@
 import axios from "axios";
-import { MediaTypeFilter as Filter } from "@common/MediaType/types";
+import { MediaMatch as Match } from "@common/MediaType/types";
 
-interface MediaGetOptions {
-  filter: Filter;
-}
+type MatchMap = Record<Match, string>;
 
 export const MediaApi = {
-  get: (options: MediaGetOptions) => {
-    const { filter } = options;
-
-    return axios.get(`/media?filter=${filter}`);
-  },
+  query: (match: MatchMap) => axios.post(`/media/query`, { match }),
 
   getGroupedByArtist: () => axios.post(`/media/query`, { group: ["artist"] }),
 
