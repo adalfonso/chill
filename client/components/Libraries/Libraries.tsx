@@ -10,8 +10,6 @@ export const Libraries = () => {
       <div className="library-title" onClick={() => history.push("/")}>
         Music
       </div>
-      <div className="library-title">Movies</div>
-      <div className="library-title">TV Shows</div>
     </div>
   );
 };

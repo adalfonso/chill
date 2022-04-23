@@ -6,7 +6,11 @@ type MatchMap = Record<Match, string>;
 export const MediaApi = {
   query: (match: MatchMap) => axios.post(`/media/query`, { match }),
 
-  getGroupedByArtist: () => axios.post(`/media/query`, { group: ["artist"] }),
+  getGroupedByArtist: (genre: string) => {
+    const match = genre ? { match: { genre } } : {};
+    const options = { group: ["artist"], ...match };
+    return axios.post(`/media/query`, options);
+  },
 
   getGroupedByAlbum: (artist?: string) => {
     const match = artist ? { match: { artist } } : {};
