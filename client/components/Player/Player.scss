@@ -1,0 +1,44 @@
+#player {
+  background-color: rgba(25, 25, 25, 0.95);
+  text-align: center;
+  color: #ddd;
+  padding: 0 0 1.5rem 0;
+
+  .now-playing {
+    font-size: 1.75rem;
+    margin: 1rem;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .circle-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 2rem;
+    width: 2rem;
+    background-color: gray;
+    border-radius: 50%;
+    margin: 0 0.5rem;
+
+    &:hover {
+      cursor: pointer;
+      opacity: 0.8;
+    }
+  }
+
+  .play {
+    height: 3rem;
+    width: 3rem;
+  }
+
+  .scrub {
+    background: red;
+    height: 0.25rem;
+    width: 100%;
+  }
+}
