@@ -1,4 +1,3 @@
-import "./../assets/scss/app.scss";
 import "./App.scss";
 import * as React from "react";
 import { Libraries } from "./Libraries/Libraries";

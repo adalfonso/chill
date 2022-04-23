@@ -1,21 +1,34 @@
 import { AudioType } from "@server/media/types";
+import { Media as MediaGen } from "@server/models/autogen";
+import { Media } from "@server/models/Media";
 import { MediaCrawler } from "@server/media/MediaCrawler";
-import { MediaFile } from "@server/models/MediaFile";
-import { MediaTypeFilter } from "@common/MediaType/types";
 import { Request, Response } from "express";
 import { getAsGroup } from "@server/db/utils";
 
+interface MediaFileGetArgs {
+  match: Record<keyof MediaGen, string>;
+  group: string[];
+  sort: "asc" | "desc";
+}
+
 export const MediaFileController = {
   /** Get media files */
-  get: async (req: Request, res: Response) => {
+  query: async (req: Request<Partial<MediaFileGetArgs>>, res: Response) => {
     try {
-      const filter = (req.query.filter ?? "artist") as string;
-      const grouping = getGroupingByFilter(filter as MediaTypeFilter);
-      const options = { match: { [filter]: { $ne: null } } };
-      const results = await getAsGroup(MediaFile, grouping, options);
+      // TODO: utilize sort
+      const { match, group, sort } = req.body;
 
-      res.json(results);
+      if (group) {
+        // Ignore null record to the leading group
+        const non_null_match = { [group[0]]: { $ne: null } };
+        const options = { match: { ...match, ...non_null_match } };
+
+        res.json(await getAsGroup(Media, group, options));
+      } else {
+        res.json(await Media.find(match));
+      }
     } catch (e) {
+      console.error(e);
       res.status(500);
     }
   },
@@ -34,16 +47,3 @@ export const MediaFileController = {
     }
   },
 };
-
-/**
- * Get the fields used to group media by a certain filter
- *
- * @param filter filter name
- * @returns grouping
- */
-const getGroupingByFilter = (filter: MediaTypeFilter) =>
-  ({
-    artist: ["artist"],
-    album: ["album", "artist", "year"],
-    genre: ["genre"],
-  }[filter]);

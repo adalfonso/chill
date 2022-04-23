@@ -24,6 +24,8 @@ if (process.env.NODE_ENV === "development") {
 
 // Register static assets
 app.use(express.static(process.env.SOURCE_DIR));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Start server
 app.listen(process.env.NODE_PORT, () => {

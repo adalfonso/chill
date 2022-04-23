@@ -1,8 +1,8 @@
 import * as fs from "fs/promises";
 import * as mm from "music-metadata";
 import * as path from "path";
-import { MediaFile as MediaFileType } from "@server/models/autogen";
-import { MediaFile } from "@server/models/MediaFile";
+import { Media as MediaGen } from "@server/models/autogen";
+import { Media } from "@server/models/Media";
 
 /** Config options used by the crawler */
 interface MediaCrawlerConfig {
@@ -18,10 +18,7 @@ interface CrawlStats {
   end: Date | null;
 }
 
-type MediaFileTemplate = Omit<
-  MediaFileType,
-  "_id" | "created_at" | "updated_at"
->;
+type MediaFileTemplate = Omit<MediaGen, "_id" | "created_at" | "updated_at">;
 
 /** Traverse a directory and extract all media information */
 export class MediaCrawler {
@@ -57,7 +54,7 @@ export class MediaCrawler {
     }
 
     // TODO: remove this is temp
-    await MediaFile.deleteMany();
+    await Media.deleteMany();
 
     this._busy = true;
     this._available_workers = this._config.workers;
@@ -179,7 +176,7 @@ export class MediaCrawler {
     this._queue = [];
     this._busy = false;
 
-    MediaFile.insertMany(this._crawl_stats.files);
+    Media.insertMany(this._crawl_stats.files);
 
     this._resolution(this._crawl_stats);
   }

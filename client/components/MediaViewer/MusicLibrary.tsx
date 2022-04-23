@@ -1,9 +1,15 @@
 import "./MediaViewer.scss";
 import * as React from "react";
+import { MediaApi } from "@client/api/MediaApi";
 import { MediaTile, TileData } from "./MediaTile/MediaTile";
-import { MediaTypeApi } from "@client/api/MediaTypeApi";
 import { MediaTypeFilter as Filter } from "@common/MediaType/types";
 import { useState } from "react";
+
+const ApiMap: Record<Filter, () => Promise<unknown>> = {
+  [Filter.Artist]: MediaApi.getGroupedByArtist,
+  [Filter.Album]: MediaApi.getGroupedByAlbum,
+  [Filter.Genre]: MediaApi.getGroupedByGenre,
+};
 
 export const MusicLibrary = () => {
   const [filter, setFilter] = useState<Filter>(Filter.Artist);
@@ -16,7 +22,7 @@ export const MusicLibrary = () => {
   };
 
   const loadMediaFiles = (filter: Filter) => {
-    MediaTypeApi.get({ filter })
+    ApiMap[filter]()
       .then(({ data }) => {
         setMediaFiles(data);
       })
@@ -25,7 +31,7 @@ export const MusicLibrary = () => {
       });
   };
 
-  const displayAs = (file: TileData) => file._id[0];
+  const displayAs = (file: TileData) => file[filter];
   const url = (file: TileData) => `/${filter}/${file._id[0]}`;
 
   React.useEffect(() => loadMediaFiles(filter), []);

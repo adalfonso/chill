@@ -8,16 +8,17 @@
 import mongoose from "mongoose";
 
 /**
- * Lean version of MediaFileDocument
+ * Lean version of MediaDocument
  *
- * This has all Mongoose getters & functions removed. This type will be returned from `MediaFileDocument.toObject()`. To avoid conflicts with model names, use the type alias `MediaFileObject`.
+ * This has all Mongoose getters & functions removed. This type will be returned from `MediaDocument.toObject()`. To avoid conflicts with model names, use the type alias `MediaObject`.
  * ```
- * const mediafileObject = mediafile.toObject();
+ * const mediaObject = media.toObject();
  * ```
  */
-export type MediaFile = {
+export type Media = {
   path: string;
   artist?: string;
+  album?: string;
   title?: string;
   track?: number;
   genre?: string;
@@ -30,68 +31,61 @@ export type MediaFile = {
 };
 
 /**
- * Lean version of MediaFileDocument (type alias of `MediaFile`)
+ * Lean version of MediaDocument (type alias of `Media`)
  *
  * Use this type alias to avoid conflicts with model names:
  * ```
- * import { MediaFile } from "../models"
- * import { MediaFileObject } from "../interfaces/mongoose.gen.ts"
+ * import { Media } from "../models"
+ * import { MediaObject } from "../interfaces/mongoose.gen.ts"
  *
- * const mediafileObject: MediaFileObject = mediafile.toObject();
+ * const mediaObject: MediaObject = media.toObject();
  * ```
  */
-export type MediaFileObject = MediaFile;
+export type MediaObject = Media;
 
 /**
  * Mongoose Query type
  *
  * This type is returned from query functions. For most use cases, you should not need to use this type explicitly.
  */
-export type MediaFileQuery = mongoose.Query<
-  any,
-  MediaFileDocument,
-  MediaFileQueries
-> &
-  MediaFileQueries;
+export type MediaQuery = mongoose.Query<any, MediaDocument, MediaQueries> &
+  MediaQueries;
 
 /**
  * Mongoose Query helper types
  *
- * This type represents `MediaFileSchema.query`. For most use cases, you should not need to use this type explicitly.
+ * This type represents `MediaSchema.query`. For most use cases, you should not need to use this type explicitly.
  */
-export type MediaFileQueries = {};
+export type MediaQueries = {};
 
-export type MediaFileMethods = {};
+export type MediaMethods = {};
 
-export type MediaFileStatics = {};
+export type MediaStatics = {};
 
 /**
  * Mongoose Model type
  *
  * Pass this type to the Mongoose Model constructor:
  * ```
- * const MediaFile = mongoose.model<MediaFileDocument, MediaFileModel>("MediaFile", MediaFileSchema);
+ * const Media = mongoose.model<MediaDocument, MediaModel>("Media", MediaSchema);
  * ```
  */
-export type MediaFileModel = mongoose.Model<
-  MediaFileDocument,
-  MediaFileQueries
-> &
-  MediaFileStatics;
+export type MediaModel = mongoose.Model<MediaDocument, MediaQueries> &
+  MediaStatics;
 
 /**
  * Mongoose Schema type
  *
- * Assign this type to new MediaFile schema instances:
+ * Assign this type to new Media schema instances:
  * ```
- * const MediaFileSchema: MediaFileSchema = new mongoose.Schema({ ... })
+ * const MediaSchema: MediaSchema = new mongoose.Schema({ ... })
  * ```
  */
-export type MediaFileSchema = mongoose.Schema<
-  MediaFileDocument,
-  MediaFileModel,
-  MediaFileMethods,
-  MediaFileQueries
+export type MediaSchema = mongoose.Schema<
+  MediaDocument,
+  MediaModel,
+  MediaMethods,
+  MediaQueries
 >;
 
 /**
@@ -99,16 +93,17 @@ export type MediaFileSchema = mongoose.Schema<
  *
  * Pass this type to the Mongoose Model constructor:
  * ```
- * const MediaFile = mongoose.model<MediaFileDocument, MediaFileModel>("MediaFile", MediaFileSchema);
+ * const Media = mongoose.model<MediaDocument, MediaModel>("Media", MediaSchema);
  * ```
  */
-export type MediaFileDocument = mongoose.Document<
+export type MediaDocument = mongoose.Document<
   mongoose.Types.ObjectId,
-  MediaFileQueries
+  MediaQueries
 > &
-  MediaFileMethods & {
+  MediaMethods & {
     path: string;
     artist?: string;
+    album?: string;
     title?: string;
     track?: number;
     genre?: string;

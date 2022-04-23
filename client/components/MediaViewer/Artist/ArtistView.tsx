@@ -1,20 +1,20 @@
-import { AlbumApi } from "@client/api/AlbumApi";
 import * as React from "react";
-import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { MediaApi } from "@client/api/MediaApi";
 import { MediaTile, TileData } from "../MediaTile/MediaTile";
+import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export const ArtistView = () => {
   const { artist } = useParams();
   const [albums, setAlbums] = useState([]);
 
   useEffect(() => {
-    AlbumApi.index({ artist })
+    MediaApi.getGroupedByAlbum(artist)
       .then((res) => {
         setAlbums(res.data);
       })
       .catch((err) => {
-        console.error("Failed to load artist data");
+        console.error("Failed to load artist albums");
       });
   }, []);
 
