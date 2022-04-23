@@ -2,6 +2,8 @@
   "compilerOptions": {
     "jsx": "react",
     "baseUrl": ".",
+    "target": "ES6",
+    "moduleResolution": "node",
     "paths": {
       "@server/*": ["server/*"],
       "@client/*": ["client/*"],

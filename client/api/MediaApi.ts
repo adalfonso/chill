@@ -1,7 +1,7 @@
 import axios from "axios";
 import { MediaMatch as Match } from "@common/MediaType/types";
 
-type MatchMap = Record<Match, string>;
+type MatchMap = Record<Match, string | number>;
 
 export const MediaApi = {
   query: (match: MatchMap) => axios.post(`/media/query`, { match }),

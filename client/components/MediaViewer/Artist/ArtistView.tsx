@@ -1,6 +1,8 @@
 import * as React from "react";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaTile, TileData } from "../MediaTile/MediaTile";
+import { Player } from "@client/Player";
+import { Playlist } from "@client/Playlist";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -20,6 +22,13 @@ export const ArtistView = () => {
 
   const url = (file: TileData) => `/album/${file._id[0]}`;
 
+  const use = async (file: TileData) => {
+    const { artist, album, year } = file;
+    const results = await MediaApi.query({ artist, album, year });
+
+    Player.instance().setPlaylist(new Playlist(results));
+  };
+
   const displayAs = (file: TileData) => {
     const [album, artist, year] = file._id as string[];
     return `${album} (${year})`;
@@ -35,6 +44,7 @@ export const ArtistView = () => {
             key={file._id}
             file={file}
             url={url}
+            use={use}
             displayAs={displayAs}
           />
         ))}

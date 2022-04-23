@@ -3,6 +3,8 @@ import * as React from "react";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch as Match } from "@common/MediaType/types";
 import { MediaTile, TileData } from "./MediaTile/MediaTile";
+import { Player } from "@client/Player";
+import { Playlist } from "@client/Playlist";
 import { useState } from "react";
 
 const ApiMap: Record<Match, () => Promise<unknown>> = {
@@ -34,6 +36,13 @@ export const MusicLibrary = () => {
   const displayAs = (file: TileData) => file[match];
   const url = (file: TileData) => `/${match}/${file._id[0]}`;
 
+  const use = async (file: TileData) => {
+    const match_value = file[match];
+    const results = await MediaApi.query({ [match]: match_value });
+
+    Player.instance().setPlaylist(new Playlist(results));
+  };
+
   React.useEffect(() => loadMediaFiles(match), []);
 
   return (
@@ -56,6 +65,7 @@ export const MusicLibrary = () => {
             file={file}
             displayAs={displayAs}
             url={url}
+            use={use}
           />
         ))}
       </div>

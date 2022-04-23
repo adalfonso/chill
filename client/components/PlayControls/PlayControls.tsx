@@ -1,6 +1,8 @@
-import "./Player.scss";
+import "./PlayControls.scss";
 import * as React from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
+import { Player } from "@client/Player";
+import { Playlist } from "@client/Playlist";
 import {
   faPlay,
   faPause,
@@ -8,11 +10,14 @@ import {
   faFastBackward,
 } from "@fortawesome/free-solid-svg-icons";
 
-export const Player = () => {
-  const [is_playing, setIsPlayer] = React.useState(false);
+const audio = document.createElement("audio");
+
+export const PlayControls = () => {
+  const [playlist, setPlaylist] = React.useState(new Playlist());
+  const [player, setPlayer] = React.useState(Player.instance());
 
   return (
-    <div id="player">
+    <div id="play-controls">
       <div className="scrub"></div>
       <div className="now-playing">Placeholder</div>
       <div className="controls">
@@ -20,7 +25,7 @@ export const Player = () => {
           <Icon icon={faFastBackward} size="sm" />
         </div>
         <div className="circle-button play">
-          {is_playing ? (
+          {player.is_playing ? (
             <Icon icon={faPause} size="lg" />
           ) : (
             <Icon icon={faPlay} size="lg" />
