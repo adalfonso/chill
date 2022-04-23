@@ -21,9 +21,8 @@ export const Toolbar = () => {
 
   return (
     <div id="toolbar">
-      <Icon icon={faGear} size="lg" />
-
       <div onClick={scan}>Scan</div>
+      <Icon icon={faGear} size="lg" />
     </div>
   );
 };

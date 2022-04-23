@@ -1,4 +1,10 @@
 #toolbar {
   border-bottom: 1px solid black;
   padding: 0.75em 1.5rem;
+  display: flex;
+  justify-content: end;
+
+  > * {
+    margin-left: 2rem;
+  }
 }
