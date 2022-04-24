@@ -1,14 +1,14 @@
 import "./App.scss";
 import * as React from "react";
 import { Libraries } from "./Libraries/Libraries";
+import { Media } from "@common/autogen";
 import { MediaViewer } from "./MediaViewer/MediaViewer";
 import { PlayControls } from "./PlayControls/PlayControls";
 import { Player } from "@client/Player";
+import { Playlist } from "@client/Playlist";
 import { Toolbar } from "./Toolbar/Toolbar";
 import { hot } from "react-hot-loader/root";
 import { useState } from "react";
-import { Playlist } from "@client/Playlist";
-import { Media } from "@server/models/autogen";
 
 export function App() {
   const [player, setPlayer] = useState(Player.instance());

@@ -3,7 +3,7 @@ import * as React from "react";
 import { AlbumView } from "./Album/AlbumView";
 import { ArtistView } from "./Artist/ArtistView";
 import { GenreView } from "./Genre/GenreView";
-import { Media } from "@server/models/autogen";
+import { Media } from "@common/autogen";
 import { MusicLibrary } from "./MusicLibrary";
 import { Route, Switch } from "react-router-dom";
 

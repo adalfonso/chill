@@ -1,7 +1,7 @@
 import * as fs from "fs/promises";
 import * as mm from "music-metadata";
 import * as path from "path";
-import { Media as MediaGen } from "@server/models/autogen";
+import { Media as MediaGen } from "@common/autogen";
 import { Media } from "@server/models/Media";
 
 /** Config options used by the crawler */

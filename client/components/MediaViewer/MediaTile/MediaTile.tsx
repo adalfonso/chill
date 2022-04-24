@@ -1,6 +1,6 @@
 import "./MediaTile.scss";
 import * as React from "react";
-import { Media } from "@server/models/autogen";
+import { Media } from "@common/autogen";
 import { useHistory } from "react-router-dom";
 import { useMultiClick } from "@client/hooks/useMultiClick";
 export interface TileData extends Partial<Media> {

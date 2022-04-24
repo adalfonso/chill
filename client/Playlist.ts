@@ -1,4 +1,4 @@
-import { Media } from "@server/models/autogen";
+import { Media } from "@common/autogen";
 
 /** Keeps track of all audio tracks under a given domain */
 export class Playlist {

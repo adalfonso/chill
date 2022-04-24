@@ -1,6 +1,6 @@
 import "./AlbumView.scss";
 import * as React from "react";
-import { Media } from "@server/models/autogen";
+import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
 import { useMultiClick } from "@client/hooks/useMultiClick";
 import { useParams } from "react-router-dom";

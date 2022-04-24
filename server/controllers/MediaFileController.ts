@@ -1,6 +1,6 @@
 import * as fs from "fs/promises";
 import { AudioType } from "@server/media/types";
-import { Media as MediaGen } from "@server/models/autogen";
+import { Media as MediaGen } from "@common/autogen";
 import { Media } from "@server/models/Media";
 import { MediaCrawler } from "@server/media/MediaCrawler";
 import { Request, Response } from "express";

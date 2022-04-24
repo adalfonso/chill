@@ -1,6 +1,6 @@
 import "./MediaViewer.scss";
 import * as React from "react";
-import { Media } from "@server/models/autogen";
+import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch as Match } from "@common/MediaType/types";
 import { MediaTile, TileData } from "./MediaTile/MediaTile";
