@@ -1,12 +1,15 @@
 import * as React from "react";
+import { Media } from "@server/models/autogen";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaTile, TileData } from "../MediaTile/MediaTile";
-import { Player } from "@client/Player";
-import { Playlist } from "@client/Playlist";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 
-export const GenreView = () => {
+interface GenreViewProps {
+  onPlay: (files: Media[]) => Promise<void>;
+}
+
+export const GenreView = ({ onPlay }: GenreViewProps) => {
   const { genre } = useParams();
   const [artists, setArtists] = useState([]);
 
@@ -26,7 +29,7 @@ export const GenreView = () => {
     const { genre } = file;
     const results = await MediaApi.query({ genre });
 
-    Player.instance().setPlaylist(new Playlist(results));
+    onPlay(results.data);
   };
 
   const displayAs = (file: TileData) => file._id[0];

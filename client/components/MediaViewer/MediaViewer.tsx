@@ -3,27 +3,32 @@ import * as React from "react";
 import { AlbumView } from "./Album/AlbumView";
 import { ArtistView } from "./Artist/ArtistView";
 import { GenreView } from "./Genre/GenreView";
+import { Media } from "@server/models/autogen";
 import { MusicLibrary } from "./MusicLibrary";
 import { Route, Switch } from "react-router-dom";
 
-export const MediaViewer = () => {
+interface MediaViewerProps {
+  onPlay: (files: Media[]) => Promise<void>;
+}
+
+export const MediaViewer = ({ onPlay }: MediaViewerProps) => {
   return (
     <div id="media-viewer">
       <Switch>
         <Route path="/artist/:artist">
-          <ArtistView></ArtistView>
+          <ArtistView onPlay={onPlay} />
         </Route>
 
         <Route path="/album/:album">
-          <AlbumView></AlbumView>
+          <AlbumView onPlay={onPlay} />
         </Route>
 
         <Route path="/genre/:genre">
-          <GenreView></GenreView>
+          <GenreView onPlay={onPlay} />
         </Route>
 
         <Route path="/">
-          <MusicLibrary />
+          <MusicLibrary onPlay={onPlay} />
         </Route>
       </Switch>
     </div>

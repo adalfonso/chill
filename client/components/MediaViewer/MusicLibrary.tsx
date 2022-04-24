@@ -1,10 +1,9 @@
 import "./MediaViewer.scss";
 import * as React from "react";
+import { Media } from "@server/models/autogen";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch as Match } from "@common/MediaType/types";
 import { MediaTile, TileData } from "./MediaTile/MediaTile";
-import { Player } from "@client/Player";
-import { Playlist } from "@client/Playlist";
 import { useState } from "react";
 
 const ApiMap: Record<Match, () => Promise<unknown>> = {
@@ -13,7 +12,11 @@ const ApiMap: Record<Match, () => Promise<unknown>> = {
   [Match.Genre]: MediaApi.getGroupedByGenre,
 };
 
-export const MusicLibrary = () => {
+interface MusicLibraryProps {
+  onPlay: (files: Media[]) => Promise<void>;
+}
+
+export const MusicLibrary = ({ onPlay }: MusicLibraryProps) => {
   const [match, setMatch] = useState<Match>(Match.Artist);
   const [media_files, setMediaFiles] = useState([]);
 
@@ -40,7 +43,7 @@ export const MusicLibrary = () => {
     const match_value = file[match];
     const results = await MediaApi.query({ [match]: match_value });
 
-    Player.instance().setPlaylist(new Playlist(results));
+    onPlay(results.data);
   };
 
   React.useEffect(() => loadMediaFiles(match), []);

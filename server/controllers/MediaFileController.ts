@@ -1,3 +1,4 @@
+import * as fs from "fs/promises";
 import { AudioType } from "@server/media/types";
 import { Media as MediaGen } from "@server/models/autogen";
 import { Media } from "@server/models/Media";
@@ -29,6 +30,27 @@ export const MediaFileController = {
       }
     } catch (e) {
       res.status(500).send("Failed to query Media");
+    }
+  },
+
+  /** Load a media file from is ID */
+  load: async (req: Request<{ id: number }>, res: Response) => {
+    try {
+      const media = await Media.findById(req.params.id);
+
+      if (!media) {
+        throw new Error("Failed to load media file data");
+      }
+
+      const handle = await fs.open(media.path, "r");
+      const stream = handle.createReadStream();
+
+      stream.on("data", (chunk) => res.write(chunk));
+      stream.on("error", () => res.sendStatus(500));
+      stream.on("end", () => res.end());
+    } catch (e) {
+      console.error(e);
+      res.status(500).send("Failed to load media file data");
     }
   },
 

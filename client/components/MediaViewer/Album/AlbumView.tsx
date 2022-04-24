@@ -1,11 +1,14 @@
 import "./AlbumView.scss";
 import * as React from "react";
+import { Media } from "@server/models/autogen";
 import { MediaApi } from "@client/api/MediaApi";
-import { Player } from "@client/Player";
-import { Playlist } from "@client/Playlist";
 import { useMultiClick } from "@client/hooks/useMultiClick";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
+
+interface AlbumViewProps {
+  onPlay: (files: Media[]) => Promise<void>;
+}
 
 const secondsToMinutes = (duration: number) => {
   const minutes = Math.floor(duration / 60);
@@ -15,7 +18,7 @@ const secondsToMinutes = (duration: number) => {
   return `${minutes}:${pad(seconds)}`;
 };
 
-export const AlbumView = () => {
+export const AlbumView = ({ onPlay }: AlbumViewProps) => {
   const { album } = useParams();
   const [files, setFiles] = useState([]);
 
@@ -31,7 +34,7 @@ export const AlbumView = () => {
 
   const handleClick = useMultiClick(
     () => {},
-    () => Player.instance().setPlaylist(new Playlist(files, 0)),
+    () => onPlay(files),
   );
 
   return (

@@ -1,12 +1,15 @@
 import * as React from "react";
+import { Media } from "@server/models/autogen";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaTile, TileData } from "../MediaTile/MediaTile";
-import { Player } from "@client/Player";
-import { Playlist } from "@client/Playlist";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 
-export const ArtistView = () => {
+interface ArtistViewProps {
+  onPlay: (files: Media[]) => Promise<void>;
+}
+
+export const ArtistView = ({ onPlay }: ArtistViewProps) => {
   const { artist } = useParams();
   const [albums, setAlbums] = useState([]);
 
@@ -26,7 +29,7 @@ export const ArtistView = () => {
     const { artist, album, year } = file;
     const results = await MediaApi.query({ artist, album, year });
 
-    Player.instance().setPlaylist(new Playlist(results));
+    onPlay(results.data);
   };
 
   const displayAs = (file: TileData) => {
