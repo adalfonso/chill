@@ -14,8 +14,20 @@ export class Playlist {
   }
 
   /** Change to the next item in the playlist */
-  public next() {}
+  public next() {
+    this._index++;
+
+    if (this._index === this._playlist.length) {
+      this._index = 0;
+    }
+  }
 
   /** Change to the previous item in the playlist */
-  public previous() {}
+  public previous() {
+    this._index--;
+
+    if (this._index < 0) {
+      this._index = this._playlist.length - 1;
+    }
+  }
 }

@@ -31,7 +31,7 @@ export const PlayControls = ({ player }: PlayControlsProps) => {
       <div className="scrub"></div>
       <div className="now-playing">Placeholder</div>
       <div className="controls">
-        <div className="circle-button">
+        <div className="circle-button" onClick={() => player.previous()}>
           <Icon icon={faFastBackward} size="sm" />
         </div>
         <div className="circle-button play" onClick={togglePlayer}>
@@ -41,7 +41,7 @@ export const PlayControls = ({ player }: PlayControlsProps) => {
             <Icon icon={faPlay} size="lg" />
           )}
         </div>
-        <div className="circle-button">
+        <div className="circle-button" onClick={() => player.next()}>
           <Icon icon={faFastForward} size="sm" />
         </div>
       </div>

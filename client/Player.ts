@@ -62,10 +62,16 @@ export class Player {
   }
 
   /** Play the next item in the playlist */
-  public next() {}
+  public next() {
+    this._playlist.next();
+    this._load();
+  }
 
   /** Play the previous item in the playlist */
-  public previous() {}
+  public previous() {
+    this._playlist.previous();
+    this._load();
+  }
 
   /** Scrub to a certain part of the track */
   public scrubTo() {}
@@ -74,11 +80,19 @@ export class Player {
    * Set new playlist for the audio player
    *
    * @param playlist list of audio tracks to play
-   *
    * @returns true confirmation when playing has begun
    */
   public async setPlaylist(playlist: Playlist) {
     this._playlist = playlist;
+    return this._load();
+  }
+
+  /**
+   * Load the current audio track
+   *
+   * @returns true confirmation when playing has begun
+   */
+  private _load() {
     this._current = this._playlist.current;
 
     // Loaded with an empty playlist
