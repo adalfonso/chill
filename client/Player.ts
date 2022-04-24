@@ -37,6 +37,10 @@ export class Player {
     return this._is_playing;
   }
 
+  get now_playing() {
+    return this._current;
+  }
+
   /**
    * Play the current audio
    *
@@ -62,15 +66,16 @@ export class Player {
   }
 
   /** Play the next item in the playlist */
-  public next() {
+  public async next() {
     this._playlist.next();
-    this._load();
+
+    return this._load(this._is_playing);
   }
 
   /** Play the previous item in the playlist */
-  public previous() {
+  public async previous() {
     this._playlist.previous();
-    this._load();
+    return this._load(this._is_playing);
   }
 
   /** Scrub to a certain part of the track */
@@ -90,9 +95,10 @@ export class Player {
   /**
    * Load the current audio track
    *
+   * @param autoplay if the new item should play automatically
    * @returns true confirmation when playing has begun
    */
-  private _load() {
+  private _load(autoplay = true) {
     this._current = this._playlist.current;
 
     // Loaded with an empty playlist
@@ -101,6 +107,6 @@ export class Player {
     }
 
     this._audio.src = `/media/${this._current._id}/load`;
-    return this.play();
+    return autoplay ? this.play() : false;
   }
 }
