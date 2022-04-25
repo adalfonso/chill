@@ -42,6 +42,12 @@ export const MediaFileController = {
         throw new Error("Failed to load media file data");
       }
 
+      const stats = await fs.stat(media.path);
+
+      res.set("content-type", `audio/${media.file_type}`);
+      res.set("accept-ranges", "bytes");
+      res.set("content-length", stats.size.toString());
+
       const handle = await fs.open(media.path, "r");
       const stream = handle.createReadStream();
 

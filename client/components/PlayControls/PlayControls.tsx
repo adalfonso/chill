@@ -67,9 +67,13 @@ export const PlayControls = ({ player }: PlayControlsProps) => {
     setNowPlaying(getNowPlaying());
   };
 
+  const seek = async (percent: number) => {
+    return player.seek(percent);
+  };
+
   return (
     <div id="play-controls">
-      <Scrubber progress={playback_progress} />
+      <Scrubber progress={playback_progress} onScrub={seek} />
       <div className="now-playing">{now_playing}</div>
       <div className="controls">
         <div className="circle-button" onClick={previous}>

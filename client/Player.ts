@@ -43,11 +43,11 @@ export class Player {
 
   /** 0-100 progress percentage of track */
   get progress() {
-    if (!this._current?.duration || !this._audio.currentTime) {
+    if (!this._audio.duration || !this._audio.currentTime) {
       return 0;
     }
 
-    return (this._audio.currentTime / this._current.duration) * 100;
+    return (this._audio.currentTime / this._audio.duration) * 100;
   }
 
   /**
@@ -88,7 +88,9 @@ export class Player {
   }
 
   /** Scrub to a certain part of the track */
-  public scrubTo() {}
+  public seek(percent: number) {
+    this._audio.currentTime = this._audio.duration * percent;
+  }
 
   /**
    * Set new playlist for the audio player
