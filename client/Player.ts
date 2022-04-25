@@ -41,6 +41,15 @@ export class Player {
     return this._current;
   }
 
+  /** 0-100 progress percentage of track */
+  get progress() {
+    if (!this._current?.duration || !this._audio.currentTime) {
+      return 0;
+    }
+
+    return (this._audio.currentTime / this._current.duration) * 100;
+  }
+
   /**
    * Play the current audio
    *

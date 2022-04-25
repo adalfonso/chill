@@ -4,6 +4,7 @@ import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch as Match } from "@common/MediaType/types";
 import { MediaTile, TileData } from "./MediaTile/MediaTile";
+import { useEffect } from "react";
 import { useState } from "react";
 
 const ApiMap: Record<Match, () => Promise<unknown>> = {
@@ -46,7 +47,7 @@ export const MusicLibrary = ({ onPlay }: MusicLibraryProps) => {
     onPlay(results.data);
   };
 
-  React.useEffect(() => loadMediaFiles(match), []);
+  useEffect(() => loadMediaFiles(match), []);
 
   return (
     <>

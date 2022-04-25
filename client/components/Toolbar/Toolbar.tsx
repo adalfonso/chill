@@ -3,9 +3,10 @@ import * as React from "react";
 import axios from "axios";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { faGear } from "@fortawesome/free-solid-svg-icons";
+import { useState } from "react";
 
 export const Toolbar = () => {
-  const [busy, setBusy] = React.useState(false);
+  const [busy, setBusy] = useState(false);
 
   const scan = async () => {
     if (busy) {

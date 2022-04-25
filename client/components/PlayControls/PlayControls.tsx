@@ -2,6 +2,9 @@ import "./PlayControls.scss";
 import * as React from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Player } from "@client/Player";
+import { Scrubber } from "./Scrubber";
+import { startAnimationLoop } from "@client/util";
+import { useState, useEffect } from "react";
 import {
   faPlay,
   faPause,
@@ -16,13 +19,24 @@ interface PlayControlsProps {
 const default_now_playing = "-";
 
 export const PlayControls = ({ player }: PlayControlsProps) => {
-  const [is_playing, setIsPlaying] = React.useState(player.is_playing);
-  const [now_playing, setNowPlaying] = React.useState(default_now_playing);
+  const [is_playing, setIsPlaying] = useState(player.is_playing);
+  const [now_playing, setNowPlaying] = useState(default_now_playing);
+  const [playback_progress, setPlaybackProgress] = useState(0);
 
   const getNowPlaying = () =>
     player.now_playing
       ? `${player.now_playing.artist} - ${player.now_playing.title}`
       : default_now_playing;
+
+  useEffect(() => {
+    startAnimationLoop(() => {
+      if (playback_progress === player.progress) {
+        return;
+      }
+
+      setPlaybackProgress(player.progress);
+    });
+  }, []);
 
   /**
    * The next couple checks are necessary to sync operations on Player.ts with
@@ -31,7 +45,7 @@ export const PlayControls = ({ player }: PlayControlsProps) => {
    */
   if (is_playing !== player.is_playing) {
     setIsPlaying(player.is_playing);
-    setNowPlaying(getNowPlaying());
+    setPlaybackProgress(0);
   }
 
   if (now_playing !== getNowPlaying()) {
@@ -55,7 +69,7 @@ export const PlayControls = ({ player }: PlayControlsProps) => {
 
   return (
     <div id="play-controls">
-      <div className="scrub"></div>
+      <Scrubber progress={playback_progress} />
       <div className="now-playing">{now_playing}</div>
       <div className="controls">
         <div className="circle-button" onClick={previous}>
