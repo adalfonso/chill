@@ -15,8 +15,8 @@ export function App() {
   // This is used to force a re-render on the player controls
   const [lastPlayed, setLastPlayed] = useState(Date.now());
 
-  const onPlay = async (files: Media[]) => {
-    await player.setPlaylist(new Playlist(files));
+  const onPlay = async (files: Media[], index = 0) => {
+    await player.setPlaylist(new Playlist(files, index));
     setLastPlayed(Date.now());
   };
 

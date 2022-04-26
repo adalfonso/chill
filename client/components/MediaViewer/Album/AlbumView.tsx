@@ -7,7 +7,7 @@ import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 interface AlbumViewProps {
-  onPlay: (files: Media[]) => Promise<void>;
+  onPlay: (files: Media[], index?: number) => Promise<void>;
 }
 
 const secondsToMinutes = (duration: number) => {
@@ -21,6 +21,7 @@ const secondsToMinutes = (duration: number) => {
 export const AlbumView = ({ onPlay }: AlbumViewProps) => {
   const { album } = useParams();
   const [files, setFiles] = useState([]);
+  const [index_last_clicked, setIndexLastClicked] = useState(0);
 
   useEffect(() => {
     MediaApi.query({ album })
@@ -34,8 +35,13 @@ export const AlbumView = ({ onPlay }: AlbumViewProps) => {
 
   const handleClick = useMultiClick(
     () => {},
-    () => onPlay(files),
+    () => onPlay(files, index_last_clicked),
   );
+
+  const onClick = (index) => () => {
+    setIndexLastClicked(index);
+    handleClick();
+  };
 
   return (
     <div className="album-view">
@@ -48,9 +54,9 @@ export const AlbumView = ({ onPlay }: AlbumViewProps) => {
 
         {files
           .sort((a, b) => a.track - b.track)
-          .map((track) => {
+          .map((track, index) => {
             return (
-              <div className="row" onClick={handleClick} key={track.path}>
+              <div className="row" onClick={onClick(index)} key={track.path}>
                 <div className="track">{track.track}</div>
                 <div>{track.title}</div>
                 <div className="mono">{secondsToMinutes(track.duration)}</div>
