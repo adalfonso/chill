@@ -9,30 +9,52 @@ interface ScrubberProps {
 
 export const Scrubber = ({ progress, onScrub }: ScrubberProps) => {
   const [dragging, setDragging] = useState(false);
+  const [progress_override, setProgressOverride] = useState<number>();
 
-  const dragScrubber = (e: React.MouseEvent<HTMLDivElement>) => {
-    setDragging(true);
-  };
-
-  const releaseScrubber = async (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!dragging) {
+  const releaseScrubber = async (e: React.MouseEvent<HTMLElement>) => {
+    if (!dragging || !(e.target instanceof HTMLElement)) {
       return;
     }
 
-    const rect = e.target.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percent = x / rect.right;
-
-    await onScrub(percent);
-    setDragging(false);
+    await onScrub(calculateXPos(e.target, e.clientX));
+    cancelDrag();
   };
+
+  const adjustDrag = (e: React.MouseEvent<HTMLElement>) => {
+    if (!dragging || !(e.target instanceof HTMLElement)) {
+      return;
+    }
+
+    setProgressOverride(calculateXPos(e.target, e.clientX) * 100);
+  };
+
+  const cancelDrag = () => {
+    setDragging(false);
+    setProgressOverride(undefined);
+  };
+
   return (
     <div
       className="phantom"
-      onMouseDown={dragScrubber}
+      onMouseDown={() => setDragging(true)}
       onMouseUp={releaseScrubber}
+      onMouseLeave={cancelDrag}
+      onMouseMove={adjustDrag}
     >
-      <div className="scrubber" style={{ width: `${progress}%` }}></div>
+      <div
+        className="scrubber"
+        style={{
+          width: `${
+            progress_override !== undefined ? progress_override : progress
+          }%`,
+        }}
+      ></div>
     </div>
   );
+};
+
+const calculateXPos = (element: HTMLElement, offset: number) => {
+  const rect = element.getBoundingClientRect();
+  const x = offset - rect.left;
+  return x / rect.right;
 };
