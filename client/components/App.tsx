@@ -23,7 +23,6 @@ export function App() {
   return (
     <div className="app">
       <Toolbar />
-      <Libraries />
       <MediaViewer onPlay={onPlay} />
       <PlayControls player={player}></PlayControls>
     </div>

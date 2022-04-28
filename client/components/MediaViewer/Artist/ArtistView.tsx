@@ -38,19 +38,21 @@ export const ArtistView = ({ onPlay }: ArtistViewProps) => {
   };
 
   return (
-    <div className="artist-view">
-      <h2>{artist}</h2>
+    <div id="media-viewer">
+      <div className="artist-view">
+        <h2>{artist}</h2>
 
-      <div className="media-tiles">
-        {albums.map((file) => (
-          <MediaTile
-            key={file._id}
-            file={file}
-            url={url}
-            use={use}
-            displayAs={displayAs}
-          />
-        ))}
+        <div className="media-tiles">
+          {albums.map((file) => (
+            <MediaTile
+              key={file._id}
+              file={file}
+              url={url}
+              use={use}
+              displayAs={displayAs}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

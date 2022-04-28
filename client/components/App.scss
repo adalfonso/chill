@@ -1,6 +1,29 @@
+@import "./variables.scss";
+
 * {
   box-sizing: content-box;
   font-family: "Rubik", sans-serif;
+  color: $dm-font;
+
+  /* width */
+  &::-webkit-scrollbar {
+    width: 1rem;
+  }
+
+  /* Track */
+  &::-webkit-scrollbar-track {
+    background: $dm-background;
+  }
+
+  /* Handle */
+  &::-webkit-scrollbar-thumb {
+    background: #aaa;
+  }
+
+  /* Handle on hover */
+  &::-webkit-scrollbar-thumb:hover {
+    background: #ccc;
+  }
 }
 
 html {
@@ -10,6 +33,10 @@ html {
 body {
   margin: 0;
   height: 100%;
+}
+
+h2 {
+  text-shadow: 1px 1px 1px $dm-shadow;
 }
 
 #root {
@@ -24,7 +51,7 @@ body {
 }
 
 .app {
-  background-color: gray;
+  background-color: $dm-background;
   height: 100%;
   display: flex;
   flex-direction: column;

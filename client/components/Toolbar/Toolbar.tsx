@@ -22,8 +22,18 @@ export const Toolbar = () => {
 
   return (
     <div id="toolbar">
-      <div onClick={scan}>Scan</div>
-      <Icon icon={faGear} size="lg" />
+      <div className="libraries">
+        <div className="library-title" onClick={() => history.push("/")}>
+          Music
+        </div>
+      </div>
+      <div className="search">
+        <input className="search-box" placeholder="search" />
+      </div>
+      <div className="tools">
+        <div onClick={scan}>Scan</div>
+        <Icon icon={faGear} size="lg" />
+      </div>
     </div>
   );
 };

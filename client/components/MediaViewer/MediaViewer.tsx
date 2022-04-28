@@ -13,24 +13,22 @@ interface MediaViewerProps {
 
 export const MediaViewer = ({ onPlay }: MediaViewerProps) => {
   return (
-    <div id="media-viewer">
-      <Switch>
-        <Route path="/artist/:artist">
-          <ArtistView onPlay={onPlay} />
-        </Route>
+    <Switch>
+      <Route path="/artist/:artist">
+        <ArtistView onPlay={onPlay} />
+      </Route>
 
-        <Route path="/album/:album">
-          <AlbumView onPlay={onPlay} />
-        </Route>
+      <Route path="/album/:album">
+        <AlbumView onPlay={onPlay} />
+      </Route>
 
-        <Route path="/genre/:genre">
-          <GenreView onPlay={onPlay} />
-        </Route>
+      <Route path="/genre/:genre">
+        <GenreView onPlay={onPlay} />
+      </Route>
 
-        <Route path="/">
-          <MusicLibrary onPlay={onPlay} />
-        </Route>
-      </Switch>
-    </div>
+      <Route path="/">
+        <MusicLibrary onPlay={onPlay} />
+      </Route>
+    </Switch>
   );
 };

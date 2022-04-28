@@ -1,22 +1,24 @@
+@import "@client/components/variables.scss";
+
 #media-viewer {
   .media-tiles {
     a {
       text-decoration: none;
     }
     .media-tile {
-      border: 1px solid rgba(25, 25, 25, 0.95);
-      background-color: rgba(25, 25, 25, 0.95);
+      border: 2px solid $dm-background-2;
+      background-color: $dm-background-2;
       color: white;
       border-radius: 0.25rem;
       padding: 1rem;
-      height: calc(10rem - 2px);
-      width: calc(10rem - 2px);
+      height: calc(10rem - 4px);
+      width: calc(10rem - 4px);
       margin: 1rem;
       transition: 0.2s;
       user-select: none;
 
       &:hover {
-        border-color: rgb(151, 151, 153);
+        border-color: $dm-shadow;
         opacity: 0.9;
       }
     }

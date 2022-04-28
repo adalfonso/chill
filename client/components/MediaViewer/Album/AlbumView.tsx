@@ -44,25 +44,27 @@ export const AlbumView = ({ onPlay }: AlbumViewProps) => {
   };
 
   return (
-    <div className="album-view">
-      <h2>{album}</h2>
+    <div id="media-viewer">
+      <div className="album-view">
+        <h2>{album}</h2>
 
-      <div className="panel-list">
-        <div className="header track">Track</div>
-        <div className="header">Title</div>
-        <div className="header align-right">Duration</div>
+        <div className="panel-list">
+          <div className="header track">Track</div>
+          <div className="header">Title</div>
+          <div className="header align-right">Duration</div>
 
-        {files
-          .sort((a, b) => a.track - b.track)
-          .map((track, index) => {
-            return (
-              <div className="row" onClick={onClick(index)} key={track.path}>
-                <div className="track">{track.track}</div>
-                <div>{track.title}</div>
-                <div className="mono">{secondsToMinutes(track.duration)}</div>
-              </div>
-            );
-          })}
+          {files
+            .sort((a, b) => a.track - b.track)
+            .map((track, index) => {
+              return (
+                <div className="row" onClick={onClick(index)} key={track.path}>
+                  <div className="track">{track.track}</div>
+                  <div>{track.title}</div>
+                  <div className="mono">{secondsToMinutes(track.duration)}</div>
+                </div>
+              );
+            })}
+        </div>
       </div>
     </div>
   );

@@ -1,11 +1,12 @@
-import "./MediaViewer.scss";
+import "./MusicLibrary.scss";
 import * as React from "react";
 import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch as Match } from "@common/MediaType/types";
 import { MediaTile, TileData } from "./MediaTile/MediaTile";
-import { useEffect } from "react";
-import { useState } from "react";
+import { Select } from "../ui/Select";
+import { ucfirst } from "@client/util";
+import { useEffect, useState } from "react";
 
 const ApiMap: Record<Match, () => Promise<unknown>> = {
   [Match.Artist]: MediaApi.getGroupedByArtist,
@@ -21,8 +22,7 @@ export const MusicLibrary = ({ onPlay }: MusicLibraryProps) => {
   const [match, setMatch] = useState<Match>(Match.Artist);
   const [media_files, setMediaFiles] = useState([]);
 
-  const changeMediaMatch = (e) => {
-    const { value } = e.target;
+  const changeMediaMatch = (value) => {
     setMatch(value);
     loadMediaFiles(value);
   };
@@ -51,27 +51,35 @@ export const MusicLibrary = ({ onPlay }: MusicLibraryProps) => {
 
   return (
     <>
-      <div className="toolbar">
-        <select onChange={changeMediaMatch} value={match}>
-          {Object.values(Match).map((option) => {
-            return (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            );
-          })}
-        </select>
+      <div className="music-library">
+        <div className="toolbar">
+          <Select
+            onChange={changeMediaMatch}
+            displayAs={ucfirst(match)}
+            value={match}
+          >
+            {Object.values(Match).map((option) => {
+              return (
+                <option key={option} value={option}>
+                  {ucfirst(option)}
+                </option>
+              );
+            })}
+          </Select>
+        </div>
       </div>
-      <div className="media-tiles">
-        {media_files.map((file) => (
-          <MediaTile
-            key={file._id}
-            file={file}
-            displayAs={displayAs}
-            url={url}
-            use={use}
-          />
-        ))}
+      <div id="media-viewer">
+        <div className="media-tiles">
+          {media_files.map((file) => (
+            <MediaTile
+              key={file._id}
+              file={file}
+              displayAs={displayAs}
+              url={url}
+              use={use}
+            />
+          ))}
+        </div>
       </div>
     </>
   );

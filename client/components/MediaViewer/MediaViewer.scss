@@ -2,13 +2,14 @@
   display: flex;
   flex-wrap: wrap;
   overflow-y: scroll;
-  padding: 1rem;
+  padding: 0 1rem 1rem 1rem;
+  margin-top: 1rem;
   flex-grow: 1;
 
-  .toolbar {
-    display: flex;
-    flex-direction: column;
+  h2 {
+    margin-left: 1rem;
   }
+
   .media-tiles {
     display: flex;
     flex-wrap: wrap;
@@ -18,6 +19,7 @@
 .panel-list {
   display: grid;
   grid-template-columns: fit-content(4em) 1fr fit-content(6em);
+  user-select: none;
 
   .row {
     display: contents;

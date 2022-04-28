@@ -35,19 +35,21 @@ export const GenreView = ({ onPlay }: GenreViewProps) => {
   const displayAs = (file: TileData) => file._id[0];
 
   return (
-    <div className="genre-view">
-      <h2>{genre}</h2>
+    <div id="media-viewer">
+      <div className="genre-view">
+        <h2>{genre}</h2>
 
-      <div className="media-tiles">
-        {artists.map((file) => (
-          <MediaTile
-            key={file._id}
-            file={file}
-            url={url}
-            use={use}
-            displayAs={displayAs}
-          />
-        ))}
+        <div className="media-tiles">
+          {artists.map((file) => (
+            <MediaTile
+              key={file._id}
+              file={file}
+              url={url}
+              use={use}
+              displayAs={displayAs}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

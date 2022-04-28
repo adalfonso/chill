@@ -1,10 +1,25 @@
+@import "@client/components/variables.scss";
+
 #toolbar {
-  border-bottom: 1px solid black;
+  background-color: $dm-background-2;
   padding: 0.75em 1.5rem;
   display: flex;
-  justify-content: end;
+  justify-content: space-between;
+  align-items: center;
 
-  > * {
-    margin-left: 2rem;
+  .search-box {
+    background-color: transparent;
+    border: 1px solid $dm-font;
+    font-size: 1rem;
+    padding: 0.25rem 1rem;
+    border-radius: 1rem;
+    width: 20rem;
+  }
+
+  .tools {
+    display: flex;
+    > * {
+      margin-left: 2rem;
+    }
   }
 }
