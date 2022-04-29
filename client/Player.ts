@@ -19,7 +19,14 @@ export class Player {
   /**
    * @param _playlist initial playlist
    */
-  constructor(private _playlist: Playlist) {}
+  constructor(private _playlist: Playlist) {
+    this._audio.addEventListener("ended", () => {
+      if (!this._playlist.has_next_track) {
+        return;
+      }
+      this.next();
+    });
+  }
 
   /**
    * Get the instance or create & get an instance

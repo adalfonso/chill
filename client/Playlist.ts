@@ -13,6 +13,10 @@ export class Playlist {
     return this._playlist[this._index];
   }
 
+  get has_next_track() {
+    return this._index < this._playlist.length - 1;
+  }
+
   /** Change to the next item in the playlist */
   public next() {
     this._index++;
