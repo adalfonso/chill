@@ -46,10 +46,19 @@ export const AlbumView = ({ onPlay }: AlbumViewProps) => {
     handleClick();
   };
 
+  const getArtist = () =>
+    [...new Set(files.map((file) => file.artist))].join(",");
+
+  const getYear = () => [...new Set(files.map((file) => file.year))].join(",");
+
   return (
     <div id="media-viewer">
       <div className="album-view">
-        <h2>{album}</h2>
+        <div className="info">
+          <h2>{getArtist()}</h2>
+          <h4>{album}</h4>
+          <h4>{getYear()}</h4>
+        </div>
 
         <div className="panel-list">
           <div className="header track">Track</div>

@@ -37,7 +37,9 @@ export const GenreView = ({ onPlay }: GenreViewProps) => {
   return (
     <div id="media-viewer">
       <div className="genre-view">
-        <h2>{genre}</h2>
+        <div className="info">
+          <h2>{genre}</h2>
+        </div>
 
         <div className="media-tiles">
           {artists.map((file) => (

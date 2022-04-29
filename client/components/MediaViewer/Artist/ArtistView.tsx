@@ -29,7 +29,7 @@ export const ArtistView = ({ onPlay }: ArtistViewProps) => {
     const { artist, album, year } = file;
     const results = await MediaApi.query({ artist, album, year });
 
-    onPlay(results.data);
+    onPlay(results.data.sort((a, b) => a.track - b.track));
   };
 
   const displayAs = (file: TileData) => {
@@ -40,7 +40,9 @@ export const ArtistView = ({ onPlay }: ArtistViewProps) => {
   return (
     <div id="media-viewer">
       <div className="artist-view">
-        <h2>{artist}</h2>
+        <div className="info">
+          <h2>{artist}</h2>
+        </div>
 
         <div className="media-tiles">
           {albums.map((file) => (
