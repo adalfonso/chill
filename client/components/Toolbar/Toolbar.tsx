@@ -3,10 +3,12 @@ import * as React from "react";
 import axios from "axios";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { faGear } from "@fortawesome/free-solid-svg-icons";
+import { useHistory } from "react-router-dom";
 import { useState } from "react";
 
 export const Toolbar = () => {
   const [busy, setBusy] = useState(false);
+  const history = useHistory();
 
   const scan = async () => {
     if (busy) {

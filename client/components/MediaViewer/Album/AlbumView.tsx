@@ -1,7 +1,10 @@
 import "./AlbumView.scss";
 import * as React from "react";
+import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
+import { Player } from "@client/Player";
+import { faPlay } from "@fortawesome/free-solid-svg-icons";
 import { useMultiClick } from "@client/hooks/useMultiClick";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -58,7 +61,17 @@ export const AlbumView = ({ onPlay }: AlbumViewProps) => {
             .map((track, index) => {
               return (
                 <div className="row" onClick={onClick(index)} key={track.path}>
-                  <div className="track">{track.track}</div>
+                  <div className="track">
+                    {track.track}
+                    {Player.instance().now_playing.path === track.path && (
+                      <Icon
+                        className="play-icon"
+                        icon={faPlay}
+                        size="sm"
+                        pull="right"
+                      />
+                    )}
+                  </div>
                   <div>{track.title}</div>
                   <div className="mono">{secondsToMinutes(track.duration)}</div>
                 </div>

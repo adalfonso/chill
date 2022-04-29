@@ -7,6 +7,7 @@
   overflow: visible;
   z-index: 2;
   user-select: none;
+  cursor: pointer;
 
   .selection,
   .children > * {
