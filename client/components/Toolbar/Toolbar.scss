@@ -38,7 +38,15 @@
         background-color: $dm-background-2;
         border-bottom: 1px dashed $dm-background;
         padding: 0.35rem 0.5rem;
+        font-size: 0.85rem;
         cursor: pointer;
+        user-select: none;
+        display: flex;
+        justify-content: space-between;
+
+        .secondary {
+          color: $dm-font-2;
+        }
 
         &:hover {
           background-color: $dm-background;

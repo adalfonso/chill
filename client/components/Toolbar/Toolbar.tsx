@@ -2,9 +2,9 @@ import "./Toolbar.scss";
 import * as React from "react";
 import axios from "axios";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { MatchMap, MediaApi } from "@client/api/MediaApi";
-import { capitalize, shuffle } from "@client/util";
+import { MediaApi } from "@client/api/MediaApi";
 import { faGear } from "@fortawesome/free-solid-svg-icons";
+import { shuffle } from "@client/util";
 import { useHistory } from "react-router-dom";
 import { useState } from "react";
 
@@ -13,18 +13,19 @@ export const Toolbar = ({ onPlay }) => {
   const [query, setQuery] = useState("");
   const [search_results, setSearchResults] = useState([]);
   const history = useHistory();
+
+  // Cause file scanner to run
   const scan = async () => {
     if (busy) {
       return;
     }
 
     setBusy(true);
-
     await triggerScan();
-
     setBusy(false);
   };
 
+  // Execute a media search
   const search = async (e) => {
     const value = e.target.value.replace(/\s+/g, " ");
     setQuery(value);
@@ -37,19 +38,11 @@ export const Toolbar = ({ onPlay }) => {
     setSearchResults(results.data);
   };
 
-  const playFile = (file) => async () => {
+  // Handle the playing of a search result selection
+  const playMedia = (file) => async () => {
     clear();
 
-    const { type, value } = file;
-
-    let match: Partial<MatchMap> = {};
-
-    if (file.type === "title") {
-      match.path = value;
-    } else {
-      match[type] = value;
-    }
-
+    const { type, match } = file;
     const results = (await MediaApi.query(match)).data;
     const should_shuffle = ["artist", "genre"].includes(type);
 
@@ -60,6 +53,7 @@ export const Toolbar = ({ onPlay }) => {
     );
   };
 
+  // Clear the search input/results
   const clear = () => {
     setQuery("");
     setSearchResults([]);
@@ -81,16 +75,7 @@ export const Toolbar = ({ onPlay }) => {
         />
         {search_results.length > 0 && (
           <div className="search-results">
-            {search_results.map((result) => {
-              return (
-                <div className="result" onClick={playFile(result)}>
-                  {result.type === "title"
-                    ? ""
-                    : capitalize(result.type) + ": "}
-                  {result.displayAs}
-                </div>
-              );
-            })}
+            {search_results.map(displayResult(playMedia))}
           </div>
         )}
       </div>
@@ -102,6 +87,15 @@ export const Toolbar = ({ onPlay }) => {
   );
 };
 
-const triggerScan = async () => {
-  await axios.get("/media/scan");
+const triggerScan = async () => axios.get("/media/scan");
+
+const displayResult = (handler) => (file) => {
+  const [primary, secondary] = file.displayAs;
+
+  return (
+    <div className="result" onClick={handler(file)}>
+      {primary}
+      {secondary !== undefined && <div className="secondary">{secondary}</div>}
+    </div>
+  );
 };
