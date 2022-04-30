@@ -78,10 +78,7 @@ export const MediaFileController = {
   search: async (req: Request, res: Response) => {
     const query = req.body.query.toLowerCase();
 
-    const results = await Media.find(
-      { $text: { $search: query } },
-      { score: { $meta: "textScore" } },
-    ).sort({ score: { $meta: "textScore" } });
+    const results = await Media.find({ $text: { $search: query } });
 
     res.json(sortResults(results, query));
   },
