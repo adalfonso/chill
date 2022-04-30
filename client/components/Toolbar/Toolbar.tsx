@@ -2,8 +2,8 @@ import "./Toolbar.scss";
 import * as React from "react";
 import axios from "axios";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { Media } from "@common/autogen";
-import { MediaApi } from "@client/api/MediaApi";
+import { MatchMap, MediaApi } from "@client/api/MediaApi";
+import { capitalize, shuffle } from "@client/util";
 import { faGear } from "@fortawesome/free-solid-svg-icons";
 import { useHistory } from "react-router-dom";
 import { useState } from "react";
@@ -13,7 +13,6 @@ export const Toolbar = ({ onPlay }) => {
   const [query, setQuery] = useState("");
   const [search_results, setSearchResults] = useState([]);
   const history = useHistory();
-
   const scan = async () => {
     if (busy) {
       return;
@@ -31,18 +30,39 @@ export const Toolbar = ({ onPlay }) => {
     setQuery(value);
 
     if (value === "") {
-      setSearchResults([]);
-      return;
+      return clear();
     }
     const results = await MediaApi.search(value);
 
     setSearchResults(results.data);
   };
 
-  const playFile = (file: Media) => () => {
+  const playFile = (file) => async () => {
+    clear();
+
+    const { type, value } = file;
+
+    let match: Partial<MatchMap> = {};
+
+    if (file.type === "title") {
+      match.path = value;
+    } else {
+      match[type] = value;
+    }
+
+    const results = (await MediaApi.query(match)).data;
+    const should_shuffle = ["artist", "genre"].includes(type);
+
+    onPlay(
+      should_shuffle
+        ? shuffle(results)
+        : results.sort((a, b) => a.track - b.track),
+    );
+  };
+
+  const clear = () => {
     setQuery("");
     setSearchResults([]);
-    onPlay([file]);
   };
 
   return (
@@ -64,7 +84,10 @@ export const Toolbar = ({ onPlay }) => {
             {search_results.map((result) => {
               return (
                 <div className="result" onClick={playFile(result)}>
-                  {result.artist} - {result.title}
+                  {result.type === "title"
+                    ? ""
+                    : capitalize(result.type) + ": "}
+                  {result.displayAs}
                 </div>
               );
             })}

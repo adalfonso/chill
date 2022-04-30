@@ -2,11 +2,11 @@ import axios from "axios";
 import { MediaMatch as Match } from "@common/MediaType/types";
 import { Media } from "@common/autogen";
 
-type MatchMap = Record<Match, string | number>;
+export type MatchMap = Record<Match, string | number>;
 
 export const MediaApi = {
   search: (query: string) => axios.post(`/media/search`, { query }),
-  query: (match: MatchMap) => axios.post(`/media/query`, { match }),
+  query: (match: Partial<MatchMap>) => axios.post(`/media/query`, { match }),
 
   load: (file: Media) => axios.get(`/media/${file._id}/load`),
 

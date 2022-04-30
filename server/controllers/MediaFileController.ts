@@ -5,6 +5,7 @@ import { Media } from "@server/models/Media";
 import { MediaCrawler } from "@server/media/MediaCrawler";
 import { Request, Response } from "express";
 import { getAsGroup } from "@server/db/utils";
+import { sortResults } from "@server/search/ResultSorter";
 
 interface MediaFileGetArgs {
   match: Record<keyof MediaGen, string>;
@@ -75,10 +76,13 @@ export const MediaFileController = {
   },
 
   search: async (req: Request, res: Response) => {
-    const { query } = req.body;
+    const query = req.body.query.toLowerCase();
 
-    const results = await Media.find({ $text: { $search: query } });
+    const results = await Media.find(
+      { $text: { $search: query } },
+      { score: { $meta: "textScore" } },
+    ).sort({ score: { $meta: "textScore" } });
 
-    res.json(results);
+    res.json(sortResults(results, query));
   },
 };
