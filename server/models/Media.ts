@@ -17,4 +17,11 @@ export const MediaSchema = new Schema({
   modified_at: { type: Date, default: Date.now },
 });
 
+MediaSchema.index({
+  artist: "text",
+  album: "text",
+  title: "text",
+  genre: "text",
+});
+
 export const Media = mongoose.model("Media", MediaSchema, "media");

@@ -73,4 +73,12 @@ export const MediaFileController = {
       res.status(500).send("Failed when scanning media");
     }
   },
+
+  search: async (req: Request, res: Response) => {
+    const { query } = req.body;
+
+    const results = await Media.find({ $text: { $search: query } });
+
+    res.json(results);
+  },
 };

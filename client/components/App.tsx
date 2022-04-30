@@ -1,6 +1,5 @@
 import "./App.scss";
 import * as React from "react";
-import { Libraries } from "./Libraries/Libraries";
 import { Media } from "@common/autogen";
 import { MediaViewer } from "./MediaViewer/MediaViewer";
 import { PlayControls } from "./PlayControls/PlayControls";
@@ -22,7 +21,7 @@ export function App() {
 
   return (
     <div className="app">
-      <Toolbar />
+      <Toolbar onPlay={onPlay} />
       <MediaViewer onPlay={onPlay} />
       <PlayControls player={player}></PlayControls>
     </div>
