@@ -1,3 +1,4 @@
+import * as _ from "lodash";
 import { Model, PipelineStage } from "mongoose";
 
 interface GroupOptions {
@@ -17,29 +18,35 @@ export const getAsGroup = async <M extends Model<S>, S>(
   grouping: (keyof S)[],
   options: Partial<GroupOptions> = {},
 ) => {
-  const prefixed_grouping = grouping.map((group) => `$${group}`);
+  // Aggregate all grouping keys to form an _id for the aggregation
+  const aggregate_id = grouping.reduce(
+    (carry, group) => ({ ...carry, [group]: `$${group}` }),
+    {},
+  );
+
+  // Generate accumulators to select all groupings as individual fields
+  const fields = grouping.reduce((carry, group) => {
+    return { ...carry, [group]: { $first: "$" + group } };
+  }, {});
+
+  // Generate null replacements
+  const null_fallback = grouping.reduce((carry, group) => {
+    return {
+      ...carry,
+      [group]: {
+        $ifNull: ["$" + group, `Unknown ${_.capitalize(group.toString())}`],
+      },
+    };
+  }, {});
+
   const match = options.match ? [{ $match: options.match }] : [];
   const group: PipelineStage[] = [
     ...match,
-    {
-      $group: {
-        _id: prefixed_grouping,
-        _count: { $sum: 1 },
-      },
-    },
+    { $group: { _id: aggregate_id, _count: { $sum: 1 }, ...fields } },
+    { $project: { _id: 1, _count: 1, ...null_fallback } },
   ];
 
   const result = await model.aggregate(group).sort({ _id: "asc" });
 
-  return result.map((result) => {
-    const group_record = grouping.reduce((carry, category, index) => {
-      return { ...carry, [category]: result._id[index] };
-    }, {});
-
-    return {
-      _group_by: grouping,
-      ...result,
-      ...group_record,
-    };
-  });
+  return result;
 };

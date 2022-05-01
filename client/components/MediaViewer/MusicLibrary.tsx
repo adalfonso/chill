@@ -44,7 +44,7 @@ export const MusicLibrary = ({ onPlay, setLoading }: MusicLibraryProps) => {
   };
 
   const displayAs = (file: TileData) => file[match];
-  const url = (file: TileData) => `/${match}/${file._id[0]}`;
+  const url = (file: TileData) => `/${match}/${file[match]}`;
 
   const use = async (file: TileData) => {
     const match_value = file[match];
@@ -76,15 +76,17 @@ export const MusicLibrary = ({ onPlay, setLoading }: MusicLibraryProps) => {
       </div>
       <div id="media-viewer">
         <div className="media-tiles">
-          {media_files.map((file) => (
-            <MediaTile
-              key={file._id}
-              file={file}
-              displayAs={displayAs}
-              url={url}
-              use={use}
-            />
-          ))}
+          {media_files
+            .filter((file) => file._id[match] !== null)
+            .map((file) => (
+              <MediaTile
+                key={JSON.stringify(file._id)}
+                file={file}
+                displayAs={displayAs}
+                url={url}
+                use={use}
+              />
+            ))}
         </div>
       </div>
     </>

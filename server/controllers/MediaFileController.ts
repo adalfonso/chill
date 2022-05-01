@@ -22,14 +22,14 @@ export const MediaFileController = {
 
       if (group) {
         // Ignore null record to the leading group
-        const non_null_match = { [group[0]]: { $ne: null } };
-        const options = { match: { ...match, ...non_null_match } };
+        const options = { match };
 
         res.json(await getAsGroup(Media, group, options));
       } else {
         res.json(await Media.find(match));
       }
     } catch (e) {
+      console.error(e);
       res.status(500).send("Failed to query Media");
     }
   },

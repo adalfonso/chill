@@ -5,7 +5,6 @@ import { useHistory } from "react-router-dom";
 import { useMultiClick } from "@client/hooks/useMultiClick";
 export interface TileData extends Partial<Media> {
   _id: string[];
-  _group_by: string[];
   _count: number;
 }
 

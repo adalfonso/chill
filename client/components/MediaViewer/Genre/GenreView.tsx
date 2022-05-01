@@ -29,16 +29,16 @@ export const GenreView = ({ onPlay, setLoading }: GenreViewProps) => {
       });
   }, [genre]);
 
-  const url = (file: TileData) => `/artist/${file._id[0]}`;
+  const url = (file: TileData) => `/artist/${file.artist}`;
 
   const use = async (file: TileData) => {
-    const { genre } = file;
-    const results = await MediaApi.query({ genre });
+    const { artist } = file;
+    const results = await MediaApi.query({ artist });
 
     onPlay(results.data);
   };
 
-  const displayAs = (file: TileData) => file._id[0];
+  const displayAs = (file: TileData) => file.artist;
 
   return (
     <div id="media-viewer">
@@ -50,7 +50,7 @@ export const GenreView = ({ onPlay, setLoading }: GenreViewProps) => {
         <div className="media-tiles">
           {artists.map((file) => (
             <MediaTile
-              key={file._id}
+              key={JSON.stringify(file._id)}
               file={file}
               url={url}
               use={use}

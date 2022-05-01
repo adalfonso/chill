@@ -28,7 +28,7 @@ export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
       });
   }, [artist]);
 
-  const url = (file: TileData) => `/album/${file._id[0]}`;
+  const url = (file: TileData) => `/album/${file.album}`;
 
   const use = async (file: TileData) => {
     const { artist, album, year } = file;
@@ -38,7 +38,7 @@ export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
   };
 
   const displayAs = (file: TileData) => {
-    const [album, artist, year] = file._id as string[];
+    const { album, artist, year } = file;
     return `${album} (${year})`;
   };
 
@@ -52,7 +52,7 @@ export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
         <div className="media-tiles">
           {albums.map((file) => (
             <MediaTile
-              key={file._id}
+              key={JSON.stringify(file._id)}
               file={file}
               url={url}
               use={use}
