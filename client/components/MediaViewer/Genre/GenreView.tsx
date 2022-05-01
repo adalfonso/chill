@@ -27,7 +27,7 @@ export const GenreView = ({ onPlay, setLoading }: GenreViewProps) => {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [genre]);
 
   const url = (file: TileData) => `/artist/${file._id[0]}`;
 

@@ -26,7 +26,7 @@ export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [artist]);
 
   const url = (file: TileData) => `/album/${file._id[0]}`;
 

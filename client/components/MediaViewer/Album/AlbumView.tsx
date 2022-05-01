@@ -40,7 +40,7 @@ export const AlbumView = ({ onPlay, setLoading }: AlbumViewProps) => {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [album]);
 
   const handleClick = useMultiClick(
     () => {},
