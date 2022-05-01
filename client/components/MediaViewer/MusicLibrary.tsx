@@ -6,7 +6,6 @@ import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch as Match } from "@common/MediaType/types";
 import { MediaTile, TileData } from "./MediaTile/MediaTile";
 import { Select } from "../ui/Select";
-import { capitalize } from "@client/util";
 import { useEffect, useState } from "react";
 
 const ApiMap: Record<Match, () => Promise<unknown>> = {
@@ -56,13 +55,13 @@ export const MusicLibrary = ({ onPlay }: MusicLibraryProps) => {
         <div className="toolbar">
           <Select
             onChange={changeMediaMatch}
-            displayAs={capitalize(match)}
+            displayAs={_.capitalize(match)}
             value={match}
           >
             {Object.values(_.omit(Match, "Path")).map((option) => {
               return (
                 <option key={option} value={option}>
-                  {capitalize(option)}
+                  {_.capitalize(option)}
                 </option>
               );
             })}

@@ -16,12 +16,3 @@ export const startAnimationLoop = (callback: (dt: number) => unknown) => {
 
   requestAnimationFrame(frame);
 };
-
-/**
- * Capitalize the first charcter of a string
- *
- * @param value value to capitalize
- * @returns capitalized string
- */
-export const capitalize = (value: string) =>
-  value.charAt(0).toUpperCase() + value.slice(1);
