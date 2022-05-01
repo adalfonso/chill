@@ -64,7 +64,8 @@ export const MediaFileController = {
   /** Cause media file scanner to run */
   scan: async (req: Request, res: Response) => {
     const crawler = new MediaCrawler({
-      workers: 50,
+      workers: 100,
+      chunk: 1000,
       file_types: Object.values(AudioType),
     });
 

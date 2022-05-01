@@ -7,6 +7,7 @@ import { Media } from "@server/models/Media";
 /** Config options used by the crawler */
 interface MediaCrawlerConfig {
   workers: number;
+  chunk: number;
   file_types: string[];
 }
 
@@ -16,6 +17,7 @@ interface CrawlStats {
   dirs: string[];
   files: MediaFileTemplate[];
   end: Date | null;
+  errors: Error[];
 }
 
 type MediaFileTemplate = Omit<MediaGen, "_id" | "created_at" | "updated_at">;
@@ -37,6 +39,9 @@ export class MediaCrawler {
   /** Holds the promise resolver for the public-facing crawl call */
   private _resolution: (value: CrawlStats) => void;
 
+  /** Total # of records written to the DB */
+  private _records_written = 0;
+
   /**
    * @param _config crawler config
    */
@@ -53,12 +58,21 @@ export class MediaCrawler {
       return;
     }
 
+    console.info("Crawling starting... 🐛");
+
     // TODO: remove this is temp
     await Media.deleteMany();
 
     this._busy = true;
+    this._records_written = 0;
     this._available_workers = this._config.workers;
-    this._crawl_stats = { start: new Date(), dirs: [], files: [], end: null };
+    this._crawl_stats = {
+      start: new Date(),
+      dirs: [],
+      files: [],
+      end: null,
+      errors: [],
+    };
 
     return new Promise((resolve) => {
       this._resolution = resolve;
@@ -141,7 +155,15 @@ export class MediaCrawler {
 
       this._crawl_stats.files.push(meta);
     } catch (e) {
+      this._crawl_stats.errors.push(e);
       console.error(e);
+    }
+
+    if (this._crawl_stats.files.length % this._config.chunk === 0) {
+      await Media.insertMany(this._crawl_stats.files);
+      this._records_written += this._config.chunk;
+      console.info(`Crawler stored ${this._records_written} records... 🐛`);
+      this._crawl_stats.files = [];
     }
 
     this._available_workers++;
@@ -160,12 +182,12 @@ export class MediaCrawler {
 
     return {
       path: file_path,
-      duration: result.format.duration,
+      duration: result.format.duration ?? 0,
       artist: result.common.artist,
       title: result.common.title,
-      track: result.common.track.no,
+      track: result.common.track?.no ?? null,
       album: result.common.album,
-      genre: result.common.genre[0] ?? null,
+      genre: result.common.genre?.[0] ?? null,
       year: result.common.year,
     };
   }
@@ -178,6 +200,7 @@ export class MediaCrawler {
     this._busy = false;
 
     Media.insertMany(this._crawl_stats.files);
+    console.info("Crawling completed... 🐛");
 
     this._resolution(this._crawl_stats);
   }
