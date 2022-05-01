@@ -1,5 +1,6 @@
 import "./MusicLibrary.scss";
 import * as React from "react";
+import * as _ from "lodash";
 import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch as Match } from "@common/MediaType/types";
@@ -58,7 +59,7 @@ export const MusicLibrary = ({ onPlay }: MusicLibraryProps) => {
             displayAs={capitalize(match)}
             value={match}
           >
-            {Object.values(Match).map((option) => {
+            {Object.values(_.omit(Match, "Path")).map((option) => {
               return (
                 <option key={option} value={option}>
                   {capitalize(option)}
