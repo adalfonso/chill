@@ -64,3 +64,28 @@ h2 {
 .mono {
   font-family: "Cousine", monospace;
 }
+
+@keyframes throbber {
+  0% {
+    transform: translate3d(-50%, -50%, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate3d(-50%, -50%, 0) rotate(360deg);
+  }
+}
+
+.loading::before {
+  animation: 1.5s linear infinite throbber;
+  animation-play-state: inherit;
+  border: solid 2px $dm-font;
+  border-bottom-color: $primary;
+  border-radius: 50%;
+  content: "";
+  height: 2.5rem;
+  width: 2.5rem;
+  position: absolute;
+  top: calc(50% - 1.25rem);
+  left: calc(50% - 1.25rem);
+  transform: translate3d(-50%, -50%, 0);
+  will-change: transform;
+}

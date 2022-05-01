@@ -16,24 +16,30 @@ const ApiMap: Record<Match, () => Promise<unknown>> = {
 
 interface MusicLibraryProps {
   onPlay: (files: Media[]) => Promise<void>;
+  setLoading: (loading: boolean) => void;
 }
 
-export const MusicLibrary = ({ onPlay }: MusicLibraryProps) => {
+export const MusicLibrary = ({ onPlay, setLoading }: MusicLibraryProps) => {
   const [match, setMatch] = useState<Match>(Match.Artist);
   const [media_files, setMediaFiles] = useState([]);
-
   const changeMediaMatch = (value) => {
+    setMediaFiles([]);
     setMatch(value);
     loadMediaFiles(value);
   };
 
   const loadMediaFiles = (match: Match) => {
+    setLoading(true);
+
     ApiMap[match]()
       .then(({ data }) => {
         setMediaFiles(data);
       })
       .catch((_) => {
         console.error(`Failed to load media files with match "${match}"`);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 

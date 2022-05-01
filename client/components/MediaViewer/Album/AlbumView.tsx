@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 
 interface AlbumViewProps {
   onPlay: (files: Media[], index?: number) => Promise<void>;
+  setLoading: (loading: boolean) => void;
 }
 
 const secondsToMinutes = (duration: number) => {
@@ -21,18 +22,23 @@ const secondsToMinutes = (duration: number) => {
   return `${minutes}:${pad(seconds)}`;
 };
 
-export const AlbumView = ({ onPlay }: AlbumViewProps) => {
+export const AlbumView = ({ onPlay, setLoading }: AlbumViewProps) => {
   const { album } = useParams();
   const [files, setFiles] = useState([]);
   const [index_last_clicked, setIndexLastClicked] = useState(0);
 
   useEffect(() => {
+    setLoading(true);
+
     MediaApi.query({ album })
       .then((res) => {
         setFiles(res.data);
       })
       .catch((err) => {
         console.error("Failed to load album tracks data");
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, []);
 

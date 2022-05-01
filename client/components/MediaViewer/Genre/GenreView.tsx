@@ -7,19 +7,25 @@ import { useState, useEffect } from "react";
 
 interface GenreViewProps {
   onPlay: (files: Media[]) => Promise<void>;
+  setLoading: (loading: boolean) => void;
 }
 
-export const GenreView = ({ onPlay }: GenreViewProps) => {
+export const GenreView = ({ onPlay, setLoading }: GenreViewProps) => {
   const { genre } = useParams();
   const [artists, setArtists] = useState([]);
 
   useEffect(() => {
+    setLoading(true);
+
     MediaApi.getGroupedByArtist(genre)
       .then((res) => {
         setArtists(res.data);
       })
       .catch((err) => {
         console.error("Failed to load artist albums");
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, []);
 

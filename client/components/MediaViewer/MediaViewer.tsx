@@ -6,29 +6,34 @@ import { GenreView } from "./Genre/GenreView";
 import { Media } from "@common/autogen";
 import { MusicLibrary } from "./MusicLibrary";
 import { Route, Switch } from "react-router-dom";
-
+import { useState } from "react";
 interface MediaViewerProps {
   onPlay: (files: Media[]) => Promise<void>;
 }
 
 export const MediaViewer = ({ onPlay }: MediaViewerProps) => {
+  const [loading, setLoading] = useState(false);
+
   return (
-    <Switch>
-      <Route path="/artist/:artist">
-        <ArtistView onPlay={onPlay} />
-      </Route>
+    <>
+      {loading && <div className="loading"></div>}
+      <Switch>
+        <Route path="/artist/:artist">
+          <ArtistView onPlay={onPlay} setLoading={setLoading} />
+        </Route>
 
-      <Route path="/album/:album">
-        <AlbumView onPlay={onPlay} />
-      </Route>
+        <Route path="/album/:album">
+          <AlbumView onPlay={onPlay} setLoading={setLoading} />
+        </Route>
 
-      <Route path="/genre/:genre">
-        <GenreView onPlay={onPlay} />
-      </Route>
+        <Route path="/genre/:genre">
+          <GenreView onPlay={onPlay} setLoading={setLoading} />
+        </Route>
 
-      <Route path="/">
-        <MusicLibrary onPlay={onPlay} />
-      </Route>
-    </Switch>
+        <Route path="/">
+          <MusicLibrary onPlay={onPlay} setLoading={setLoading} />
+        </Route>
+      </Switch>
+    </>
   );
 };

@@ -69,7 +69,7 @@ export const Search = ({ onPlay }) => {
                 result={result}
                 onPlay={playMedia}
                 onVisit={visitMedia}
-                key={`${result.type}|${result.path}`}
+                key={result.displayAs.join("|") + result.value}
               />
             );
           })}
