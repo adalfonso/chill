@@ -1,6 +1,7 @@
-import "./Toolbar.scss";
+import "./Search.scss";
 import * as React from "react";
 import { MediaApi } from "@client/api/MediaApi";
+import { SearchResult } from "./Search/SearchResult";
 import { shuffle } from "@client/util";
 import { useHistory } from "react-router-dom";
 import { useState } from "react";
@@ -23,21 +24,27 @@ export const Search = ({ onPlay }) => {
     setResults(results.data);
   };
 
-  // Handle the playing of a search result selection
-  const playMedia = (file) => async () => {
-    clear();
+  // Visit page for search result
+  const visitMedia = async (file) => {
+    const { path } = file;
 
-    const { type, match, path } = file;
+    clear();
+    history.push(path);
+  };
+
+  // Handle the playing of a search result selection
+  const playMedia = async (file) => {
+    const { type, match } = file;
     const results = (await MediaApi.query(match)).data;
     const should_shuffle = ["artist", "genre"].includes(type);
 
-    history.push(path);
+    clear();
 
-    // onPlay(
-    //   should_shuffle
-    //     ? shuffle(results)
-    //     : results.sort((a, b) => a.track - b.track),
-    // );
+    onPlay(
+      should_shuffle
+        ? shuffle(results)
+        : results.sort((a, b) => a.track - b.track),
+    );
   };
 
   // Clear the search input/results
@@ -56,20 +63,18 @@ export const Search = ({ onPlay }) => {
       />
       {results.length > 0 && (
         <div className="search-results">
-          {results.map(displayResult(playMedia))}
+          {results.map((result) => {
+            return (
+              <SearchResult
+                result={result}
+                onPlay={playMedia}
+                onVisit={visitMedia}
+                key={`${result.type}|${result.path}`}
+              />
+            );
+          })}
         </div>
       )}
-    </div>
-  );
-};
-
-const displayResult = (handler) => (file) => {
-  const [primary, secondary] = file.displayAs;
-
-  return (
-    <div className="result" onClick={handler(file)} key={file.path}>
-      {primary}
-      {secondary !== undefined && <div className="secondary">{secondary}</div>}
     </div>
   );
 };

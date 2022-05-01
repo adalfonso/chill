@@ -22,12 +22,12 @@ const matcher: Record<MediaMatch, (file: Media) => unknown> = {
 };
 
 const displayer: Record<MediaMatch, (file: Media) => string[]> = {
-  artist: (file: Media) => [`Artist: ${file.artist}`],
-  genre: (file: Media) => [`Genre: ${file.genre}`],
-  path: (file: Media) => [`${file.title}`, `song by ${file.artist}`],
+  artist: (file: Media) => [`${file.artist}`, `Artist`],
+  genre: (file: Media) => [`${file.genre}`, `Genre`],
+  path: (file: Media) => [`${file.title}`, `Track - ${file.artist}`],
   album: (file: Media) => {
-    const year = file.year ? `(${file.year})` : ``;
-    return [`${file.album} ${year}`, `album by ${file.artist}`];
+    const year = file.year ? `- ${file.year}` : ``;
+    return [`${file.album}`, `Album ${year} by ${file.artist}`];
   },
 };
 

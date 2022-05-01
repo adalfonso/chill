@@ -1,0 +1,43 @@
+@import "@client/components/variables.scss";
+
+.search {
+  position: relative;
+
+  .search-box {
+    background-color: transparent;
+    border: 1px solid $dm-font;
+    font-size: 1rem;
+    padding: 0.25rem 1rem;
+    border-radius: 1rem;
+    width: 25rem;
+    cursor: pointer;
+  }
+
+  .search-results {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    z-index: 2;
+    max-height: 20rem;
+    overflow: auto;
+    width: 100%;
+
+    .result {
+      background-color: $dm-background-2;
+      border-bottom: 1px dashed $dm-background;
+      padding: 0.35rem 0.5rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      user-select: none;
+      // display: flex;
+      // justify-content: space-between;
+
+      .secondary {
+        color: $dm-font-2;
+      }
+
+      &:hover {
+        background-color: $dm-background;
+      }
+    }
+  }
+}
