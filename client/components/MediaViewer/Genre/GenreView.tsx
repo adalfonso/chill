@@ -11,7 +11,7 @@ interface GenreViewProps {
 }
 
 export const GenreView = ({ onPlay, setLoading }: GenreViewProps) => {
-  const { genre } = useParams();
+  const genre = decodeURIComponent(useParams().genre);
   const [artists, setArtists] = useState([]);
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export const GenreView = ({ onPlay, setLoading }: GenreViewProps) => {
       });
   }, [genre]);
 
-  const url = (file: TileData) => `/artist/${file.artist}`;
+  const url = (file: TileData) => `/artist/${encodeURIComponent(file.artist)}`;
 
   const use = async (file: TileData) => {
     const { artist } = file;

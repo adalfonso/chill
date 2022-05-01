@@ -44,7 +44,8 @@ export const MusicLibrary = ({ onPlay, setLoading }: MusicLibraryProps) => {
   };
 
   const displayAs = (file: TileData) => file[match];
-  const url = (file: TileData) => `/${match}/${file[match]}`;
+  const url = (file: TileData) =>
+    `/${match}/${encodeURIComponent(file[match])}`;
 
   const use = async (file: TileData) => {
     const match_value = file[match];

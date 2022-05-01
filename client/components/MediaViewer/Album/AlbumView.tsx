@@ -23,7 +23,7 @@ const secondsToMinutes = (duration: number) => {
 };
 
 export const AlbumView = ({ onPlay, setLoading }: AlbumViewProps) => {
-  const { album } = useParams();
+  const album = decodeURIComponent(useParams().album);
   const [files, setFiles] = useState([]);
   const [index_last_clicked, setIndexLastClicked] = useState(0);
 

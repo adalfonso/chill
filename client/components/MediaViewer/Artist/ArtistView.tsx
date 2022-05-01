@@ -11,14 +11,14 @@ interface ArtistViewProps {
 }
 
 export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
-  const { artist } = useParams();
+  const artist = decodeURIComponent(useParams().artist);
   const [albums, setAlbums] = useState([]);
 
   useEffect(() => {
     setLoading(true);
     MediaApi.getGroupedByAlbum(artist)
       .then((res) => {
-        setAlbums(res.data);
+        setAlbums(res.data.sort((a, b) => a.year - b.year));
       })
       .catch((err) => {
         console.error("Failed to load artist albums");
@@ -28,7 +28,7 @@ export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
       });
   }, [artist]);
 
-  const url = (file: TileData) => `/album/${file.album}`;
+  const url = (file: TileData) => `/album/${encodeURIComponent(file.album)}`;
 
   const use = async (file: TileData) => {
     const { artist, album, year } = file;
