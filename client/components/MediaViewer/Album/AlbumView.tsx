@@ -52,8 +52,7 @@ export const AlbumView = ({ onPlay, setLoading }: AlbumViewProps) => {
     handleClick();
   };
 
-  const getArtist = () =>
-    [...new Set(files.map((file) => file.artist))].join(",");
+  const artists = () => [...new Set(files.map((file) => file.artist))];
 
   const getYear = () => [...new Set(files.map((file) => file.year))].join(",");
 
@@ -61,7 +60,8 @@ export const AlbumView = ({ onPlay, setLoading }: AlbumViewProps) => {
     <div id="media-viewer">
       <div className="album-view">
         <div className="info">
-          <h2>{getArtist()}</h2>
+          <h2>{artists().length > 1 ? "Various Artists" : artists()[0]}</h2>
+          {artists().length > 1 && <h4>{artists().join(",  ")}</h4>}
           <h4>{album}</h4>
           <h4>{getYear()}</h4>
         </div>
