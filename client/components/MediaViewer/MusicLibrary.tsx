@@ -33,7 +33,11 @@ export const MusicLibrary = ({ onPlay, setLoading }: MusicLibraryProps) => {
 
     ApiMap[match]()
       .then(({ data }) => {
-        setMediaFiles(data);
+        setMediaFiles(
+          data
+            .filter((file) => file._id[match] !== null)
+            .sort((a, b) => a[match].localeCompare(b[match])),
+        );
       })
       .catch((_) => {
         console.error(`Failed to load media files with match "${match}"`);
@@ -77,17 +81,15 @@ export const MusicLibrary = ({ onPlay, setLoading }: MusicLibraryProps) => {
       </div>
       <div id="media-viewer">
         <div className="media-tiles">
-          {media_files
-            .filter((file) => file._id[match] !== null)
-            .map((file) => (
-              <MediaTile
-                key={JSON.stringify(file._id)}
-                file={file}
-                displayAs={displayAs}
-                url={url}
-                use={use}
-              />
-            ))}
+          {media_files.map((file) => (
+            <MediaTile
+              key={JSON.stringify(file._id)}
+              file={file}
+              displayAs={displayAs}
+              url={url}
+              use={use}
+            />
+          ))}
         </div>
       </div>
     </>
