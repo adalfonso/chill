@@ -67,12 +67,12 @@ export const AlbumView = ({ onPlay }: AlbumViewProps) => {
 
           {files
             .sort((a, b) => a.track - b.track)
-            .map((track, index) => {
+            .map((file, index) => {
               return (
-                <div className="row" onClick={onClick(index)} key={track.path}>
+                <div className="row" onClick={onClick(index)} key={file.path}>
                   <div className="track">
-                    {track.track}
-                    {Player.instance().now_playing.path === track.path && (
+                    {file.track}
+                    {Player.instance().now_playing?.path === file.path && (
                       <Icon
                         className="play-icon"
                         icon={faPlay}
@@ -81,8 +81,8 @@ export const AlbumView = ({ onPlay }: AlbumViewProps) => {
                       />
                     )}
                   </div>
-                  <div>{track.title}</div>
-                  <div className="mono">{secondsToMinutes(track.duration)}</div>
+                  <div>{file.title}</div>
+                  <div className="mono">{secondsToMinutes(file.duration)}</div>
                 </div>
               );
             })}

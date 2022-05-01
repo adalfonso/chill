@@ -42,6 +42,9 @@ export class MediaCrawler {
   /** Total # of records written to the DB */
   private _records_written = 0;
 
+  /** If the DB is currently being written to */
+  private _writing = false;
+
   /**
    * @param _config crawler config
    */
@@ -81,7 +84,7 @@ export class MediaCrawler {
   }
 
   /**
-   * Local crawl atrategy
+   * Local crawl strategy
    *
    * @param dir directory to crawl
    */
@@ -160,10 +163,7 @@ export class MediaCrawler {
     }
 
     if (this._crawl_stats.files.length % this._config.chunk === 0) {
-      await Media.insertMany(this._crawl_stats.files);
-      this._records_written += this._config.chunk;
-      console.info(`Crawler stored ${this._records_written} records... 🐛`);
-      this._crawl_stats.files = [];
+      await this._write(this._config.chunk);
     }
 
     this._available_workers++;
@@ -193,15 +193,38 @@ export class MediaCrawler {
   }
 
   /** Complete crawling */
-  private _complete() {
+  private async _complete() {
     this._crawl_stats.end = new Date();
     this._available_workers = this._config.workers;
     this._queue = [];
     this._busy = false;
 
-    Media.insertMany(this._crawl_stats.files);
+    await this._write();
     console.info("Crawling completed... 🐛");
 
     this._resolution(this._crawl_stats);
+  }
+
+  /**
+   * Trigger writing of a certain number of items to the DB
+   *
+   * @param count number of records to write
+   */
+  private async _write(count = Infinity) {
+    if (this._writing) {
+      return;
+    }
+
+    try {
+      this._writing = true;
+      const records = this._crawl_stats.files.splice(0, count);
+      await Media.insertMany(records);
+      this._records_written += records.length;
+      console.info(`Crawler stored ${this._records_written} records... 🐛`);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      this._writing = false;
+    }
   }
 }

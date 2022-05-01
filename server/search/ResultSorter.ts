@@ -31,6 +31,13 @@ const displayer: Record<MediaMatch, (file: Media) => string[]> = {
   },
 };
 
+const pathfinder: Record<MediaMatch, (file: Media) => string> = {
+  artist: (file: Media) => `/artist/${file.artist}`,
+  genre: (file: Media) => `genre/${file.genre}`,
+  path: (file: Media) => `/album/${file.album}`,
+  album: (file: Media) => `/album/${file.album}`,
+};
+
 /**
  * Categorize and sort search results
  *
@@ -85,7 +92,11 @@ const processFile = (
     }
 
     const match = matcher[type](file);
+    const p = pathfinder[type](file);
 
-    return { ...carry, [key]: { type, displayAs, value, score, match } };
+    return {
+      ...carry,
+      [key]: { type, displayAs, value, score, match, path: p },
+    };
   }, {});
 };
