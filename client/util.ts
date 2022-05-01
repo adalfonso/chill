@@ -25,26 +25,3 @@ export const startAnimationLoop = (callback: (dt: number) => unknown) => {
  */
 export const capitalize = (value: string) =>
   value.charAt(0).toUpperCase() + value.slice(1);
-
-/**
- * Shuffle an array
- *
- * @param arr array to shuffle
- * @returns shuffled array
- */
-export const shuffle = <T>(arr: T[]) => {
-  let currentIndex = arr.length,
-    randomIndex;
-
-  while (currentIndex != 0) {
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex--;
-
-    [arr[currentIndex], arr[randomIndex]] = [
-      arr[randomIndex],
-      arr[currentIndex],
-    ];
-  }
-
-  return arr;
-};

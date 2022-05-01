@@ -1,8 +1,8 @@
 import "./Search.scss";
 import * as React from "react";
+import * as _ from "lodash";
 import { MediaApi } from "@client/api/MediaApi";
 import { SearchResult } from "./Search/SearchResult";
-import { shuffle } from "@client/util";
 import { useHistory } from "react-router-dom";
 import { useState } from "react";
 
@@ -42,7 +42,7 @@ export const Search = ({ onPlay }) => {
 
     onPlay(
       should_shuffle
-        ? shuffle(results)
+        ? _.shuffle(results)
         : results.sort((a, b) => a.track - b.track),
     );
   };
