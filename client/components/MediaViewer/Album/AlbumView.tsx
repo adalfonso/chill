@@ -88,7 +88,11 @@ export const AlbumView = ({ onPlay, setLoading }: AlbumViewProps) => {
                     )}
                   </div>
                   <div>{file.title}</div>
-                  <div className="mono">{secondsToMinutes(file.duration)}</div>
+                  <div className="mono">
+                    <div className="duration">
+                      {secondsToMinutes(file.duration)}
+                    </div>
+                  </div>
                 </div>
               );
             })}
