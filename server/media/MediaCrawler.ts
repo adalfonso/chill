@@ -1,8 +1,10 @@
 import * as fs from "fs/promises";
 import * as mm from "music-metadata";
 import * as path from "path";
-import { Media as MediaGen } from "@common/autogen";
-import { Media } from "@server/models/Media";
+import { Media, Scan } from "@common/autogen";
+import { MediaModel } from "@server/models/Media";
+import { Nullable } from "@server/types";
+import { ScanModel } from "@server/models/Scan";
 
 /** Config options used by the crawler */
 interface MediaCrawlerConfig {
@@ -20,7 +22,7 @@ interface CrawlStats {
   errors: Error[];
 }
 
-type MediaFileTemplate = Omit<MediaGen, "_id" | "created_at" | "updated_at">;
+type MediaFileTemplate = Omit<Media, "_id" | "created_at" | "updated_at">;
 
 /** Traverse a directory and extract all media information */
 export class MediaCrawler {
@@ -45,6 +47,9 @@ export class MediaCrawler {
   /** If the DB is currently being written to */
   private _writing = false;
 
+  /** Currently running scan document */
+  private _scan: Nullable<Scan> = null;
+
   /**
    * @param _config crawler config
    */
@@ -64,8 +69,8 @@ export class MediaCrawler {
     console.info("Crawling starting... 🐛");
 
     // TODO: remove this is temp
-    await Media.deleteMany();
-
+    await MediaModel.deleteMany();
+    this._scan = await new ScanModel().save();
     this._busy = true;
     this._records_written = 0;
     this._available_workers = this._config.workers;
@@ -179,16 +184,17 @@ export class MediaCrawler {
    */
   private async _getMetadata(file_path: string) {
     const result = await mm.parseFile(file_path, { duration: true });
+    const { common, format } = result;
 
     return {
       path: file_path,
-      duration: result.format.duration ?? 0,
-      artist: result.common.artist,
-      title: result.common.title,
-      track: result.common.track?.no ?? null,
-      album: result.common.album,
-      genre: result.common.genre?.[0] ?? null,
-      year: result.common.year,
+      duration: format.duration ?? 0,
+      artist: common.artist,
+      title: common.title,
+      track: common.track?.no ?? null,
+      album: common.album,
+      genre: common.genre?.[0] ?? null,
+      year: common.year,
     };
   }
 
@@ -200,6 +206,11 @@ export class MediaCrawler {
     this._busy = false;
 
     await this._write();
+    await ScanModel.updateOne({
+      _id: this._scan._id,
+      status: "COMPLETED",
+      completed_at: Date.now(),
+    });
     console.info("Crawling completed... 🐛");
 
     this._resolution(this._crawl_stats);
@@ -218,8 +229,14 @@ export class MediaCrawler {
     try {
       this._writing = true;
       const records = this._crawl_stats.files.splice(0, count);
-      await Media.insertMany(records);
+      await MediaModel.insertMany(records);
       this._records_written += records.length;
+
+      await ScanModel.updateOne({
+        _id: this._scan._id,
+        records_written: this._records_written,
+      });
+
       console.info(`Crawler stored ${this._records_written} records... 🐛`);
     } catch (e) {
       console.error(e);

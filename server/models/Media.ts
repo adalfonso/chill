@@ -14,7 +14,7 @@ export const MediaSchema = new Schema({
   file_modified: { type: Date, required: true },
   file_type: { type: String, required: true },
   created_at: { type: Date, default: Date.now },
-  modified_at: { type: Date, default: Date.now },
+  updated_at: { type: Date, default: Date.now },
 });
 
 MediaSchema.index({
@@ -24,4 +24,4 @@ MediaSchema.index({
   genre: "text",
 });
 
-export const Media = mongoose.model("Media", MediaSchema, "media");
+export const MediaModel = mongoose.model("Media", MediaSchema, "media");

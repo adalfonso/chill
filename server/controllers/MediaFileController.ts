@@ -1,14 +1,13 @@
 import * as fs from "fs/promises";
 import { AudioType } from "@server/media/types";
-import { Media as MediaGen } from "@common/autogen";
-import { Media } from "@server/models/Media";
+import { Media } from "@common/autogen";
 import { MediaCrawler } from "@server/media/MediaCrawler";
+import { MediaModel } from "@server/models/Media";
 import { Request, Response } from "express";
 import { getAsGroup } from "@server/db/utils";
 import { sortResults } from "@server/search/ResultSorter";
-
 interface MediaFileGetArgs {
-  match: Record<keyof MediaGen, string>;
+  match: Record<keyof Media, string>;
   group: string[];
   sort: "asc" | "desc";
 }
@@ -24,9 +23,9 @@ export const MediaFileController = {
         // Ignore null record to the leading group
         const options = { match };
 
-        res.json(await getAsGroup(Media, group, options));
+        res.json(await getAsGroup(MediaModel, group, options));
       } else {
-        res.json(await Media.find(match));
+        res.json(await MediaModel.find(match));
       }
     } catch (e) {
       console.error(e);
@@ -37,7 +36,7 @@ export const MediaFileController = {
   /** Load a media file from is ID */
   load: async (req: Request<{ id: number }>, res: Response) => {
     try {
-      const media = await Media.findById(req.params.id);
+      const media = await MediaModel.findById(req.params.id);
 
       if (!media) {
         throw new Error("Failed to load media file data");
@@ -79,7 +78,7 @@ export const MediaFileController = {
   search: async (req: Request, res: Response) => {
     const query = req.body.query.toLowerCase();
 
-    const results = await Media.find({ $text: { $search: query } });
+    const results = await MediaModel.find({ $text: { $search: query } });
 
     res.json(sortResults(results, query));
   },

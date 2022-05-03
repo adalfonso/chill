@@ -27,7 +27,7 @@ export type Media = {
   file_modified: Date;
   file_type: string;
   created_at?: Date;
-  modified_at?: Date;
+  updated_at?: Date;
   _id: mongoose.Types.ObjectId;
 };
 
@@ -113,7 +113,102 @@ export type MediaDocument = mongoose.Document<
     file_modified: Date;
     file_type: string;
     created_at?: Date;
-    modified_at?: Date;
+    updated_at?: Date;
+    _id: mongoose.Types.ObjectId;
+  };
+
+/**
+ * Lean version of ScanDocument
+ *
+ * This has all Mongoose getters & functions removed. This type will be returned from `ScanDocument.toObject()`. To avoid conflicts with model names, use the type alias `ScanObject`.
+ * ```
+ * const scanObject = scan.toObject();
+ * ```
+ */
+export type Scan = {
+  status?: "ACTIVE" | "FAILED" | "COMPLETED";
+  records_written?: number;
+  created_at?: Date;
+  updated_at?: Date;
+  completed_at?: Date;
+  _id: mongoose.Types.ObjectId;
+};
+
+/**
+ * Lean version of ScanDocument (type alias of `Scan`)
+ *
+ * Use this type alias to avoid conflicts with model names:
+ * ```
+ * import { Scan } from "../models"
+ * import { ScanObject } from "../interfaces/mongoose.gen.ts"
+ *
+ * const scanObject: ScanObject = scan.toObject();
+ * ```
+ */
+export type ScanObject = Scan;
+
+/**
+ * Mongoose Query type
+ *
+ * This type is returned from query functions. For most use cases, you should not need to use this type explicitly.
+ */
+export type ScanQuery = mongoose.Query<any, ScanDocument, ScanQueries> &
+  ScanQueries;
+
+/**
+ * Mongoose Query helper types
+ *
+ * This type represents `ScanSchema.query`. For most use cases, you should not need to use this type explicitly.
+ */
+export type ScanQueries = {};
+
+export type ScanMethods = {};
+
+export type ScanStatics = {};
+
+/**
+ * Mongoose Model type
+ *
+ * Pass this type to the Mongoose Model constructor:
+ * ```
+ * const Scan = mongoose.model<ScanDocument, ScanModel>("Scan", ScanSchema);
+ * ```
+ */
+export type ScanModel = mongoose.Model<ScanDocument, ScanQueries> & ScanStatics;
+
+/**
+ * Mongoose Schema type
+ *
+ * Assign this type to new Scan schema instances:
+ * ```
+ * const ScanSchema: ScanSchema = new mongoose.Schema({ ... })
+ * ```
+ */
+export type ScanSchema = mongoose.Schema<
+  ScanDocument,
+  ScanModel,
+  ScanMethods,
+  ScanQueries
+>;
+
+/**
+ * Mongoose Document type
+ *
+ * Pass this type to the Mongoose Model constructor:
+ * ```
+ * const Scan = mongoose.model<ScanDocument, ScanModel>("Scan", ScanSchema);
+ * ```
+ */
+export type ScanDocument = mongoose.Document<
+  mongoose.Types.ObjectId,
+  ScanQueries
+> &
+  ScanMethods & {
+    status?: "ACTIVE" | "FAILED" | "COMPLETED";
+    records_written?: number;
+    created_at?: Date;
+    updated_at?: Date;
+    completed_at?: Date;
     _id: mongoose.Types.ObjectId;
   };
 
