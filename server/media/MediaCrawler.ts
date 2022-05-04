@@ -1,10 +1,16 @@
 import * as fs from "fs/promises";
 import * as mm from "music-metadata";
 import * as path from "path";
-import { Media, Scan } from "@common/autogen";
+import { Media, ScanModel as Scan } from "@common/autogen";
 import { MediaModel } from "@server/models/Media";
 import { Nullable } from "@server/types";
 import { ScanModel } from "@server/models/Scan";
+
+enum ScanStatus {
+  Active = "ACTIVE",
+  Failed = "FAILED",
+  Completed = "COMPLETED",
+}
 
 /** Config options used by the crawler */
 interface MediaCrawlerConfig {
@@ -13,36 +19,21 @@ interface MediaCrawlerConfig {
   file_types: string[];
 }
 
-/** Output statistics from the crawler */
-interface CrawlStats {
-  start: Date;
-  dirs: string[];
-  files: MediaFileTemplate[];
-  end: Date | null;
-  errors: Error[];
-}
-
 type MediaFileTemplate = Omit<Media, "_id" | "created_at" | "updated_at">;
 
 /** Traverse a directory and extract all media information */
 export class MediaCrawler {
-  /** If the crawler is currently running */
-  private _busy = false;
-
   /** Stores files paths to be processed */
   private _queue: string[] = [];
+
+  /** Fully processed file data */
+  private _processed: MediaFileTemplate[] = [];
 
   /** Number of available workers */
   private _available_workers;
 
-  /** Stores statistics about a crawl */
-  private _crawl_stats: CrawlStats;
-
   /** Holds the promise resolver for the public-facing crawl call */
-  private _resolution: (value: CrawlStats) => void;
-
-  /** Total # of records written to the DB */
-  private _records_written = 0;
+  private _resolution: (value: Scan) => void;
 
   /** If the DB is currently being written to */
   private _writing = false;
@@ -61,8 +52,8 @@ export class MediaCrawler {
    * @param dir directory to start from
    * @returns crawler results
    */
-  public async crawl(dir: string): Promise<CrawlStats> {
-    if (this._busy) {
+  public async crawl(dir: string): Promise<Scan> {
+    if (this._scan !== null) {
       return;
     }
 
@@ -71,16 +62,7 @@ export class MediaCrawler {
     // TODO: remove this is temp
     await MediaModel.deleteMany();
     this._scan = await new ScanModel().save();
-    this._busy = true;
-    this._records_written = 0;
     this._available_workers = this._config.workers;
-    this._crawl_stats = {
-      start: new Date(),
-      dirs: [],
-      files: [],
-      end: null,
-      errors: [],
-    };
 
     return new Promise((resolve) => {
       this._resolution = resolve;
@@ -101,7 +83,6 @@ export class MediaCrawler {
       this._queue.push(p);
     }
 
-    this._crawl_stats.dirs.push(dir);
     this._available_workers++;
     this._process();
   }
@@ -132,7 +113,7 @@ export class MediaCrawler {
     if (
       this._queue.length === 0 &&
       this._available_workers === workers &&
-      this._crawl_stats.end === null
+      this._scan.status !== ScanStatus.Completed
     ) {
       this._complete();
     }
@@ -161,13 +142,13 @@ export class MediaCrawler {
         file_type,
       };
 
-      this._crawl_stats.files.push(meta);
+      this._processed.push(meta);
     } catch (e) {
-      this._crawl_stats.errors.push(e);
+      // TODO: handle error
       console.error(e);
     }
 
-    if (this._crawl_stats.files.length % this._config.chunk === 0) {
+    if (this._processed.length >= this._config.chunk) {
       await this._write(this._config.chunk);
     }
 
@@ -180,7 +161,6 @@ export class MediaCrawler {
    *
    * @param file_path file path
    * @returns meta data
-   * @throws if it can't read meta data
    */
   private async _getMetadata(file_path: string) {
     const result = await mm.parseFile(file_path, { duration: true });
@@ -200,20 +180,21 @@ export class MediaCrawler {
 
   /** Complete crawling */
   private async _complete() {
-    this._crawl_stats.end = new Date();
     this._available_workers = this._config.workers;
     this._queue = [];
-    this._busy = false;
 
     await this._write();
-    await ScanModel.updateOne({
-      _id: this._scan._id,
-      status: "COMPLETED",
-      completed_at: Date.now(),
-    });
+    this._scan.status = ScanStatus.Completed;
+    this._scan.update_at = Date.now();
+    this._scan.completed_at = this._scan.update_at;
+    await this._scan.save();
+
     console.info("Crawling completed... 🐛");
 
-    this._resolution(this._crawl_stats);
+    const scan = this._scan;
+    this._scan = null;
+
+    this._resolution(scan);
   }
 
   /**
@@ -228,16 +209,16 @@ export class MediaCrawler {
 
     try {
       this._writing = true;
-      const records = this._crawl_stats.files.splice(0, count);
+      const records = this._processed.splice(0, count);
       await MediaModel.insertMany(records);
-      this._records_written += records.length;
+      this._scan.records_written += records.length;
+      this._scan.updated_at = Date.now();
 
-      await ScanModel.updateOne({
-        _id: this._scan._id,
-        records_written: this._records_written,
-      });
+      await this._scan.save();
 
-      console.info(`Crawler stored ${this._records_written} records... 🐛`);
+      console.info(
+        `Crawler stored ${this._scan.records_written} records... 🐛`,
+      );
     } catch (e) {
       console.error(e);
     } finally {

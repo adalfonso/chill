@@ -6,6 +6,7 @@ import { MediaModel } from "@server/models/Media";
 import { Request, Response } from "express";
 import { getAsGroup } from "@server/db/utils";
 import { sortResults } from "@server/search/ResultSorter";
+
 interface MediaFileGetArgs {
   match: Record<keyof Media, string>;
   group: string[];
