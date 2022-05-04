@@ -91,10 +91,18 @@ export class MediaCrawler {
    * crawl. This typically happens after a dir is read or metadata areprocessed.
    */
   private async _process() {
+    if (this._scan?.status !== ScanStatus.Active) {
+      return;
+    }
+
     const { workers } = this._config;
 
     // Process more queue items
-    while (this._available_workers > 0 && this._queue.length) {
+    while (
+      this._available_workers > 0 &&
+      this._queue.length &&
+      this._scan?.status === ScanStatus.Active
+    ) {
       this._available_workers--;
       const file_path = this._queue.shift();
       const stats = await fs.stat(file_path);
@@ -110,7 +118,7 @@ export class MediaCrawler {
     if (
       this._queue.length === 0 &&
       this._available_workers === workers &&
-      this._scan.status !== ScanStatus.Completed
+      this._scan?.status !== ScanStatus.Completed
     ) {
       this._complete();
     }
@@ -141,8 +149,9 @@ export class MediaCrawler {
 
       this._processed.push(meta);
     } catch (e) {
-      // TODO: handle error
       console.error(e);
+      // don't relinquish the worker
+      this._complete(ScanStatus.Failed);
     }
 
     if (this._processed.length >= this._config.chunk) {
@@ -175,28 +184,13 @@ export class MediaCrawler {
     };
   }
 
-  /** Complete crawling */
-  private async _complete() {
-    this._available_workers = this._config.workers;
-    this._queue = [];
-
-    await this._write();
-    this._scan.status = ScanStatus.Completed;
-    this._scan.update_at = Date.now();
-    this._scan.completed_at = this._scan.update_at;
-    await this._scan.save();
-    this._scan = null;
-
-    console.info("Crawling completed... 🐛");
-  }
-
   /**
    * Trigger writing of a certain number of items to the DB
    *
    * @param count number of records to write
    */
   private async _write(count = Infinity) {
-    if (this._writing) {
+    if (this._writing || this._scan?.status !== ScanStatus.Active) {
       return;
     }
 
@@ -217,5 +211,22 @@ export class MediaCrawler {
     } finally {
       this._writing = false;
     }
+  }
+
+  /** Complete crawling */
+  private async _complete(status = ScanStatus.Completed) {
+    this._available_workers = this._config.workers;
+    this._queue = [];
+
+    await this._write();
+
+    this._scan.status = status;
+    this._scan.update_at = Date.now();
+    this._scan.completed_at =
+      status === ScanStatus.Completed ? this._scan.update_at : null;
+    await this._scan.save();
+    this._scan = null;
+
+    console.info(`Crawling ${status.toLowerCase()}... 🐛`);
   }
 }
