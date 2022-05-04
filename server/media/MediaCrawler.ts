@@ -32,9 +32,6 @@ export class MediaCrawler {
   /** Number of available workers */
   private _available_workers;
 
-  /** Holds the promise resolver for the public-facing crawl call */
-  private _resolution: (value: Scan) => void;
-
   /** If the DB is currently being written to */
   private _writing = false;
 
@@ -65,7 +62,7 @@ export class MediaCrawler {
     this._available_workers = this._config.workers;
 
     return new Promise((resolve) => {
-      this._resolution = resolve;
+      resolve({ scan_id: this._scan._id });
       this._crawl(dir);
     });
   }
@@ -188,13 +185,9 @@ export class MediaCrawler {
     this._scan.update_at = Date.now();
     this._scan.completed_at = this._scan.update_at;
     await this._scan.save();
-
-    console.info("Crawling completed... 🐛");
-
-    const scan = this._scan;
     this._scan = null;
 
-    this._resolution(scan);
+    console.info("Crawling completed... 🐛");
   }
 
   /**
