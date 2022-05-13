@@ -1,7 +1,7 @@
 import * as fs from "fs/promises";
 import * as mm from "music-metadata";
 import * as path from "path";
-import { Media, ScanModel as Scan } from "@common/autogen";
+import { Media, ScanDocument } from "@common/autogen";
 import { MediaModel } from "@server/models/Media";
 import { Nullable } from "@server/types";
 import { ScanModel } from "@server/models/Scan";
@@ -36,7 +36,7 @@ export class MediaCrawler {
   private _writing = false;
 
   /** Currently running scan document */
-  private _scan: Nullable<Scan> = null;
+  private _scan: Nullable<ScanDocument> = null;
 
   /**
    * @param _config crawler config
@@ -49,7 +49,7 @@ export class MediaCrawler {
    * @param dir directory to start from
    * @returns crawler results
    */
-  public async crawl(dir: string): Promise<Scan> {
+  public async crawl(dir: string): Promise<ScanDocument> {
     if (this._scan !== null) {
       return;
     }
@@ -62,7 +62,7 @@ export class MediaCrawler {
     this._available_workers = this._config.workers;
 
     return new Promise((resolve) => {
-      resolve({ scan_id: this._scan._id });
+      resolve(this._scan);
       this._crawl(dir);
     });
   }
@@ -115,11 +115,7 @@ export class MediaCrawler {
     }
 
     // End the crawl
-    if (
-      this._queue.length === 0 &&
-      this._available_workers === workers &&
-      this._scan?.status !== ScanStatus.Completed
-    ) {
+    if (this._queue.length === 0 && this._available_workers === workers) {
       this._complete();
     }
   }
@@ -199,7 +195,7 @@ export class MediaCrawler {
       const records = this._processed.splice(0, count);
       await MediaModel.insertMany(records);
       this._scan.records_written += records.length;
-      this._scan.updated_at = Date.now();
+      this._scan.updated_at = new Date();
 
       await this._scan.save();
 
@@ -221,9 +217,9 @@ export class MediaCrawler {
     await this._write();
 
     this._scan.status = status;
-    this._scan.update_at = Date.now();
+    this._scan.updated_at = new Date();
     this._scan.completed_at =
-      status === ScanStatus.Completed ? this._scan.update_at : null;
+      status === ScanStatus.Completed ? this._scan.updated_at : null;
     await this._scan.save();
     this._scan = null;
 
