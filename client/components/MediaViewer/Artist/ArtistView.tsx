@@ -23,7 +23,7 @@ export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
 
     return MediaApi.getGroupedByAlbum(artist)
       .then((res) => {
-        setAlbums(res.data.sort((a, b) => a.year - b.year));
+        setAlbums(res.data.sort((a, b) => b.year - a.year));
       })
       .catch((err) => {
         console.error("Failed to load artist albums");
@@ -39,7 +39,7 @@ export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
     const { artist, album, year } = file;
     const results = await MediaApi.query({ artist, album, year });
 
-    onPlay(results.data.sort((a, b) => b.year - a.year));
+    onPlay(results.data.sort((a, b) => a.track - b.track));
   };
 
   const displayAs = (file: TileData) => {
