@@ -62,22 +62,12 @@ export const MediaFileController = {
   },
 
   cover: async (req: Request, res: Response) => {
-    const { album, artist } = req.query;
+    const { filename } = req.params;
 
-    if (album === undefined) {
-      return res.status(422).send("Media cover request requires album");
-    }
-
-    const result = await MediaModel.findOne({
-      album,
-      artist,
-      "cover.data": { $ne: null },
-    });
+    const result = await MediaModel.findById(filename.replace(/\.[^.]+$/, ""));
 
     if (!result) {
-      return res
-        .status(422)
-        .send(`Cover not found for album "${album}" and artist "${artist}"`);
+      return res.sendStatus(404);
     }
 
     try {
@@ -92,9 +82,7 @@ export const MediaFileController = {
     } catch (e) {
       console.error(e);
 
-      return res
-        .status(500)
-        .send(`Failed to load image album "${album}" and artist "${artist}"`);
+      return res.status(500).send(`Failed to load image."`);
     }
   },
 

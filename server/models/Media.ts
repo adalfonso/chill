@@ -1,13 +1,15 @@
-import * as mongoose from "mongoose";
+import mongoose from "mongoose";
 
 const { Schema } = mongoose;
 
 export const MediaSchema = new Schema({
+  _id: { type: Schema.Types.ObjectId, required: true, index: true },
   path: { type: String, required: true, index: true },
   duration: { type: Number, required: true },
   artist: { type: String, default: null },
   album: { type: String, default: null },
   cover: {
+    filename: { type: String, default: null },
     format: { type: String, default: null },
     data: { type: String, default: null },
     type: { type: String, default: null },

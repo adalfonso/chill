@@ -16,10 +16,17 @@ import mongoose from "mongoose";
  * ```
  */
 export type Media = {
+  _id: mongoose.Types.ObjectId;
   path: string;
   duration: number;
   artist?: string;
   album?: string;
+  cover: {
+    filename?: string;
+    format?: string;
+    data?: string;
+    type?: string;
+  };
   title?: string;
   track?: number;
   genre?: string;
@@ -28,7 +35,6 @@ export type Media = {
   file_type: string;
   created_at?: Date;
   updated_at?: Date;
-  _id: mongoose.Types.ObjectId;
 };
 
 /**
@@ -102,10 +108,17 @@ export type MediaDocument = mongoose.Document<
   MediaQueries
 > &
   MediaMethods & {
+    _id: mongoose.Types.ObjectId;
     path: string;
     duration: number;
     artist?: string;
     album?: string;
+    cover: {
+      filename?: string;
+      format?: string;
+      data?: string;
+      type?: string;
+    };
     title?: string;
     track?: number;
     genre?: string;
@@ -114,7 +127,6 @@ export type MediaDocument = mongoose.Document<
     file_type: string;
     created_at?: Date;
     updated_at?: Date;
-    _id: mongoose.Types.ObjectId;
   };
 
 /**

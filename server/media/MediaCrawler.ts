@@ -2,10 +2,11 @@ import * as _ from "lodash";
 import * as fs from "fs/promises";
 import * as mm from "music-metadata";
 import * as path from "path";
-import { Media, ScanDocument } from "@common/autogen";
+import { MediaObject, ScanDocument } from "@common/autogen";
 import { MediaModel } from "@server/models/Media";
 import { Nullable } from "@server/types";
 import { ScanModel } from "@server/models/Scan";
+import { ObjectId } from "mongodb";
 
 enum ScanStatus {
   Active = "ACTIVE",
@@ -20,15 +21,13 @@ interface MediaCrawlerConfig {
   file_types: string[];
 }
 
-type MediaFileTemplate = Omit<Media, "_id" | "created_at" | "updated_at">;
-
 /** Traverse a directory and extract all media information */
 export class MediaCrawler {
   /** Stores files paths to be processed */
   private _queue: string[] = [];
 
   /** Fully processed file data */
-  private _processed: MediaFileTemplate[] = [];
+  private _processed: MediaObject[] = [];
 
   /** Number of available workers */
   private _available_workers;
@@ -137,12 +136,19 @@ export class MediaCrawler {
 
     try {
       const { ctime } = await fs.stat(file_path);
+      const _id = new ObjectId();
 
       const meta = {
         ...(await this._getMetadata(file_path)),
         file_modified: ctime,
         file_type,
+        _id,
       };
+
+      if (meta.cover?.data && meta.cover?.format) {
+        meta.cover.filename =
+          _id + "." + meta.cover.format.replace("image/", "");
+      }
 
       this._processed.push(meta);
     } catch (e) {
@@ -181,6 +187,7 @@ export class MediaCrawler {
       year: common.year,
       cover: cover
         ? {
+            filename: null,
             format: cover.format,
             type: cover.type,
             data: cover.data.toString("base64"),

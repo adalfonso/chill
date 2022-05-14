@@ -1,5 +1,5 @@
 import "./MediaTile.scss";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import _ from "lodash";
 import { Media } from "@common/autogen";
 import { useHistory } from "react-router-dom";
@@ -7,6 +7,7 @@ import { useMultiClick } from "@client/hooks/useMultiClick";
 export interface TileData extends Partial<Media> {
   _id: string[];
   _count: number;
+  image?: string;
 }
 
 interface MediaTileProps {
@@ -14,7 +15,7 @@ interface MediaTileProps {
   url: (file: TileData) => string;
   displayAs: (file: TileData) => string;
   use: (file: TileData) => void;
-  load_cover: boolean;
+  load_cover?: boolean;
 }
 
 export const MediaTile = ({
@@ -25,18 +26,6 @@ export const MediaTile = ({
   load_cover = false,
 }: MediaTileProps) => {
   const history = useHistory();
-  const [cover, setCover] = useState("");
-
-  useEffect(() => {
-    if (load_cover && file.artist !== undefined) {
-      const query = ["artist", "album"]
-        .filter((key) => file[key] !== undefined)
-        .map((key) => `${key}=${file[key]}`)
-        .join("&");
-
-      setCover(`/media/cover?${query}`);
-    }
-  }, []);
 
   const handleClick = useMultiClick(
     // single click
@@ -48,7 +37,9 @@ export const MediaTile = ({
 
   return (
     <div className="media-tile" onClick={handleClick}>
-      {cover && <img src={cover} alt="" />}
+      {load_cover && file.image && (
+        <img src={`/media/cover/${file.image}`} alt="" />
+      )}
       <div>{displayAs(file)}</div>
     </div>
   );

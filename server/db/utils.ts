@@ -26,7 +26,11 @@ export const getAsGroup = async <M extends Model<S>, S>(
 
   // Generate accumulators to select all groupings as individual fields
   const fields = grouping.reduce((carry, group) => {
-    return { ...carry, [group]: { $first: "$" + group } };
+    return {
+      ...carry,
+      [group]: { $first: "$" + group },
+      image: { $first: "$cover.filename" },
+    };
   }, {});
 
   // Generate null replacements
@@ -42,8 +46,15 @@ export const getAsGroup = async <M extends Model<S>, S>(
   const match = options.match ? [{ $match: options.match }] : [];
   const group: PipelineStage[] = [
     ...match,
-    { $group: { _id: aggregate_id, _count: { $sum: 1 }, ...fields } },
-    { $project: { _id: 1, _count: 1, ...null_fallback } },
+    {
+      $group: {
+        _id: aggregate_id,
+        _count: { $sum: 1 },
+        ...fields,
+        image: { $min: "$cover.filename" },
+      },
+    },
+    { $project: { _id: 1, _count: 1, image: 1, ...null_fallback } },
   ];
 
   const result = await model.aggregate(group).sort({ _id: "asc" });
