@@ -61,6 +61,43 @@ export const MediaFileController = {
     }
   },
 
+  cover: async (req: Request, res: Response) => {
+    const { album, artist } = req.query;
+
+    if (album === undefined) {
+      return res.status(422).send("Media cover request requires album");
+    }
+
+    const result = await MediaModel.findOne({
+      album,
+      artist,
+      "cover.data": { $ne: null },
+    });
+
+    if (!result) {
+      return res
+        .status(422)
+        .send(`Cover not found for album "${album}" and artist "${artist}"`);
+    }
+
+    try {
+      const img = Buffer.from(result.cover.data, "base64");
+
+      res.writeHead(200, {
+        "Content-Type": result.cover.format,
+        "Content-Length": img.length,
+      });
+
+      res.end(img);
+    } catch (e) {
+      console.error(e);
+
+      return res
+        .status(500)
+        .send(`Failed to load image album "${album}" and artist "${artist}"`);
+    }
+  },
+
   /** Cause media file scanner to run */
   scan: async (req: Request, res: Response) => {
     const crawler = new MediaCrawler({

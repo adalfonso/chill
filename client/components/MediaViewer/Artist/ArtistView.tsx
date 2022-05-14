@@ -15,8 +15,13 @@ export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
   const [albums, setAlbums] = useState([]);
 
   useEffect(() => {
+    loadAlbums();
+  }, [artist]);
+
+  const loadAlbums = async () => {
     setLoading(true);
-    MediaApi.getGroupedByAlbum(artist)
+
+    return MediaApi.getGroupedByAlbum(artist)
       .then((res) => {
         setAlbums(res.data.sort((a, b) => a.year - b.year));
       })
@@ -26,7 +31,7 @@ export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
       .finally(() => {
         setLoading(false);
       });
-  }, [artist]);
+  };
 
   const url = (file: TileData) => `/album/${encodeURIComponent(file.album)}`;
 
@@ -34,7 +39,7 @@ export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
     const { artist, album, year } = file;
     const results = await MediaApi.query({ artist, album, year });
 
-    onPlay(results.data.sort((a, b) => a.track - b.track));
+    onPlay(results.data.sort((a, b) => b.year - a.year));
   };
 
   const displayAs = (file: TileData) => {
@@ -57,6 +62,7 @@ export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
               url={url}
               use={use}
               displayAs={displayAs}
+              load_cover={true}
             />
           ))}
         </div>

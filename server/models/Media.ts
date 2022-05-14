@@ -7,6 +7,11 @@ export const MediaSchema = new Schema({
   duration: { type: Number, required: true },
   artist: { type: String, default: null },
   album: { type: String, default: null },
+  cover: {
+    format: { type: String, default: null },
+    data: { type: String, default: null },
+    type: { type: String, default: null },
+  },
   title: { type: String, default: null },
   track: { type: Number, default: null },
   genre: { type: String, default: null },

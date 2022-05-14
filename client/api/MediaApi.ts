@@ -7,7 +7,6 @@ export type MatchMap = Record<Match, string | number>;
 export const MediaApi = {
   search: (query: string) => axios.post(`/media/search`, { query }),
   query: (match: Partial<MatchMap>) => axios.post(`/media/query`, { match }),
-
   load: (file: Media) => axios.get(`/media/${file._id}/load`),
 
   getGroupedByArtist: (genre?: string) => {

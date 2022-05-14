@@ -4,6 +4,7 @@
     "baseUrl": ".",
     "target": "ES6",
     "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
     "paths": {
       "@server/*": ["server/*"],
       "@client/*": ["client/*"],

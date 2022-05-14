@@ -1,3 +1,4 @@
+import * as _ from "lodash";
 import * as fs from "fs/promises";
 import * as mm from "music-metadata";
 import * as path from "path";
@@ -167,6 +168,7 @@ export class MediaCrawler {
   private async _getMetadata(file_path: string) {
     const result = await mm.parseFile(file_path, { duration: true });
     const { common, format } = result;
+    const cover = mm.selectCover(common.picture);
 
     return {
       path: file_path,
@@ -177,6 +179,13 @@ export class MediaCrawler {
       album: common.album,
       genre: common.genre?.[0] ?? null,
       year: common.year,
+      cover: cover
+        ? {
+            format: cover.format,
+            type: cover.type,
+            data: cover.data.toString("base64"),
+          }
+        : null,
     };
   }
 
