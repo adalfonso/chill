@@ -30,7 +30,9 @@ export const MediaTile = ({ file, url, use, displayAs }: MediaTileProps) => {
 
   return (
     <div className="media-tile" onClick={handleClick}>
-      {file.image && <img src={`/media/cover/${file.image}`} loading="lazy" />}
+      {file.image && (
+        <img src={`/media/cover/${file.image}?size=256`} loading="lazy" />
+      )}
       <div>{displayAs(file)}</div>
     </div>
   );

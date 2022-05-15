@@ -1,4 +1,5 @@
 import * as fs from "fs/promises";
+import sharp from "sharp";
 import { AudioType } from "@server/media/types";
 import { Media } from "@common/autogen";
 import { MediaCrawler } from "@server/media/MediaCrawler";
@@ -65,6 +66,13 @@ export const MediaFileController = {
 
   cover: async (req: Request, res: Response) => {
     const { filename } = req.params;
+    const { size } = req.query;
+
+    if (size !== undefined && Number.isNaN(parseInt(size))) {
+      return res
+        .status(422)
+        .send(`Invalid size provided. "${size}" must be an integer`);
+    }
 
     const result = await MediaModel.findById(filename.replace(/\.[^.]+$/, ""));
 
@@ -73,7 +81,14 @@ export const MediaFileController = {
     }
 
     try {
-      const img = Buffer.from(result.cover.data, "base64");
+      const buffer = Buffer.from(result.cover.data, "base64");
+      const img =
+        size === undefined
+          ? buffer
+          : await sharp(buffer)
+              .resize(parseInt(size))
+              .jpeg({ quality: 50 })
+              .toBuffer();
 
       res.writeHead(200, {
         "Content-Type": result.cover.format,
@@ -84,7 +99,7 @@ export const MediaFileController = {
     } catch (e) {
       console.error(e);
 
-      return res.status(500).send(`Failed to load image."`);
+      return res.status(500).send(`Failed to load image.`);
     }
   },
 

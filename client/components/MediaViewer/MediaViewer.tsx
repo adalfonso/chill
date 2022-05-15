@@ -31,7 +31,7 @@ export const MediaViewer = ({ onPlay }: MediaViewerProps) => {
         </Route>
 
         <Route path="/">
-          <MusicLibrary onPlay={onPlay} setLoading={setLoading} per_page={50} />
+          <MusicLibrary onPlay={onPlay} setLoading={setLoading} per_page={25} />
         </Route>
       </Switch>
     </>
