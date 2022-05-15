@@ -1,5 +1,5 @@
 import "./MediaTile.scss";
-import React, { useState } from "react";
+import React, { useEffect, useRef } from "react";
 import _ from "lodash";
 import { Media } from "@common/autogen";
 import { useHistory } from "react-router-dom";
@@ -15,16 +15,9 @@ interface MediaTileProps {
   url: (file: TileData) => string;
   displayAs: (file: TileData) => string;
   use: (file: TileData) => void;
-  load_cover?: boolean;
 }
 
-export const MediaTile = ({
-  file,
-  url,
-  use,
-  displayAs,
-  load_cover = false,
-}: MediaTileProps) => {
+export const MediaTile = ({ file, url, use, displayAs }: MediaTileProps) => {
   const history = useHistory();
 
   const handleClick = useMultiClick(
@@ -37,9 +30,7 @@ export const MediaTile = ({
 
   return (
     <div className="media-tile" onClick={handleClick}>
-      {load_cover && file.image && (
-        <img src={`/media/cover/${file.image}`} alt="" />
-      )}
+      {file.image && <img src={`/media/cover/${file.image}`} loading="lazy" />}
       <div>{displayAs(file)}</div>
     </div>
   );

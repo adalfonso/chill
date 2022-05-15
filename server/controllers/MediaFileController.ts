@@ -18,13 +18,15 @@ export const MediaFileController = {
   query: async (req: Request<Partial<MediaFileGetArgs>>, res: Response) => {
     try {
       // TODO: utilize sort
-      const { match, group, sort } = req.body;
+      const { match, group, sort, options: pagination } = req.body;
 
       if (group) {
-        // Ignore null record to the leading group
-        const options = { match };
-
-        res.json(await getAsGroup(MediaModel, group, options));
+        res.json(
+          await getAsGroup(MediaModel, group, {
+            match,
+            pagination,
+          }),
+        );
       } else {
         res.json(await MediaModel.find(match));
       }

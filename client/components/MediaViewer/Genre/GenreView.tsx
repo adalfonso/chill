@@ -17,7 +17,7 @@ export const GenreView = ({ onPlay, setLoading }: GenreViewProps) => {
   useEffect(() => {
     setLoading(true);
 
-    MediaApi.getGroupedByArtist(genre)
+    MediaApi.getGroupedByArtist({}, genre)
       .then((res) => {
         setArtists(res.data);
       })

@@ -3,6 +3,10 @@ import { Model, PipelineStage } from "mongoose";
 
 interface GroupOptions {
   match: Record<string, unknown>;
+  pagination?: {
+    limit: number;
+    page: number;
+  };
 }
 
 /**
@@ -18,6 +22,8 @@ export const getAsGroup = async <M extends Model<S>, S>(
   grouping: (keyof S)[],
   options: Partial<GroupOptions> = {},
 ) => {
+  const { limit = Infinity, page = 0 } = options.pagination ?? {};
+
   // Aggregate all grouping keys to form an _id for the aggregation
   const aggregate_id = grouping.reduce(
     (carry, group) => ({ ...carry, [group]: `$${group}` }),
@@ -57,7 +63,9 @@ export const getAsGroup = async <M extends Model<S>, S>(
     { $project: { _id: 1, _count: 1, image: 1, ...null_fallback } },
   ];
 
-  const result = await model.aggregate(group).sort({ _id: "asc" });
-
-  return result;
+  return model
+    .aggregate(group)
+    .sort({ _id: "asc" })
+    .skip(page > 0 ? (page + 1) * limit : 0)
+    .limit(limit);
 };

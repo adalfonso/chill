@@ -21,7 +21,7 @@ export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
   const loadAlbums = async () => {
     setLoading(true);
 
-    return MediaApi.getGroupedByAlbum(artist)
+    return MediaApi.getGroupedByAlbum({}, artist)
       .then((res) => {
         setAlbums(res.data.sort((a, b) => b.year - a.year));
       })
@@ -62,7 +62,6 @@ export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
               url={url}
               use={use}
               displayAs={displayAs}
-              load_cover={true}
             />
           ))}
         </div>

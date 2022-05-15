@@ -4,26 +4,35 @@ import { Media } from "@common/autogen";
 
 export type MatchMap = Record<Match, string | number>;
 
+interface PaginationOptions {
+  limit: number;
+  page: number;
+}
+
 export const MediaApi = {
   search: (query: string) => axios.post(`/media/search`, { query }),
   query: (match: Partial<MatchMap>) => axios.post(`/media/query`, { match }),
   load: (file: Media) => axios.get(`/media/${file._id}/load`),
 
-  getGroupedByArtist: (genre?: string) => {
-    const match = genre ? { match: { genre } } : {};
-    const options = { group: ["artist"], ...match };
-    return axios.post(`/media/query`, options);
+  getGroupedByArtist: (options?: PaginationOptions, genre?: string) => {
+    const match = genre ? { match: { genre } } : { artist: { $ne: null } };
+    return axios.post(`/media/query`, { options, group: ["artist"], match });
   },
 
-  getGroupedByAlbum: (artist?: string) => {
-    const match = artist ? { match: { artist } } : {};
-    const options = {
+  getGroupedByAlbum: (options?: PaginationOptions, artist?: string) => {
+    const match = artist ? { artist } : { album: { $ne: null } };
+
+    return axios.post(`/media/query`, {
+      options,
       group: ["album", "artist", "year"],
-      ...match,
-    };
-
-    return axios.post(`/media/query`, options);
+      match,
+    });
   },
 
-  getGroupedByGenre: () => axios.post(`/media/query`, { group: ["genre"] }),
+  getGroupedByGenre: (options?: PaginationOptions) =>
+    axios.post(`/media/query`, {
+      options,
+      group: ["genre"],
+      match: { genre: { $ne: null } },
+    }),
 };

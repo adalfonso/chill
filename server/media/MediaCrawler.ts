@@ -2,11 +2,11 @@ import * as _ from "lodash";
 import * as fs from "fs/promises";
 import * as mm from "music-metadata";
 import * as path from "path";
-import { MediaObject, ScanDocument } from "@common/autogen";
 import { MediaModel } from "@server/models/Media";
+import { MediaObject, ScanDocument } from "@common/autogen";
 import { Nullable } from "@server/types";
-import { ScanModel } from "@server/models/Scan";
 import { ObjectId } from "mongodb";
+import { ScanModel } from "@server/models/Scan";
 
 enum ScanStatus {
   Active = "ACTIVE",
