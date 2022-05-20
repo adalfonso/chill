@@ -2,61 +2,31 @@ import "./MusicLibrary.scss";
 import * as React from "react";
 import * as _ from "lodash";
 import { Media } from "@common/autogen";
-import { MediaApi } from "@client/api/MediaApi";
+import { MediaApi, PaginationOptions } from "@client/api/MediaApi";
 import { MediaMatch as Match } from "@common/MediaType/types";
 import { MediaTile, TileData } from "./MediaTile/MediaTile";
 import { Select } from "../ui/Select";
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useReducer, useRef, useState } from "react";
+import { MediaAction, mediaReducer, useFetch } from "@client/hooks/useFetch";
+import {
+  PageAction,
+  pageReducer,
+  useInfiniteScroll,
+} from "@client/hooks/useInfiniteScroll";
 
-const ApiMap: Record<Match, () => Promise<unknown>> = {
-  [Match.Artist]: MediaApi.getGroupedByArtist,
-  [Match.Album]: MediaApi.getGroupedByAlbum,
-  [Match.Genre]: MediaApi.getGroupedByGenre,
-};
+const ApiMap: Record<Match, (options?: PaginationOptions) => Promise<unknown>> =
+  {
+    [Match.Artist]: MediaApi.getGroupedByArtist,
+    [Match.Album]: MediaApi.getGroupedByAlbum,
+    [Match.Genre]: MediaApi.getGroupedByGenre,
+    [Match.Path]: () => Promise.resolve(null),
+  };
 
 interface MusicLibraryProps {
   onPlay: (files: Media[]) => Promise<void>;
   setLoading: (loading: boolean) => void;
   per_page: number;
 }
-
-enum PageAction {
-  Advance,
-  Reset,
-}
-
-enum MediaAction {
-  Stack,
-  Fetch,
-  Release,
-  Reset,
-}
-
-const pageReducer = (state, action) => {
-  switch (action.type) {
-    case PageAction.Advance:
-      return { ...state, page: state.page + 1 };
-    case PageAction.Reset:
-      return { ...state, page: 0 };
-    default:
-      return state;
-  }
-};
-
-const mediaReducer = (state, action) => {
-  switch (action.type) {
-    case MediaAction.Stack:
-      return { ...state, media: state.media.concat(action.media) };
-    case MediaAction.Fetch:
-      return { ...state, busy: true };
-    case MediaAction.Release:
-      return { ...state, busy: false };
-    case MediaAction.Reset:
-      return { ...state, busy: false, media: [] };
-    default:
-      return state;
-  }
-};
 
 export const MusicLibrary = ({
   onPlay,
@@ -71,12 +41,14 @@ export const MusicLibrary = ({
     busy: true,
   });
 
-  const changeMediaMatch = (value) => {
+  // Change the media match drop down
+  const changeMediaMatch = (match: Match) => {
     imgDispatch({ type: MediaAction.Reset });
     pagerDispatch({ type: PageAction.Reset });
-    setMatch(value);
+    setMatch(match);
   };
 
+  // Cause media files to reload
   const loadMediaFiles = (match: Match) => {
     setLoading(true);
 
@@ -94,35 +66,15 @@ export const MusicLibrary = ({
     onPlay(results.data);
   };
 
-  const scrollObserver = useCallback(
-    (node) => {
-      new IntersectionObserver((entries) => {
-        entries.forEach((en) => {
-          en.intersectionRatio > 0 &&
-            pagerDispatch({ type: PageAction.Advance });
-        });
-      }).observe(node);
-    },
-    [pagerDispatch],
-  );
-
-  useEffect(() => {
-    bottomBoundaryRef.current && scrollObserver(bottomBoundaryRef.current);
-  }, [scrollObserver, bottomBoundaryRef]);
+  useInfiniteScroll(bottomBoundaryRef, pagerDispatch);
 
   // make API calls
-  useEffect(() => {
-    imgDispatch({ type: MediaAction.Fetch });
-    loadMediaFiles(match)
-      .then((res) => res.data)
-      .then((media) => {
-        imgDispatch({ type: MediaAction.Stack, media });
-      })
-      .finally(() => {
-        imgDispatch({ type: MediaAction.Release });
-        setLoading(false);
-      });
-  }, [pager.page]);
+  useFetch(
+    pager,
+    imgDispatch,
+    () => loadMediaFiles(match).then((res) => res.data),
+    () => setLoading(false),
+  );
 
   return (
     <>

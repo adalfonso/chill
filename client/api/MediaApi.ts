@@ -4,7 +4,7 @@ import { Media } from "@common/autogen";
 
 export type MatchMap = Record<Match, string | number>;
 
-interface PaginationOptions {
+export interface PaginationOptions {
   limit: number;
   page: number;
 }
@@ -15,7 +15,7 @@ export const MediaApi = {
   load: (file: Media) => axios.get(`/media/${file._id}/load`),
 
   getGroupedByArtist: (options?: PaginationOptions, genre?: string) => {
-    const match = genre ? { match: { genre } } : { artist: { $ne: null } };
+    const match = genre ? { genre } : { artist: { $ne: null } };
     return axios.post(`/media/query`, { options, group: ["artist"], match });
   },
 
