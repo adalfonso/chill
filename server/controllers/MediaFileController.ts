@@ -1,22 +1,46 @@
 import * as fs from "fs/promises";
-import sharp from "sharp";
 import { AudioType } from "@server/media/types";
 import { Media } from "@common/autogen";
 import { MediaCrawler } from "@server/media/MediaCrawler";
 import { MediaModel } from "@server/models/Media";
 import { Request, Response } from "express";
+import { adjustImage } from "@server/media/image/ImageAdjust";
 import { getAsGroup } from "@server/db/utils";
 import { sortResults } from "@server/search/ResultSorter";
 
-interface MediaFileGetArgs {
-  match: Record<keyof Media, string>;
-  group: string[];
-  sort: "asc" | "desc";
+namespace Req {
+  export namespace query {
+    export interface params {
+      match: Record<keyof Media, string>;
+      group: string[];
+      sort: "asc" | "desc";
+    }
+  }
+
+  export namespace load {
+    export interface params {
+      id: number;
+    }
+  }
+
+  export namespace cover {
+    export interface params {
+      filename: string;
+    }
+
+    export interface query {
+      size: string;
+    }
+  }
 }
+
+type CoverReq = Request<Req.cover.params, {}, {}, Req.cover.query>;
+type LoadReq = Request<Req.load.params>;
+type QueryReq = Request<Partial<Req.query.params>>;
 
 export const MediaFileController = {
   /** Get media files */
-  query: async (req: Request<Partial<MediaFileGetArgs>>, res: Response) => {
+  query: async (req: QueryReq, res: Response) => {
     try {
       // TODO: utilize sort
       const { match, group, sort, options: pagination } = req.body;
@@ -38,7 +62,7 @@ export const MediaFileController = {
   },
 
   /** Load a media file from is ID */
-  load: async (req: Request<{ id: number }>, res: Response) => {
+  load: async (req: LoadReq, res: Response) => {
     try {
       const media = await MediaModel.findById(req.params.id);
 
@@ -64,14 +88,14 @@ export const MediaFileController = {
     }
   },
 
-  cover: async (req: Request, res: Response) => {
+  cover: async (req: CoverReq, res: Response) => {
     const { filename } = req.params;
-    const { size } = req.query;
+    const size = parseInt(req.query.size);
 
-    if (size !== undefined && Number.isNaN(parseInt(size))) {
+    if (Number.isNaN(size)) {
       return res
         .status(422)
-        .send(`Invalid size provided. "${size}" must be an integer`);
+        .send(`Invalid size provided. "${req.query.size}" must be an integer`);
     }
 
     const result = await MediaModel.findById(filename.replace(/\.[^.]+$/, ""));
@@ -81,14 +105,7 @@ export const MediaFileController = {
     }
 
     try {
-      const buffer = Buffer.from(result.cover.data, "base64");
-      const img =
-        size === undefined
-          ? buffer
-          : await sharp(buffer)
-              .resize(parseInt(size))
-              .jpeg({ quality: 50 })
-              .toBuffer();
+      const img = await adjustImage(result.cover.data, { size, quality: 50 });
 
       res.writeHead(200, {
         "Content-Type": result.cover.format,
