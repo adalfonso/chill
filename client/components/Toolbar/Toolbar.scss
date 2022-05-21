@@ -6,6 +6,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
 
   .libraries {
     > * {
@@ -18,6 +19,24 @@
     > * {
       margin-left: 2rem;
       cursor: pointer;
+    }
+  }
+}
+
+@media screen and (min-width: 600px) {
+  #toolbar {
+    flex-wrap: nowrap;
+
+    .libraries {
+      order: 1;
+    }
+
+    .search {
+      order: 2;
+    }
+
+    .tools {
+      order: 3;
     }
   }
 }

@@ -9,7 +9,7 @@
 
   .now-playing {
     font-size: 1.75rem;
-    margin: 1rem;
+    margin: 0 0 1rem 0;
     user-select: none;
   }
 
@@ -23,8 +23,9 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 2rem;
-    width: 2rem;
+    height: 3rem;
+    width: 3rem;
+    font-size: 1.5rem;
     background-color: gray;
     border-radius: 50%;
     margin: 0 0.5rem;
@@ -36,7 +37,21 @@
   }
 
   .play {
-    height: 3rem;
-    width: 3rem;
+    height: 4rem;
+    width: 4rem;
+  }
+}
+
+@media screen and (min-width: 600px) {
+  #play-controls {
+    .circle-button {
+      height: 2.5rem;
+      width: 2.5rem;
+    }
+
+    .play {
+      height: 3.5rem;
+      width: 3.5rem;
+    }
   }
 }

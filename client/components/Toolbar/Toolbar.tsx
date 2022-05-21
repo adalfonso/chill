@@ -29,11 +29,12 @@ export const Toolbar = ({ onPlay }) => {
           Music
         </div>
       </div>
-      <Search onPlay={onPlay}></Search>
+
       <div className="tools">
         <div onClick={scan}>Scan</div>
         <Icon icon={faGear} size="lg" />
       </div>
+      <Search onPlay={onPlay}></Search>
     </div>
   );
 };

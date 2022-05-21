@@ -67,9 +67,9 @@ export const AlbumView = ({ onPlay, setLoading }: AlbumViewProps) => {
         </div>
 
         <div className="panel-list">
-          <div className="header track">Track</div>
-          <div className="header">Title</div>
-          <div className="header align-right">Duration</div>
+          <div className="header track"></div>
+          <div className="header"></div>
+          <div className="header align-right"></div>
 
           {files
             .sort((a, b) => a.track - b.track)

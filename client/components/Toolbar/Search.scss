@@ -1,22 +1,27 @@
 @import "@client/components/variables.scss";
 
 .search {
+  margin: 1.5rem 0 0.5rem 0;
   position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 
   .search-box {
     background-color: transparent;
     border: 1px solid $dm-font;
+    box-sizing: border-box;
     font-size: 1rem;
-    padding: 0.25rem 1rem;
-    border-radius: 1rem;
-    width: 25rem;
+    padding: 0.5rem 1rem;
+    border-radius: 1.25rem;
     cursor: pointer;
+    width: 100%;
   }
 
   .search-results {
     position: absolute;
     top: calc(100% + 0.5rem);
-    z-index: 2;
+    z-index: 3;
     max-height: 20rem;
     overflow: auto;
     width: 100%;
@@ -28,8 +33,6 @@
       font-size: 0.75rem;
       cursor: pointer;
       user-select: none;
-      // display: flex;
-      // justify-content: space-between;
 
       .secondary {
         color: $dm-font-2;
@@ -38,6 +41,17 @@
       &:hover {
         background-color: $dm-background;
       }
+    }
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .search {
+    margin: 0;
+    width: 25rem;
+
+    .search-box {
+      padding: 0.25rem 1rem;
     }
   }
 }
