@@ -6,7 +6,7 @@ import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 interface GenreViewProps {
-  onPlay: (files: Media[]) => Promise<void>;
+  onPlay: (files?: Media[], index?: number) => Promise<void>;
   setLoading: (loading: boolean) => void;
 }
 

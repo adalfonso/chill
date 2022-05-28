@@ -1,6 +1,7 @@
 import "./PlayControls.scss";
 import * as React from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
+import { Media } from "@common/autogen";
 import { Player } from "@client/Player";
 import { Playlist as PlaylistObject } from "@client/Playlist";
 import { Playlist } from "./Playlist";
@@ -17,11 +18,16 @@ import {
 interface PlayControlsProps {
   player: Player;
   playlist: PlaylistObject;
+  onPlay: (files?: Media[], index?: number) => Promise<void>;
 }
 
 const default_now_playing = "-";
 
-export const PlayControls = ({ player, playlist }: PlayControlsProps) => {
+export const PlayControls = ({
+  player,
+  playlist,
+  onPlay,
+}: PlayControlsProps) => {
   const [is_playing, setIsPlaying] = useState(player.is_playing);
   const [now_playing, setNowPlaying] = useState(default_now_playing);
   const [playback_progress, setPlaybackProgress] = useState(0);
@@ -74,10 +80,6 @@ export const PlayControls = ({ player, playlist }: PlayControlsProps) => {
     return player.seek(percent);
   };
 
-  const togglePlaylist = () => {
-    console.log("toggle playlist");
-  };
-
   return (
     <div id="play-controls">
       <Scrubber progress={playback_progress} onScrub={seek} />
@@ -98,7 +100,7 @@ export const PlayControls = ({ player, playlist }: PlayControlsProps) => {
           </div>
         </div>
         <div className="side-panel">
-          <Playlist playlist={playlist}></Playlist>
+          <Playlist playlist={playlist} onPlay={onPlay}></Playlist>
         </div>
       </div>
     </div>

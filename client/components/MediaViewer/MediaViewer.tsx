@@ -8,7 +8,7 @@ import { MusicLibrary } from "./MusicLibrary";
 import { Route, Switch } from "react-router-dom";
 import { useState } from "react";
 interface MediaViewerProps {
-  onPlay: (files: Media[]) => Promise<void>;
+  onPlay: (files?: Media[], index?: number) => Promise<void>;
 }
 
 export const MediaViewer = ({ onPlay }: MediaViewerProps) => {

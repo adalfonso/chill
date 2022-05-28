@@ -16,9 +16,10 @@ export function App() {
   const [lastPlayed, setLastPlayed] = useState(Date.now());
 
   const onPlay = async (files: Media[], index = 0) => {
-    const playlist = new Playlist(files, index);
-    setPlaylist(playlist);
-    await player.setPlaylist(playlist);
+    files = files ?? playlist?.items ?? [];
+    const new_playlist = new Playlist(files, index);
+    setPlaylist(new_playlist);
+    await player.setPlaylist(new_playlist);
     setLastPlayed(Date.now());
   };
 
@@ -26,7 +27,11 @@ export function App() {
     <div className="app">
       <Toolbar onPlay={onPlay} />
       <MediaViewer onPlay={onPlay} />
-      <PlayControls player={player} playlist={playlist}></PlayControls>
+      <PlayControls
+        player={player}
+        playlist={playlist}
+        onPlay={onPlay}
+      ></PlayControls>
     </div>
   );
 }

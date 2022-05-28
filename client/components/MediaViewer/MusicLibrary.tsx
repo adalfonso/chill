@@ -23,7 +23,7 @@ const ApiMap: Record<Match, (options?: PaginationOptions) => Promise<unknown>> =
   };
 
 interface MusicLibraryProps {
-  onPlay: (files: Media[]) => Promise<void>;
+  onPlay: (files?: Media[], index?: number) => Promise<void>;
   setLoading: (loading: boolean) => void;
   per_page: number;
 }
