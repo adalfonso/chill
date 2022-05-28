@@ -66,14 +66,12 @@ export const PlayControls = ({
     setIsPlaying(await operation);
   };
 
-  const previous = async () => {
-    await player.previous();
-    setNowPlaying(getNowPlaying());
+  const previous = () => {
+    onPlay(undefined, playlist.current_index - 1);
   };
 
-  const next = async () => {
-    await player.next();
-    setNowPlaying(getNowPlaying());
+  const next = () => {
+    onPlay(undefined, playlist.current_index + 1);
   };
 
   const seek = async (percent: number) => {

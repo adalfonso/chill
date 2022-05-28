@@ -2,4 +2,16 @@
 
 .album-view {
   width: 100%;
+
+  .track {
+    width: 4rem;
+  }
+
+  .play-icon {
+    margin-left: 1rem;
+
+    * {
+      color: $primary;
+    }
+  }
 }

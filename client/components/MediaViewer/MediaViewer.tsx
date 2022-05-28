@@ -5,13 +5,15 @@ import { ArtistView } from "./Artist/ArtistView";
 import { GenreView } from "./Genre/GenreView";
 import { Media } from "@common/autogen";
 import { MusicLibrary } from "./MusicLibrary";
+import { Playlist } from "@client/Playlist";
 import { Route, Switch } from "react-router-dom";
 import { useState } from "react";
 interface MediaViewerProps {
   onPlay: (files?: Media[], index?: number) => Promise<void>;
+  playlist: Playlist;
 }
 
-export const MediaViewer = ({ onPlay }: MediaViewerProps) => {
+export const MediaViewer = ({ onPlay, playlist }: MediaViewerProps) => {
   const [loading, setLoading] = useState(false);
 
   return (
@@ -23,7 +25,11 @@ export const MediaViewer = ({ onPlay }: MediaViewerProps) => {
         </Route>
 
         <Route path="/album/:album">
-          <AlbumView onPlay={onPlay} setLoading={setLoading} />
+          <AlbumView
+            onPlay={onPlay}
+            setLoading={setLoading}
+            playlist={playlist}
+          />
         </Route>
 
         <Route path="/genre/:genre">

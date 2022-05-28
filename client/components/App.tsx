@@ -26,7 +26,7 @@ export function App() {
   return (
     <div className="app">
       <Toolbar onPlay={onPlay} />
-      <MediaViewer onPlay={onPlay} />
+      <MediaViewer onPlay={onPlay} playlist={playlist} />
       <PlayControls
         player={player}
         playlist={playlist}

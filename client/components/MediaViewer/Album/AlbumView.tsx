@@ -4,13 +4,14 @@ import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
 import { Player } from "@client/Player";
-import { faPlay } from "@fortawesome/free-solid-svg-icons";
-import { useMultiClick } from "@client/hooks/useMultiClick";
+import { Playlist } from "@client/Playlist";
+import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 interface AlbumViewProps {
   onPlay: (files?: Media[], index?: number) => Promise<void>;
+  playlist: Playlist;
   setLoading: (loading: boolean) => void;
 }
 
@@ -22,10 +23,9 @@ const secondsToMinutes = (duration: number) => {
   return `${minutes}:${pad(seconds)}`;
 };
 
-export const AlbumView = ({ onPlay, setLoading }: AlbumViewProps) => {
+export const AlbumView = ({ onPlay, playlist, setLoading }: AlbumViewProps) => {
   const album = decodeURIComponent(useParams().album);
   const [files, setFiles] = useState([]);
-  const [index_last_clicked, setIndexLastClicked] = useState(0);
 
   useEffect(() => {
     setLoading(true);
@@ -42,14 +42,8 @@ export const AlbumView = ({ onPlay, setLoading }: AlbumViewProps) => {
       });
   }, [album]);
 
-  const handleClick = useMultiClick(
-    () => {},
-    () => onPlay(files, index_last_clicked),
-  );
-
   const onClick = (index) => () => {
-    setIndexLastClicked(index);
-    handleClick();
+    onPlay(files, index);
   };
 
   const artists = () => [...new Set(files.map((file) => file.artist))];
@@ -78,10 +72,10 @@ export const AlbumView = ({ onPlay, setLoading }: AlbumViewProps) => {
                 <div className="row" onClick={onClick(index)} key={file.path}>
                   <div className="track">
                     {file.track}
-                    {Player.instance().now_playing?.path === file.path && (
+                    {playlist.current.path === file.path && (
                       <Icon
                         className="play-icon"
-                        icon={faPlay}
+                        icon={faPlayCircle}
                         size="sm"
                         pull="right"
                       />
