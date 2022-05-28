@@ -11,11 +11,14 @@ import { useState } from "react";
 
 export function App() {
   const [player, setPlayer] = useState(Player.instance());
+  const [playlist, setPlaylist] = useState(new Playlist([], 0));
   // This is used to force a re-render on the player controls
   const [lastPlayed, setLastPlayed] = useState(Date.now());
 
   const onPlay = async (files: Media[], index = 0) => {
-    await player.setPlaylist(new Playlist(files, index));
+    const playlist = new Playlist(files, index);
+    setPlaylist(playlist);
+    await player.setPlaylist(playlist);
     setLastPlayed(Date.now());
   };
 
@@ -23,7 +26,7 @@ export function App() {
     <div className="app">
       <Toolbar onPlay={onPlay} />
       <MediaViewer onPlay={onPlay} />
-      <PlayControls player={player}></PlayControls>
+      <PlayControls player={player} playlist={playlist}></PlayControls>
     </div>
   );
 }

@@ -17,6 +17,10 @@ export class Playlist {
     return this._index < this._playlist.length - 1;
   }
 
+  get items() {
+    return this._playlist;
+  }
+
   /** Change to the next item in the playlist */
   public next() {
     this._index++;

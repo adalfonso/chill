@@ -2,6 +2,8 @@ import "./PlayControls.scss";
 import * as React from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Player } from "@client/Player";
+import { Playlist as PlaylistObject } from "@client/Playlist";
+import { Playlist } from "./Playlist";
 import { Scrubber } from "./Scrubber";
 import { startAnimationLoop } from "@client/util";
 import { useState, useEffect } from "react";
@@ -14,11 +16,12 @@ import {
 
 interface PlayControlsProps {
   player: Player;
+  playlist: PlaylistObject;
 }
 
 const default_now_playing = "-";
 
-export const PlayControls = ({ player }: PlayControlsProps) => {
+export const PlayControls = ({ player, playlist }: PlayControlsProps) => {
   const [is_playing, setIsPlaying] = useState(player.is_playing);
   const [now_playing, setNowPlaying] = useState(default_now_playing);
   const [playback_progress, setPlaybackProgress] = useState(0);
@@ -71,23 +74,31 @@ export const PlayControls = ({ player }: PlayControlsProps) => {
     return player.seek(percent);
   };
 
+  const togglePlaylist = () => {
+    console.log("toggle playlist");
+  };
+
   return (
     <div id="play-controls">
       <Scrubber progress={playback_progress} onScrub={seek} />
-      <div className="now-playing">{now_playing}</div>
-      <div className="controls">
-        <div className="circle-button" onClick={previous}>
-          <Icon icon={faFastBackward} size="sm" />
+      <div className="panel">
+        <div className="side-panel"></div>
+        <div className="now-playing">
+          {now_playing}
+          <div className="controls">
+            <div className="circle-button" onClick={previous}>
+              <Icon icon={faFastBackward} />
+            </div>
+            <div className="circle-button play" onClick={togglePlayer}>
+              <Icon icon={is_playing ? faPause : faPlay} />
+            </div>
+            <div className="circle-button" onClick={next}>
+              <Icon icon={faFastForward} />
+            </div>
+          </div>
         </div>
-        <div className="circle-button play" onClick={togglePlayer}>
-          {is_playing ? (
-            <Icon icon={faPause} size="lg" />
-          ) : (
-            <Icon icon={faPlay} size="lg" />
-          )}
-        </div>
-        <div className="circle-button" onClick={next}>
-          <Icon icon={faFastForward} size="sm" />
+        <div className="side-panel">
+          <Playlist playlist={playlist}></Playlist>
         </div>
       </div>
     </div>

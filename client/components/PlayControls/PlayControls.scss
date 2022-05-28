@@ -9,11 +9,25 @@
 
   .now-playing {
     font-size: 1.75rem;
-    margin: 0 0 1rem 0;
     user-select: none;
   }
 
+  .panel {
+    display: flex;
+    justify-content: space-between;
+
+    > div {
+      margin: 0 1rem;
+    }
+
+    .side-panel {
+      display: flex;
+      align-items: flex-end;
+    }
+  }
+
   .controls {
+    margin-top: 1rem;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -37,8 +51,13 @@
   }
 
   .play {
+    font-size: 2rem;
     height: 4rem;
     width: 4rem;
+  }
+
+  .playlist {
+    font-size: 1.25rem;
   }
 }
 
@@ -47,11 +66,13 @@
     .circle-button {
       height: 2.5rem;
       width: 2.5rem;
+      font-size: 1.25rem;
     }
 
     .play {
       height: 3.5rem;
       width: 3.5rem;
+      font-size: 1.75rem;
     }
   }
 }

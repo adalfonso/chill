@@ -1,5 +1,5 @@
 import "./MediaTile.scss";
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import _ from "lodash";
 import { Media } from "@common/autogen";
 import { useHistory } from "react-router-dom";
