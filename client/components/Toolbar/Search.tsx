@@ -1,12 +1,13 @@
 import "./Search.scss";
-import * as React from "react";
 import * as _ from "lodash";
+import React, { useState } from "react";
 import { MediaApi } from "@client/api/MediaApi";
 import { SearchResult } from "./Search/SearchResult";
 import { useHistory } from "react-router-dom";
-import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { play } from "@client/state/reducers/playerReducer";
 
-export const Search = ({ onPlay }) => {
+export const Search = () => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const history = useHistory();
@@ -37,14 +38,15 @@ export const Search = ({ onPlay }) => {
     const { type, match } = file;
     const results = (await MediaApi.query(match)).data;
     const should_shuffle = ["artist", "genre"].includes(type);
+    const dispatch = useDispatch();
 
     clear();
 
-    onPlay(
-      should_shuffle
-        ? _.shuffle(results)
-        : results.sort((a, b) => a.track - b.track),
-    );
+    const files = should_shuffle
+      ? _.shuffle(results)
+      : results.sort((a, b) => a.track - b.track);
+
+    dispatch(play({ files }));
   };
 
   // Clear the search input/results

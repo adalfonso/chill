@@ -1,12 +1,11 @@
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaTile, TileData } from "../MediaTile/MediaTile";
 import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
 
 interface GenreViewProps {
-  onPlay: (files?: Media[], index?: number) => Promise<void>;
+  onPlay: (files: Media[], index?: number) => void;
   setLoading: (loading: boolean) => void;
 }
 

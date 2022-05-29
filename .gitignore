@@ -1,7 +1,13 @@
 .idea/
 dist/
 node_modules/
-src/**/*.jsx
+client/**/*.jsx
+client/**/*.js
+common/**/*.jsx
+common/**/*.js
+server/**/*.jsx
+server/**/*.js
 tests/__coverage__/
 tests/**/*.jsx
 .env
+

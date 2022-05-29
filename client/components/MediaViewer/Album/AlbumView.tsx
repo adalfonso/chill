@@ -1,17 +1,15 @@
 import "./AlbumView.scss";
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
-import { Player } from "@client/Player";
-import { Playlist } from "@client/Playlist";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { Nullable } from "@common/types";
 
 interface AlbumViewProps {
-  onPlay: (files?: Media[], index?: number) => Promise<void>;
-  playlist: Playlist;
+  now_playing: Nullable<Media>;
+  onPlay: (files: Media[], index?: number) => void;
   setLoading: (loading: boolean) => void;
 }
 
@@ -23,7 +21,11 @@ const secondsToMinutes = (duration: number) => {
   return `${minutes}:${pad(seconds)}`;
 };
 
-export const AlbumView = ({ onPlay, playlist, setLoading }: AlbumViewProps) => {
+export const AlbumView = ({
+  setLoading,
+  onPlay,
+  now_playing,
+}: AlbumViewProps) => {
   const album = decodeURIComponent(useParams().album);
   const [files, setFiles] = useState([]);
 
@@ -42,12 +44,8 @@ export const AlbumView = ({ onPlay, playlist, setLoading }: AlbumViewProps) => {
       });
   }, [album]);
 
-  const onClick = (index) => () => {
-    onPlay(files, index);
-  };
-
+  const onClick = (index) => () => onPlay(files, index);
   const artists = () => [...new Set(files.map((file) => file.artist))];
-
   const getYear = () => [...new Set(files.map((file) => file.year))].join(",");
 
   return (
@@ -72,7 +70,7 @@ export const AlbumView = ({ onPlay, playlist, setLoading }: AlbumViewProps) => {
                 <div className="row" onClick={onClick(index)} key={file.path}>
                   <div className="track">
                     {file.track}
-                    {playlist.current.path === file.path && (
+                    {now_playing?.path === file.path && (
                       <Icon
                         className="play-icon"
                         icon={faPlayCircle}

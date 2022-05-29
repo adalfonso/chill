@@ -1,22 +1,31 @@
 import "./Scrubber.scss";
-import * as React from "react";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getAudioProgress, seek } from "@client/state/reducers/playerReducer";
+import { startAnimationLoop } from "@client/util";
+import { useDispatch } from "react-redux";
 
-interface ScrubberProps {
-  progress: number;
-  onScrub: (percent: number) => Promise<void>;
-}
-
-export const Scrubber = ({ progress, onScrub }: ScrubberProps) => {
+export const Scrubber = () => {
+  const [progress, setProgress] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [progress_override, setProgressOverride] = useState<number>();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    startAnimationLoop(() => {
+      if (getAudioProgress() === progress) {
+        return;
+      }
+
+      setProgress(getAudioProgress());
+    });
+  }, []);
 
   const releaseScrubber = async (e: React.MouseEvent<HTMLElement>) => {
     if (!dragging || !(e.target instanceof HTMLElement)) {
       return;
     }
 
-    await onScrub(calculateXPos(e.target, e.clientX));
+    dispatch(seek({ percent: calculateXPos(e.target, e.clientX) }));
     cancelDrag();
   };
 
@@ -34,13 +43,14 @@ export const Scrubber = ({ progress, onScrub }: ScrubberProps) => {
   };
 
   return (
-    <div
-      className="phantom"
-      onMouseDown={() => setDragging(true)}
-      onMouseUp={releaseScrubber}
-      onMouseLeave={cancelDrag}
-      onMouseMove={adjustDrag}
-    >
+    <div className="scrubber-container">
+      <div
+        className="phantom"
+        onMouseDown={() => setDragging(true)}
+        onMouseUp={releaseScrubber}
+        onMouseLeave={cancelDrag}
+        onMouseMove={adjustDrag}
+      ></div>
       <div
         className="scrubber"
         style={{

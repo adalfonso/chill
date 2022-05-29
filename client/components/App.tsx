@@ -1,37 +1,16 @@
 import "./App.scss";
-import * as React from "react";
-import { Media } from "@common/autogen";
+import React from "react";
 import { MediaViewer } from "./MediaViewer/MediaViewer";
 import { PlayControls } from "./PlayControls/PlayControls";
-import { Player } from "@client/Player";
-import { Playlist } from "@client/Playlist";
 import { Toolbar } from "./Toolbar/Toolbar";
 import { hot } from "react-hot-loader/root";
-import { useState } from "react";
 
 export function App() {
-  const [player, setPlayer] = useState(Player.instance());
-  const [playlist, setPlaylist] = useState(new Playlist([], 0));
-  // This is used to force a re-render on the player controls
-  const [lastPlayed, setLastPlayed] = useState(Date.now());
-
-  const onPlay = async (files: Media[], index = 0) => {
-    files = files ?? playlist?.items ?? [];
-    const new_playlist = new Playlist(files, index);
-    setPlaylist(new_playlist);
-    await player.setPlaylist(new_playlist);
-    setLastPlayed(Date.now());
-  };
-
   return (
     <div className="app">
-      <Toolbar onPlay={onPlay} />
-      <MediaViewer onPlay={onPlay} playlist={playlist} />
-      <PlayControls
-        player={player}
-        playlist={playlist}
-        onPlay={onPlay}
-      ></PlayControls>
+      <Toolbar />
+      <MediaViewer />
+      <PlayControls></PlayControls>
     </div>
   );
 }

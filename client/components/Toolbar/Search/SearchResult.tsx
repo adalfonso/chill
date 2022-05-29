@@ -1,6 +1,4 @@
-import * as React from "react";
-
-import { useMultiClick } from "@client/hooks/useMultiClick";
+import React from "react";
 
 export const SearchResult = ({ result, onPlay, onVisit }) => {
   // const handleClick = useMultiClick(

@@ -4,7 +4,7 @@ import * as mm from "music-metadata";
 import * as path from "path";
 import { MediaModel } from "@server/models/Media";
 import { MediaObject, ScanDocument } from "@common/autogen";
-import { Nullable } from "@server/types";
+import { Nullable } from "@common/types";
 import { ObjectId } from "mongodb";
 import { ScanModel } from "@server/models/Scan";
 

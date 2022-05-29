@@ -1,8 +1,7 @@
 import "./ui.scss";
-import * as React from "react";
+import React, { useState } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
-import { useState } from "react";
 
 export const Select = ({ onChange, children, value, displayAs }) => {
   const [expanded, setExpanded] = useState(false);

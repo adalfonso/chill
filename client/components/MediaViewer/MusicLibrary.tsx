@@ -1,13 +1,12 @@
 import "./MusicLibrary.scss";
-import * as React from "react";
-import * as _ from "lodash";
+import React, { useReducer, useRef, useState } from "react";
+import _ from "lodash";
 import { Media } from "@common/autogen";
+import { MediaAction, mediaReducer, useFetch } from "@client/hooks/useFetch";
 import { MediaApi, PaginationOptions } from "@client/api/MediaApi";
 import { MediaMatch as Match } from "@common/MediaType/types";
 import { MediaTile, TileData } from "./MediaTile/MediaTile";
 import { Select } from "../ui/Select";
-import { useReducer, useRef, useState } from "react";
-import { MediaAction, mediaReducer, useFetch } from "@client/hooks/useFetch";
 import {
   PageAction,
   pageReducer,
@@ -23,7 +22,7 @@ const ApiMap: Record<Match, (options?: PaginationOptions) => Promise<unknown>> =
   };
 
 interface MusicLibraryProps {
-  onPlay: (files?: Media[], index?: number) => Promise<void>;
+  onPlay: (files: Media[], index?: number) => void;
   setLoading: (loading: boolean) => void;
   per_page: number;
 }

@@ -1,14 +1,24 @@
 @import "@client/components/variables.scss";
 
-.phantom {
-  width: 100%;
-  height: 2rem;
-  cursor: pointer;
+.scrubber-container {
+  position: relative;
+
+  .phantom {
+    width: 100%;
+    height: 5rem;
+    cursor: pointer;
+    position: relative;
+    margin-top: -1rem;
+    position: absolute;
+    z-index: 1;
+  }
 
   .scrubber {
     background: $primary;
     height: 0.4rem;
     width: 100%;
     position: relative;
+    z-index: 0;
+    margin-bottom: 2rem;
   }
 }

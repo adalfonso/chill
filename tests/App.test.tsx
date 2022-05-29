@@ -1,6 +1,6 @@
-import * as React from "react";
-import * as ReactDOM from "react-dom";
-import * as TestUtils from "react-dom/test-utils";
+import React from "react";
+import ReactDOM from "react-dom";
+import TestUtils from "react-dom/test-utils";
 import { App } from "@client/components/App";
 
 it("App is rendered", () => {

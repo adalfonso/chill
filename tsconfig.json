@@ -8,7 +8,8 @@
     "paths": {
       "@server/*": ["server/*"],
       "@client/*": ["client/*"],
-      "@common/*": ["common/*"]
+      "@common/*": ["common/*"],
+      "@reducers/*": ["client/state/reducers/*"]
     }
   }
 }

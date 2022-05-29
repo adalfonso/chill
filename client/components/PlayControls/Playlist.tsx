@@ -1,20 +1,18 @@
 import "./Playlist.scss";
 import React, { useState } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { Media } from "@common/autogen";
-import { Playlist as PlaylistObject } from "@client/Playlist";
+import { RootState } from "@client/state/reducers/store";
+import { useDispatch, useSelector } from "react-redux";
+import { changeTrack } from "@client/state/reducers/playerReducer";
 import {
   faListDots,
   faClose,
   faPlayCircle,
 } from "@fortawesome/free-solid-svg-icons";
 
-interface PlaylistProps {
-  playlist: PlaylistObject;
-  onPlay: (files?: Media[], index?: number) => Promise<void>;
-}
-
-export const Playlist = ({ playlist, onPlay }: PlaylistProps) => {
+export const Playlist = () => {
+  const player = useSelector<RootState>((state) => state.player);
+  const dispatch = useDispatch();
   const [playlistVisible, setPlaylistVisible] = useState(false);
 
   const playlistClassName = playlistVisible
@@ -22,12 +20,7 @@ export const Playlist = ({ playlist, onPlay }: PlaylistProps) => {
     : "playlist-panel docked";
 
   const togglePlaylist = () => {
-    console.log({ playlistVisible });
     setPlaylistVisible(!playlistVisible);
-  };
-
-  const changeTrack = (index: number) => () => {
-    onPlay(undefined, index);
   };
 
   return (
@@ -35,16 +28,20 @@ export const Playlist = ({ playlist, onPlay }: PlaylistProps) => {
       <div className={playlistClassName}>
         <Icon className="close" icon={faClose} onClick={togglePlaylist} />
 
-        {playlist.items.map((media, i) => (
-          <div className="playlist-item" onClick={changeTrack(i)}>
-            <div className="index">{i + 1}</div>
+        {player.playlist.map((media, index) => (
+          <div
+            className="playlist-item"
+            onClick={() => dispatch(changeTrack({ index }))}
+            key={media._id}
+          >
+            <div className="index">{index + 1}</div>
 
             <div className="content">
               <div className="artist">{media.artist}</div>
               <div className="title">{media.title}</div>
             </div>
             <div className="playing">
-              {playlist.current === media && <Icon icon={faPlayCircle} />}
+              {player.now_playing === media && <Icon icon={faPlayCircle} />}
             </div>
           </div>
         ))}
