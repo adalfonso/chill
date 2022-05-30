@@ -12,7 +12,7 @@ module.exports = {
       jsx: true,
     },
   },
-  plugins: ["@typescript-eslint"],
+  plugins: ["@typescript-eslint", "unused-imports"],
   settings: {
     react: {
       version: "detect",
@@ -20,5 +20,14 @@ module.exports = {
   },
   rules: {
     "@typescript-eslint/no-var-requires": 0,
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+        caughtErrorsIgnorePattern: "^_",
+      },
+    ],
+    "unused-imports/no-unused-imports": "error",
   },
 };
