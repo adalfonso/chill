@@ -10,6 +10,7 @@
     "build:dev": "npm run clean-dist && webpack --config configs/webpack/server-dev.config.js",
     "build:dev-watch": "webpack --watch --config configs/webpack/server-dev.config.js",
     "build:server": "webpack --config=configs/webpack/server-prod.config.js",
+    "check": "tsc && npm run lint && jest -c=./config/jest.config.js",
     "clean-dist": "rimraf dist/*",
     "docker": "docker-compose up -d",
     "docker:dev": "docker-compose -f docker-compose.dev.yml up --build",
