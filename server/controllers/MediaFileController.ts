@@ -1,4 +1,4 @@
-import * as fs from "fs/promises";
+import fs from "fs/promises";
 import { AudioType } from "@server/media/types";
 import { Media } from "@common/autogen";
 import { MediaCrawler } from "@server/media/MediaCrawler";
@@ -34,7 +34,7 @@ namespace Req {
   }
 }
 
-type CoverReq = Request<Req.cover.params, {}, {}, Req.cover.query>;
+type CoverReq = Request<Req.cover.params, unknown, unknown, Req.cover.query>;
 type LoadReq = Request<Req.load.params>;
 type QueryReq = Request<Partial<Req.query.params>>;
 

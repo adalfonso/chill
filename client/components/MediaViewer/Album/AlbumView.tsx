@@ -80,10 +80,8 @@ export const AlbumView = ({
                     )}
                   </div>
                   <div>{file.title}</div>
-                  <div className="mono">
-                    <div className="duration">
-                      {secondsToMinutes(file.duration)}
-                    </div>
+                  <div className="duration mono">
+                    {secondsToMinutes(file.duration)}
                   </div>
                 </div>
               );

@@ -48,7 +48,7 @@ export const useFetch = (
   data,
   dispatch: Dispatch<MediaDispatchAction>,
   api: () => Promise<Media[]>,
-  onDone: () => void = () => {},
+  onDone?: () => void,
 ) => {
   // make API calls
   useEffect(() => {
@@ -59,7 +59,7 @@ export const useFetch = (
       })
       .finally(() => {
         dispatch({ type: MediaAction.Release });
-        onDone();
+        onDone?.();
       });
   }, [data.page]);
 };

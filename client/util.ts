@@ -4,10 +4,10 @@
  * @param callback - callback to perform on each frame render
  */
 export const startAnimationLoop = (callback: (dt: number) => unknown) => {
-  let lastTime: number = 0;
+  let lastTime = 0;
 
   const frame: FrameRequestCallback = (time: number) => {
-    let dt: number = time - lastTime;
+    const dt = time - lastTime;
     lastTime = time;
 
     callback(dt);

@@ -1,14 +1,7 @@
-import * as strCompare from "string-similarity";
+import { compareTwoStrings } from "string-similarity";
 import { Media } from "@common/autogen";
-import { MediaMatch } from "@common/MediaType/types";
-
-interface SearchResults {
-  type: MediaMatch;
-  displayAs: string;
-  value: string;
-  score: number;
-  match: Record<string, string | number>;
-}
+import { MediaMatch } from "@common/media/types";
+import { SearchResult } from "@common/types";
 
 const matcher: Record<MediaMatch, (file: Media) => unknown> = {
   artist: (file: Media) => ({ artist: file.artist }),
@@ -46,7 +39,7 @@ const pathfinder: Record<MediaMatch, (file: Media) => string> = {
  * @returns  categorized results
  */
 export const sortResults = (results: { _doc: Media }[], query: string) => {
-  const groups: Record<string, SearchResults> = results.reduce(
+  const groups: Record<string, SearchResult> = results.reduce(
     (carry, result) => ({
       ...carry,
       ...processFile(result._doc, query, carry),
@@ -68,7 +61,7 @@ export const sortResults = (results: { _doc: Media }[], query: string) => {
 const processFile = (
   file: Media,
   query: string,
-  acc: Record<string, SearchResults>,
+  acc: Record<string, SearchResult>,
 ) => {
   const { title, path } = file;
   const threshold = 0.5;
@@ -85,7 +78,7 @@ const processFile = (
       return carry;
     }
 
-    const score = strCompare.compareTwoStrings(compare_value, query);
+    const score = compareTwoStrings(compare_value, query);
 
     if (score < threshold && compare_value.indexOf(query) < 0) {
       return carry;

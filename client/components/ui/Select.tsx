@@ -1,12 +1,25 @@
 import "./ui.scss";
-import React, { useState } from "react";
+import React, { ReactNode, useState } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
+import { MediaMatch as Match } from "@common/media/types";
 
-export const Select = ({ onChange, children, value, displayAs }) => {
+interface SelectProps {
+  onChange: (match: Match) => void;
+  children: ReactNode;
+  value: Match;
+  displayAs: string;
+}
+
+export const Select = ({
+  onChange,
+  children,
+  value,
+  displayAs,
+}: SelectProps) => {
   const [expanded, setExpanded] = useState(false);
 
-  const select = (value: string) => () => {
+  const select = (value: Match) => () => {
     onChange(value);
     setExpanded(false);
   };

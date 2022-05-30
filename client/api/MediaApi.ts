@@ -1,5 +1,5 @@
 import axios from "axios";
-import { MediaMatch as Match } from "@common/MediaType/types";
+import { MediaMatch as Match } from "@common/media/types";
 import { Media } from "@common/autogen";
 
 export type MatchMap = Record<Match, string | number>;

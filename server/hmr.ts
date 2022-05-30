@@ -1,4 +1,5 @@
-import * as webpack from "webpack";
+/* eslint-disable */
+import webpack from "webpack";
 import { Express } from "express";
 
 /**

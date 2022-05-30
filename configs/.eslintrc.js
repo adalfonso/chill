@@ -19,7 +19,7 @@ module.exports = {
     },
   },
   rules: {
-    "@typescript-eslint/no-var-requires": 0,
+    "@typescript-eslint/no-namespace": 0,
     "@typescript-eslint/no-unused-vars": [
       "warn",
       {

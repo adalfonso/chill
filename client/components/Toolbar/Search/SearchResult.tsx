@@ -1,14 +1,12 @@
+import { SearchResult as Result } from "@common/types";
 import React from "react";
 
-export const SearchResult = ({ result, onPlay, onVisit }) => {
-  // const handleClick = useMultiClick(
-  //   // single click
-  //   () => onVisit(result),
-  //   // double click
-  //   () => onPlay(result),
-  //   200,
-  // );
+interface SearchResultProps {
+  result: Result;
+  onVisit: (file: Result) => void;
+}
 
+export const SearchResult = ({ result, onVisit }: SearchResultProps) => {
   const handleClick = () => onVisit(result);
 
   const [primary, secondary] = result.displayAs;

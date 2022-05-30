@@ -1,6 +1,5 @@
 import "./MediaTile.scss";
 import React from "react";
-import _ from "lodash";
 import { Media } from "@common/autogen";
 import { useHistory } from "react-router-dom";
 import { useMultiClick } from "@client/hooks/useMultiClick";

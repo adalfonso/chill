@@ -4,7 +4,7 @@ import _ from "lodash";
 import { Media } from "@common/autogen";
 import { MediaAction, mediaReducer, useFetch } from "@client/hooks/useFetch";
 import { MediaApi, PaginationOptions } from "@client/api/MediaApi";
-import { MediaMatch as Match } from "@common/MediaType/types";
+import { MediaMatch as Match } from "@common/media/types";
 import { MediaTile, TileData } from "./MediaTile/MediaTile";
 import { Select } from "../ui/Select";
 import {

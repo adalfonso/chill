@@ -1,7 +1,7 @@
 import "core-js";
 import "regenerator-runtime";
-import * as dotenv from "dotenv";
-import * as express from "express";
+import dotenv from "dotenv";
+import express from "express";
 import { Connection } from "./db/Client";
 import { enableHmr } from "./hmr";
 import { registerRoutes } from "./routes";

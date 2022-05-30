@@ -1,11 +1,9 @@
 import "./Search.scss";
-import * as _ from "lodash";
 import React, { useState } from "react";
+import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
 import { SearchResult } from "./Search/SearchResult";
 import { useHistory } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { play } from "@client/state/reducers/playerReducer";
 
 export const Search = () => {
   const [query, setQuery] = useState("");
@@ -26,27 +24,11 @@ export const Search = () => {
   };
 
   // Visit page for search result
-  const visitMedia = async (file) => {
+  const visitMedia = async (file: Media) => {
     const { path } = file;
 
     clear();
     history.push(path);
-  };
-
-  // Handle the playing of a search result selection
-  const playMedia = async (file) => {
-    const { type, match } = file;
-    const results = (await MediaApi.query(match)).data;
-    const should_shuffle = ["artist", "genre"].includes(type);
-    const dispatch = useDispatch();
-
-    clear();
-
-    const files = should_shuffle
-      ? _.shuffle(results)
-      : results.sort((a, b) => a.track - b.track);
-
-    dispatch(play({ files }));
   };
 
   // Clear the search input/results
@@ -69,7 +51,6 @@ export const Search = () => {
             return (
               <SearchResult
                 result={result}
-                onPlay={playMedia}
                 onVisit={visitMedia}
                 key={result.displayAs.join("|") + result.value}
               />

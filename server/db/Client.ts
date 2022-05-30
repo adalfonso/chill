@@ -1,4 +1,4 @@
-import * as mongoose from "mongoose";
+import mongoose from "mongoose";
 
 /** Singleton DB connection instance */
 export class Connection {
