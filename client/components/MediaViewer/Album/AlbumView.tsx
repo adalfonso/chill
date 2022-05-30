@@ -21,12 +21,16 @@ const secondsToMinutes = (duration: number) => {
   return `${minutes}:${pad(seconds)}`;
 };
 
+type AlbumParams = {
+  album: string;
+};
+
 export const AlbumView = ({
   setLoading,
   onPlay,
   now_playing,
 }: AlbumViewProps) => {
-  const album = decodeURIComponent(useParams().album);
+  const album = decodeURIComponent(useParams<AlbumParams>().album);
   const [files, setFiles] = useState([]);
 
   useEffect(() => {

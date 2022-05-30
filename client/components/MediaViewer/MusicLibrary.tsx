@@ -1,6 +1,7 @@
 import "./MusicLibrary.scss";
 import React, { useReducer, useRef, useState } from "react";
 import _ from "lodash";
+import { AxiosResponse } from "axios";
 import { Media } from "@common/autogen";
 import { MediaAction, mediaReducer, useFetch } from "@client/hooks/useFetch";
 import { MediaApi, PaginationOptions } from "@client/api/MediaApi";
@@ -13,13 +14,15 @@ import {
   useInfiniteScroll,
 } from "@client/hooks/useInfiniteScroll";
 
-const ApiMap: Record<Match, (options?: PaginationOptions) => Promise<unknown>> =
-  {
-    [Match.Artist]: MediaApi.getGroupedByArtist,
-    [Match.Album]: MediaApi.getGroupedByAlbum,
-    [Match.Genre]: MediaApi.getGroupedByGenre,
-    [Match.Path]: () => Promise.resolve(null),
-  };
+const ApiMap: Record<
+  Match,
+  (options?: PaginationOptions) => Promise<AxiosResponse>
+> = {
+  [Match.Artist]: MediaApi.getGroupedByArtist,
+  [Match.Album]: MediaApi.getGroupedByAlbum,
+  [Match.Genre]: MediaApi.getGroupedByGenre,
+  [Match.Path]: () => Promise.resolve(null),
+};
 
 interface MusicLibraryProps {
   onPlay: (files: Media[], index?: number) => void;

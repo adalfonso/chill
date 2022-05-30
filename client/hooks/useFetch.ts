@@ -1,6 +1,11 @@
 import { Media } from "@common/autogen";
 import { Dispatch, useEffect } from "react";
 
+type FetchMedia = Media & {
+  _id: string[];
+  _count: number;
+};
+
 export enum MediaAction {
   Stack,
   Fetch,
@@ -9,13 +14,13 @@ export enum MediaAction {
 }
 
 interface MediaFetchState {
-  media: Media[];
+  media: FetchMedia[];
   busy: boolean;
 }
 
 interface MediaDispatchAction {
   type: MediaAction;
-  media?: Media[];
+  media?: FetchMedia[];
 }
 
 export const mediaReducer = (
@@ -47,7 +52,7 @@ export const mediaReducer = (
 export const useFetch = (
   data,
   dispatch: Dispatch<MediaDispatchAction>,
-  api: () => Promise<Media[]>,
+  api: () => Promise<FetchMedia[]>,
   onDone?: () => void,
 ) => {
   // make API calls

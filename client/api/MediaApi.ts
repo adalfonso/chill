@@ -2,7 +2,7 @@ import axios from "axios";
 import { MediaMatch as Match } from "@common/media/types";
 import { Media } from "@common/autogen";
 
-export type MatchMap = Record<Match, string | number>;
+export type MatchMap = Record<Match & "year", string | number>;
 
 export interface PaginationOptions {
   limit: number;
@@ -23,7 +23,7 @@ export const MediaApi = {
     const match = artist ? { artist } : { album: { $ne: null } };
 
     return axios.post(`/media/query`, {
-      options,
+      options: options ?? {},
       group: ["album", "artist", "year"],
       match,
     });

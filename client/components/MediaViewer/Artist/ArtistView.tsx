@@ -9,8 +9,12 @@ interface ArtistViewProps {
   setLoading: (loading: boolean) => void;
 }
 
+type AlbumParams = {
+  artist: string;
+};
+
 export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
-  const artist = decodeURIComponent(useParams().artist);
+  const artist = decodeURIComponent(useParams<AlbumParams>().artist);
   const [albums, setAlbums] = useState([]);
 
   useEffect(() => {
@@ -20,7 +24,7 @@ export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
   const loadAlbums = async () => {
     setLoading(true);
 
-    return MediaApi.getGroupedByAlbum({}, artist)
+    return MediaApi.getGroupedByAlbum(undefined, artist)
       .then((res) => {
         setAlbums(res.data.sort((a, b) => b.year - a.year));
       })

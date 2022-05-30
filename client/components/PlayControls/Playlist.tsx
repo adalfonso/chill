@@ -2,8 +2,8 @@ import "./Playlist.scss";
 import React, { useState } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { RootState } from "@client/state/reducers/store";
-import { useDispatch, useSelector } from "react-redux";
 import { changeTrack } from "@client/state/reducers/playerReducer";
+import { useDispatch, useSelector } from "react-redux";
 import {
   faListDots,
   faClose,
@@ -11,7 +11,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 export const Playlist = () => {
-  const player = useSelector<RootState>((state) => state.player);
+  const player = useSelector((state: RootState) => state.player);
   const dispatch = useDispatch();
   const [playlistVisible, setPlaylistVisible] = useState(false);
 
@@ -32,7 +32,7 @@ export const Playlist = () => {
           <div
             className="playlist-item"
             onClick={() => dispatch(changeTrack({ index }))}
-            key={media._id}
+            key={media._id.toString()}
           >
             <div className="index">{index + 1}</div>
 

@@ -1,12 +1,12 @@
 import "./ui.scss";
-import React, { ReactNode, useState } from "react";
+import React, { useState } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 import { MediaMatch as Match } from "@common/media/types";
 
 interface SelectProps {
   onChange: (match: Match) => void;
-  children: ReactNode;
+  children: JSX.Element[];
   value: Match;
   displayAs: string;
 }

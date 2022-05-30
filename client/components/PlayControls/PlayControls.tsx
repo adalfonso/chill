@@ -16,7 +16,7 @@ import {
 const default_now_playing = "-";
 
 export const PlayControls = () => {
-  const player = useSelector<RootState>((state) => state.player);
+  const player = useSelector((state: RootState) => state.player);
   const dispatch = useDispatch();
 
   const getNowPlaying = () =>

@@ -9,14 +9,18 @@ interface GenreViewProps {
   setLoading: (loading: boolean) => void;
 }
 
+interface GenreParams {
+  genre: string;
+}
+
 export const GenreView = ({ onPlay, setLoading }: GenreViewProps) => {
-  const genre = decodeURIComponent(useParams().genre);
+  const genre = decodeURIComponent(useParams<GenreParams>().genre);
   const [artists, setArtists] = useState([]);
 
   useEffect(() => {
     setLoading(true);
 
-    MediaApi.getGroupedByArtist({}, genre)
+    MediaApi.getGroupedByArtist(undefined, genre)
       .then((res) => {
         setArtists(res.data);
       })

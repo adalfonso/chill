@@ -1,7 +1,7 @@
 import "./Search.scss";
 import React, { useState } from "react";
-import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
+import { SearchResult as Result } from "@common/types";
 import { SearchResult } from "./Search/SearchResult";
 import { useHistory } from "react-router-dom";
 
@@ -24,7 +24,7 @@ export const Search = () => {
   };
 
   // Visit page for search result
-  const visitMedia = async (file: Media) => {
+  const visitMedia = async (file: Result) => {
     const { path } = file;
 
     clear();

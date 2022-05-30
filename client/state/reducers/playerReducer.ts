@@ -17,11 +17,10 @@ const load = (state: WritableDraft<PlayerState>) => {
   audio.src = `/media/${state.now_playing?._id}/load`;
 };
 
-interface PlayerState {
+export interface PlayerState {
   is_playing: boolean;
   now_playing: Nullable<Media>;
   playlist: Media[];
-
   index: number;
 }
 

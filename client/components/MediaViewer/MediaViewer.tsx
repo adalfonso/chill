@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 export const MediaViewer = () => {
   const [loading, setLoading] = useState(false);
-  const player = useSelector<RootState>((state) => state.player);
+  const player = useSelector((state: RootState) => state.player);
   const dispatch = useDispatch();
 
   const onPlay = (files: Media[], index = 0) => {
