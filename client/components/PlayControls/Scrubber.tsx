@@ -1,8 +1,13 @@
 import "./Scrubber.scss";
 import React, { useState, useEffect } from "react";
-import { getAudioProgress, seek } from "@client/state/reducers/playerReducer";
 import { startAnimationLoop } from "@client/util";
 import { useDispatch } from "react-redux";
+import {
+  audio,
+  getAudioProgress,
+  next,
+  seek,
+} from "@client/state/reducers/playerReducer";
 
 export const Scrubber = () => {
   const [progress, setProgress] = useState(0);
@@ -17,6 +22,10 @@ export const Scrubber = () => {
       }
 
       setProgress(getAudioProgress());
+    });
+
+    audio.addEventListener("ended", () => {
+      dispatch(next({ auto: true }));
     });
   }, []);
 

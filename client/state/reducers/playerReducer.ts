@@ -3,7 +3,7 @@ import { Nullable } from "@common/types";
 import { WritableDraft } from "immer/dist/internal";
 import { createSlice } from "@reduxjs/toolkit";
 
-const audio = new Audio();
+export const audio = new Audio();
 
 export const getAudioProgress = () => {
   if (!audio.duration || !audio.currentTime) {
@@ -68,10 +68,15 @@ export const playerSlice = createSlice({
       state.is_playing = true;
     },
 
-    next: (state) => {
+    next: (state, action) => {
+      const { auto = false } = action.payload ?? {};
+
       state.index++;
 
       if (state.index === state.playlist.length) {
+        if (auto) {
+          return;
+        }
         state.index = 0;
       }
 
