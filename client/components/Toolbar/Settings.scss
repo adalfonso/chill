@@ -1,0 +1,37 @@
+@import "@client/components/variables.scss";
+
+#settings {
+  position: fixed;
+  right: 0;
+  background-color: $dm-background-2;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  z-index: 3;
+
+  > div {
+    padding: 1rem;
+    border-bottom: 1px solid $dm-font-2;
+
+    &:last-of-type {
+      border-bottom: 0;
+    }
+  }
+
+  .close {
+    text-align: right;
+  }
+}
+
+@media screen and (min-width: 600px) {
+  #settings {
+    position: absolute;
+    bottom: auto;
+    top: 100%;
+    width: 20rem;
+
+    .close {
+      display: none;
+    }
+  }
+}

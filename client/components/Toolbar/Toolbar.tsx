@@ -1,25 +1,14 @@
 import "./Toolbar.scss";
 import React, { useState } from "react";
-import axios from "axios";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Search } from "./Search";
+import { Settings } from "./Settings";
 import { faGear } from "@fortawesome/free-solid-svg-icons";
 import { useHistory } from "react-router-dom";
 
 export const Toolbar = () => {
-  const [busy, setBusy] = useState(false);
+  const [settingsAreVisible, setSettingsAreVisible] = useState(false);
   const history = useHistory();
-
-  // Cause file scanner to run
-  const scan = async () => {
-    if (busy) {
-      return;
-    }
-
-    setBusy(true);
-    await triggerScan();
-    setBusy(false);
-  };
 
   return (
     <div id="toolbar">
@@ -30,12 +19,16 @@ export const Toolbar = () => {
       </div>
 
       <div className="tools">
-        <div onClick={scan}>Scan</div>
-        <Icon icon={faGear} size="lg" />
+        <Icon
+          icon={faGear}
+          size="lg"
+          onClick={() => setSettingsAreVisible(!settingsAreVisible)}
+        />
+        {settingsAreVisible && (
+          <Settings onClose={() => setSettingsAreVisible(false)}></Settings>
+        )}
       </div>
       <Search></Search>
     </div>
   );
 };
-
-const triggerScan = async () => axios.get("/media/scan");
