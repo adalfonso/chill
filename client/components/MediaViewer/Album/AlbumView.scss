@@ -3,6 +3,19 @@
 .album-view {
   width: 100%;
 
+  .details {
+    display: flex;
+    align-items: flex-start;
+
+    > * {
+      margin: 1rem;
+
+      h2 {
+        margin-top: 0;
+      }
+    }
+  }
+
   .track {
     width: 4rem;
   }

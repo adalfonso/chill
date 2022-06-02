@@ -55,11 +55,19 @@ export const AlbumView = ({
   return (
     <div id="media-viewer">
       <div className="album-view">
-        <div className="info">
-          <h2>{artists().length > 1 ? "Various Artists" : artists()[0]}</h2>
-          {artists().length > 1 && <h4>{artists().join(",  ")}</h4>}
-          <h4>{album}</h4>
-          <h4>{getYear()}</h4>
+        <div className="details">
+          {files?.[0]?.cover?.filename && (
+            <img
+              src={`/media/cover/${files[0].cover.filename}?size=128`}
+              loading="lazy"
+            />
+          )}
+          <div className="info">
+            <h2>{artists().length > 1 ? "Various Artists" : artists()[0]}</h2>
+            {artists().length > 1 && <h4>{artists().join(",  ")}</h4>}
+            <h4>{album}</h4>
+            <h4>{getYear()}</h4>
+          </div>
         </div>
 
         <div className="panel-list">
