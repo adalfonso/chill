@@ -1,0 +1,20 @@
+@import "@client/components/variables.scss";
+
+.volume-control {
+  width: 7rem;
+  margin-right: 1rem;
+  position: relative;
+
+  .phantom {
+    position: absolute;
+    top: -1.5rem;
+    right: -1rem;
+    bottom: -1rem;
+    left: -1rem;
+  }
+
+  .volume-level {
+    height: 0.25rem;
+    background-color: $primary;
+  }
+}

@@ -22,6 +22,7 @@ export interface PlayerState {
   now_playing: Nullable<Media>;
   playlist: Media[];
   index: number;
+  volume: number;
 }
 
 const initialState: PlayerState = {
@@ -29,6 +30,7 @@ const initialState: PlayerState = {
   now_playing: null,
   playlist: [],
   index: 0,
+  volume: 1,
 };
 
 export const playerSlice = createSlice({
@@ -87,6 +89,10 @@ export const playerSlice = createSlice({
       state.is_playing = true;
     },
 
+    changeVolume: (state, action) => {
+      state.volume = audio.volume = action.payload.percent;
+    },
+
     changeTrack: (state, action) => {
       const index = action.payload.index;
 
@@ -117,7 +123,15 @@ export const playerSlice = createSlice({
   },
 });
 
-export const { play, pause, previous, next, changeTrack, seek, setPlaylist } =
-  playerSlice.actions;
+export const {
+  play,
+  pause,
+  previous,
+  next,
+  changeTrack,
+  changeVolume,
+  seek,
+  setPlaylist,
+} = playerSlice.actions;
 
 export default playerSlice.reducer;
