@@ -8,20 +8,43 @@
   .volume-control {
     display: flex;
     width: 7rem;
-    margin-right: 1rem;
+    margin-right: 1.5rem;
     position: relative;
+    height: 2rem;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: calc(-1rem + 0.375rem);
 
-    .phantom {
-      position: absolute;
-      top: -1.5rem;
-      right: -1rem;
-      bottom: -1rem;
-      left: -1rem;
+    &:hover .slider {
+      display: block;
     }
 
     .volume-level {
       height: 0.25rem;
       background-color: $primary;
+      z-index: 1;
+    }
+
+    .slider {
+      position: absolute;
+      border-radius: 50%;
+      height: 0.75rem;
+      width: 0.75rem;
+      background-color: $dm-font;
+      top: 0.65rem;
+      display: none;
+      margin-left: -0.375rem;
+      z-index: 2;
+    }
+
+    .shell {
+      height: 0.125rem;
+      background-color: $dm-font-2;
+      position: absolute;
+      top: calc(50% - 0.0625rem);
+      left: 0;
+      right: 0;
+      z-index: 0;
     }
   }
 }

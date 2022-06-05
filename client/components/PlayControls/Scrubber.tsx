@@ -32,18 +32,23 @@ export const Scrubber = () => {
   }, []);
 
   return (
-    <div className="scrubber-container">
-      <div
-        className="phantom"
-        onMouseDown={startDrag}
-        onMouseUp={cancelDrag}
-        onMouseLeave={cancelDrag}
-        onMouseMove={updateDrag}
-      ></div>
+    <div
+      className="scrubber-container"
+      onMouseDown={startDrag}
+      onMouseUp={cancelDrag}
+      onMouseLeave={cancelDrag}
+      onMouseMove={updateDrag}
+    >
       <div
         className="scrubber"
         style={{
           width: `${progress}%`,
+        }}
+      ></div>
+      <div
+        className="slider"
+        style={{
+          left: `${progress}%`,
         }}
       ></div>
     </div>
