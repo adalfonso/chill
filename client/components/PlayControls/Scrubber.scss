@@ -9,10 +9,6 @@
   margin-top: -1.5rem;
   margin-bottom: 1rem;
 
-  &:hover .slider {
-    display: block;
-  }
-
   .scrubber {
     background: $primary;
     height: 0.4rem;
@@ -26,9 +22,23 @@
     height: 0.75rem;
     width: 0.75rem;
     background-color: $dm-font;
-    top: calc(1.5rem - 0.3rem);
+    top: calc(1.5rem - 0.4rem);
     display: none;
     margin-left: -0.375rem;
     z-index: 2;
+
+    &.visible {
+      display: flex;
+    }
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .scrubber-container {
+    &:hover {
+      .slider {
+        display: flex;
+      }
+    }
   }
 }

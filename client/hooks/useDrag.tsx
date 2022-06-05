@@ -1,26 +1,40 @@
-import { useState } from "react";
+import React, { useState } from "react";
+
+type DragEvent = React.MouseEvent<HTMLElement> | React.TouchEvent<HTMLElement>;
 
 export function useDrag(onApply: (percent: number) => void) {
   const [dragging, setDragging] = useState(false);
 
   const startDrag = () => setDragging(true);
-
   const cancelDrag = () => setDragging(false);
 
-  const updateDrag = (e: React.MouseEvent<HTMLElement>) => {
+  const updateDrag = (e: DragEvent) => {
     if (!dragging || !(e.target instanceof HTMLElement)) {
       return;
     }
 
-    onApply(calculateXPos(e.currentTarget, e.clientX));
+    onApply(calculateXPos(e.currentTarget, getOffset(e)));
   };
 
   return {
     startDrag,
     cancelDrag,
     updateDrag,
+    dragging,
   };
 }
+
+const getOffset = (e: DragEvent) => {
+  if (e.nativeEvent instanceof MouseEvent) {
+    return e.nativeEvent.clientX;
+  }
+
+  if (e.nativeEvent instanceof TouchEvent) {
+    return e.nativeEvent.touches[0].pageX;
+  }
+
+  throw new Error("Unable to detect offset from event.");
+};
 
 const calculateXPos = (element: HTMLElement, offset: number) => {
   const rect = element.getBoundingClientRect();

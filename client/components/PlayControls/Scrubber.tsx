@@ -13,8 +13,8 @@ import {
 export const Scrubber = () => {
   const [progress, setProgress] = useState(0);
   const dispatch = useDispatch();
-  const { startDrag, cancelDrag, updateDrag } = useDrag((percent: number) =>
-    dispatch(seek({ percent })),
+  const { startDrag, cancelDrag, updateDrag, dragging } = useDrag(
+    (percent: number) => dispatch(seek({ percent })),
   );
 
   useEffect(() => {
@@ -38,18 +38,15 @@ export const Scrubber = () => {
       onMouseUp={cancelDrag}
       onMouseLeave={cancelDrag}
       onMouseMove={updateDrag}
+      onTouchStart={startDrag}
+      onTouchEnd={cancelDrag}
+      onTouchCancel={cancelDrag}
+      onTouchMove={updateDrag}
     >
+      <div className="scrubber" style={{ width: `${progress}%` }}></div>
       <div
-        className="scrubber"
-        style={{
-          width: `${progress}%`,
-        }}
-      ></div>
-      <div
-        className="slider"
-        style={{
-          left: `${progress}%`,
-        }}
+        className={"slider" + (dragging ? " visible" : "")}
+        style={{ left: `${progress}%` }}
       ></div>
     </div>
   );
