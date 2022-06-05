@@ -7,22 +7,26 @@
   color: #ddd;
   padding: 0 0 1.5rem 0;
 
-  .now-playing {
-    font-size: 1.75rem;
-    user-select: none;
-  }
-
   .panel {
     display: flex;
     justify-content: space-between;
 
     > div {
       margin: 0 1rem;
+      width: 20%;
     }
 
     .side-panel {
       display: flex;
       align-items: flex-end;
+
+      justify-content: flex-end;
+    }
+
+    .now-playing {
+      font-size: 1.75rem;
+      user-select: none;
+      min-width: 60%;
     }
   }
 
