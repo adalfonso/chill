@@ -16,3 +16,17 @@ export const startAnimationLoop = (callback: (dt: number) => unknown) => {
 
   requestAnimationFrame(frame);
 };
+
+export const getTimeTracking = (time: number) => {
+  const cleaned = Math.round(time);
+
+  const minutes = Math.floor(cleaned / 60)
+    .toString()
+    .padStart(1, "0");
+
+  const seconds = Math.floor(cleaned % 60)
+    .toString()
+    .padStart(2, "0");
+
+  return `${minutes}:${seconds}`;
+};
