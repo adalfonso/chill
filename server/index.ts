@@ -2,6 +2,7 @@ import "core-js";
 import "regenerator-runtime";
 import dotenv from "dotenv";
 import express from "express";
+import historyApiFallback from "connect-history-api-fallback";
 import { Connection } from "./db/Client";
 import { enableHmr } from "./hmr";
 import { registerRoutes } from "./routes";
@@ -16,6 +17,19 @@ dotenv.config();
 });
 
 const app = express();
+
+// This needs to run before HMR
+app.use(
+  historyApiFallback({
+    verbose: false,
+    rewrites: [
+      {
+        from: /^\/media\/.*$/,
+        to: (context) => context.parsedUrl.path,
+      },
+    ],
+  }),
+);
 
 // Enable hot module replacement during dev
 if (process.env.NODE_ENV === "development") {

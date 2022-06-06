@@ -1,4 +1,6 @@
-/* eslint-disable */
+import WebpackDevMiddleware from "webpack-dev-middleware";
+import WebpackHotMiddleware from "webpack-hot-middleware";
+import config from "../configs/webpack/client-dev.config";
 import webpack from "webpack";
 import { Express } from "express";
 
@@ -8,14 +10,13 @@ import { Express } from "express";
  * @param app express app
  */
 export const enableHmr = (app: Express) => {
-  const config = require("../configs/webpack/client-dev.config.js");
   const compiler = webpack(config);
 
   app.use(
-    require("webpack-dev-middleware")(compiler, {
+    WebpackDevMiddleware(compiler, {
       publicPath: config.output.publicPath,
     }),
   );
 
-  app.use(require("webpack-hot-middleware")(compiler));
+  app.use(WebpackHotMiddleware(compiler));
 };
