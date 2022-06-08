@@ -2,8 +2,6 @@
 
 * {
   box-sizing: border-box;
-  font-family: "Rubik", sans-serif;
-  color: $dm-font;
 
   /* width */
   &::-webkit-scrollbar {
@@ -24,6 +22,18 @@
   &::-webkit-scrollbar-thumb:hover {
     background: #ccc;
   }
+}
+
+div,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: $dm-font;
+  font-family: "Rubik", sans-serif;
 }
 
 html {

@@ -5,6 +5,7 @@
     a {
       text-decoration: none;
     }
+
     .media-tile {
       background-color: $dm-background-2;
       color: white;
@@ -31,9 +32,49 @@
         text-shadow: 1px 1px 1px $dm-shadow;
       }
 
-      &:hover {
-        border-color: $dm-shadow;
-        opacity: 0.9;
+      .more {
+        background-color: $dm-background-2-transparent;
+        border: 1px solid $primary-dark;
+        border-radius: 0.25rem;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: none;
+
+        .play {
+          height: 1.8rem;
+          width: 1.8rem;
+          border-radius: 50%;
+          background-color: $dm-font;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: absolute;
+          left: calc(50% - 0.9rem);
+          top: calc(50% - 0.9rem);
+          box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px,
+            rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
+            rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+
+          &:hover {
+            .fa-circle-play {
+              color: $primary;
+            }
+          }
+
+          .fa-circle-play {
+            margin: 0;
+            font-size: 2rem;
+            color: $primary-dark;
+            transition: color 0.2s;
+          }
+        }
+      }
+
+      &:hover .more {
+        display: flex;
       }
     }
   }

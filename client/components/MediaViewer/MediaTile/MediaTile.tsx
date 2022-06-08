@@ -1,8 +1,10 @@
 import "./MediaTile.scss";
-import React from "react";
+import React, { MouseEvent } from "react";
+import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
+import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { useHistory } from "react-router-dom";
-import { useMultiClick } from "@client/hooks/useMultiClick";
+
 export type TileData = Partial<Media> & {
   _id: string[];
   _count: number;
@@ -19,20 +21,27 @@ interface MediaTileProps {
 export const MediaTile = ({ file, url, use, displayAs }: MediaTileProps) => {
   const history = useHistory();
 
-  const handleClick = useMultiClick(
-    // single click
-    () => history.push(url(file)),
-    // double click
-    () => use(file),
-    200,
-  );
+  const onPlay = (e: MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    use(file);
+  };
 
   return (
-    <div className="media-tile" onClick={handleClick}>
+    <div className="media-tile" onClick={() => history.push(url(file))}>
       {file.image && (
         <img src={`/media/cover/${file.image}?size=256`} loading="lazy" />
       )}
       <div>{displayAs(file)}</div>
+      <div className="more">
+        <div className="play" onClick={onPlay}>
+          <Icon
+            className="play-icon"
+            icon={faPlayCircle}
+            size="sm"
+            pull="right"
+          />
+        </div>
+      </div>
     </div>
   );
 };
