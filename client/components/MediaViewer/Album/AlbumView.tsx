@@ -1,11 +1,11 @@
 import "./AlbumView.scss";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, MouseEvent } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
-import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
-import { useParams } from "react-router-dom";
 import { Nullable } from "@common/types";
+import { faPlayCircle, faEllipsisV } from "@fortawesome/free-solid-svg-icons";
+import { useParams } from "react-router-dom";
 
 interface AlbumViewProps {
   now_playing: Nullable<Media>;
@@ -31,7 +31,8 @@ export const AlbumView = ({
   now_playing,
 }: AlbumViewProps) => {
   const album = decodeURIComponent(useParams<AlbumParams>().album);
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState<Media[]>([]);
+  const [fileOptions, setFileOptions] = useState<Media>();
 
   useEffect(() => {
     setLoading(true);
@@ -51,6 +52,14 @@ export const AlbumView = ({
   const onClick = (index) => () => onPlay(files, index);
   const artists = () => [...new Set(files.map((file) => file.artist))];
   const getYear = () => [...new Set(files.map((file) => file.year))].join(",");
+
+  const onOptionsClick = (file: Media) => (e: MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+
+    const selected = fileOptions === file;
+
+    selected ? setFileOptions(undefined) : setFileOptions(file);
+  };
 
   return (
     <div id="media-viewer">
@@ -92,8 +101,29 @@ export const AlbumView = ({
                     )}
                   </div>
                   <div>{file.title}</div>
-                  <div className="duration mono">
-                    {secondsToMinutes(file.duration)}
+                  <div
+                    className={
+                      "tail" + (fileOptions === file ? " show-options" : "")
+                    }
+                  >
+                    <div className="duration mono">
+                      {secondsToMinutes(file.duration)}
+                    </div>
+                    <div className="more" onClick={onOptionsClick(file)}>
+                      <Icon icon={faEllipsisV} pull="right" />
+                    </div>
+                    {fileOptions === file && (
+                      <section className="file-options">
+                        <div
+                          onClick={() => {
+                            onClick(index);
+                            setFileOptions(undefined);
+                          }}
+                        >
+                          Play
+                        </div>
+                      </section>
+                    )}
                   </div>
                 </div>
               );

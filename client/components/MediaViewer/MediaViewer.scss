@@ -1,3 +1,5 @@
+@import "@client/components/variables.scss";
+
 #media-viewer {
   display: flex;
   flex-wrap: wrap;
@@ -24,8 +26,59 @@
   .row {
     display: contents;
 
-    &:hover > div {
-      background-color: rgba(115, 115, 115, 0.95);
+    > div {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 0 0.6rem 1rem;
+    }
+
+    &:hover {
+      > div {
+        background-color: rgba(115, 115, 115, 0.95);
+
+        .duration {
+          display: none;
+        }
+
+        .more {
+          display: flex;
+        }
+      }
+    }
+
+    .tail {
+      position: relative;
+      justify-content: flex-end;
+
+      &.show-options {
+        .duration {
+          display: none;
+        }
+
+        .more {
+          display: flex;
+        }
+      }
+    }
+
+    .file-options {
+      background-color: $dm-background-2;
+      border-radius: 0.2rem;
+      padding: 0.75rem 0;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      z-index: 3;
+      width: 10rem;
+
+      > div {
+        padding: 0.5rem 1rem;
+
+        &:hover {
+          background-color: $dm-background;
+        }
+      }
     }
   }
 
@@ -38,10 +91,19 @@
     padding: 0 1rem 0 0;
   }
 
-  div {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.6rem 0 0.6rem 1rem;
+  .more {
+    display: none;
+    padding: 0 1rem 0 0;
+    justify-self: flex-end;
+
+    svg {
+      color: $dm-font-2;
+    }
+
+    &:hover {
+      svg {
+        color: #fff;
+      }
+    }
   }
 }
