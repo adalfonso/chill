@@ -3,9 +3,9 @@ import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
 import { RootState } from "@client/state/reducers/store";
 import { faPlayCircle, faEllipsisV } from "@fortawesome/free-solid-svg-icons";
-import { play } from "@client/state/reducers/playerReducer";
-import { useDispatch, useSelector } from "react-redux";
+import { playNext } from "@client/state/reducers/playerReducer";
 import { secondsToMinutes } from "@client/util";
+import { useDispatch, useSelector } from "react-redux";
 
 export interface AlbumViewRowProps {
   file: Media;
@@ -18,18 +18,21 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
   const player = useSelector((state: RootState) => state.player);
   const dispatch = useDispatch();
 
-  const onPlay = (files: Media[], index = 0) => {
-    dispatch(play({ files: [...files], index }));
-  };
-
   const onOptionsClick = (e: MouseEvent<HTMLElement>) => {
     e.stopPropagation();
     setShowOptions(!showOptions);
   };
 
   const optionsHandler = {
-    play: () => {
+    play: (e) => {
+      e.stopPropagation();
       playAll(index);
+      setShowOptions(false);
+    },
+
+    playNext: (e) => {
+      e.stopPropagation();
+      dispatch(playNext({ file }));
       setShowOptions(false);
     },
   };
@@ -56,6 +59,7 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
         {showOptions && (
           <section className="file-options">
             <div onClick={optionsHandler.play}>Play</div>
+            <div onClick={optionsHandler.playNext}>Play Next</div>
           </section>
         )}
       </div>

@@ -75,6 +75,7 @@ export const AlbumView = ({ setLoading }: AlbumViewProps) => {
                   index={index}
                   file={file}
                   playAll={playAll}
+                  key={file._id.toString()}
                 ></AlbumViewRow>
               );
             })}
