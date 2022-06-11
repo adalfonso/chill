@@ -1,38 +1,30 @@
 import "./AlbumView.scss";
-import React, { useState, useEffect, MouseEvent } from "react";
-import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
+import React, { useState, useEffect } from "react";
+import { AlbumViewRow } from "./AlbumView/AlbumViewRow";
 import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
-import { Nullable } from "@common/types";
-import { faPlayCircle, faEllipsisV } from "@fortawesome/free-solid-svg-icons";
+import { play } from "@client/state/reducers/playerReducer";
+import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 
 interface AlbumViewProps {
-  now_playing: Nullable<Media>;
-  onPlay: (files: Media[], index?: number) => void;
   setLoading: (loading: boolean) => void;
 }
-
-const secondsToMinutes = (duration: number) => {
-  const minutes = Math.floor(duration / 60);
-  const seconds = Math.floor(duration - minutes * 60);
-  const pad = (duration: number) => duration.toString().padStart(2, "0");
-
-  return `${minutes}:${pad(seconds)}`;
-};
 
 type AlbumParams = {
   album: string;
 };
 
-export const AlbumView = ({
-  setLoading,
-  onPlay,
-  now_playing,
-}: AlbumViewProps) => {
+export const AlbumView = ({ setLoading }: AlbumViewProps) => {
   const album = decodeURIComponent(useParams<AlbumParams>().album);
   const [files, setFiles] = useState<Media[]>([]);
-  const [fileOptions, setFileOptions] = useState<Media>();
+  const dispatch = useDispatch();
+
+  const playAll =
+    (index = 0) =>
+    () => {
+      dispatch(play({ files: [...files], index }));
+    };
 
   useEffect(() => {
     setLoading(true);
@@ -41,7 +33,7 @@ export const AlbumView = ({
       .then((res) => {
         setFiles(res.data);
       })
-      .catch((err) => {
+      .catch((_err) => {
         console.error("Failed to load album tracks data");
       })
       .finally(() => {
@@ -49,17 +41,8 @@ export const AlbumView = ({
       });
   }, [album]);
 
-  const onClick = (index) => () => onPlay(files, index);
   const artists = () => [...new Set(files.map((file) => file.artist))];
   const getYear = () => [...new Set(files.map((file) => file.year))].join(",");
-
-  const onOptionsClick = (file: Media) => (e: MouseEvent<HTMLElement>) => {
-    e.stopPropagation();
-
-    const selected = fileOptions === file;
-
-    selected ? setFileOptions(undefined) : setFileOptions(file);
-  };
 
   return (
     <div id="media-viewer">
@@ -88,44 +71,11 @@ export const AlbumView = ({
             .sort((a, b) => a.track - b.track)
             .map((file, index) => {
               return (
-                <div className="row" onClick={onClick(index)} key={file.path}>
-                  <div className="track">
-                    {file.track}
-                    {now_playing?.path === file.path && (
-                      <Icon
-                        className="play-icon"
-                        icon={faPlayCircle}
-                        size="sm"
-                        pull="right"
-                      />
-                    )}
-                  </div>
-                  <div>{file.title}</div>
-                  <div
-                    className={
-                      "tail" + (fileOptions === file ? " show-options" : "")
-                    }
-                  >
-                    <div className="duration mono">
-                      {secondsToMinutes(file.duration)}
-                    </div>
-                    <div className="more" onClick={onOptionsClick(file)}>
-                      <Icon icon={faEllipsisV} pull="right" />
-                    </div>
-                    {fileOptions === file && (
-                      <section className="file-options">
-                        <div
-                          onClick={() => {
-                            onClick(index);
-                            setFileOptions(undefined);
-                          }}
-                        >
-                          Play
-                        </div>
-                      </section>
-                    )}
-                  </div>
-                </div>
+                <AlbumViewRow
+                  index={index}
+                  file={file}
+                  playAll={playAll}
+                ></AlbumViewRow>
               );
             })}
         </div>

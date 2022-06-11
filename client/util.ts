@@ -30,3 +30,11 @@ export const getTimeTracking = (time: number) => {
 
   return `${minutes}:${seconds}`;
 };
+
+export const secondsToMinutes = (duration: number) => {
+  const minutes = Math.floor(duration / 60);
+  const seconds = Math.floor(duration - minutes * 60);
+  const pad = (duration: number) => duration.toString().padStart(2, "0");
+
+  return `${minutes}:${pad(seconds)}`;
+};
