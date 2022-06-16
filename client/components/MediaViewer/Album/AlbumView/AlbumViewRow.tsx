@@ -42,12 +42,7 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
       <div className="track">
         {file.track}
         {player?.now_playing?.path === file.path && (
-          <Icon
-            className="play-icon"
-            icon={faPlayCircle}
-            size="sm"
-            pull="right"
-          />
+          <Icon className="play-icon" icon={faPlayCircle} pull="right" />
         )}
       </div>
       <div>{file.title}</div>

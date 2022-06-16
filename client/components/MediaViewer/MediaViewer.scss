@@ -10,6 +10,26 @@
 
   .info {
     margin-left: 1rem;
+
+    .play-button {
+      padding: 0.25rem 0.45rem 0.25rem 0.25rem;
+      border-radius: 0.25rem;
+      display: inline-flex;
+      background-color: $primary;
+      justify-content: space-between;
+      align-items: center;
+      color: $dm-font;
+      transition: background-color 0.3s;
+      cursor: pointer;
+
+      svg {
+        margin-right: 0.75rem;
+      }
+
+      &:hover {
+        background-color: $primary-light;
+      }
+    }
   }
 
   .media-tiles {

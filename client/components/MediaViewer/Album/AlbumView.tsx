@@ -1,8 +1,10 @@
 import "./AlbumView.scss";
 import React, { useState, useEffect } from "react";
 import { AlbumViewRow } from "./AlbumView/AlbumViewRow";
+import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
+import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { play } from "@client/state/reducers/playerReducer";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -50,7 +52,7 @@ export const AlbumView = ({ setLoading }: AlbumViewProps) => {
         <div className="details">
           {files?.[0]?.cover?.filename && (
             <img
-              src={`/media/cover/${files[0].cover.filename}?size=128`}
+              src={`/media/cover/${files[0].cover.filename}?size=160`}
               loading="lazy"
             />
           )}
@@ -59,6 +61,10 @@ export const AlbumView = ({ setLoading }: AlbumViewProps) => {
             {artists().length > 1 && <h4>{artists().join(",  ")}</h4>}
             <h4>{album}</h4>
             <h4>{getYear()}</h4>
+            <div className="play-button" onClick={() => playAll()()}>
+              <Icon icon={faPlayCircle} size="sm" pull="right" />
+              Play
+            </div>
           </div>
         </div>
 
