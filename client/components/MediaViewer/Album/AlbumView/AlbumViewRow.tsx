@@ -26,7 +26,7 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
   const optionsHandler = {
     play: (e) => {
       e.stopPropagation();
-      playAll(index);
+      playAll(index)();
       setShowOptions(false);
     },
 
