@@ -32,7 +32,7 @@ export const Playlist = () => {
           <div
             className="playlist-item"
             onClick={() => dispatch(changeTrack({ index }))}
-            key={media._id.toString()}
+            key={media._id.toString() + index}
           >
             <div className="index">{index + 1}</div>
 

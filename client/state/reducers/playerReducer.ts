@@ -55,11 +55,6 @@ export const playerSlice = createSlice({
       const { file } = action.payload;
       const head = state.playlist.slice(0, state.index + 1);
       const tail = state.playlist.slice(state.index + 1);
-      const file_index = tail.map((media) => media._id).indexOf(file._id);
-
-      if (file_index >= 0) {
-        tail.splice(file_index, 1);
-      }
 
       state.playlist = [...head, file, ...tail];
     },
