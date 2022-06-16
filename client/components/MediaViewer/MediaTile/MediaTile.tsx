@@ -27,21 +27,24 @@ export const MediaTile = ({ file, url, use, displayAs }: MediaTileProps) => {
   };
 
   return (
-    <div className="media-tile" onClick={() => history.push(url(file))}>
-      {file.image && (
-        <img src={`/media/cover/${file.image}?size=256`} loading="lazy" />
-      )}
-      <div>{displayAs(file)}</div>
-      <div className="more">
-        <div className="play" onClick={onPlay}>
-          <Icon
-            className="play-icon"
-            icon={faPlayCircle}
-            size="sm"
-            pull="right"
-          />
+    <div className="media-tile-wrapper">
+      <div className="media-tile" onClick={() => history.push(url(file))}>
+        {file.image && (
+          <img src={`/media/cover/${file.image}?size=256`} loading="lazy" />
+        )}
+
+        <div className="more">
+          <div className="play" onClick={onPlay}>
+            <Icon
+              className="play-icon"
+              icon={faPlayCircle}
+              size="sm"
+              pull="right"
+            />
+          </div>
         </div>
       </div>
+      <div className="display-as">{displayAs(file)}</div>
     </div>
   );
 };

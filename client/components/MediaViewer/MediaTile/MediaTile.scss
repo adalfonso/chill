@@ -6,14 +6,21 @@
       text-decoration: none;
     }
 
+    .media-tile-wrapper {
+      padding: 0.65rem;
+      width: 8.3rem;
+
+      .display-as {
+        margin: 0.5rem 0 0 0;
+      }
+    }
+
     .media-tile {
       background-color: $dm-background-2;
       color: white;
       border-radius: 0.25rem;
-      padding: 0.55rem;
       height: 7rem;
       width: 7rem;
-      margin: 0.5rem;
       transition: 0.2s;
       user-select: none;
       position: relative;
@@ -83,11 +90,14 @@
 @media screen and (min-width: 600px) {
   #media-viewer {
     .media-tiles {
+      .media-tile-wrapper {
+        padding: 1rem;
+        width: 13rem;
+      }
+
       .media-tile {
         height: 11rem;
         width: 11rem;
-        padding: 0.75rem;
-        margin: 1rem;
       }
     }
   }
