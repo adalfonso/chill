@@ -18,7 +18,7 @@ export const startAnimationLoop = (callback: (dt: number) => unknown) => {
 };
 
 export const getTimeTracking = (time: number) => {
-  const cleaned = Math.round(time);
+  const cleaned = Math.round(time || 1);
 
   const minutes = Math.floor(cleaned / 60)
     .toString()

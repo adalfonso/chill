@@ -58,7 +58,9 @@ export const Scrubber = () => {
           {player.is_playing && getTimeTracking(audio.currentTime)}
         </div>
         <div className="end-time">
-          {player.is_playing && getTimeTracking(audio.duration)}
+          {player.is_playing &&
+            !Number.isNaN(audio.duration) &&
+            getTimeTracking(audio.duration)}
         </div>
       </div>
     </>
