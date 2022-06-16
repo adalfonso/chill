@@ -3,7 +3,7 @@ import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
 import { RootState } from "@client/state/reducers/store";
 import { faPlayCircle, faEllipsisV } from "@fortawesome/free-solid-svg-icons";
-import { playNext } from "@client/state/reducers/playerReducer";
+import { playNext, addToQueue } from "@client/state/reducers/playerReducer";
 import { secondsToMinutes } from "@client/util";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -35,6 +35,12 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
       dispatch(playNext({ file }));
       setShowOptions(false);
     },
+
+    addToQueue: (e) => {
+      e.stopPropagation();
+      dispatch(addToQueue({ file }));
+      setShowOptions(false);
+    },
   };
 
   return (
@@ -55,6 +61,7 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
           <section className="file-options">
             <div onClick={optionsHandler.play}>Play</div>
             <div onClick={optionsHandler.playNext}>Play Next</div>
+            <div onClick={optionsHandler.addToQueue}>Add to Queue</div>
           </section>
         )}
       </div>

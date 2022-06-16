@@ -59,6 +59,11 @@ export const playerSlice = createSlice({
       state.playlist = [...head, file, ...tail];
     },
 
+    addToQueue: (state, action) => {
+      const { file } = action.payload;
+      state.playlist = [...state.playlist, file];
+    },
+
     pause: (state) => {
       audio.pause();
       state.is_playing = false;
@@ -134,6 +139,7 @@ export const playerSlice = createSlice({
 export const {
   play,
   playNext,
+  addToQueue,
   pause,
   previous,
   next,
