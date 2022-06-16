@@ -39,6 +39,7 @@ export const Scrubber = () => {
         className="scrubber-container"
         onMouseDown={startDrag}
         onMouseUp={cancelDrag}
+        onMouseLeave={cancelDrag}
         onMouseMove={updateDrag}
         onTouchStart={startDrag}
         onTouchEnd={cancelDrag}
