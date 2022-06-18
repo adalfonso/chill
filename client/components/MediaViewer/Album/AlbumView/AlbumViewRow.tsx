@@ -1,4 +1,5 @@
 import React, { useState, MouseEvent } from "react";
+import { FileMenu } from "../../FileMenu";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
 import { RootState } from "@client/state/reducers/store";
@@ -57,13 +58,7 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
         <div className="more" onClick={onOptionsClick}>
           <Icon icon={faEllipsisV} pull="right" />
         </div>
-        {showOptions && (
-          <section className="file-options">
-            <div onClick={optionsHandler.play}>Play</div>
-            <div onClick={optionsHandler.playNext}>Play Next</div>
-            <div onClick={optionsHandler.addToQueue}>Add to Queue</div>
-          </section>
-        )}
+        {showOptions && <FileMenu handler={optionsHandler}></FileMenu>}
       </div>
     </div>
   );
