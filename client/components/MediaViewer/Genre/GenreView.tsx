@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaTile, TileData } from "../MediaTile/MediaTile";
 import { useParams } from "react-router-dom";
 
 interface GenreViewProps {
-  onPlay: (files: Media[], index?: number) => void;
   setLoading: (loading: boolean) => void;
 }
 
@@ -13,7 +11,7 @@ interface GenreParams {
   genre: string;
 }
 
-export const GenreView = ({ onPlay, setLoading }: GenreViewProps) => {
+export const GenreView = ({ setLoading }: GenreViewProps) => {
   const genre = decodeURIComponent(useParams<GenreParams>().genre);
   const [artists, setArtists] = useState([]);
 
@@ -33,14 +31,6 @@ export const GenreView = ({ onPlay, setLoading }: GenreViewProps) => {
   }, [genre]);
 
   const url = (file: TileData) => `/artist/${encodeURIComponent(file.artist)}`;
-
-  const use = async (file: TileData) => {
-    const { artist } = file;
-    const results = await MediaApi.query({ artist });
-
-    onPlay(results.data);
-  };
-
   const displayAs = (file: TileData) => file.artist;
 
   return (
@@ -56,7 +46,6 @@ export const GenreView = ({ onPlay, setLoading }: GenreViewProps) => {
               key={JSON.stringify(file._id)}
               file={file}
               url={url}
-              use={use}
               displayAs={displayAs}
             />
           ))}

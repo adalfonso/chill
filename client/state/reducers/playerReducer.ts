@@ -52,16 +52,16 @@ export const playerSlice = createSlice({
     },
 
     playNext: (state, action) => {
-      const { file } = action.payload;
+      const { files } = action.payload;
       const head = state.playlist.slice(0, state.index + 1);
       const tail = state.playlist.slice(state.index + 1);
 
-      state.playlist = [...head, file, ...tail];
+      state.playlist = [...head, ...files, ...tail];
     },
 
     addToQueue: (state, action) => {
-      const { file } = action.payload;
-      state.playlist = [...state.playlist, file];
+      const { files } = action.payload;
+      state.playlist = [...state.playlist, ...files];
     },
 
     pause: (state) => {

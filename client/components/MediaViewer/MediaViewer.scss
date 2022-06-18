@@ -1,4 +1,5 @@
 @import "@client/components/variables.scss";
+@import "@client/components/MediaViewer/FileMenu.scss";
 
 #media-viewer {
   display: flex;
@@ -61,7 +62,7 @@
           display: none;
         }
 
-        .more {
+        .file-menu-entry {
           display: flex;
         }
       }
@@ -71,32 +72,13 @@
       position: relative;
       justify-content: flex-end;
 
-      &.show-options {
+      &.show-menu {
         .duration {
           display: none;
         }
 
-        .more {
+        .file-menu-entry {
           display: flex;
-        }
-      }
-    }
-
-    .file-options {
-      background-color: $dm-background-2;
-      border-radius: 0.2rem;
-      padding: 0.75rem 0;
-      position: absolute;
-      top: 100%;
-      right: 0;
-      z-index: 3;
-      width: 10rem;
-
-      > div {
-        padding: 0.5rem 1rem;
-
-        &:hover {
-          background-color: $dm-background;
         }
       }
     }
@@ -111,19 +93,9 @@
     padding: 0 1rem 0 0;
   }
 
-  .more {
+  .file-menu-entry {
     display: none;
     padding: 0 1rem 0 0;
     justify-self: flex-end;
-
-    svg {
-      color: $dm-font-2;
-    }
-
-    &:hover {
-      svg {
-        color: #fff;
-      }
-    }
   }
 }

@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaTile, TileData } from "../MediaTile/MediaTile";
 import { useParams } from "react-router-dom";
 
 interface ArtistViewProps {
-  onPlay: (files: Media[], index?: number) => void;
   setLoading: (loading: boolean) => void;
 }
 
@@ -13,7 +11,7 @@ type AlbumParams = {
   artist: string;
 };
 
-export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
+export const ArtistView = ({ setLoading }: ArtistViewProps) => {
   const artist = decodeURIComponent(useParams<AlbumParams>().artist);
   const [albums, setAlbums] = useState([]);
 
@@ -38,13 +36,6 @@ export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
 
   const url = (file: TileData) => `/album/${encodeURIComponent(file.album)}`;
 
-  const use = async (file: TileData) => {
-    const { artist, album, year } = file;
-    const results = await MediaApi.query({ artist, album, year });
-
-    onPlay(results.data.sort((a, b) => a.track - b.track));
-  };
-
   const displayAs = (file: TileData) => {
     const { album, artist, year } = file;
     return `${album} (${year})`;
@@ -63,7 +54,6 @@ export const ArtistView = ({ onPlay, setLoading }: ArtistViewProps) => {
               key={JSON.stringify(file._id)}
               file={file}
               url={url}
-              use={use}
               displayAs={displayAs}
             />
           ))}

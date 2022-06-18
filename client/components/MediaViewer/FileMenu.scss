@@ -1,0 +1,32 @@
+.file-menu-entry {
+  color: $dm-font;
+  padding: 0 0.25rem;
+  display: none;
+
+  &:hover {
+    color: $dm-font-2;
+  }
+
+  &.active {
+    display: flex;
+  }
+}
+
+.file-menu {
+  background-color: $dm-background-2;
+  border-radius: 0.2rem;
+  padding: 0.75rem 0;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 3;
+  width: 10rem;
+
+  > div {
+    padding: 0.5rem 1rem;
+
+    &:hover {
+      background-color: $dm-background;
+    }
+  }
+}

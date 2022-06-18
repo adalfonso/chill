@@ -1,9 +1,9 @@
-import React, { useState, MouseEvent } from "react";
+import React, { useState } from "react";
 import { FileMenu } from "../../FileMenu";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
 import { RootState } from "@client/state/reducers/store";
-import { faPlayCircle, faEllipsisV } from "@fortawesome/free-solid-svg-icons";
+import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { playNext, addToQueue } from "@client/state/reducers/playerReducer";
 import { secondsToMinutes } from "@client/util";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,33 +15,15 @@ export interface AlbumViewRowProps {
 }
 
 export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
-  const [showOptions, setShowOptions] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const player = useSelector((state: RootState) => state.player);
   const dispatch = useDispatch();
 
-  const onOptionsClick = (e: MouseEvent<HTMLElement>) => {
-    e.stopPropagation();
-    setShowOptions(!showOptions);
-  };
-
-  const optionsHandler = {
-    play: (e) => {
-      e.stopPropagation();
-      playAll(index)();
-      setShowOptions(false);
-    },
-
-    playNext: (e) => {
-      e.stopPropagation();
-      dispatch(playNext({ file }));
-      setShowOptions(false);
-    },
-
-    addToQueue: (e) => {
-      e.stopPropagation();
-      dispatch(addToQueue({ file }));
-      setShowOptions(false);
-    },
+  const menuHandler = {
+    play: () => playAll(index)(),
+    playNext: () => dispatch(playNext({ files: [file] })),
+    addToQueue: () => dispatch(addToQueue({ files: [file] })),
+    toggle: (visible: boolean) => setShowMenu(visible),
   };
 
   return (
@@ -53,12 +35,9 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
         )}
       </div>
       <div>{file.title}</div>
-      <div className={"tail" + (showOptions ? " show-options" : "")}>
+      <div className={"tail" + (showMenu ? " show-menu" : "")}>
         <div className="duration mono">{secondsToMinutes(file.duration)}</div>
-        <div className="more" onClick={onOptionsClick}>
-          <Icon icon={faEllipsisV} pull="right" />
-        </div>
-        {showOptions && <FileMenu handler={optionsHandler}></FileMenu>}
+        <FileMenu handler={menuHandler}></FileMenu>
       </div>
     </div>
   );

@@ -2,7 +2,6 @@ import "./MusicLibrary.scss";
 import React, { useReducer, useRef, useState } from "react";
 import _ from "lodash";
 import { AxiosResponse } from "axios";
-import { Media } from "@common/autogen";
 import { MediaAction, mediaReducer, useFetch } from "@client/hooks/useFetch";
 import { MediaApi, PaginationOptions } from "@client/api/MediaApi";
 import { MediaMatch as Match } from "@common/media/types";
@@ -25,16 +24,11 @@ const ApiMap: Record<
 };
 
 interface MusicLibraryProps {
-  onPlay: (files: Media[], index?: number) => void;
   setLoading: (loading: boolean) => void;
   per_page: number;
 }
 
-export const MusicLibrary = ({
-  onPlay,
-  setLoading,
-  per_page,
-}: MusicLibraryProps) => {
+export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
   const bottomBoundaryRef = useRef(null);
   const [match, setMatch] = useState<Match>(Match.Artist);
   const [pager, pagerDispatch] = useReducer(pageReducer, { page: 0 });
@@ -60,13 +54,6 @@ export const MusicLibrary = ({
   const displayAs = (file: TileData) => file[match];
   const url = (file: TileData) =>
     `/${match}/${encodeURIComponent(file[match])}`;
-
-  const use = async (file: TileData) => {
-    const match_value = file[match];
-    const results = await MediaApi.query({ [match]: match_value });
-
-    onPlay(results.data);
-  };
 
   useInfiniteScroll(bottomBoundaryRef, pagerDispatch);
 
@@ -107,7 +94,6 @@ export const MusicLibrary = ({
                 file={file}
                 displayAs={displayAs}
                 url={url}
-                use={use}
               />
             ))}
         </div>

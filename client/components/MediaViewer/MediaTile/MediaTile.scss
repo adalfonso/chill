@@ -40,8 +40,6 @@
       }
 
       .more {
-        background-color: $dm-background-2-transparent;
-        border: 1px solid $primary-dark;
         border-radius: 0.25rem;
         position: absolute;
         top: 0;
@@ -49,6 +47,8 @@
         right: 0;
         bottom: 0;
         display: none;
+        background-color: $dm-background-2-transparent;
+        border: 1px solid $primary-dark;
 
         .play {
           height: 1.8rem;
@@ -77,6 +77,17 @@
             color: $primary-dark;
             transition: color 0.2s;
           }
+        }
+
+        .file-menu-entry {
+          position: absolute;
+          display: flex;
+          bottom: 5%;
+          right: 5%;
+        }
+
+        &.active {
+          display: flex;
         }
       }
 

@@ -44,7 +44,10 @@ export const PlayControls = () => {
             <div className="circle-button play" onClick={togglePlayer}>
               <Icon icon={player.is_playing ? faPause : faPlay} />
             </div>
-            <div className="circle-button" onClick={() => dispatch(next())}>
+            <div
+              className="circle-button"
+              onClick={() => dispatch(next(false))}
+            >
               <Icon icon={faFastForward} />
             </div>
           </div>
