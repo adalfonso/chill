@@ -85,6 +85,10 @@ export const playerSlice = createSlice({
         load(state);
       }
 
+      if (!state.now_playing) {
+        return;
+      }
+
       audio.play();
       state.is_playing = true;
       state.is_shuffled = false;
@@ -105,6 +109,10 @@ export const playerSlice = createSlice({
         state.index = state.playlist.length - 1;
       }
 
+      if (!state.playlist[state.index]) {
+        return;
+      }
+
       state.now_playing = state.playlist[state.index];
 
       load(state);
@@ -122,6 +130,10 @@ export const playerSlice = createSlice({
           return;
         }
         state.index = 0;
+      }
+
+      if (!state.playlist[state.index]) {
+        return;
       }
 
       state.now_playing = state.playlist[state.index];
