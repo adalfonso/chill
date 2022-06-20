@@ -4,6 +4,7 @@ import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Playlist } from "./Playlist";
 import { RootState } from "@client/state/reducers/store";
 import { Scrubber } from "./Scrubber";
+import { Shuffle } from "./Shuffle";
 import { VolumeControl } from "./VolumeControl";
 import { next, pause, play, previous } from "@reducers/playerReducer";
 import { useDispatch, useSelector } from "react-redux";
@@ -53,8 +54,12 @@ export const PlayControls = () => {
           </div>
         </div>
         <div className="side-panel">
+          <div className="icons">
+            <Shuffle></Shuffle>
+            <Playlist></Playlist>
+          </div>
+
           <VolumeControl></VolumeControl>
-          <Playlist></Playlist>
         </div>
       </div>
     </div>

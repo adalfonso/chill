@@ -19,7 +19,7 @@
     .side-panel {
       display: flex;
       align-items: flex-end;
-
+      flex-direction: column;
       justify-content: flex-end;
     }
 
@@ -58,6 +58,20 @@
     font-size: 2rem;
     height: 4rem;
     width: 4rem;
+  }
+
+  .icons {
+    > * {
+      margin-left: 1rem;
+    }
+
+    svg {
+      font-size: 1rem;
+    }
+
+    .active {
+      color: $primary-light;
+    }
   }
 
   .playlist {

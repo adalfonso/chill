@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { Media } from "@common/autogen";
 import { Nullable } from "@common/types";
 import { WritableDraft } from "immer/dist/internal";
@@ -19,7 +20,9 @@ const load = (state: WritableDraft<PlayerState>) => {
 
 export interface PlayerState {
   is_playing: boolean;
+  is_shuffled: boolean;
   now_playing: Nullable<Media>;
+  original_playlist: Media[];
   playlist: Media[];
   index: number;
   volume: number;
@@ -27,7 +30,9 @@ export interface PlayerState {
 
 const initialState: PlayerState = {
   is_playing: false,
+  is_shuffled: false,
   now_playing: null,
+  original_playlist: [],
   playlist: [],
   index: 0,
   volume: 1,
@@ -37,6 +42,39 @@ export const playerSlice = createSlice({
   name: "player",
   initialState,
   reducers: {
+    addToQueue: (state, action) => {
+      const { files } = action.payload;
+      state.playlist = [...state.playlist, ...files];
+    },
+
+    changeTrack: (state, action) => {
+      const index = action.payload.index;
+
+      if (index < 0 || index >= state.playlist.length) {
+        console.error(
+          `Cannot change track to index "${index}" as it is out of bounds`,
+        );
+
+        return;
+      }
+
+      state.index = index;
+      state.now_playing = state.playlist[state.index];
+
+      load(state);
+      audio.play();
+      state.is_playing = true;
+    },
+
+    changeVolume: (state, action) => {
+      state.volume = audio.volume = action.payload.percent;
+    },
+
+    pause: (state) => {
+      audio.pause();
+      state.is_playing = false;
+    },
+
     play: (state, action) => {
       const { files, index = 0 } = action.payload;
 
@@ -49,6 +87,7 @@ export const playerSlice = createSlice({
 
       audio.play();
       state.is_playing = true;
+      state.is_shuffled = false;
     },
 
     playNext: (state, action) => {
@@ -57,16 +96,6 @@ export const playerSlice = createSlice({
       const tail = state.playlist.slice(state.index + 1);
 
       state.playlist = [...head, ...files, ...tail];
-    },
-
-    addToQueue: (state, action) => {
-      const { files } = action.payload;
-      state.playlist = [...state.playlist, ...files];
-    },
-
-    pause: (state) => {
-      audio.pause();
-      state.is_playing = false;
     },
 
     previous: (state) => {
@@ -102,29 +131,6 @@ export const playerSlice = createSlice({
       state.is_playing = true;
     },
 
-    changeVolume: (state, action) => {
-      state.volume = audio.volume = action.payload.percent;
-    },
-
-    changeTrack: (state, action) => {
-      const index = action.payload.index;
-
-      if (index < 0 || index >= state.playlist.length) {
-        console.error(
-          `Cannot change track to index "${index}" as it is out of bounds`,
-        );
-
-        return;
-      }
-
-      state.index = index;
-      state.now_playing = state.playlist[state.index];
-
-      load(state);
-      audio.play();
-      state.is_playing = true;
-    },
-
     seek: (_state, action) => {
       audio.currentTime = audio.duration * action.payload.percent;
     },
@@ -133,20 +139,36 @@ export const playerSlice = createSlice({
       load(state);
       state.playlist = action.payload.playlist;
     },
+
+    shuffle: (state) => {
+      if (state.is_shuffled) {
+        state.playlist = [...state.original_playlist];
+      } else {
+        state.original_playlist = [...state.playlist];
+        state.playlist = _.shuffle(state.playlist);
+      }
+
+      state.is_shuffled = !state.is_shuffled;
+      state.index = _.findIndex(
+        state.playlist,
+        (file) => file.path === state.now_playing?.path,
+      );
+    },
   },
 });
 
 export const {
-  play,
-  playNext,
   addToQueue,
-  pause,
-  previous,
-  next,
   changeTrack,
   changeVolume,
+  next,
+  pause,
+  play,
+  playNext,
+  previous,
   seek,
   setPlaylist,
+  shuffle,
 } = playerSlice.actions;
 
 export default playerSlice.reducer;
