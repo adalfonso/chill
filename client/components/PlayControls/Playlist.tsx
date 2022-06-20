@@ -34,11 +34,20 @@ export const Playlist = () => {
             onClick={() => dispatch(changeTrack({ index }))}
             key={media._id.toString() + index}
           >
-            <div className="index">{index + 1}</div>
+            <div className="cover">
+              {media.cover?.filename && (
+                <img
+                  src={`/media/cover/${media.cover.filename}?size=36`}
+                  loading="lazy"
+                />
+              )}
+            </div>
 
             <div className="content">
-              <div className="artist">{media.artist}</div>
               <div className="title">{media.title}</div>
+              <div className="artist">
+                {media.artist} {media.album ? ` -  ${media.album}` : ""}
+              </div>
             </div>
             <div className="playing">
               {player.now_playing === media && <Icon icon={faPlayCircle} />}
