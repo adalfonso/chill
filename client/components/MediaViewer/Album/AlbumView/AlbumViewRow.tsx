@@ -1,9 +1,8 @@
 import React, { useState } from "react";
+import { Equalizer } from "@client/components/Equalizer";
 import { FileMenu } from "../../FileMenu";
-import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
 import { RootState } from "@client/state/reducers/store";
-import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { playNext, addToQueue } from "@client/state/reducers/playerReducer";
 import { secondsToMinutes } from "@client/util";
 import { useDispatch, useSelector } from "react-redux";
@@ -30,8 +29,8 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
     <div className="row" onClick={playAll(index)} key={file.path}>
       <div className="track">
         {file.track}
-        {player?.now_playing?.path === file.path && (
-          <Icon className="play-icon" icon={faPlayCircle} pull="right" />
+        {player.now_playing?.path === file.path && player.is_playing && (
+          <Equalizer />
         )}
       </div>
       <div>{file.title}</div>

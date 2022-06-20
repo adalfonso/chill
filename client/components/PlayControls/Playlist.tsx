@@ -1,14 +1,11 @@
 import "./Playlist.scss";
 import React, { useState } from "react";
+import { Equalizer } from "../Equalizer";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { RootState } from "@client/state/reducers/store";
 import { changeTrack } from "@client/state/reducers/playerReducer";
+import { faListDots, faClose } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  faListDots,
-  faClose,
-  faPlayCircle,
-} from "@fortawesome/free-solid-svg-icons";
 
 export const Playlist = () => {
   const player = useSelector((state: RootState) => state.player);
@@ -49,9 +46,8 @@ export const Playlist = () => {
                 {media.artist} {media.album ? ` -  ${media.album}` : ""}
               </div>
             </div>
-            <div className="playing">
-              {player.now_playing === media && <Icon icon={faPlayCircle} />}
-            </div>
+
+            {player.now_playing === media && player.is_playing && <Equalizer />}
           </div>
         ))}
       </div>
