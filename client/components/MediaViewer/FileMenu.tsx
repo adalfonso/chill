@@ -1,10 +1,10 @@
 import React, { MouseEvent, useEffect, useState } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { RootState } from "@client/state/reducers/store";
+import { RootState } from "@reducers/store";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { ObjectID } from "bson";
-import { setMenu } from "@client/state/reducers/mediaMenuReducer";
+import { setMenu } from "@reducers/mediaMenuReducer";
 
 interface FileMenuHandler {
   play: (e: MouseEvent<HTMLElement>) => void;

@@ -1,8 +1,8 @@
 import React from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { RootState } from "@client/state/reducers/store";
+import { RootState } from "@reducers/store";
 import { faShuffle } from "@fortawesome/free-solid-svg-icons";
-import { shuffle } from "@client/state/reducers/playerReducer";
+import { shuffle } from "@reducers/playerReducer";
 import { useDispatch, useSelector } from "react-redux";
 
 export const Shuffle = () => {

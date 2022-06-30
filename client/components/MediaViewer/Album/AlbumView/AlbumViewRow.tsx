@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Equalizer } from "@client/components/Equalizer";
 import { FileMenu } from "../../FileMenu";
 import { Media } from "@common/autogen";
-import { RootState } from "@client/state/reducers/store";
-import { playNext, addToQueue } from "@client/state/reducers/playerReducer";
+import { RootState } from "@reducers/store";
+import { playNext, addToQueue } from "@reducers/playerReducer";
 import { secondsToMinutes } from "@client/util";
 import { useDispatch, useSelector } from "react-redux";
 

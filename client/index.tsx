@@ -1,7 +1,7 @@
 import "regenerator-runtime";
 import App from "./components/App";
 import React from "react";
-import store from "./state/reducers/store";
+import store from "@reducers/store";
 import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import { render } from "react-dom";

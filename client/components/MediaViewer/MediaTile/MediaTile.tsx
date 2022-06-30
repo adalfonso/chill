@@ -4,14 +4,10 @@ import { FileMenu } from "../FileMenu";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
+import { addToQueue, play, playNext } from "@reducers/playerReducer";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
-import {
-  addToQueue,
-  play,
-  playNext,
-} from "@client/state/reducers/playerReducer";
 
 export type TileData = Partial<Media> & {
   _id: string[];

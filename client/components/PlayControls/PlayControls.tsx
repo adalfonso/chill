@@ -2,7 +2,7 @@ import "./PlayControls.scss";
 import React from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Playlist } from "./Playlist";
-import { RootState } from "@client/state/reducers/store";
+import { RootState } from "@reducers/store";
 import { Scrubber } from "./Scrubber";
 import { Shuffle } from "./Shuffle";
 import { VolumeControl } from "./VolumeControl";

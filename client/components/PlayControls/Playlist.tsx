@@ -2,8 +2,8 @@ import "./Playlist.scss";
 import React, { useState } from "react";
 import { Equalizer } from "../Equalizer";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { RootState } from "@client/state/reducers/store";
-import { changeTrack } from "@client/state/reducers/playerReducer";
+import { RootState } from "@reducers/store";
+import { changeTrack } from "@reducers/playerReducer";
 import { faListDots, faClose } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch, useSelector } from "react-redux";
 

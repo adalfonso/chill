@@ -1,7 +1,7 @@
 import "./VolumeControl.scss";
 import React from "react";
-import { RootState } from "@client/state/reducers/store";
-import { changeVolume } from "@client/state/reducers/playerReducer";
+import { RootState } from "@reducers/store";
+import { changeVolume } from "@reducers/playerReducer";
 import { useDispatch, useSelector } from "react-redux";
 import { useDrag } from "@client/hooks/useDrag";
 
