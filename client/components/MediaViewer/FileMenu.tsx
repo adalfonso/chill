@@ -1,6 +1,10 @@
-import React, { MouseEvent, useState } from "react";
+import React, { MouseEvent, useEffect, useState } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
+import { RootState } from "@client/state/reducers/store";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
+import { useDispatch, useSelector } from "react-redux";
+import { ObjectID } from "bson";
+import { setMenu } from "@client/state/reducers/mediaMenuReducer";
 
 interface FileMenuHandler {
   play: (e: MouseEvent<HTMLElement>) => void;
@@ -14,12 +18,22 @@ interface FileMenuProps {
 }
 
 export const FileMenu = ({ handler }: FileMenuProps) => {
-  const [active, setActive] = useState(false);
+  const [menu_id] = useState(new ObjectID().toString());
+  const { mediaMenu } = useSelector((state: RootState) => state);
+  const active = menu_id === mediaMenu.menu_id;
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (active) {
+      return;
+    }
+    handler.toggle(false);
+  }, [mediaMenu.menu_id]);
 
   const onEntryClick = (e: MouseEvent<HTMLElement>) => {
     e.stopPropagation();
     handler.toggle(!active);
-    setActive(!active);
+    dispatch(setMenu({ menu_id: active ? null : menu_id }));
   };
 
   const onOptionClick =
@@ -27,8 +41,8 @@ export const FileMenu = ({ handler }: FileMenuProps) => {
     (e: MouseEvent<HTMLElement>) => {
       e.stopPropagation();
       fn(e);
-      setActive(false);
       handler.toggle(false);
+      dispatch(setMenu({ menu_id: null }));
     };
 
   return (

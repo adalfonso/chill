@@ -26,14 +26,15 @@ interface MediaTileProps {
 }
 
 export const MediaTile = ({ file, url, displayAs }: MediaTileProps) => {
-  const [showMenu, setShowMenu] = useState(false);
+  const [menu_visible, setMenuVisible] = useState(false);
   const history = useHistory();
   const dispatch = useDispatch();
+  const class_name = "media-tile" + (menu_visible ? " active" : "");
 
   const getSortString = (file: Media) =>
-    file.artist ??
-    "" + file.album ??
-    "" + (file.track ?? "").toString().padStart(3, "0");
+    (file.artist ?? "") +
+    (file.album ?? "") +
+    (file.track ?? "").toString().padStart(3, "0");
 
   const getFiles = async () =>
     file._count === undefined
@@ -51,17 +52,17 @@ export const MediaTile = ({ file, url, displayAs }: MediaTileProps) => {
     play: async () => dispatch(play({ files: await getFiles(), index: 0 })),
     playNext: async () => dispatch(playNext({ files: await getFiles() })),
     addToQueue: async () => dispatch(addToQueue({ files: await getFiles() })),
-    toggle: (visible: boolean) => setShowMenu(visible),
+    toggle: setMenuVisible,
   };
 
   return (
     <div className="media-tile-wrapper">
-      <div className="media-tile" onClick={() => history.push(url(file))}>
+      <div className={class_name} onClick={() => history.push(url(file))}>
         {file.image && (
           <img src={`/media/cover/${file.image}?size=256`} loading="lazy" />
         )}
 
-        <div className={"more" + (showMenu ? " active" : "")}>
+        <div className={"more" + (menu_visible ? " active" : "")}>
           <div className="play" onClick={onPlay}>
             <Icon
               className="play-icon"

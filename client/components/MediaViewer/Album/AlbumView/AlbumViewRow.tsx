@@ -14,15 +14,15 @@ export interface AlbumViewRowProps {
 }
 
 export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
-  const [showMenu, setShowMenu] = useState(false);
-  const player = useSelector((state: RootState) => state.player);
+  const [menu_visible, setMenuVisible] = useState(false);
+  const { player } = useSelector((state: RootState) => state);
   const dispatch = useDispatch();
 
   const menuHandler = {
     play: () => playAll(index)(),
     playNext: () => dispatch(playNext({ files: [file] })),
     addToQueue: () => dispatch(addToQueue({ files: [file] })),
-    toggle: (visible: boolean) => setShowMenu(visible),
+    toggle: setMenuVisible,
   };
 
   return (
@@ -34,7 +34,7 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
         )}
       </div>
       <div>{file.title}</div>
-      <div className={"tail" + (showMenu ? " show-menu" : "")}>
+      <div className={"tail" + (menu_visible ? " show-menu" : "")}>
         <div className="duration mono">{secondsToMinutes(file.duration)}</div>
         <FileMenu handler={menuHandler}></FileMenu>
       </div>
