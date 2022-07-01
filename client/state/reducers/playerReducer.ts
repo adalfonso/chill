@@ -144,6 +144,10 @@ export const playerSlice = createSlice({
     },
 
     seek: (_state, action) => {
+      if (Number.isNaN(audio.duration)) {
+        return;
+      }
+
       audio.currentTime = audio.duration * action.payload.percent;
     },
 
