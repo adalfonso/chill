@@ -27,6 +27,7 @@ export const FileMenu = ({ handler }: FileMenuProps) => {
     if (active) {
       return;
     }
+
     handler.toggle(false);
   }, [mediaMenu.menu_id]);
 
