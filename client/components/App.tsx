@@ -4,8 +4,9 @@ import { MediaViewer } from "./App/MediaViewer";
 import { PlayControls } from "./App/PlayControls";
 import { Toolbar } from "./App/Toolbar";
 import { hot } from "react-hot-loader/root";
-import { useDispatch } from "react-redux";
 import { setMenu } from "@reducers/mediaMenuReducer";
+import { useDispatch } from "react-redux";
+// import { PlaylistEditor } from "./App/PlaylistEditor";
 
 export function App() {
   const dispatch = useDispatch();
@@ -15,7 +16,8 @@ export function App() {
     <div className="app" onClick={clearActiveFileMenu}>
       <Toolbar />
       <MediaViewer />
-      <PlayControls></PlayControls>
+      <PlayControls />
+      {/* <PlaylistEditor /> */}
     </div>
   );
 }

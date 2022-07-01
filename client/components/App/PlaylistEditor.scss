@@ -1,0 +1,39 @@
+@import "@client/components/variables.scss";
+@import "@client/components/mixins.scss";
+
+.playlist-editor {
+  @include fullscreen;
+  background-color: $dm-shadow;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .ui-modal {
+    width: 100%;
+    height: 100%;
+
+    .ui-radio {
+      margin: 2rem 0;
+    }
+
+    input,
+    button {
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .existing,
+    .new {
+      width: 100%;
+    }
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .playlist-editor {
+    .ui-modal {
+      width: auto;
+      height: auto;
+    }
+  }
+}

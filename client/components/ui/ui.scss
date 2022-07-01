@@ -44,3 +44,111 @@
     }
   }
 }
+
+.ui-radio {
+  display: flex;
+  font-size: 1.25rem;
+
+  div {
+    background-color: $dm-background-2;
+    border-top: 1px solid $dm-font-3;
+    border-bottom: 1px solid $dm-font-3;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    color: $dm-font-3;
+    transition: 0.2s color;
+    transition: 0.2s background-color;
+
+    &:hover {
+      background-color: $dm-background;
+    }
+
+    &.active {
+      background-color: $dm-background;
+      color: $primary-very-light;
+    }
+
+    &:first-of-type {
+      border-top-left-radius: 0.35rem;
+      border-bottom-left-radius: 0.35rem;
+      border-left: 1px solid $dm-font-3;
+    }
+
+    &:last-of-type {
+      border-top-right-radius: 0.35rem;
+      border-bottom-right-radius: 0.35rem;
+      border-right: 1px solid $dm-font-3;
+    }
+  }
+}
+
+.ui-modal {
+  padding: 2rem;
+  background-color: $dm-background-2;
+  border-radius: 0.25rem;
+  border: 1px solid black;
+  color: $dm-font;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .toolbar {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+
+    .close {
+      transition: color 0.3s;
+      font-size: 1.5rem;
+      color: $dm-font-3;
+
+      &:hover {
+        color: $dm-font;
+      }
+    }
+  }
+}
+
+input {
+  border: 2px solid $dm-background-2;
+  color: $dm-background;
+  font-size: 1.25rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  outline: none;
+
+  &:focus {
+    border: 2px solid $primary-light;
+  }
+}
+
+button {
+  display: flex;
+  border: 2px solid $dm-background-2;
+  color: $dm-background;
+  font-size: 1.25rem;
+  padding: 0.5em 0.75em;
+  background-color: $dm-font;
+  border-radius: 0.25rem;
+  transition: color 0.3s;
+  justify-content: center;
+
+  &:hover {
+    background-color: $dm-font-2;
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .ui-radio,
+  button,
+  input {
+    font-size: 1rem;
+  }
+
+  .ui-modal {
+    .close {
+      margin-top: -0.5em;
+      margin-right: -0.35em;
+    }
+  }
+}
