@@ -68,7 +68,7 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
   return (
     <>
       <div className="music-library">
-        <div className="toolbar">
+        <div className="library-tools">
           <Select
             onChange={changeMediaMatch}
             displayAs={_.capitalize(match)}
