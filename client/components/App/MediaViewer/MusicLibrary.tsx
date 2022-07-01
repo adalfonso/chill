@@ -5,8 +5,8 @@ import { AxiosResponse } from "axios";
 import { MediaAction, mediaReducer, useFetch } from "@client/hooks/useFetch";
 import { MediaApi, PaginationOptions } from "@client/api/MediaApi";
 import { MediaMatch as Match } from "@common/media/types";
-import { MediaTile, TileData } from "./MediaTile/MediaTile";
-import { Select } from "../ui/Select";
+import { MediaTile, TileData } from "./MusicLibrary/MediaTile";
+import { Select } from "../../ui/Select";
 import {
   PageAction,
   pageReducer,

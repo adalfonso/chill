@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Equalizer } from "@client/components/Equalizer";
-import { FileMenu } from "../../FileMenu";
+import { Equalizer } from "@client/components/ui/Equalizer";
+import { FileMenu } from "../FileMenu";
 import { Media } from "@common/autogen";
 import { RootState } from "@reducers/store";
 import { playNext, addToQueue } from "@reducers/playerReducer";

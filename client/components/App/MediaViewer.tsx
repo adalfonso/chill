@@ -1,9 +1,9 @@
 import "./MediaViewer.scss";
 import React, { useState } from "react";
-import { AlbumView } from "./Album/AlbumView";
-import { ArtistView } from "./Artist/ArtistView";
-import { GenreView } from "./Genre/GenreView";
-import { MusicLibrary } from "./MusicLibrary";
+import { AlbumView } from "./MediaViewer/AlbumView";
+import { ArtistView } from "./MediaViewer/ArtistView";
+import { GenreView } from "./MediaViewer/GenreView";
+import { MusicLibrary } from "./MediaViewer/MusicLibrary";
 import { Route, Switch } from "react-router-dom";
 
 export const MediaViewer = () => {

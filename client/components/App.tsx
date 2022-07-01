@@ -1,8 +1,8 @@
 import "./App.scss";
 import React from "react";
-import { MediaViewer } from "./MediaViewer/MediaViewer";
-import { PlayControls } from "./PlayControls/PlayControls";
-import { Toolbar } from "./Toolbar/Toolbar";
+import { MediaViewer } from "./App/MediaViewer";
+import { PlayControls } from "./App/PlayControls";
+import { Toolbar } from "./App/Toolbar";
 import { hot } from "react-hot-loader/root";
 import { useDispatch } from "react-redux";
 import { setMenu } from "@reducers/mediaMenuReducer";

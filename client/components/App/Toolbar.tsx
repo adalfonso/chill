@@ -1,8 +1,8 @@
 import "./Toolbar.scss";
 import React, { useState } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { Search } from "./Search";
-import { Settings } from "./Settings";
+import { Search } from "./Toolbar/Search";
+import { Settings } from "./Toolbar/Settings";
 import { faGear } from "@fortawesome/free-solid-svg-icons";
 import { useHistory } from "react-router-dom";
 
