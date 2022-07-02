@@ -1,69 +1,63 @@
-import { Media } from "@common/autogen";
 import { Dispatch, useEffect } from "react";
 
-type FetchMedia = Media & {
-  _id: string[];
-  _count: number;
-};
-
-export enum MediaAction {
+export enum Action {
   Stack,
   Fetch,
   Release,
   Reset,
 }
 
-interface MediaFetchState {
-  media: FetchMedia[];
+interface FetchState<T> {
+  items: T[];
   busy: boolean;
 }
 
-interface MediaDispatchAction {
-  type: MediaAction;
-  media?: FetchMedia[];
+interface FetchAction<T> {
+  type: Action;
+  items?: T[];
 }
 
-export const mediaReducer = (
-  state: MediaFetchState,
-  action: MediaDispatchAction,
+export const fetchReducer = <T>(
+  state: FetchState<T>,
+  action: FetchAction<T>,
 ) => {
   switch (action.type) {
-    case MediaAction.Stack:
-      return { ...state, media: state.media.concat(action.media) };
-    case MediaAction.Fetch:
+    case Action.Stack:
+      return { ...state, items: state.items.concat(action.items) };
+    case Action.Fetch:
       return { ...state, busy: true };
-    case MediaAction.Release:
+    case Action.Release:
       return { ...state, busy: false };
-    case MediaAction.Reset:
-      return { ...state, busy: false, media: [] };
+    case Action.Reset:
+      return { ...state, busy: false, items: [] };
     default:
       return state;
   }
 };
 
 /**
- * Facilitates the fetching and updating of media
+ * Facilitates the fetching and updating of data
  *
  * @param data pagination data
  * @param dispatch dispatcher
- * @param api api that returns media
+ * @param api api that returns data
  * @param onDone optional callback
  */
-export const useFetch = (
+export const useFetch = <T>(
   data,
-  dispatch: Dispatch<MediaDispatchAction>,
-  api: () => Promise<FetchMedia[]>,
+  dispatch: Dispatch<FetchAction<T>>,
+  api: () => Promise<T[]>,
   onDone?: () => void,
 ) => {
   // make API calls
   useEffect(() => {
-    dispatch({ type: MediaAction.Fetch });
+    dispatch({ type: Action.Fetch });
     api()
-      .then((media) => {
-        dispatch({ type: MediaAction.Stack, media });
+      .then((items) => {
+        dispatch({ type: Action.Stack, items });
       })
       .finally(() => {
-        dispatch({ type: MediaAction.Release });
+        dispatch({ type: Action.Release });
         onDone?.();
       });
   }, [data.page]);

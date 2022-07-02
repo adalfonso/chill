@@ -10,3 +10,8 @@ export interface SearchResult {
   score: number;
   match: Record<string, string | number>;
 }
+
+export interface PaginationOptions {
+  limit: number;
+  page: number;
+}

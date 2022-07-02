@@ -1,13 +1,9 @@
 import axios from "axios";
-import { MediaMatch as Match } from "@common/media/types";
 import { Media } from "@common/autogen";
+import { MediaMatch as Match } from "@common/media/types";
+import { PaginationOptions } from "@common/types";
 
 export type MatchMap = Record<Match & "year", string | number>;
-
-export interface PaginationOptions {
-  limit: number;
-  page: number;
-}
 
 export const MediaApi = {
   search: (query: string) => axios.post(`/media/search`, { query }),

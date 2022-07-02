@@ -1,17 +1,19 @@
 import "./MusicLibrary.scss";
 import React, { useReducer, useRef, useState } from "react";
 import _ from "lodash";
+import { Action, fetchReducer, useFetch } from "@client/hooks/useFetch";
 import { AxiosResponse } from "axios";
-import { MediaAction, mediaReducer, useFetch } from "@client/hooks/useFetch";
-import { MediaApi, PaginationOptions } from "@client/api/MediaApi";
+import { Media } from "@common/autogen";
+import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch as Match } from "@common/media/types";
 import { MediaTile, TileData } from "./MusicLibrary/MediaTile";
+import { PaginationOptions } from "@common/types";
 import { Select } from "../../ui/Select";
 import {
   PageAction,
   pageReducer,
   useInfiniteScroll,
-} from "@client/hooks/useInfiniteScroll";
+} from "@hooks/useInfiniteScroll";
 
 const ApiMap: Record<
   Match,
@@ -23,6 +25,10 @@ const ApiMap: Record<
   [Match.Path]: () => Promise.resolve(null),
 };
 
+type FetchedMedia = Media & {
+  _id: string[];
+  _count: number;
+};
 interface MusicLibraryProps {
   setLoading: (loading: boolean) => void;
   per_page: number;
@@ -32,14 +38,14 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
   const bottomBoundaryRef = useRef(null);
   const [match, setMatch] = useState<Match>(Match.Artist);
   const [pager, pagerDispatch] = useReducer(pageReducer, { page: 0 });
-  const [mediaData, imgDispatch] = useReducer(mediaReducer, {
-    media: [],
+  const [mediaData, imgDispatch] = useReducer(fetchReducer<FetchedMedia>, {
+    items: [],
     busy: true,
   });
 
   // Change the media match drop down
   const changeMediaMatch = (match: Match) => {
-    imgDispatch({ type: MediaAction.Reset });
+    imgDispatch({ type: Action.Reset });
     pagerDispatch({ type: PageAction.Reset });
     setMatch(match);
   };
@@ -58,7 +64,7 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
   useInfiniteScroll(bottomBoundaryRef, pagerDispatch);
 
   // make API calls
-  useFetch(
+  useFetch<FetchedMedia>(
     pager,
     imgDispatch,
     () => loadMediaFiles(match).then((res) => res.data),
@@ -86,7 +92,7 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
       </div>
       <div id="media-viewer">
         <div className="media-tiles">
-          {mediaData.media
+          {mediaData.items
             .sort((a, b) => a[match].localeCompare(b[match]))
             .map((file) => (
               <MediaTile

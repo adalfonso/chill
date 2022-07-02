@@ -2,8 +2,13 @@ import { ObjectId } from "mongodb";
 import { PlaylistModel } from "@server/models/Playlist";
 import { Request, Response } from "express";
 import { toObjectId } from "@server/db/utils";
+import { PaginationOptions } from "@common/types";
 
 namespace Req {
+  export namespace index {
+    export type query = PaginationOptions;
+  }
+
   export namespace create {
     export interface body {
       name: string;
@@ -26,11 +31,28 @@ namespace Req {
   }
 }
 
+type IndexRequest = Request<{}, {}, {}, Req.index.query>;
 type CreateRequest = Request<{}, {}, Req.create.body>;
 type UpdateRequest = Request<Req.update.params, {}, Req.update.body>;
 type QueryRequest = Request<{}, {}, Req.query.body>;
 
 export const PlaylistController = {
+  index: async (req: IndexRequest, res: Response) => {
+    const { limit = Infinity, page = 0 } = req.query ?? {};
+
+    try {
+      const results = await PlaylistModel.find()
+        .sort({ created_at: "asc" })
+        .skip(page > 0 ? (page + 1) * limit : 0)
+        .limit(limit);
+
+      res.json(results);
+    } catch (e) {
+      console.error("Failed to GET playlist/index: ", e);
+      res.sendStatus(500);
+    }
+  },
+
   create: async (req: CreateRequest, res: Response) => {
     const { name, items = [] } = req.body;
 

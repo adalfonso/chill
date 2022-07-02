@@ -37,6 +37,12 @@
     display: flex;
     flex-wrap: wrap;
   }
+
+  .playlists {
+    .playlist-item {
+      padding-bottom: 1rem;
+    }
+  }
 }
 
 .panel-list {

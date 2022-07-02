@@ -10,13 +10,18 @@
   position: relative;
 
   .libraries {
+    display: flex;
+
     > * {
+      margin-right: 1.5rem;
       cursor: pointer;
     }
   }
 
   .tools {
     display: flex;
+    justify-content: flex-end;
+
     > * {
       margin-left: 2rem;
       cursor: pointer;
@@ -29,6 +34,7 @@
     flex-wrap: nowrap;
 
     .libraries {
+      width: 25%;
       order: 1;
     }
 
@@ -37,6 +43,7 @@
     }
 
     .tools {
+      width: 25%;
       order: 3;
     }
   }

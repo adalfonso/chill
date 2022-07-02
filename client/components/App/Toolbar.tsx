@@ -13,9 +13,8 @@ export const Toolbar = () => {
   return (
     <div id="toolbar">
       <div className="libraries">
-        <div className="library-title" onClick={() => history.push("/")}>
-          Music
-        </div>
+        <div onClick={() => history.push("/")}>Music</div>
+        <div onClick={() => history.push("/playlists")}>Playlists</div>
       </div>
 
       <div className="tools">
