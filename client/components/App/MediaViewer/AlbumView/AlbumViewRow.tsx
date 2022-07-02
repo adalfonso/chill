@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Equalizer } from "@client/components/ui/Equalizer";
 import { FileMenu } from "../FileMenu";
 import { Media } from "@common/autogen";
-import { RootState } from "@reducers/store";
+import { getState } from "@reducers/store";
 import { secondsToMinutes } from "@client/util";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -14,7 +14,7 @@ export interface AlbumViewRowProps {
 
 export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
   const [menu_visible, setMenuVisible] = useState(false);
-  const { player } = useSelector((state: RootState) => state);
+  const { player } = useSelector(getState);
   const dispatch = useDispatch();
 
   const menuHandler = {

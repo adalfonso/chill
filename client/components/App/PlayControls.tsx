@@ -2,10 +2,10 @@ import "./PlayControls.scss";
 import React from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Playlist } from "./PlayControls/Playlist";
-import { RootState } from "@reducers/store";
 import { Scrubber } from "./PlayControls/Scrubber";
 import { Shuffle } from "./PlayControls/Shuffle";
 import { VolumeControl } from "./PlayControls/VolumeControl";
+import { getState } from "@reducers/store";
 import { next, pause, play, previous } from "@reducers/player";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -18,7 +18,7 @@ import {
 const default_now_playing = "-";
 
 export const PlayControls = () => {
-  const player = useSelector((state: RootState) => state.player);
+  const { player } = useSelector(getState);
   const dispatch = useDispatch();
 
   const getNowPlaying = () =>

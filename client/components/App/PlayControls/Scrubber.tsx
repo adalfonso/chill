@@ -1,14 +1,14 @@
 import "./Scrubber.scss";
 import React, { useState, useEffect } from "react";
-import { RootState } from "@reducers/store";
 import { audio, getAudioProgress, next, seek } from "@reducers/player";
+import { getState } from "@reducers/store";
 import { getTimeTracking, startAnimationLoop } from "@client/util";
 import { useDispatch, useSelector } from "react-redux";
 import { useDrag } from "@client/hooks/useDrag";
 
 export const Scrubber = () => {
   const [progress, setProgress] = useState(0);
-  const player = useSelector((state: RootState) => state.player);
+  const { player } = useSelector(getState);
   const dispatch = useDispatch();
   const { startDrag, cancelDrag, updateDrag, dragging } = useDrag(
     (percent: number) => dispatch(seek({ percent })),

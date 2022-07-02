@@ -2,9 +2,9 @@ import React, { MouseEvent, useEffect, useState } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
 import { ObjectID } from "bson";
-import { RootState } from "@reducers/store";
 import { addToQueue, playNext } from "@reducers/player";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
+import { getState } from "@reducers/store";
 import { setMenu } from "@reducers/mediaMenu";
 import { toggle } from "@reducers/playlistEditor";
 import { useDispatch, useSelector } from "react-redux";
@@ -21,7 +21,7 @@ interface FileMenuProps {
 
 export const FileMenu = ({ handler }: FileMenuProps) => {
   const [menu_id] = useState(new ObjectID().toString());
-  const { mediaMenu } = useSelector((state: RootState) => state);
+  const { mediaMenu } = useSelector(getState);
   const active = menu_id === mediaMenu.menu_id;
   const dispatch = useDispatch();
 

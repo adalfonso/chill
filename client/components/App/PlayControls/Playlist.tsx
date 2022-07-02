@@ -2,13 +2,13 @@ import "./Playlist.scss";
 import React, { useState } from "react";
 import { Equalizer } from "../../ui/Equalizer";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { RootState } from "@reducers/store";
 import { changeTrack } from "@reducers/player";
 import { faListDots, faClose } from "@fortawesome/free-solid-svg-icons";
+import { getState } from "@reducers/store";
 import { useDispatch, useSelector } from "react-redux";
 
 export const Playlist = () => {
-  const player = useSelector((state: RootState) => state.player);
+  const { player } = useSelector(getState);
   const dispatch = useDispatch();
   const [playlistVisible, setPlaylistVisible] = useState(false);
 

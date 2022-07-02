@@ -1,12 +1,12 @@
 import "./VolumeControl.scss";
 import React from "react";
-import { RootState } from "@reducers/store";
 import { changeVolume } from "@reducers/player";
+import { getState } from "@reducers/store";
 import { useDispatch, useSelector } from "react-redux";
 import { useDrag } from "@client/hooks/useDrag";
 
 export const VolumeControl = () => {
-  const player = useSelector((state: RootState) => state.player);
+  const { player } = useSelector(getState);
   const dispatch = useDispatch();
 
   const { startDrag, cancelDrag, updateDrag } = useDrag((percent: number) => {
