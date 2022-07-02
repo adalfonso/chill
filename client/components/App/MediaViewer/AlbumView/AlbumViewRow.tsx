@@ -3,7 +3,6 @@ import { Equalizer } from "@client/components/ui/Equalizer";
 import { FileMenu } from "../FileMenu";
 import { Media } from "@common/autogen";
 import { RootState } from "@reducers/store";
-import { playNext, addToQueue } from "@reducers/player";
 import { secondsToMinutes } from "@client/util";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -20,8 +19,7 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
 
   const menuHandler = {
     play: () => playAll(index)(),
-    playNext: () => dispatch(playNext({ files: [file] })),
-    addToQueue: () => dispatch(addToQueue({ files: [file] })),
+    getFiles: () => Promise.resolve([file]),
     toggle: setMenuVisible,
   };
 

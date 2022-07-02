@@ -1,11 +1,13 @@
 import mediaMenu from "./mediaMenu";
 import player from "./player";
+import playlistEditor from "./playlistEditor";
 import { configureStore } from "@reduxjs/toolkit";
 
 const store = configureStore({
   reducer: {
     player,
     mediaMenu,
+    playlistEditor,
   },
 });
 

@@ -4,8 +4,8 @@ import { FileMenu } from "../FileMenu";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
-import { addToQueue, play, playNext } from "@reducers/player";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
+import { play } from "@reducers/player";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
 
@@ -46,8 +46,7 @@ export const MediaTile = ({ file, url, displayAs }: MediaTileProps) => {
 
   const optionsHandler = {
     play: async () => dispatch(play({ files: await getFiles(), index: 0 })),
-    playNext: async () => dispatch(playNext({ files: await getFiles() })),
-    addToQueue: async () => dispatch(addToQueue({ files: await getFiles() })),
+    getFiles,
     toggle: setMenuVisible,
   };
 

@@ -1,12 +1,12 @@
 import "./PlaylistEditor.scss";
-import React, { MouseEvent, useState } from "react";
+import React, { useState } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { Radio } from "../ui/Radio";
+import { faClose } from "@fortawesome/free-solid-svg-icons";
+import { toggle } from "@reducers/playlistEditor";
+import { useDispatch } from "react-redux";
 
-interface PlaylistEditorProps {
-  onClose: (e: MouseEvent<SVGElement>) => void;
-}
+interface PlaylistEditorProps {}
 
 const options = [
   { name: "Add to Existing", value: "existing" },
@@ -15,18 +15,21 @@ const options = [
 
 const default_mode = "existing";
 
-export const PlaylistEditor = ({ onClose }: PlaylistEditorProps) => {
+export const PlaylistEditor = ({}: PlaylistEditorProps) => {
   const [selected_option, setSelectedOption] = useState(default_mode);
+  const dispatch = useDispatch();
 
   const onPlaylistTypeChange = (value: string) => {
     setSelectedOption(value);
   };
 
+  const close = () => dispatch(toggle());
+
   return (
     <div className="playlist-editor">
       <div className="ui-modal">
         <div className="toolbar">
-          <Icon className="close" icon={faClose} onClick={onClose} />
+          <Icon className="close" icon={faClose} onClick={close} />
         </div>
         <h1>Add to playlist</h1>
         <Radio

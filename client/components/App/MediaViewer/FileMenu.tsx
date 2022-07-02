@@ -1,15 +1,17 @@
 import React, { MouseEvent, useEffect, useState } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { RootState } from "@reducers/store";
-import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
-import { useDispatch, useSelector } from "react-redux";
+import { Media } from "@common/autogen";
 import { ObjectID } from "bson";
+import { RootState } from "@reducers/store";
+import { addToQueue, playNext } from "@reducers/player";
+import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import { setMenu } from "@reducers/mediaMenu";
+import { toggle } from "@reducers/playlistEditor";
+import { useDispatch, useSelector } from "react-redux";
 
 interface FileMenuHandler {
   play: (e: MouseEvent<HTMLElement>) => void;
-  playNext: (e: MouseEvent<HTMLElement>) => void;
-  addToQueue: (e: MouseEvent<HTMLElement>) => void;
+  getFiles: () => Promise<Media[]>;
   toggle: (visible: boolean) => void;
 }
 
@@ -46,6 +48,15 @@ export const FileMenu = ({ handler }: FileMenuProps) => {
       dispatch(setMenu({ menu_id: null }));
     };
 
+  const local = {
+    playNext: async () =>
+      dispatch(playNext({ files: await handler.getFiles() })),
+    addToQueue: async () =>
+      dispatch(addToQueue({ files: await handler.getFiles() })),
+    addToPlaylist: async () =>
+      dispatch(toggle({ files: await handler.getFiles() })),
+  };
+
   return (
     <>
       <div
@@ -57,8 +68,11 @@ export const FileMenu = ({ handler }: FileMenuProps) => {
       {active && (
         <section className="file-menu">
           <div onClick={onOptionClick(handler.play)}>Play</div>
-          <div onClick={onOptionClick(handler.playNext)}>Play Next</div>
-          <div onClick={onOptionClick(handler.addToQueue)}>Add to Queue</div>
+          <div onClick={onOptionClick(local.playNext)}>Play Next</div>
+          <div onClick={onOptionClick(local.addToQueue)}>Add to Queue</div>
+          <div onClick={onOptionClick(local.addToPlaylist)}>
+            Add to Playlist
+          </div>
         </section>
       )}
     </>
