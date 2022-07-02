@@ -5,15 +5,10 @@
   position: relative;
   width: 100%;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 
-  .search-box {
-    background-color: transparent;
-    border: 1px solid $dm-font;
-    font-size: 1rem;
-    padding: 0.5rem 1rem;
-    border-radius: 1.25rem;
-    cursor: pointer;
+  input {
     width: 100%;
   }
 
@@ -48,9 +43,5 @@
   .search {
     margin: 0;
     width: 25rem;
-
-    .search-box {
-      padding: 0.25rem 1rem;
-    }
   }
 }

@@ -52,21 +52,30 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
   };
 
   return (
-    <>
+    <div className="search">
       <input type="text" placeholder="Search" onChange={search} />
 
-      {results.map((result) => (
-        <div key={result._id.toString()} onClick={choosePlaylist(result)}>
-          {result.name}
-        </div>
-      ))}
+      <div className="search-results">
+        {results.map((result) => (
+          <div
+            className="result"
+            key={result._id.toString()}
+            onClick={choosePlaylist(result)}
+          >
+            {result.name}
+          </div>
+        ))}
+      </div>
 
       {selected && (
         <>
-          <div>{selected.name}</div>
+          <div className="selected-playlist">
+            {selected.name} - {selected.items.length} items (+
+            {playlistEditor.files.length} new)
+          </div>
           <button onClick={submit}>Update</button>
         </>
       )}
-    </>
+    </div>
   );
 };

@@ -114,19 +114,17 @@
 }
 
 input {
-  border: 2px solid $dm-background-2;
-  color: $dm-background;
-  font-size: 1.25rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.25rem;
+  border: 1px solid $dm-font;
+  background-color: transparent;
+  color: $dm-font-2;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 1.25rem;
+  cursor: pointer;
   outline: none;
 
-  &.dark {
-    color: $dm-font-2;
-  }
-
   &:focus {
-    border: 2px solid $primary-light;
+    border: 1px solid $primary-very-light;
   }
 }
 
@@ -158,5 +156,9 @@ button {
       margin-top: -0.5em;
       margin-right: -0.35em;
     }
+  }
+
+  input {
+    padding: 0.35rem 1rem;
   }
 }

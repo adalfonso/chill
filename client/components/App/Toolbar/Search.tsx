@@ -39,12 +39,7 @@ export const Search = () => {
 
   return (
     <div className="search">
-      <input
-        className="search-box dark"
-        placeholder="search"
-        value={query}
-        onChange={search}
-      />
+      <input placeholder="search" value={query} onChange={search} />
       {results.length > 0 && (
         <div className="search-results">
           {results.map((result) => {
