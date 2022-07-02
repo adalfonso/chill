@@ -1,5 +1,9 @@
 @import "@client/components/variables.scss";
 
+.ui-error {
+  color: #fb466a;
+}
+
 .ui-select {
   display: flex;
   flex-direction: column;
