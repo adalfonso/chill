@@ -11,16 +11,17 @@ import { useDispatch, useSelector } from "react-redux";
 interface PlaylistEditorProps {}
 
 const options = [
-  { name: "Add to Existing", value: "existing" },
   { name: "Create New", value: "new" },
+  { name: "Add to Existing", value: "existing" },
 ];
 
-const default_mode = "existing";
+const default_mode = "new";
 
 export const PlaylistEditor = ({}: PlaylistEditorProps) => {
   const [input_value, setInputValue] = useState("");
   const [selected_option, setSelectedOption] = useState(default_mode);
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
   const dispatch = useDispatch();
   const { playlistEditor } = useSelector(getState);
 
@@ -38,6 +39,12 @@ export const PlaylistEditor = ({}: PlaylistEditorProps) => {
   };
 
   const createPlaylist = () => {
+    if (busy) {
+      return;
+    }
+
+    setBusy(true);
+
     PlaylistApi.create(
       input_value,
       playlistEditor.files.map((file) => file._id.toString()),
@@ -49,7 +56,8 @@ export const PlaylistEditor = ({}: PlaylistEditorProps) => {
         }
 
         setError(err.response.data);
-      });
+      })
+      .finally(() => setBusy(false));
   };
 
   return (
