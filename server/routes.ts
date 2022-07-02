@@ -9,4 +9,6 @@ export const registerRoutes = (app: Express) => {
   app.post("/media/search", MediaFileController.search);
   app.post("/media/query", MediaFileController.query);
   app.post("/playlists", PlaylistController.create);
+  app.post("/playlist/search", PlaylistController.search);
+  app.patch("/playlist/:id", PlaylistController.update);
 };

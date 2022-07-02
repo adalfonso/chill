@@ -1,6 +1,7 @@
 import "./PlaylistEditor.scss";
 import React, { useState, FormEvent } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
+import { Playlist } from "@common/autogen";
 import { PlaylistApi } from "@client/api/PlaylistApi";
 import { Radio } from "../ui/Radio";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
@@ -19,45 +20,82 @@ const default_mode = "new";
 
 export const PlaylistEditor = ({}: PlaylistEditorProps) => {
   const [input_value, setInputValue] = useState("");
-  const [selected_option, setSelectedOption] = useState(default_mode);
+  const [mode, setMode] = useState(default_mode);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [search_results, setSearchResults] = useState<Playlist[]>([]);
+  const [selected_playlist, setSelectedPlaylist] = useState<Playlist>();
   const dispatch = useDispatch();
   const { playlistEditor } = useSelector(getState);
 
-  const placeholder = selected_option === "new" ? "Playlist Name" : "Search";
+  const placeholder = mode === "new" ? "Playlist Name" : "Search";
 
   const onPlaylistTypeChange = (value: string) => {
-    setSelectedOption(value);
+    setMode(value);
   };
 
   const close = () => dispatch(toggle());
 
   const onInputChange = (e: FormEvent<HTMLInputElement>) => {
-    setInputValue(e.currentTarget.value);
+    const { value } = e.currentTarget;
+    setInputValue(value);
     setError("");
+
+    if (mode === "new") {
+      return;
+    }
+
+    queryPlaylist(value);
   };
 
-  const createPlaylist = () => {
+  const submit = () => {
     if (busy) {
       return;
     }
 
     setBusy(true);
 
-    PlaylistApi.create(
-      input_value,
-      playlistEditor.files.map((file) => file._id.toString()),
-    )
-      .then(() => close())
-      .catch((err) => {
-        if (err?.response?.data === undefined) {
-          return;
-        }
+    const files = playlistEditor.files.map((file) => file._id.toString());
 
-        setError(err.response.data);
-      })
+    const action =
+      mode == "new"
+        ? createPlaylist(input_value, files)
+        : addToExisting(selected_playlist._id.toString(), files);
+
+    action
+      .then(() => close())
+      .catch()
       .finally(() => setBusy(false));
+  };
+
+  const createPlaylist = (name: string, files: string[]) =>
+    PlaylistApi.create(name, files).catch((err) => {
+      if (err?.response?.data === undefined) {
+        return;
+      }
+
+      setError(err.response.data);
+    });
+
+  const addToExisting = (id: string, files: string[]) =>
+    PlaylistApi.update(id, files);
+
+  const queryPlaylist = (input: string) => {
+    if (busy) {
+      return;
+    }
+
+    setBusy(true);
+
+    PlaylistApi.search(input)
+      .then((res) => setSearchResults(res.data))
+      .catch((_) => {})
+      .finally(() => setBusy(false));
+  };
+
+  const choosePlaylist = (playlist) => () => {
+    setSelectedPlaylist(playlist);
+    setSearchResults([]);
   };
 
   return (
@@ -77,8 +115,18 @@ export const PlaylistEditor = ({}: PlaylistEditorProps) => {
 
         <input type="text" placeholder={placeholder} onChange={onInputChange} />
 
-        {selected_option === "new" && (
-          <button onClick={createPlaylist}>Create</button>
+        {search_results.map((result) => {
+          return (
+            <div key={result._id.toString()} onClick={choosePlaylist(result)}>
+              {result.name}
+            </div>
+          );
+        })}
+
+        {selected_playlist && <div>{selected_playlist.name}</div>}
+
+        {(mode === "new" || selected_playlist) && (
+          <button onClick={submit}>Create</button>
         )}
       </div>
     </div>

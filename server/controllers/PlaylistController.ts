@@ -1,6 +1,7 @@
+import { ObjectId } from "mongodb";
 import { PlaylistModel } from "@server/models/Playlist";
 import { Request, Response } from "express";
-import { ObjectId } from "mongodb";
+import { toObjectId } from "@server/db/utils";
 
 namespace Req {
   export namespace create {
@@ -9,9 +10,25 @@ namespace Req {
       items: string[];
     }
   }
+
+  export namespace update {
+    export interface params {
+      id: string;
+    }
+    export interface body {
+      items: string[];
+    }
+  }
+  export namespace query {
+    export interface body {
+      query: string;
+    }
+  }
 }
 
 type CreateRequest = Request<{}, {}, Req.create.body>;
+type UpdateRequest = Request<Req.update.params, {}, Req.update.body>;
+type QueryRequest = Request<{}, {}, Req.query.body>;
 
 export const PlaylistController = {
   create: async (req: CreateRequest, res: Response) => {
@@ -25,7 +42,7 @@ export const PlaylistController = {
       const playlist = new PlaylistModel({
         _id: new ObjectId(),
         name,
-        items: items.map((id) => new ObjectId(id)),
+        items: items.map(toObjectId),
       });
 
       await playlist.save();
@@ -40,5 +57,36 @@ export const PlaylistController = {
 
       res.sendStatus(500);
     }
+  },
+
+  update: async (req: UpdateRequest, res: Response) => {
+    const { id } = req.params;
+    const { items = [] } = req.body;
+
+    try {
+      const playlist = await PlaylistModel.findById(new ObjectId(id));
+
+      if (!playlist) {
+        return res.sendStatus(404);
+      }
+
+      playlist.items = [...playlist.items, ...items.map(toObjectId)];
+
+      await playlist.save();
+
+      res.sendStatus(204);
+    } catch (e) {
+      console.error(e);
+
+      res.sendStatus(500);
+    }
+  },
+
+  search: async (req: QueryRequest, res: Response) => {
+    const query = req.body.query.toLowerCase();
+
+    const results = await PlaylistModel.find({ $text: { $search: query } });
+
+    res.json(results);
   },
 };

@@ -10,6 +10,10 @@ export const PlaylistSchema = new Schema({
   updated_at: { type: Date, default: Date.now },
 });
 
+PlaylistSchema.index({
+  name: "text",
+});
+
 export const PlaylistModel = mongoose.model(
   "Playlist",
   PlaylistSchema,
