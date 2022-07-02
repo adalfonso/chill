@@ -3,23 +3,23 @@ import { Media } from "@common/autogen";
 
 export interface PlaylistEditorState {
   active: boolean;
-  files: Media[];
+  items: Media[];
 }
 
 const initialState: PlaylistEditorState = {
   active: false,
-  files: [],
+  items: [],
 };
 
 export const playlistEditorSlice = createSlice({
   name: "playlist_editor",
   initialState,
   reducers: {
-    toggle: (state, action: PayloadAction<{ files: Media[] }>) => {
-      const { files = [] } = action.payload ?? {};
+    toggle: (state, action: PayloadAction<{ items: Media[] }>) => {
+      const { items = [] } = action.payload ?? {};
 
       state.active = !state.active;
-      state.files = state.active ? files : [];
+      state.items = state.active ? items : [];
     },
   },
 });

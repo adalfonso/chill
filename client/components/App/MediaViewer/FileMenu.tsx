@@ -54,7 +54,7 @@ export const FileMenu = ({ handler }: FileMenuProps) => {
     addToQueue: async () =>
       dispatch(addToQueue({ files: await handler.getFiles() })),
     addToPlaylist: async () =>
-      dispatch(toggle({ files: await handler.getFiles() })),
+      dispatch(toggle({ items: await handler.getFiles() })),
   };
 
   return (

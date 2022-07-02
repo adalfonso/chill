@@ -25,9 +25,9 @@ export const PlaylistCreate = ({ onDone }: PlaylistCreateProps) => {
 
     setBusy(true);
 
-    const files = playlistEditor.files.map((file) => file._id.toString());
+    const items = playlistEditor.items.map((item) => item._id.toString());
 
-    PlaylistApi.create(input, files)
+    PlaylistApi.create(input, items)
       .then(onDone)
       .catch((err) => {
         if (err?.response?.data === undefined) {

@@ -22,9 +22,9 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
 
     setBusy(true);
 
-    const files = playlistEditor.files.map((file) => file._id.toString());
+    const items = playlistEditor.items.map((item) => item._id.toString());
 
-    PlaylistApi.update(selected._id.toString(), files)
+    PlaylistApi.update(selected._id.toString(), items)
       .then(onDone)
       .catch()
       .finally(() => setBusy(false));
@@ -71,7 +71,7 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
         <>
           <div className="selected-playlist">
             {selected.name} - {selected.items.length} items (+
-            {playlistEditor.files.length} new)
+            {playlistEditor.items.length} new)
           </div>
           <button onClick={submit}>Update</button>
         </>
