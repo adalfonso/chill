@@ -8,6 +8,7 @@
     "allowSyntheticDefaultImports": true,
     "paths": {
       "@reducers/*": ["client/state/reducers/*"],
+      "@hooks/*": ["client/hooks/*"],
       "@server/*": ["server/*"],
       "@client/*": ["client/*"],
       "@common/*": ["common/*"]
