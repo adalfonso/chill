@@ -130,6 +130,104 @@ export type MediaDocument = mongoose.Document<
   };
 
 /**
+ * Lean version of PlaylistDocument
+ *
+ * This has all Mongoose getters & functions removed. This type will be returned from `PlaylistDocument.toObject()`. To avoid conflicts with model names, use the type alias `PlaylistObject`.
+ * ```
+ * const playlistObject = playlist.toObject();
+ * ```
+ */
+export type Playlist = {
+  _id: mongoose.Types.ObjectId;
+  name: string;
+  items: mongoose.Types.ObjectId[];
+  created_at?: Date;
+  updated_at?: Date;
+};
+
+/**
+ * Lean version of PlaylistDocument (type alias of `Playlist`)
+ *
+ * Use this type alias to avoid conflicts with model names:
+ * ```
+ * import { Playlist } from "../models"
+ * import { PlaylistObject } from "../interfaces/mongoose.gen.ts"
+ *
+ * const playlistObject: PlaylistObject = playlist.toObject();
+ * ```
+ */
+export type PlaylistObject = Playlist;
+
+/**
+ * Mongoose Query type
+ *
+ * This type is returned from query functions. For most use cases, you should not need to use this type explicitly.
+ */
+export type PlaylistQuery = mongoose.Query<
+  any,
+  PlaylistDocument,
+  PlaylistQueries
+> &
+  PlaylistQueries;
+
+/**
+ * Mongoose Query helper types
+ *
+ * This type represents `PlaylistSchema.query`. For most use cases, you should not need to use this type explicitly.
+ */
+export type PlaylistQueries = {};
+
+export type PlaylistMethods = {};
+
+export type PlaylistStatics = {};
+
+/**
+ * Mongoose Model type
+ *
+ * Pass this type to the Mongoose Model constructor:
+ * ```
+ * const Playlist = mongoose.model<PlaylistDocument, PlaylistModel>("Playlist", PlaylistSchema);
+ * ```
+ */
+export type PlaylistModel = mongoose.Model<PlaylistDocument, PlaylistQueries> &
+  PlaylistStatics;
+
+/**
+ * Mongoose Schema type
+ *
+ * Assign this type to new Playlist schema instances:
+ * ```
+ * const PlaylistSchema: PlaylistSchema = new mongoose.Schema({ ... })
+ * ```
+ */
+export type PlaylistSchema = mongoose.Schema<
+  PlaylistDocument,
+  PlaylistModel,
+  PlaylistMethods,
+  PlaylistQueries
+>;
+
+/**
+ * Mongoose Document type
+ *
+ * Pass this type to the Mongoose Model constructor:
+ * ```
+ * const Playlist = mongoose.model<PlaylistDocument, PlaylistModel>("Playlist", PlaylistSchema);
+ * ```
+ */
+export type PlaylistDocument = mongoose.Document<
+  mongoose.Types.ObjectId,
+  PlaylistQueries
+> &
+  PlaylistMethods & {
+    _id: mongoose.Types.ObjectId;
+    name: string;
+    items: mongoose.Types.Array<mongoose.Types.ObjectId>;
+    created_at?: Date;
+    updated_at?: Date;
+  };
+
+/**
  * Lean version of ScanDocument
  *
  * This has all Mongoose getters & functions removed. This type will be returned from `ScanDocument.toObject()`. To avoid conflicts with model names, use the type alias `ScanObject`.
