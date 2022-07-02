@@ -117,6 +117,10 @@ input {
   border-radius: 0.25rem;
   outline: none;
 
+  &.dark {
+    color: $dm-font-2;
+  }
+
   &:focus {
     border: 2px solid $primary-light;
   }

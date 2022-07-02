@@ -40,7 +40,7 @@ export const Search = () => {
   return (
     <div className="search">
       <input
-        className="search-box"
+        className="search-box dark"
         placeholder="search"
         value={query}
         onChange={search}
