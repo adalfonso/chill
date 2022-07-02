@@ -5,7 +5,7 @@ import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
-import { play } from "@reducers/playerReducer";
+import { play } from "@reducers/player";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 

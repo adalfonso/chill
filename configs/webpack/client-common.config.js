@@ -5,9 +5,9 @@ module.exports = {
   resolve: {
     extensions: [".js", ".jsx", ".ts", ".tsx"],
     alias: {
+      "@reducers": resolve(__dirname, "../../client/state/reducers/"),
       "@client": resolve(__dirname, "../../client/"),
       "@common": resolve(__dirname, "../../common/"),
-      "@reducers": resolve(__dirname, "../../client/state/reducers/"),
     },
   },
   context: resolve(__dirname, "../../client"),

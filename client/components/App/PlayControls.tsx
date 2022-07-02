@@ -6,7 +6,7 @@ import { RootState } from "@reducers/store";
 import { Scrubber } from "./PlayControls/Scrubber";
 import { Shuffle } from "./PlayControls/Shuffle";
 import { VolumeControl } from "./PlayControls/VolumeControl";
-import { next, pause, play, previous } from "@reducers/playerReducer";
+import { next, pause, play, previous } from "@reducers/player";
 import { useDispatch, useSelector } from "react-redux";
 import {
   faPlay,

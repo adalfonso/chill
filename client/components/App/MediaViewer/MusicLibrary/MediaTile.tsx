@@ -4,7 +4,7 @@ import { FileMenu } from "../FileMenu";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
 import { MediaApi } from "@client/api/MediaApi";
-import { addToQueue, play, playNext } from "@reducers/playerReducer";
+import { addToQueue, play, playNext } from "@reducers/player";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";

@@ -4,7 +4,7 @@ import { RootState } from "@reducers/store";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { ObjectID } from "bson";
-import { setMenu } from "@reducers/mediaMenuReducer";
+import { setMenu } from "@reducers/mediaMenu";
 
 interface FileMenuHandler {
   play: (e: MouseEvent<HTMLElement>) => void;

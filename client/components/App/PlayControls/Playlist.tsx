@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Equalizer } from "../../ui/Equalizer";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { RootState } from "@reducers/store";
-import { changeTrack } from "@reducers/playerReducer";
+import { changeTrack } from "@reducers/player";
 import { faListDots, faClose } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch, useSelector } from "react-redux";
 

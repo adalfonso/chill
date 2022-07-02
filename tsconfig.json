@@ -7,10 +7,10 @@
     "noEmit": true,
     "allowSyntheticDefaultImports": true,
     "paths": {
+      "@reducers/*": ["client/state/reducers/*"],
       "@server/*": ["server/*"],
       "@client/*": ["client/*"],
-      "@common/*": ["common/*"],
-      "@reducers/*": ["client/state/reducers/*"]
+      "@common/*": ["common/*"]
     }
   }
 }

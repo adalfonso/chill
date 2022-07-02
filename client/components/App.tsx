@@ -4,7 +4,7 @@ import { MediaViewer } from "./App/MediaViewer";
 import { PlayControls } from "./App/PlayControls";
 import { Toolbar } from "./App/Toolbar";
 import { hot } from "react-hot-loader/root";
-import { setMenu } from "@reducers/mediaMenuReducer";
+import { setMenu } from "@reducers/mediaMenu";
 import { useDispatch } from "react-redux";
 // import { PlaylistEditor } from "./App/PlaylistEditor";
 

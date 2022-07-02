@@ -3,7 +3,7 @@ import { Equalizer } from "@client/components/ui/Equalizer";
 import { FileMenu } from "../FileMenu";
 import { Media } from "@common/autogen";
 import { RootState } from "@reducers/store";
-import { playNext, addToQueue } from "@reducers/playerReducer";
+import { playNext, addToQueue } from "@reducers/player";
 import { secondsToMinutes } from "@client/util";
 import { useDispatch, useSelector } from "react-redux";
 

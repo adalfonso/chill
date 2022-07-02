@@ -1,7 +1,7 @@
 import "./Scrubber.scss";
 import React, { useState, useEffect } from "react";
 import { RootState } from "@reducers/store";
-import { audio, getAudioProgress, next, seek } from "@reducers/playerReducer";
+import { audio, getAudioProgress, next, seek } from "@reducers/player";
 import { getTimeTracking, startAnimationLoop } from "@client/util";
 import { useDispatch, useSelector } from "react-redux";
 import { useDrag } from "@client/hooks/useDrag";
