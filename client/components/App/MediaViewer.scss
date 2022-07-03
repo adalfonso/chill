@@ -11,25 +11,25 @@
 
   .info {
     margin-left: 1rem;
+  }
 
-    .play-button {
-      padding: 0.25rem 0.65rem 0.25rem 0.4rem;
-      border-radius: 0.25rem;
-      display: inline-flex;
-      background-color: $primary;
-      justify-content: space-between;
-      align-items: center;
-      color: $dm-font;
-      transition: background-color 0.3s;
-      cursor: pointer;
+  .play-button {
+    padding: 0.25rem 0.65rem 0.25rem 0.4rem;
+    border-radius: 0.25rem;
+    display: inline-flex;
+    background-color: $primary;
+    justify-content: space-between;
+    align-items: center;
+    color: $dm-font;
+    transition: background-color 0.3s;
+    cursor: pointer;
 
-      svg {
-        margin-right: 0.75rem;
-      }
+    svg {
+      margin-right: 0.75rem;
+    }
 
-      &:hover {
-        background-color: $primary-light;
-      }
+    &:hover {
+      background-color: $primary-light;
     }
   }
 
@@ -37,18 +37,16 @@
     display: flex;
     flex-wrap: wrap;
   }
-
-  .playlists {
-    .playlist-item {
-      padding-bottom: 1rem;
-    }
-  }
 }
 
 .panel-list {
   display: grid;
   grid-template-columns: fit-content(4em) 1fr fit-content(6em);
   user-select: none;
+
+  &.playlist {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
 
   .row {
     display: contents;

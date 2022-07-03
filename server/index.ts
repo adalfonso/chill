@@ -24,7 +24,7 @@ app.use(
     verbose: false,
     rewrites: [
       {
-        from: /^\/media\/.*$/,
+        from: /^\/(media|playlist)\/.*$/,
         to: (context) => context.parsedUrl.path,
       },
     ],

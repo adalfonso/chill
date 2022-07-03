@@ -14,4 +14,5 @@ export const PlaylistApi = {
   update: (id: string, items: string[]) =>
     axios.patch(`/playlist/${id}`, { items }),
   search: (query: string) => axios.post(`/playlist/search`, { query }),
+  tracks: (id: string) => axios.get(`/playlist/${id}/tracks`),
 };

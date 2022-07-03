@@ -3,8 +3,14 @@ import { PlaylistModel } from "@server/models/Playlist";
 import { Request, Response } from "express";
 import { toObjectId } from "@server/db/utils";
 import { PaginationOptions } from "@common/types";
+import { MediaModel } from "@server/models/Media";
 
 namespace Req {
+  export namespace track {
+    export interface params {
+      id: string;
+    }
+  }
   export namespace index {
     export type query = PaginationOptions;
   }
@@ -31,10 +37,11 @@ namespace Req {
   }
 }
 
-type IndexRequest = Request<{}, {}, {}, Req.index.query>;
 type CreateRequest = Request<{}, {}, Req.create.body>;
-type UpdateRequest = Request<Req.update.params, {}, Req.update.body>;
+type IndexRequest = Request<{}, {}, {}, Req.index.query>;
 type QueryRequest = Request<{}, {}, Req.query.body>;
+type TrackRequest = Request<Req.track.params>;
+type UpdateRequest = Request<Req.update.params, {}, Req.update.body>;
 
 export const PlaylistController = {
   index: async (req: IndexRequest, res: Response) => {
@@ -110,5 +117,20 @@ export const PlaylistController = {
     const results = await PlaylistModel.find({ $text: { $search: query } });
 
     res.json(results);
+  },
+
+  tracks: async (req: TrackRequest, res: Response) => {
+    const { id } = req.params;
+
+    try {
+      const playlist = await PlaylistModel.findById(id);
+
+      const results = await MediaModel.find({ _id: { $in: playlist.items } });
+
+      res.json(results);
+    } catch (e) {
+      console.error("Failed to get Playlist tracks: ", e);
+      res.sendStatus(500);
+    }
   },
 };

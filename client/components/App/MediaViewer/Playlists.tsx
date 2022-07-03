@@ -1,10 +1,14 @@
 import "./MusicLibrary.scss";
 import React, { useReducer, useRef } from "react";
 import _ from "lodash";
+import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Playlist } from "@common/autogen";
 import { PlaylistApi } from "@client/api/PlaylistApi";
+import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { fetchReducer, useFetch } from "@client/hooks/useFetch";
 import { pageReducer, useInfiniteScroll } from "@hooks/useInfiniteScroll";
+import { play } from "@reducers/player";
+import { useDispatch } from "react-redux";
 
 interface MusicLibraryProps {
   setLoading: (loading: boolean) => void;
@@ -18,6 +22,7 @@ export const Playlists = ({ setLoading, per_page }: MusicLibraryProps) => {
     items: [],
     busy: true,
   });
+  const dispatch = useDispatch();
 
   const loadPlaylists = () => {
     setLoading(true);
@@ -34,15 +39,44 @@ export const Playlists = ({ setLoading, per_page }: MusicLibraryProps) => {
     () => setLoading(false),
   );
 
+  const playPlaylist = (playlist: Playlist) => async () => {
+    try {
+      const files = await PlaylistApi.tracks(playlist._id.toString());
+
+      dispatch(play({ files: [...files.data], index: 0 }));
+    } catch (e) {}
+  };
+
   return (
     <div id="media-viewer">
       <div className="playlists">
         <h1>Playlists</h1>
-        {playlistData.items.map((playlist) => (
-          <div className="playlist-item" key={playlist._id.toString()}>
-            {playlist.name} - {playlist.items.length} items
+        <div className="panel-list playlist">
+          <div className="row">
+            <div>
+              <strong>Name</strong>
+            </div>
+            <div>
+              <strong>Tracks</strong>
+            </div>
+            <div></div>
           </div>
-        ))}
+          {playlistData.items.map((playlist) => (
+            <div className="row" key={playlist._id.toString()}>
+              <div>{playlist.name}</div>
+              <div>{playlist.items.length}</div>
+              <div>
+
+              <div className="play-button" onClick={playPlaylist(playlist)}>
+                <Icon icon={faPlayCircle} size="sm" pull="right" />
+                Play
+              </div>
+              </div>
+
+            </div>
+          ))}
+        </div>
+
         <div id="page-bottom-boundary" ref={bottomBoundaryRef}></div>
       </div>
     </div>
