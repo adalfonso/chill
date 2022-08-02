@@ -4,6 +4,7 @@ import { AlbumView } from "./MediaViewer/AlbumView";
 import { ArtistView } from "./MediaViewer/ArtistView";
 import { GenreView } from "./MediaViewer/GenreView";
 import { MusicLibrary } from "./MediaViewer/MusicLibrary";
+import { Playlist } from "./MediaViewer/Playlist";
 import { Playlists } from "./MediaViewer/Playlists";
 import { Route, Switch } from "react-router-dom";
 
@@ -28,6 +29,10 @@ export const MediaViewer = () => {
 
         <Route path="/playlists">
           <Playlists setLoading={setLoading} per_page={25} />
+        </Route>
+
+        <Route path="/playlist/:id">
+          <Playlist />
         </Route>
 
         <Route path="/">

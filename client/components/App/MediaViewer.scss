@@ -39,13 +39,41 @@
   }
 }
 
+.playlist-viewer {
+  width: 100%;
+}
+
 .panel-list {
   display: grid;
   grid-template-columns: fit-content(4em) 1fr fit-content(6em);
   user-select: none;
 
-  &.playlist {
-    grid-template-columns: 1fr 1fr 1fr;
+  &.playlists {
+    grid-template-columns: 1fr 1fr 1fr fit-content(4em);
+
+    .row {
+      &:hover {
+        .edit {
+          display: flex;
+        }
+      }
+
+      .edit {
+        display: none;
+        justify-self: flex-end;
+        margin-right: 1rem;
+        cursor: pointer;
+        transition: 0.3s color;
+
+        &:hover {
+          color: $primary-very-light;
+        }
+      }
+    }
+  }
+
+  &.playlist-tracks {
+    grid-template-columns: auto auto 4fr 4fr auto;
   }
 
   .row {
@@ -56,6 +84,10 @@
       align-items: center;
       justify-content: space-between;
       padding: 0.6rem 0 0.6rem 1rem;
+
+      &:last-of-type {
+        padding-right: 1rem;
+      }
     }
 
     &:hover {

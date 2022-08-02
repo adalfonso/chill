@@ -6,7 +6,7 @@ import { PaginationOptions } from "@common/types";
 import { MediaModel } from "@server/models/Media";
 
 namespace Req {
-  export namespace track {
+  export namespace read {
     export interface params {
       id: string;
     }
@@ -40,7 +40,7 @@ namespace Req {
 type CreateRequest = Request<{}, {}, Req.create.body>;
 type IndexRequest = Request<{}, {}, {}, Req.index.query>;
 type QueryRequest = Request<{}, {}, Req.query.body>;
-type TrackRequest = Request<Req.track.params>;
+type ReadRequest = Request<Req.read.params>;
 type UpdateRequest = Request<Req.update.params, {}, Req.update.body>;
 
 export const PlaylistController = {
@@ -111,6 +111,19 @@ export const PlaylistController = {
     }
   },
 
+  read: async (req: ReadRequest, res: Response) => {
+    const { id } = req.params;
+
+    try {
+      const playlist = await PlaylistModel.findById(id);
+
+      res.json(playlist);
+    } catch (e) {
+      console.error("Failed to get Playlist: ", e);
+      res.sendStatus(500);
+    }
+  },
+
   search: async (req: QueryRequest, res: Response) => {
     const query = req.body.query.toLowerCase();
 
@@ -119,7 +132,7 @@ export const PlaylistController = {
     res.json(results);
   },
 
-  tracks: async (req: TrackRequest, res: Response) => {
+  tracks: async (req: ReadRequest, res: Response) => {
     const { id } = req.params;
 
     try {

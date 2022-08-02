@@ -4,18 +4,19 @@ import _ from "lodash";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Playlist } from "@common/autogen";
 import { PlaylistApi } from "@client/api/PlaylistApi";
-import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
+import { faPlayCircle, faPen } from "@fortawesome/free-solid-svg-icons";
 import { fetchReducer, useFetch } from "@client/hooks/useFetch";
 import { pageReducer, useInfiniteScroll } from "@hooks/useInfiniteScroll";
 import { play } from "@reducers/player";
 import { useDispatch } from "react-redux";
+import { useHistory } from "react-router-dom";
 
-interface MusicLibraryProps {
+interface PlaylistsProps {
   setLoading: (loading: boolean) => void;
   per_page: number;
 }
 
-export const Playlists = ({ setLoading, per_page }: MusicLibraryProps) => {
+export const Playlists = ({ setLoading, per_page }: PlaylistsProps) => {
   const bottomBoundaryRef = useRef(null);
   const [pager, pagerDispatch] = useReducer(pageReducer, { page: 0 });
   const [playlistData, playlistDispatch] = useReducer(fetchReducer<Playlist>, {
@@ -23,6 +24,7 @@ export const Playlists = ({ setLoading, per_page }: MusicLibraryProps) => {
     busy: true,
   });
   const dispatch = useDispatch();
+  const history = useHistory();
 
   const loadPlaylists = () => {
     setLoading(true);
@@ -47,11 +49,15 @@ export const Playlists = ({ setLoading, per_page }: MusicLibraryProps) => {
     } catch (e) {}
   };
 
+  const editPlaylist =  (playlist: Playlist) => async () => {
+    history.push(`/playlist/${playlist._id}`)
+  }
+
   return (
     <div id="media-viewer">
-      <div className="playlists">
+      <div className="playlists-index">
         <h1>Playlists</h1>
-        <div className="panel-list playlist">
+        <div className="panel-list playlists">
           <div className="row">
             <div>
               <strong>Name</strong>
@@ -60,19 +66,23 @@ export const Playlists = ({ setLoading, per_page }: MusicLibraryProps) => {
               <strong>Tracks</strong>
             </div>
             <div></div>
+            <div></div>
           </div>
           {playlistData.items.map((playlist) => (
             <div className="row" key={playlist._id.toString()}>
               <div>{playlist.name}</div>
               <div>{playlist.items.length}</div>
               <div>
-
-              <div className="play-button" onClick={playPlaylist(playlist)}>
-                <Icon icon={faPlayCircle} size="sm" pull="right" />
-                Play
+                <div className="play-button" onClick={playPlaylist(playlist)}>
+                  <Icon icon={faPlayCircle} size="sm" pull="right" />
+                  Play
+                </div>
               </div>
+              <div>
+              <div className="edit" onClick={editPlaylist(playlist)}>
+                  <Icon icon={faPen} size="sm" pull="right" />
+                </div>
               </div>
-
             </div>
           ))}
         </div>

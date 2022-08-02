@@ -7,12 +7,13 @@ const toQueryString = (options: Record<string, string | number>) =>
     .join("&")}`;
 
 export const PlaylistApi = {
-  index: (options: PaginationOptions) =>
-    axios.get(`/playlists${toQueryString(options)}`),
   create: (name: string, items: string[]) =>
     axios.post(`/playlists`, { name, items }),
-  update: (id: string, items: string[]) =>
-    axios.patch(`/playlist/${id}`, { items }),
+  index: (options: PaginationOptions) =>
+    axios.get(`/playlists${toQueryString(options)}`),
+  read: (id: string) => axios.get(`/playlist/${id}`),
   search: (query: string) => axios.post(`/playlist/search`, { query }),
   tracks: (id: string) => axios.get(`/playlist/${id}/tracks`),
+  update: (id: string, items: string[]) =>
+    axios.patch(`/playlist/${id}`, { items }),
 };
