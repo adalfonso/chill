@@ -2,7 +2,9 @@ import "./MusicLibrary.scss";
 import React, { useEffect, useState } from "react";
 import { PlaylistApi } from "@client/api/PlaylistApi";
 import { PlaylistObject } from "@common/autogen";
-import { secondsToMinutes } from "@client/util";
+import { PlaylistRow } from "./Playlist/PlaylistRow";
+import { play } from "@reducers/player";
+import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 
 interface PlaylistProps {}
@@ -13,14 +15,21 @@ type PlaylistParams = {
 
 export const Playlist = ({}: PlaylistProps) => {
   const id = decodeURIComponent(useParams<PlaylistParams>().id);
-  const [tracks, setTracks] = useState([]);
+  const [files, setFiles] = useState([]);
   const [playlist, setPlaylist] = useState<PlaylistObject>();
+  const dispatch = useDispatch();
+
+  const playAll =
+    (index = 0) =>
+    () => {
+      dispatch(play({ files: [...files], index }));
+    };
 
   useEffect(() => {
     Promise.all([PlaylistApi.read(id), PlaylistApi.tracks(id)]).then(
-      ([playlist, tracks]) => {
+      ([playlist, files]) => {
         setPlaylist(playlist.data);
-        setTracks(tracks.data);
+        setFiles(files.data);
       },
     );
   }, [id]);
@@ -31,21 +40,13 @@ export const Playlist = ({}: PlaylistProps) => {
         <h1>{playlist?.name}</h1>
 
         <div className="playlist-tracks panel-list">
-          {tracks?.map((track, index) => (
-            <div className="row">
-              <div>{index + 1}</div>
-              <div>
-                {track.cover?.filename && (
-                  <img
-                    src={`/media/cover/${track.cover.filename}?size=36`}
-                    loading="lazy"
-                  />
-                )}
-              </div>
-              <div>{track.title}</div>
-              <div>{track.artist}</div>
-              <div>{secondsToMinutes(track.duration)}</div>
-            </div>
+          {files?.map((file, index) => (
+            <PlaylistRow
+              index={index}
+              file={file}
+              playAll={playAll}
+              key={file._id.toString()}
+            ></PlaylistRow>
           ))}
         </div>
       </div>

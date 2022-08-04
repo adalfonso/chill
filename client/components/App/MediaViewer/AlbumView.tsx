@@ -75,16 +75,14 @@ export const AlbumView = ({ setLoading }: AlbumViewProps) => {
 
           {files
             .sort((a, b) => a.track - b.track)
-            .map((file, index) => {
-              return (
-                <AlbumViewRow
-                  index={index}
-                  file={file}
-                  playAll={playAll}
-                  key={file._id.toString()}
-                ></AlbumViewRow>
-              );
-            })}
+            .map((file, index) => (
+              <AlbumViewRow
+                index={index}
+                file={file}
+                playAll={playAll}
+                key={file._id.toString()}
+              ></AlbumViewRow>
+            ))}
         </div>
       </div>
     </div>
