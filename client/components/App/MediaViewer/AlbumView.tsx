@@ -52,7 +52,7 @@ export const AlbumView = ({ setLoading }: AlbumViewProps) => {
         <div className="details">
           {files?.[0]?.cover?.filename && (
             <img
-              src={`/media/cover/${files[0].cover.filename}?size=160`}
+              src={`/api/v1/media/cover/${files[0].cover.filename}?size=160`}
               loading="lazy"
             />
           )}

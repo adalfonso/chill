@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { FileMenu } from "../FileMenu";
 import { Media } from "@common/autogen";
 import { secondsToMinutes } from "@client/util";
+import { useSelector } from "react-redux";
+import { getState } from "@reducers/store";
+import { Equalizer } from "@client/components/ui/Equalizer";
 
 export interface PlaylistRowProps {
   file: Media;
@@ -11,6 +14,7 @@ export interface PlaylistRowProps {
 
 export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
   const [menu_visible, setMenuVisible] = useState(false);
+  const { player } = useSelector(getState);
 
   const menuHandler = {
     play: () => playAll(index)(),
@@ -20,11 +24,16 @@ export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
 
   return (
     <div className="row">
-      <div>{index + 1}</div>
+      <div className="track">
+        {index + 1}
+        {player.now_playing?.path === file.path && player.is_playing && (
+          <Equalizer />
+        )}
+      </div>
       <div>
         {file.cover?.filename && (
           <img
-            src={`/media/cover/${file.cover.filename}?size=36`}
+            src={`/api/v1/media/cover/${file.cover.filename}?size=36`}
             loading="lazy"
           />
         )}

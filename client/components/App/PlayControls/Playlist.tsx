@@ -34,7 +34,7 @@ export const Playlist = () => {
             <div className="cover">
               {media.cover?.filename && (
                 <img
-                  src={`/media/cover/${media.cover.filename}?size=36`}
+                  src={`/api/v1/media/cover/${media.cover.filename}?size=36`}
                   loading="lazy"
                 />
               )}

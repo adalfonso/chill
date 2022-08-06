@@ -1,11 +1,11 @@
 import "core-js";
 import "regenerator-runtime";
+import api from "./api";
 import dotenv from "dotenv";
 import express from "express";
 import historyApiFallback from "connect-history-api-fallback";
 import { Connection } from "./db/Client";
 import { enableHmr } from "./hmr";
-import { registerRoutes } from "./routes";
 
 dotenv.config();
 
@@ -24,7 +24,7 @@ app.use(
     verbose: false,
     rewrites: [
       {
-        from: /^\/(media|playlist)\/.*$/,
+        from: /^\/(api)\/.*$/,
         to: (context) => context.parsedUrl.path,
       },
     ],
@@ -47,8 +47,7 @@ app.listen(process.env.NODE_PORT, () => {
   console.info(`Serving content from /${process.env.SOURCE_DIR}/`);
 });
 
-// Setup routing
-registerRoutes(app);
+app.use("/api/v1", api(app));
 
 // Connect to the database
 Connection.create(process.env.MONGO_HOST, process.env.MONGO_PORT);

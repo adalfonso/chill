@@ -54,7 +54,10 @@ export const MediaTile = ({ file, url, displayAs }: MediaTileProps) => {
     <div className="media-tile-wrapper">
       <div className={class_name} onClick={() => history.push(url(file))}>
         {file.image && (
-          <img src={`/media/cover/${file.image}?size=256`} loading="lazy" />
+          <img
+            src={`/api/v1/media/cover/${file.image}?size=256`}
+            loading="lazy"
+          />
         )}
 
         <div className={"more" + (menu_visible ? " active" : "")}>

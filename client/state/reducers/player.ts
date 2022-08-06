@@ -15,7 +15,7 @@ export const getAudioProgress = () => {
 };
 
 const load = (state: WritableDraft<PlayerState>) => {
-  audio.src = `/media/${state.now_playing?._id}/load`;
+  audio.src = `/api/v1/media/${state.now_playing?._id}/load`;
 };
 
 export interface PlayerState {
