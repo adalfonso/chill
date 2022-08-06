@@ -1,10 +1,10 @@
 import React, { useState } from "react";
+import { Equalizer } from "@client/components/ui/Equalizer";
 import { FileMenu } from "../FileMenu";
 import { Media } from "@common/autogen";
+import { getState } from "@reducers/store";
 import { secondsToMinutes } from "@client/util";
 import { useSelector } from "react-redux";
-import { getState } from "@reducers/store";
-import { Equalizer } from "@client/components/ui/Equalizer";
 
 export interface PlaylistRowProps {
   file: Media;
@@ -23,7 +23,7 @@ export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
   };
 
   return (
-    <div className="row">
+    <div className="row" onClick={playAll(index)}>
       <div className="track">
         {index + 1}
         {player.now_playing?.path === file.path && player.is_playing && (
