@@ -1,10 +1,18 @@
 import "./Scrubber.scss";
 import React, { useState, useEffect } from "react";
-import { audio, getAudioProgress, next, seek } from "@reducers/player";
+import {
+  audio,
+  crossover,
+  getAudioProgress,
+  next,
+  seek,
+} from "@reducers/player";
 import { getState } from "@reducers/store";
 import { getTimeTracking, startAnimationLoop } from "@client/util";
 import { useDispatch, useSelector } from "react-redux";
 import { useDrag } from "@client/hooks/useDrag";
+
+const gap_offset = 0.25;
 
 export const Scrubber = () => {
   const [progress, setProgress] = useState(0);
@@ -23,9 +31,21 @@ export const Scrubber = () => {
       setProgress(getAudioProgress());
     });
 
-    audio.addEventListener("ended", () => {
+    /**
+     * We will automatically dispatch the next track when the current track has
+     * 200ms or less to go. This is a hack to simulate gapless playback.
+     * Additionally both the audio and the crossover audio's closure will
+     * reference "audio". That's because either fixture may be playing at a
+     * given time, but the only the one currently playing will be referenced as
+     * "audio" due to the swapping nature of the crossover.
+     */
+
+    const onCrossover = () =>
+      audio.duration - audio.currentTime < gap_offset &&
       dispatch(next({ auto: true }));
-    });
+
+    audio.addEventListener("timeupdate", onCrossover);
+    crossover.addEventListener("timeupdate", onCrossover);
   }, []);
 
   return (

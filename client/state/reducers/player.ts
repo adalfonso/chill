@@ -4,7 +4,8 @@ import { Nullable } from "@common/types";
 import { WritableDraft } from "immer/dist/internal";
 import { createSlice } from "@reduxjs/toolkit";
 
-export const audio = new Audio();
+export let audio = new Audio();
+export let crossover = new Audio();
 
 export const getAudioProgress = () => {
   if (!audio.duration || !audio.currentTime) {
@@ -14,14 +15,31 @@ export const getAudioProgress = () => {
   return (audio.currentTime / audio.duration) * 100;
 };
 
-const load = (state: WritableDraft<PlayerState>) => {
-  audio.src = `/api/v1/media/${state.now_playing?._id}/load`;
+/**
+ *
+ * @param state player state
+ * @param use_crossover audio is loaded from the crossover audio
+ */
+const load = (state: WritableDraft<PlayerState>, use_crossover = false) => {
+  /**
+   * If we have not swapped the audio with the crossover audio we should set the
+   * src of the audio to be now playing. Otherwise the crossover will have
+   * already been set as the current audio.
+   */
+  if (!use_crossover) {
+    audio.src = `/api/v1/media/${state.now_playing?._id}/load`;
+  }
+
+  crossover.src = state.next_playing
+    ? `/api/v1/media/${state.next_playing?._id}/load`
+    : null;
 };
 
 export interface PlayerState {
   is_playing: boolean;
   is_shuffled: boolean;
   now_playing: Nullable<Media>;
+  next_playing: Nullable<Media>;
   original_playlist: Media[];
   playlist: Media[];
   index: number;
@@ -32,6 +50,7 @@ const initialState: PlayerState = {
   is_playing: false,
   is_shuffled: false,
   now_playing: null,
+  next_playing: null,
   original_playlist: [],
   playlist: [],
   index: 0,
@@ -60,6 +79,7 @@ export const playerSlice = createSlice({
 
       state.index = index;
       state.now_playing = state.playlist[state.index];
+      state.next_playing = state.playlist[state.index + 1] ?? null;
 
       load(state);
       audio.play();
@@ -82,6 +102,7 @@ export const playerSlice = createSlice({
         state.playlist = files;
         state.index = index;
         state.now_playing = files[index];
+        state.next_playing = files[index + 1] ?? null;
         load(state);
       }
 
@@ -114,6 +135,7 @@ export const playerSlice = createSlice({
       }
 
       state.now_playing = state.playlist[state.index];
+      state.next_playing = state.playlist[state.index + 1] ?? null;
 
       load(state);
       audio.play();
@@ -137,8 +159,13 @@ export const playerSlice = createSlice({
       }
 
       state.now_playing = state.playlist[state.index];
+      state.next_playing = state.playlist[state.index + 1] ?? null;
 
-      load(state);
+      if (crossover.src) {
+        [audio, crossover] = [crossover, audio];
+      }
+
+      load(state, !!crossover.src);
       audio.play();
       state.is_playing = true;
     },
