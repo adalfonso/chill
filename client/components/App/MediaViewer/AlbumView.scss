@@ -14,6 +14,17 @@
         margin-top: 0;
       }
     }
+
+    .album-art {
+      height: 160px;
+      width: 160px;
+      background-color: $dm-background-2;
+      border-radius: 0.25rem;
+    }
+
+    img {
+      border-radius: 0.25rem;
+    }
   }
 
   .track {

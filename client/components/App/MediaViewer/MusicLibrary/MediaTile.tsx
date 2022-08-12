@@ -10,7 +10,7 @@ import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
 
 export type TileData = Partial<Media> & {
-  _id: string[];
+  _id: Record<string, string>;
   _count: number;
   image?: string;
 };
