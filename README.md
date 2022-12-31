@@ -39,7 +39,7 @@ Running the app within docker is preferred because it requires less manual setup
 ```
 
 - HMR enabled
-- App served @ `http://localhost:9000`
+- App served @ `http://localhost:6400`
 - Server run with nodemon
 
 **Production w/Docker**
@@ -48,8 +48,7 @@ Running the app within docker is preferred because it requires less manual setup
   npm run docker
 ```
 
-- App served @ `http://localhost:3000`
-- Server run with pm2-runtime
+- App served @ `http://localhost:6400`
 
 ---
 
@@ -64,7 +63,7 @@ Running the app within docker is preferred because it requires less manual setup
 ```
 
 - HMR enabled
-- App served @ `http://localhost:3000`
+- App served @ `http://localhost:6400`
 - Server run with nodemon
 
 **Production**
@@ -73,16 +72,15 @@ Running the app within docker is preferred because it requires less manual setup
   npm run start
 ```
 
-- App served @ `http://localhost:3000`
-- Uses pm2 to daemonize the application. For further reading please see https://pm2.keymetrics.io/docs/usage/quick-start/
+- App served @ `http://localhost:6400`
 
 ## All commands
 
 | Command              | Description                                                                |
 | -------------------- | -------------------------------------------------------------------------- |
-| `npm run docker:dev` | Build app, HMR enabled, run in docker, and serve @ `http://localhost:9000` |
-| `npm run docker`     | Build app, run in docker, and serve @ `http://localhost:3000`              |
-| `npm run start:dev`  | Build app, HMR enabled, and serve @ `http://localhost:3000`                |
-| `npm run start`      | Build app and serve @ `http://localhost:3000`                              |
+| `npm run docker:dev` | Build app, HMR enabled, run in docker, and serve @ `http://localhost:6400` |
+| `npm run docker`     | Build app, run in docker, and serve @ `http://localhost:6400`              |
+| `npm run start:dev`  | Build app, HMR enabled, and serve @ `http://localhost:6400`                |
+| `npm run start`      | Build app and serve @ `http://localhost:6400`                              |
 | `npm run test`       | Run tests                                                                  |
 | `npm run lint`       | Run linter                                                                 |

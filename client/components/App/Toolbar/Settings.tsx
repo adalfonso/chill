@@ -33,4 +33,4 @@ export const Settings = ({ onClose }: SettingsProps) => {
   );
 };
 
-const triggerScan = async () => axios.get("/media/scan");
+const triggerScan = async () => axios.get("/api/v1/media/scan");

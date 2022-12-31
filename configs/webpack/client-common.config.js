@@ -10,6 +10,7 @@ module.exports = {
       "@client": resolve(__dirname, "../../client/"),
       "@common": resolve(__dirname, "../../common/"),
     },
+    fallback: { crypto: false },
   },
   context: resolve(__dirname, "../../client"),
   module: {
