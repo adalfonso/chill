@@ -28,6 +28,7 @@ export const initEnvVars = () => {
   dotenv.config();
 
   const required_vars = [
+    "HOST",
     "NODE_PORT",
     "SOURCE_DIR",
     "GOOGLE_OAUTH_ID",

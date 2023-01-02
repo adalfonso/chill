@@ -13,7 +13,7 @@ export const configurePassport = (passport) => {
       {
         clientID: process.env.GOOGLE_OAUTH_ID,
         clientSecret: process.env.GOOGLE_OAUTH_SECRET,
-        callbackURL: "http://localhost:6400/auth/google/cb",
+        callbackURL: `${process.env.HOST}/auth/google/cb`,
         passReqToCallback: true,
       },
       verifyGoogleAuth,
