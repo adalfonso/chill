@@ -99,8 +99,15 @@ async function verifyJwtAuth(
   done: VerifiedCallback,
 ) {
   try {
-    const user = payload.user;
-    done(null, user);
+    const { _id } = payload.user;
+
+    const user = await User.findById(_id);
+
+    if (user) {
+      return done(null, user);
+    }
+
+    return done(null, false);
   } catch (error) {
     done(error, false);
   }

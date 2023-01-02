@@ -2,7 +2,7 @@ import express, { Express } from "express";
 import { PlaylistController } from "@server/controllers/PlaylistController";
 
 /** /api/v1/playlists */
-export const playlist = (app: Express) => {
+export const playlist = () => {
   const router = express.Router();
 
   router.get("/:id", PlaylistController.read);
@@ -14,7 +14,7 @@ export const playlist = (app: Express) => {
 };
 
 /** /api/v1/playlists */
-export const playlists = (app: Express) => {
+export const playlists = () => {
   const router = express.Router();
 
   router.get("/", PlaylistController.index);
