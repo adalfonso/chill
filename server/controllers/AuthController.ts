@@ -14,28 +14,32 @@ export const AuthController = {
   },
 
   authCallback: (req: Request, res: Response) => {
-    const signingCallback = (err: Error, token: string) => {
+    const signingCallback = async (err: Error, token: string) => {
       if (err) {
         console.error(`Failed to create JWT: ${err}`);
         return res.redirect("/");
       }
 
-      // TODO: fix types
-      User.updateOne(req.user._id, { access_token: token });
+      try {
+        // TODO: fix types
+        await User.findByIdAndUpdate(req.user._id, { access_token: token });
+      } catch (e) {
+        console.error("Failed to store access_token", e);
+      }
 
       return res
         .cookie("access_token", token, {
           httpOnly: true,
           sameSite: true,
           //signed: true,
-          secure: true,
+          //secure: true,
         })
         .redirect("/");
     };
 
     jwt.sign(
       { user: req.user },
-      process.env.JWT_SIGNING_KEY,
+      process.env.SIGNING_KEY,
       { expiresIn: "1h" },
       signingCallback,
     );

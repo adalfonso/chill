@@ -17,7 +17,7 @@ if (process.env.NODE_ENV === "development") {
 
 // Start server
 app.listen(process.env.NODE_PORT, () => {
-  console.info(`Server started: http://localhost:${process.env.NODE_PORT}`);
+  console.info(`Server started: ${process.env.HOST}:${process.env.NODE_PORT}`);
   console.info(`Serving content from /${process.env.SOURCE_DIR}/`);
 });
 

@@ -13,7 +13,7 @@ export const initApp = () => {
   const app = express();
   configurePassport(passport);
 
-  app.use(cookieParser());
+  app.use(cookieParser(process.env.SIGNING_KEY));
   app.set("view engine", "ejs");
 
   // Register static assets
@@ -28,12 +28,14 @@ export const initEnvVars = () => {
   dotenv.config();
 
   const required_vars = [
-    "HOST",
-    "NODE_PORT",
-    "SOURCE_DIR",
     "GOOGLE_OAUTH_ID",
     "GOOGLE_OAUTH_SECRET",
-    "JWT_SIGNING_KEY",
+    "HOST",
+    "MONGO_HOST",
+    "MONGO_PORT",
+    "NODE_PORT",
+    "SIGNING_KEY",
+    "SOURCE_DIR",
   ];
 
   // Check for required env vars

@@ -9,7 +9,8 @@ services:
       - 9229:9229
     environment:
       - MONGO_HOST=mongo
-      - HOST=localhost
+    env_file:
+      - .env
     volumes:
       - type: bind
         source: /srv/media

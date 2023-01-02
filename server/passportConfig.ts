@@ -13,7 +13,7 @@ export const configurePassport = (passport) => {
       {
         clientID: process.env.GOOGLE_OAUTH_ID,
         clientSecret: process.env.GOOGLE_OAUTH_SECRET,
-        callbackURL: `${process.env.HOST}/auth/google/cb`,
+        callbackURL: `${process.env.HOST}:${process.env.NODE_PORT}/auth/google/cb`,
         passReqToCallback: true,
       },
       verifyGoogleAuth,
@@ -24,7 +24,7 @@ export const configurePassport = (passport) => {
     new JwtStrategy(
       {
         jwtFromRequest: (req: Request) => req?.cookies?.access_token ?? null,
-        secretOrKey: process.env.JWT_SIGNING_KEY,
+        secretOrKey: process.env.SIGNING_KEY,
       },
       verifyJwtAuth,
     ),
@@ -50,10 +50,7 @@ async function verifyGoogleAuth(
   try {
     const email = profile.emails[0].value;
 
-    const existing_user = await User.findOne({
-      "auth.id": profile.id,
-      "auth.type": "google_oauth",
-    });
+    const existing_user = await User.findOne({ email });
 
     if (existing_user) {
       return done(null, existing_user);
