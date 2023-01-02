@@ -1,8 +1,8 @@
 import admin from "./admin";
 import api from "./api";
 import auth from "./auth";
+import express, { Express } from "express";
 import historyApiFallback from "connect-history-api-fallback";
-import { Express } from "express";
 import { isAuthenticated } from "./middleware";
 
 export const initRouter = (app: Express) => {
@@ -10,7 +10,7 @@ export const initRouter = (app: Express) => {
   app.use("/admin", admin);
   app.use("/auth", auth);
 
-  // This needs to run before HMR
+  // Must run before HMR
   app.use(
     historyApiFallback({
       verbose: false,
@@ -20,6 +20,9 @@ export const initRouter = (app: Express) => {
     }),
     isAuthenticated,
   );
+
+  // Must run after history fallback
+  app.use(express.static(process.env.SOURCE_DIR));
 
   // Register all API routes
   app.use("/api/v1", isAuthenticated, api(app));

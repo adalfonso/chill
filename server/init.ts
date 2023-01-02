@@ -17,7 +17,6 @@ export const initApp = () => {
   app.set("view engine", "ejs");
 
   // Register static assets
-  app.use(express.static(process.env.SOURCE_DIR));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
