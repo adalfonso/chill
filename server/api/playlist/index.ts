@@ -1,7 +1,7 @@
 import express, { Express } from "express";
 import { PlaylistController } from "@server/controllers/PlaylistController";
 
-/** /api/playlists */
+/** /api/v1/playlists */
 export const playlist = (app: Express) => {
   const router = express.Router();
 
@@ -13,9 +13,10 @@ export const playlist = (app: Express) => {
   return router;
 };
 
-/** /api/playlists */
+/** /api/v1/playlists */
 export const playlists = (app: Express) => {
   const router = express.Router();
+
   router.get("/", PlaylistController.index);
   router.post("/", PlaylistController.create);
 

@@ -4,6 +4,7 @@ import { playlist, playlists } from "./playlist";
 
 export default (app: Express) => {
   const router = express.Router();
+
   router.use("/media", media(app));
   router.use("/playlist", playlist(app));
   router.use("/playlists", playlists(app));
