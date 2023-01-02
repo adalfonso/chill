@@ -2,16 +2,15 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import express from "express";
 import passport from "passport";
-import { Express } from "express";
 import { configurePassport } from "./passportConfig";
 
 /**
- * Initialize with app
+ * Initialize the app
  *
- * @param app - express app
- * @returns middleware
+ * @returns app
  */
-export const initApp = (app: Express) => {
+export const initApp = () => {
+  const app = express();
   configurePassport(passport);
 
   app.use(cookieParser());
@@ -21,6 +20,8 @@ export const initApp = (app: Express) => {
   app.use(express.static(process.env.SOURCE_DIR));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+
+  return app;
 };
 
 /** Initialize env vars */

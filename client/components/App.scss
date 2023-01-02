@@ -24,6 +24,16 @@
   }
 }
 
+a.regular {
+  color: $dm-font;
+  text-decoration: none;
+
+  &:active,
+  &:active {
+    color: $dm-font;
+  }
+}
+
 div,
 p,
 h1,

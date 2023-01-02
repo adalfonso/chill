@@ -3,6 +3,16 @@ import { Request, Response } from "express";
 import { User } from "@server/models/User";
 
 export const AuthController = {
+  login: (_req, res) => res.render("pages/login"),
+
+  logout: (_req: Request, res: Response) => {
+    res.clearCookie("access_token");
+
+    // TODO: store unexpired tokens in a redis blacklist
+
+    res.redirect("/auth/login");
+  },
+
   authCallback: (req: Request, res: Response) => {
     const signingCallback = (err: Error, token: string) => {
       if (err) {

@@ -4,7 +4,7 @@ export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
   const { user } = req;
 
   if (!user) {
-    return res.redirect("/login");
+    return res.redirect("/auth/login");
   }
 
   if (user.type !== "admin") {

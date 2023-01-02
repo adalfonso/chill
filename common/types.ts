@@ -11,7 +11,7 @@ export interface SearchResult {
   match: Record<string, string | number>;
 }
 
-export interface PaginationOptions {
+export interface PaginationOptions extends Record<string, string | number> {
   limit: number;
   page: number;
 }

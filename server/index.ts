@@ -1,6 +1,5 @@
 import "core-js";
 import "regenerator-runtime";
-import express from "express";
 import { Connection } from "./db/Client";
 import { initApp, initEnvVars } from "./init";
 import { initRouter } from "./router";
@@ -8,9 +7,7 @@ import { enableHmr } from "./hmr";
 
 initEnvVars();
 
-const app = express();
-
-initApp(app);
+const app = initApp();
 initRouter(app);
 
 // Enable hot module replacement during dev

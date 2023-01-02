@@ -7,7 +7,6 @@ import { isAuthenticated } from "./middleware";
 
 export const initRouter = (app: Express) => {
   // Register open routes
-  app.get("/login", (_req, res) => res.render("pages/login"));
   app.use("/admin", admin);
   app.use("/auth", auth);
 
