@@ -25,5 +25,5 @@ export const initRouter = (app: Express) => {
   app.use(express.static(process.env.SOURCE_DIR));
 
   // Register all API routes
-  app.use("/api/v1", isAuthenticated, api(app));
+  app.use("/api/v1", isAuthenticated, api);
 };
