@@ -27,12 +27,12 @@ export const AuthController = {
         console.error("Failed to store access_token", e);
       }
 
-      return res
+      res
         .cookie("access_token", token, {
           httpOnly: true,
-          sameSite: true,
-          //signed: true,
-          //secure: true,
+          sameSite: "lax",
+          // signed: true,
+          // secure: true,
         })
         .redirect("/");
     };

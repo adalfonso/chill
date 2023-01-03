@@ -12,13 +12,13 @@ export const initRouter = (app: Express) => {
 
   // Must run before HMR
   app.use(
+    isAuthenticated,
     historyApiFallback({
       verbose: false,
       rewrites: [
         { from: /^\/(api)\/.*$/, to: (context) => context.parsedUrl.path },
       ],
     }),
-    isAuthenticated,
   );
 
   // Must run after history fallback
