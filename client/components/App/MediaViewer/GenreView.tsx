@@ -35,7 +35,7 @@ export const GenreView = ({ setLoading }: GenreViewProps) => {
 
   return (
     <div id="media-viewer">
-      <div className="genre-view">
+      <div className="genre-view wide">
         <div className="info">
           <h2>{genre}</h2>
         </div>
