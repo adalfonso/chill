@@ -45,7 +45,7 @@ export const ArtistView = ({ setLoading }: ArtistViewProps) => {
 
   return (
     <div id="media-viewer">
-      <div className="artist-view">
+      <div className="artist-view wide">
         <div className="info">
           <h2>{artist}</h2>
         </div>

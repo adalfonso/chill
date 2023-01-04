@@ -87,6 +87,10 @@ h2 {
   font-family: "Cousine", monospace;
 }
 
+.wide {
+  width: 100%;
+}
+
 @keyframes throbber {
   0% {
     transform: translate3d(-50%, -50%, 0) rotate(0deg);

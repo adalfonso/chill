@@ -2,10 +2,16 @@
   display: flex;
   align-items: flex-start;
   flex-direction: column;
-  padding: 1rem 2rem 0 2rem;
+  padding: 1rem 1rem 0 1rem;
 
   .library-tools {
     display: flex;
     flex-direction: column;
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .music-library {
+    padding: 1rem 2rem 0 2rem;
   }
 }

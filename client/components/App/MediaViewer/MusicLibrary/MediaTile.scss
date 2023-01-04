@@ -2,16 +2,18 @@
 
 #media-viewer {
   .media-tiles {
+    justify-content: space-between;
+
     a {
       text-decoration: none;
     }
 
     .media-tile-wrapper {
-      padding: 0.65rem;
-      width: 8.3rem;
+      max-width: 30%;
 
       .display-as {
-        margin: 0.5rem 0 0 0;
+        font-size: 0.75rem;
+        margin: 0.25rem 0 0.5rem 0;
       }
     }
 
@@ -102,9 +104,16 @@
 @media screen and (min-width: 600px) {
   #media-viewer {
     .media-tiles {
+      justify-content: flex-start;
+
       .media-tile-wrapper {
-        padding: 1rem;
+        padding: 1rem 1rem 0 1rem;
         width: 13rem;
+        max-width: none;
+
+        .display-as {
+          font-size: 1rem;
+        }
       }
 
       .media-tile {

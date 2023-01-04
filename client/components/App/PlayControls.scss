@@ -24,9 +24,10 @@
     }
 
     .now-playing {
-      font-size: 1.75rem;
+      font-size: 1.5rem;
       user-select: none;
-      min-width: 60%;
+      min-width: 64%;
+      margin: 0;
     }
   }
 
@@ -85,6 +86,12 @@
       height: 2.5rem;
       width: 2.5rem;
       font-size: 1.25rem;
+    }
+
+    .panel {
+      .now-playing {
+        font-size: 1.75rem;
+      }
     }
 
     .play {

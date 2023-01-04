@@ -15,7 +15,7 @@ import {
   faFastBackward,
 } from "@fortawesome/free-solid-svg-icons";
 
-const default_now_playing = "-";
+const default_now_playing = "";
 
 export const PlayControls = () => {
   const { player } = useSelector(getState);

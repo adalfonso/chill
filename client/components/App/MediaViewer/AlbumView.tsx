@@ -54,7 +54,7 @@ export const AlbumView = ({ setLoading }: AlbumViewProps) => {
 
   return (
     <div id="media-viewer">
-      <div className="album-view">
+      <div className="album-view wide">
         <div className="details">
           <div className="album-art">
             {files?.[0]?.cover?.filename && (
