@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-export function useMultiClick(on_click, on_double_click, delay = 300) {
+export const useMultiClick = (on_click, on_double_click, delay = 300) => {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -19,4 +19,4 @@ export function useMultiClick(on_click, on_double_click, delay = 300) {
   }, [count]);
 
   return () => setCount((prev) => prev + 1);
-}
+};

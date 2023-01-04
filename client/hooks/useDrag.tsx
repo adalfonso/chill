@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 type DragEvent = React.MouseEvent<HTMLElement> | React.TouchEvent<HTMLElement>;
 
-export function useDrag(onApply: (percent: number) => void) {
+export const useDrag = (onApply: (percent: number) => void) => {
   const [dragging, setDragging] = useState(false);
 
   const startDrag = () => setDragging(true);
@@ -22,7 +22,7 @@ export function useDrag(onApply: (percent: number) => void) {
     updateDrag,
     dragging,
   };
-}
+};
 
 const getOffset = (e: DragEvent) => {
   if (e.nativeEvent instanceof MouseEvent) {
