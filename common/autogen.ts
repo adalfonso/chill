@@ -8,6 +8,105 @@
 import mongoose from "mongoose";
 
 /**
+ * Lean version of InvitationDocument
+ *
+ * This has all Mongoose getters & functions removed. This type will be returned from `InvitationDocument.toObject()`. To avoid conflicts with model names, use the type alias `InvitationObject`.
+ * ```
+ * const invitationObject = invitation.toObject();
+ * ```
+ */
+export type Invitation = {
+  email: string;
+  _id: mongoose.Types.ObjectId;
+  updated_at?: Date;
+  created_at?: Date;
+};
+
+/**
+ * Lean version of InvitationDocument (type alias of `Invitation`)
+ *
+ * Use this type alias to avoid conflicts with model names:
+ * ```
+ * import { Invitation } from "../models"
+ * import { InvitationObject } from "../interfaces/mongoose.gen.ts"
+ *
+ * const invitationObject: InvitationObject = invitation.toObject();
+ * ```
+ */
+export type InvitationObject = Invitation;
+
+/**
+ * Mongoose Query type
+ *
+ * This type is returned from query functions. For most use cases, you should not need to use this type explicitly.
+ */
+export type InvitationQuery = mongoose.Query<
+  any,
+  InvitationDocument,
+  InvitationQueries
+> &
+  InvitationQueries;
+
+/**
+ * Mongoose Query helper types
+ *
+ * This type represents `InvitationSchema.query`. For most use cases, you should not need to use this type explicitly.
+ */
+export type InvitationQueries = {};
+
+export type InvitationMethods = {};
+
+export type InvitationStatics = {};
+
+/**
+ * Mongoose Model type
+ *
+ * Pass this type to the Mongoose Model constructor:
+ * ```
+ * const Invitation = mongoose.model<InvitationDocument, InvitationModel>("Invitation", InvitationSchema);
+ * ```
+ */
+export type InvitationModel = mongoose.Model<
+  InvitationDocument,
+  InvitationQueries
+> &
+  InvitationStatics;
+
+/**
+ * Mongoose Schema type
+ *
+ * Assign this type to new Invitation schema instances:
+ * ```
+ * const InvitationSchema: InvitationSchema = new mongoose.Schema({ ... })
+ * ```
+ */
+export type InvitationSchema = mongoose.Schema<
+  InvitationDocument,
+  InvitationModel,
+  InvitationMethods,
+  InvitationQueries
+>;
+
+/**
+ * Mongoose Document type
+ *
+ * Pass this type to the Mongoose Model constructor:
+ * ```
+ * const Invitation = mongoose.model<InvitationDocument, InvitationModel>("Invitation", InvitationSchema);
+ * ```
+ */
+export type InvitationDocument = mongoose.Document<
+  mongoose.Types.ObjectId,
+  InvitationQueries
+> &
+  InvitationMethods & {
+    email: string;
+    _id: mongoose.Types.ObjectId;
+    updated_at?: Date;
+    created_at?: Date;
+  };
+
+/**
  * Lean version of MediaDocument
  *
  * This has all Mongoose getters & functions removed. This type will be returned from `MediaDocument.toObject()`. To avoid conflicts with model names, use the type alias `MediaObject`.
@@ -320,6 +419,113 @@ export type ScanDocument = mongoose.Document<
     updated_at?: Date;
     completed_at?: Date;
     _id: mongoose.Types.ObjectId;
+  };
+
+/**
+ * Lean version of UserDocument
+ *
+ * This has all Mongoose getters & functions removed. This type will be returned from `UserDocument.toObject()`. To avoid conflicts with model names, use the type alias `UserObject`.
+ * ```
+ * const userObject = user.toObject();
+ * ```
+ */
+export type User = {
+  email: string;
+  type?: "admin" | "user";
+  auth: {
+    id?: string;
+    name?: string;
+    email?: string;
+    access_token?: string;
+    type?: "google_oauth";
+  };
+  _id: mongoose.Types.ObjectId;
+  updated_at?: Date;
+  created_at?: Date;
+};
+
+/**
+ * Lean version of UserDocument (type alias of `User`)
+ *
+ * Use this type alias to avoid conflicts with model names:
+ * ```
+ * import { User } from "../models"
+ * import { UserObject } from "../interfaces/mongoose.gen.ts"
+ *
+ * const userObject: UserObject = user.toObject();
+ * ```
+ */
+export type UserObject = User;
+
+/**
+ * Mongoose Query type
+ *
+ * This type is returned from query functions. For most use cases, you should not need to use this type explicitly.
+ */
+export type UserQuery = mongoose.Query<any, UserDocument, UserQueries> &
+  UserQueries;
+
+/**
+ * Mongoose Query helper types
+ *
+ * This type represents `UserSchema.query`. For most use cases, you should not need to use this type explicitly.
+ */
+export type UserQueries = {};
+
+export type UserMethods = {};
+
+export type UserStatics = {};
+
+/**
+ * Mongoose Model type
+ *
+ * Pass this type to the Mongoose Model constructor:
+ * ```
+ * const User = mongoose.model<UserDocument, UserModel>("User", UserSchema);
+ * ```
+ */
+export type UserModel = mongoose.Model<UserDocument, UserQueries> & UserStatics;
+
+/**
+ * Mongoose Schema type
+ *
+ * Assign this type to new User schema instances:
+ * ```
+ * const UserSchema: UserSchema = new mongoose.Schema({ ... })
+ * ```
+ */
+export type UserSchema = mongoose.Schema<
+  UserDocument,
+  UserModel,
+  UserMethods,
+  UserQueries
+>;
+
+/**
+ * Mongoose Document type
+ *
+ * Pass this type to the Mongoose Model constructor:
+ * ```
+ * const User = mongoose.model<UserDocument, UserModel>("User", UserSchema);
+ * ```
+ */
+export type UserDocument = mongoose.Document<
+  mongoose.Types.ObjectId,
+  UserQueries
+> &
+  UserMethods & {
+    email: string;
+    type?: "admin" | "user";
+    auth: {
+      id?: string;
+      name?: string;
+      email?: string;
+      access_token?: string;
+      type?: "google_oauth";
+    };
+    _id: mongoose.Types.ObjectId;
+    updated_at?: Date;
+    created_at?: Date;
   };
 
 /**

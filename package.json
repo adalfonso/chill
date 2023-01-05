@@ -4,7 +4,7 @@
   "description": "DIY Home Media Server",
   "author": "Anthony Dalfonso <anthonyjdalfonso@gmail.com>",
   "scripts": {
-    "autogen": "npx mtgen ./server/models/*.ts",
+    "autogen": "npx mtgen -c configs/mtgen.config.json ./server/models",
     "build": "rimraf dist && npm run build:client && npm run build:server",
     "build:client": "webpack --config=configs/webpack/client-prod.config.js",
     "build:dev": "rimraf dist && webpack --config configs/webpack/server-dev.config.js",
