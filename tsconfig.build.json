@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "lib": ["ESNext"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": false
+  },
+  "extends": "./tsconfig.json",
+  "include": ["server/**/*"],
+  "exclude": ["server/index-dev.mts"]
+}

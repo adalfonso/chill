@@ -1,5 +1,4 @@
 import "./VolumeControl.scss";
-import React from "react";
 import { changeVolume } from "@reducers/player";
 import { getState } from "@reducers/store";
 import { useDispatch, useSelector } from "react-redux";

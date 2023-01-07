@@ -1,5 +1,5 @@
 import "./MediaTile.scss";
-import React, { MouseEvent, useState } from "react";
+import { MouseEvent, useState } from "react";
 import { FileMenu } from "../FileMenu";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
@@ -55,7 +55,7 @@ export const MediaTile = ({ file, url, displayAs }: MediaTileProps) => {
       <div className={class_name} onClick={() => history.push(url(file))}>
         {file.image && (
           <img
-            src={`/api/v1/media/cover/${file.image}?size=256`}
+            src={`/api/v1/media/cover/${file.image}?size=176`}
             loading="lazy"
           />
         )}

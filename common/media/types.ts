@@ -4,3 +4,6 @@ export enum MediaMatch {
   Genre = "genre",
   Path = "path",
 }
+
+// Make sure these stay in sync
+export const mediaMatchKeys = ["artist", "album", "genre", "path"];

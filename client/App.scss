@@ -1,0 +1,110 @@
+@import "./variables.scss";
+
+* {
+  box-sizing: border-box;
+
+  /* width */
+  &::-webkit-scrollbar {
+    width: 0.8rem;
+  }
+
+  /* Track */
+  &::-webkit-scrollbar-track {
+    background: $dm-background;
+  }
+
+  /* Handle */
+  &::-webkit-scrollbar-thumb {
+    background: #aaa;
+  }
+
+  /* Handle on hover */
+  &::-webkit-scrollbar-thumb:hover {
+    background: #ccc;
+  }
+}
+
+a.regular {
+  color: $dm-font;
+  text-decoration: none;
+
+  &:active,
+  &:active {
+    color: $dm-font;
+  }
+}
+
+div,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+input,
+button {
+  color: $dm-font;
+  font-family: "Rubik", sans-serif;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  height: 100%;
+}
+
+h2 {
+  text-shadow: 1px 1px 1px $dm-shadow;
+}
+
+#root {
+  height: 100%;
+}
+
+.app {
+  background-color: $dm-background;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.align-right {
+  text-align: right;
+}
+
+.mono {
+  font-family: "Cousine", monospace;
+}
+
+.wide {
+  width: 100%;
+}
+
+@keyframes throbber {
+  0% {
+    transform: translate3d(-50%, -50%, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate3d(-50%, -50%, 0) rotate(360deg);
+  }
+}
+
+.loading::before {
+  animation: 1.5s linear infinite throbber;
+  animation-play-state: inherit;
+  border: solid 2px $dm-font;
+  border-bottom-color: $primary;
+  border-radius: 50%;
+  content: "";
+  height: 2.5rem;
+  width: 2.5rem;
+  position: absolute;
+  top: calc(50% - 1.25rem);
+  left: calc(50% - 1.25rem);
+  transform: translate3d(-50%, -50%, 0);
+  will-change: transform;
+}

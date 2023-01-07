@@ -1,0 +1,9 @@
+node_modules
+npm-debug.log
+tests
+dist
+.env
+.aws
+.git
+.coverage
+.coverage.*

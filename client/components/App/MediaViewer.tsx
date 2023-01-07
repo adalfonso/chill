@@ -1,5 +1,5 @@
 import "./MediaViewer.scss";
-import React, { useState } from "react";
+import { useState } from "react";
 import { AlbumView } from "./MediaViewer/AlbumView";
 import { ArtistView } from "./MediaViewer/ArtistView";
 import { GenreView } from "./MediaViewer/GenreView";

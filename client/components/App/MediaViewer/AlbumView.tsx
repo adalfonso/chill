@@ -1,5 +1,5 @@
 import "./AlbumView.scss";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { AlbumViewRow } from "./AlbumView/AlbumViewRow";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";

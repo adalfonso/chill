@@ -1,5 +1,5 @@
 import "./PlaylistEditor.scss";
-import React, { useState } from "react";
+import { useState } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { PlaylistCreate } from "./PlaylistEditor/PlaylistCreate";
 import { PlaylistUpdate } from "./PlaylistEditor/PlaylistUpdate";

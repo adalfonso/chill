@@ -1,5 +1,5 @@
 import "./Toolbar.scss";
-import React, { useState } from "react";
+import { useState } from "react";
 import { AdminSettings as AdminSettings } from "./Toolbar/AdminSettings";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Search } from "./Toolbar/Search";

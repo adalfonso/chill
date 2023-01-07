@@ -1,4 +1,3 @@
-import React from "react";
 import "./Equalizer.scss";
 
 export const Equalizer = () => {

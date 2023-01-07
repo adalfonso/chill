@@ -1,5 +1,4 @@
 import { SearchResult as Result } from "@common/types";
-import React from "react";
 
 interface SearchResultProps {
   result: Result;

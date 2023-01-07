@@ -1,5 +1,5 @@
 import "./ui.scss";
-import React, { useState } from "react";
+import { useState } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 import { MediaMatch as Match } from "@common/media/types";

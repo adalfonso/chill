@@ -1,5 +1,5 @@
-@import "@client/components/variables.scss";
-@import "@client/components/mixins.scss";
+@import "@client/variables.scss";
+@import "@client/mixins.scss";
 
 .playlist-editor {
   @include fullscreen;

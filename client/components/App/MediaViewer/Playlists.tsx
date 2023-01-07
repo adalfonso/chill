@@ -1,6 +1,5 @@
 import "./MusicLibrary.scss";
-import React, { useReducer, useRef } from "react";
-import _ from "lodash";
+import { useReducer, useRef } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Playlist } from "@common/autogen";
 import { PlaylistApi } from "@client/api/PlaylistApi";
@@ -49,9 +48,9 @@ export const Playlists = ({ setLoading, per_page }: PlaylistsProps) => {
     } catch (e) {}
   };
 
-  const editPlaylist =  (playlist: Playlist) => async () => {
-    history.push(`/playlist/${playlist._id}`)
-  }
+  const editPlaylist = (playlist: Playlist) => async () => {
+    history.push(`/playlist/${playlist._id}`);
+  };
 
   return (
     <div id="media-viewer">
@@ -79,7 +78,7 @@ export const Playlists = ({ setLoading, per_page }: PlaylistsProps) => {
                 </div>
               </div>
               <div>
-              <div className="edit" onClick={editPlaylist(playlist)}>
+                <div className="edit" onClick={editPlaylist(playlist)}>
                   <Icon icon={faPen} size="sm" pull="right" />
                 </div>
               </div>

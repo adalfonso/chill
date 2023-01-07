@@ -5,7 +5,7 @@ services:
     build:
       context: .
     ports:
-      - 6400:6400
+      - 1337:1337
     environment:
       - MONGO_HOST=mongo
     command: npm run start

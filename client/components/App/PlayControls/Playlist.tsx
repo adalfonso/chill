@@ -1,5 +1,5 @@
 import "./Playlist.scss";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Equalizer } from "../../ui/Equalizer";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { changeTrack } from "@reducers/player";

@@ -1,4 +1,4 @@
-import { MediaMatch } from "./media/types";
+import { MediaMatch } from "./media/types.js";
 
 export type Nullable<T> = T | null;
 

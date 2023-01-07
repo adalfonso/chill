@@ -1,5 +1,5 @@
 import "./Settings.scss";
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
