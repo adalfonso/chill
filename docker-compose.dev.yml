@@ -16,6 +16,7 @@ services:
       # bind project root during development for HMR
       - ./client:/usr/src/app/client
       - ./server:/usr/src/app/server
+      - ./views:/usr/src/app/views
       - type: bind
         source: /srv/media
         target: /opt/app/media
