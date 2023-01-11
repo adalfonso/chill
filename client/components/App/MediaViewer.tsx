@@ -28,7 +28,7 @@ export const MediaViewer = () => {
         </Route>
 
         <Route path="/playlists">
-          <Playlists setLoading={setLoading} per_page={25} />
+          <Playlists setLoading={setLoading} per_page={24} />
         </Route>
 
         <Route path="/playlist/:id">
@@ -36,7 +36,8 @@ export const MediaViewer = () => {
         </Route>
 
         <Route path="/">
-          <MusicLibrary setLoading={setLoading} per_page={25} />
+          {/* 24 is the magic number to have good UI for 3,4,6-column layout */}
+          <MusicLibrary setLoading={setLoading} per_page={24} />
         </Route>
       </Switch>
     </>

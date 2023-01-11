@@ -2,14 +2,22 @@
 
 #media-viewer {
   .media-tiles {
+    display: flex;
+    flex-flow: row wrap;
     justify-content: space-between;
+
+    &::after {
+      content: "";
+      // If we ever don't have a full row of 3 images, this moves the last one over
+      width: calc(33.33vw - 1.5rem);
+    }
 
     a {
       text-decoration: none;
     }
 
     .media-tile-wrapper {
-      max-width: 30%;
+      width: calc(33.33vw - 1.5rem);
 
       .display-as {
         font-size: 0.75rem;
@@ -21,8 +29,8 @@
       background-color: $dm-background-2;
       color: white;
       border-radius: 0.25rem;
-      height: 7rem;
-      width: 7rem;
+      height: calc(33.33vw - 1.5rem);
+      width: calc(33.33vw - 1.5rem);
       transition: 0.2s;
       user-select: none;
       position: relative;
@@ -101,7 +109,31 @@
   }
 }
 
-@media screen and (min-width: 600px) {
+// iPads
+@media screen and (min-device-width: 768px) {
+  #media-viewer {
+    .media-tiles {
+      &::after {
+        max-width: 75%;
+        width: 100%;
+
+        min-width: 25%;
+      }
+
+      .media-tile-wrapper {
+        width: calc(25vw - 1.25rem);
+      }
+
+      .media-tile {
+        height: calc(25vw - 1.25rem);
+        width: calc(25vw - 1.25rem);
+      }
+    }
+  }
+}
+
+// Regular screens
+@media screen and (min-width: 844px) {
   #media-viewer {
     .media-tiles {
       justify-content: flex-start;
