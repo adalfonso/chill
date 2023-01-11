@@ -1,0 +1,21 @@
+- album page fails on page refresh in dev mode
+- make scroll bar either invis, or more narrow
+- transcoding setting, wifi vs cell data
+- alpha band on side for quick scrolling
+- hide admin settings from common user
+- playlist/shuffle ui improvement for mobile
+- reorder playlist by drag mobile
+- shuffle should put currently playing track first
+- two audio streams play, 2nd one should only prep when 1st is almost over
+- investigate: certain images fail to load
+- investigate: certain tracks have capitalized spelling or artist name
+- optimize album art- don't store per track, group by album
+- ui improve login page
+- refresh tokens
+- blacklist token cache
+- default artist image should be most recent album art
+- make search bar bigger on mobile
+- make media library hide so we can go back to it an resume browsing instead of reload
+- minimize audio toolbar when not playing
+- ditch mongoose
+- improve structure of API controllers
