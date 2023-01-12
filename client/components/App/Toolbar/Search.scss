@@ -9,21 +9,23 @@
   align-items: center;
 
   input {
+    border: transparent;
     width: 100%;
   }
 
   .search-results {
     position: absolute;
-    top: calc(100% + 0.5rem);
+    top: calc(100% + 0.5rem - 1px);
     z-index: 3;
     max-height: 20rem;
     overflow: auto;
     width: 100%;
+    border-top: 1px dashed $dm-background;
 
     .result {
       background-color: $dm-background-2;
       border-bottom: 1px dashed $dm-background;
-      padding: 0.35rem 0.5rem;
+      padding: 0.35rem 1rem;
       font-size: 0.75rem;
       cursor: pointer;
       user-select: none;
@@ -39,9 +41,22 @@
   }
 }
 
-@media screen and (min-width: 600px) {
+@media screen and (min-width: 768px) {
   .search {
     margin: 0;
     width: 25rem;
+
+    .search-results {
+      border-top: none;
+      border-top-left-radius: 0.25rem;
+      border-top-right-radius: 0.25rem;
+      border-bottom-left-radius: 0.25rem;
+      border-bottom-right-radius: 0.25rem;
+    }
+
+    input {
+      border: 1px solid $dm-font;
+      margin-bottom: 0;
+    }
   }
 }

@@ -19,3 +19,4 @@
 - minimize audio toolbar when not playing
 - ditch mongoose
 - improve structure of API controllers
+- encode query strings e.g. ?artist-+44

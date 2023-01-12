@@ -91,7 +91,7 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
           </Select>
         </div>
       </div>
-      <div id="media-viewer">
+      <div id="media-viewer" className="main-viewer">
         <div className="media-tiles">
           {mediaData.items
             .sort((a, b) => a[match].localeCompare(b[match]))

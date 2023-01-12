@@ -6,12 +6,21 @@
   flex-wrap: wrap;
   overflow-y: scroll;
   padding: 0 1rem 1rem 1rem;
-  margin-top: 1rem;
+
+  padding-top: 1rem;
+
   flex-grow: 1;
 
+  &.main-viewer {
+    margin-top: 1rem;
+    padding-top: 0;
+  }
+
   .info {
+    margin: 0 0 1rem 0;
+
     h2 {
-      margin-bottom: 2rem;
+      margin: 0;
     }
   }
 
@@ -82,8 +91,8 @@
       justify-content: space-between;
       padding: 0.6rem 0 0.6rem 1rem;
 
-      &:last-of-type {
-        padding-right: 1rem;
+      &:first-of-type {
+        padding-left: 0;
       }
     }
 
@@ -131,13 +140,23 @@
   }
 }
 
-@media screen and (min-width: 600px) {
+@media screen and (min-width: 768px) {
   #media-viewer {
     .info {
-      margin-left: 1rem;
+      margin: 1rem;
+    }
+  }
 
-      h2 {
-        margin-bottom: 1rem;
+  .panel-list {
+    .row {
+      > div {
+        &:first-of-type {
+          padding-left: 1rem;
+        }
+
+        &:last-of-type {
+          padding-right: 1rem;
+        }
       }
     }
   }

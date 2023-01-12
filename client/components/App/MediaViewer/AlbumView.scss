@@ -6,7 +6,7 @@
     align-items: flex-start;
 
     > * {
-      margin: 1rem;
+      margin: 0 1rem 1rem 0;
 
       h2 {
         margin-top: 0;
@@ -18,6 +18,18 @@
       width: 160px;
       background-color: $dm-background-2;
       border-radius: 0.25rem;
+    }
+
+    .info {
+      display: flex;
+      flex-direction: column;
+      height: 160px;
+      justify-content: space-between;
+      align-items: flex-start;
+
+      h4 {
+        margin: 0;
+      }
     }
 
     img {
@@ -32,5 +44,15 @@
   .play-icon {
     margin-left: 1rem;
     color: $primary-light;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .album-view {
+    .details {
+      > * {
+        margin: 1rem;
+      }
+    }
   }
 }

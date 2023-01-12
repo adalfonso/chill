@@ -2,7 +2,7 @@
 
 #toolbar {
   background-color: $dm-background-2;
-  padding: 0.75em 1.5rem;
+  padding-top: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -10,6 +10,7 @@
   position: relative;
 
   .libraries {
+    margin-left: 1rem;
     display: flex;
 
     > * {
@@ -21,6 +22,7 @@
   .tools {
     display: flex;
     justify-content: flex-end;
+    margin-right: 1rem;
 
     > * {
       margin-left: 2rem;
@@ -29,13 +31,15 @@
   }
 }
 
-@media screen and (min-width: 600px) {
+@media screen and (min-width: 768px) {
   #toolbar {
     flex-wrap: nowrap;
+    padding: 0.75em 1.5rem;
 
     .libraries {
       width: 25%;
       order: 1;
+      margin: 0;
     }
 
     .search {
@@ -45,6 +49,7 @@
     .tools {
       width: 25%;
       order: 3;
+      margin: 0;
     }
   }
 }
