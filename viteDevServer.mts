@@ -56,5 +56,5 @@ export async function createServer(options: ConfigOptions) {
 
   app.listen(port);
 
-  console.log(`App listening on http://localhost:${port}`);
+  console.info(`App listening on http://localhost:${port}`);
 }

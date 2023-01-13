@@ -5,8 +5,10 @@ import { MediaCrawler } from "../media/MediaCrawler.mjs";
 import { MediaModel } from "../models/Media.mjs";
 import { Request, Response } from "express";
 import { adjustImage } from "../media/image/ImageAdjust.mjs";
+import { convert } from "../lib/conversion.mjs";
 import { getAsGroup } from "../db/utils.mjs";
 import { sortResults } from "../search/ResultSorter.mjs";
+import { stream_file } from "../lib/stream.mjs";
 
 namespace Req {
   export namespace query {
@@ -65,24 +67,39 @@ export const MediaFileController = {
   /** Load a media file from is ID */
   load: async (req: LoadReq, res: Response) => {
     try {
-      const media = await MediaModel.findById(req.params.id);
+      const media = await MediaModel.findById<MediaDocument>(req.params.id);
 
       if (!media) {
         throw new Error("Failed to load media file data");
       }
-
       const stats = await fs.stat(media.path);
+      const mp3_quality_preference_kbps = 120;
+      const quality_kbps = (stats.size / media.duration) * 8;
+      const do_convert = mp3_quality_preference_kbps < quality_kbps;
 
-      res.set("content-type", `audio/${media.file_type}`);
-      res.set("accept-ranges", "bytes");
-      res.set("content-length", stats.size.toString());
+      if (do_convert) {
+        try {
+          const tmp_file = await convert(mp3_quality_preference_kbps, media);
+          const stats = await fs.stat(tmp_file);
 
-      const handle = await fs.open(media.path, "r");
-      const stream = handle.createReadStream();
-
-      stream.on("data", (chunk) => res.write(chunk));
-      stream.on("error", () => res.sendStatus(500));
-      stream.on("end", () => res.end());
+          await stream_file(res, {
+            path: tmp_file,
+            type: "mp3",
+            size: stats.size.toString(),
+          });
+        } catch (e) {
+          console.error(`Failed to convert audio file`, {
+            id: req.params.id,
+            quality_preference_kbps: mp3_quality_preference_kbps,
+          });
+        }
+      } else {
+        await stream_file(res, {
+          path: media.path,
+          type: media.file_type,
+          size: stats.size.toString(),
+        });
+      }
     } catch (e) {
       console.error(e);
       res.status(500).send("Failed to load media file data");
