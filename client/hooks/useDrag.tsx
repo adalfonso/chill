@@ -1,6 +1,10 @@
-import { useState, MouseEvent, TouchEvent } from "react";
+import {
+  useState,
+  MouseEvent as ReactMouseEvent,
+  TouchEvent as ReactTouchEvent,
+} from "react";
 
-type DragEvent = MouseEvent<HTMLElement> | TouchEvent<HTMLElement>;
+type DragEvent = ReactMouseEvent<HTMLElement> | ReactTouchEvent<HTMLElement>;
 
 export const useDrag = (onApply: (percent: number) => void) => {
   const [dragging, setDragging] = useState(false);

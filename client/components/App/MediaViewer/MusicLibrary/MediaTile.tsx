@@ -1,5 +1,5 @@
 import "./MediaTile.scss";
-import { MouseEvent, useState } from "react";
+import { MouseEvent as ReactMouseEvent, useState } from "react";
 import { FileMenu } from "../FileMenu";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
@@ -39,7 +39,7 @@ export const MediaTile = ({ file, url, displayAs }: MediaTileProps) => {
           getSortString(a).localeCompare(getSortString(b)),
         );
 
-  const onPlay = (e: MouseEvent<HTMLElement>) => {
+  const onPlay = (e: ReactMouseEvent<HTMLElement>) => {
     e.stopPropagation();
     optionsHandler.play();
   };
