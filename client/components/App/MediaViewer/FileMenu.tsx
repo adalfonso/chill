@@ -1,6 +1,6 @@
-import { MouseEvent, useEffect, useState } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/autogen";
+import { MouseEvent, useEffect, useState } from "react";
 import { ObjectID } from "bson";
 import { addToQueue, playNext } from "@reducers/player";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
