@@ -1,10 +1,9 @@
+import { Media } from "../models/Media.mjs";
 import { ObjectId } from "mongodb";
-import { PlaylistModel } from "../models/Playlist.mjs";
+import { PaginationOptions } from "../../common/types.js";
+import { Playlist } from "../models/Playlist.mjs";
 import { Request, Response } from "express";
 import { toObjectId } from "../db/utils.mjs";
-import { PaginationOptions } from "../../common/types.js";
-import { MediaModel } from "../models/Media.mjs";
-import { PlaylistDocument } from "../../common/autogen.js";
 
 namespace Req {
   export namespace read {
@@ -49,7 +48,7 @@ export const PlaylistController = {
     const { limit = Infinity, page = 0 } = req.query ?? {};
 
     try {
-      const results = await PlaylistModel.find()
+      const results = await Playlist.find()
         .sort({ created_at: "asc" })
         .skip(page > 0 ? (page + 1) * limit : 0)
         .limit(limit);
@@ -69,7 +68,7 @@ export const PlaylistController = {
     }
 
     try {
-      const playlist = new PlaylistModel({
+      const playlist = new Playlist({
         _id: new ObjectId(),
         name,
         items: items.map(toObjectId),
@@ -94,9 +93,7 @@ export const PlaylistController = {
     const { items = [] } = req.body;
 
     try {
-      const playlist: PlaylistDocument = await PlaylistModel.findById(
-        new ObjectId(id),
-      );
+      const playlist = await Playlist.findById(new ObjectId(id));
 
       if (!playlist) {
         return res.sendStatus(404);
@@ -119,7 +116,7 @@ export const PlaylistController = {
     const { id } = req.params;
 
     try {
-      const playlist = await PlaylistModel.findById(id);
+      const playlist = await Playlist.findById(id);
 
       res.json(playlist);
     } catch (e) {
@@ -131,7 +128,7 @@ export const PlaylistController = {
   search: async (req: QueryRequest, res: Response) => {
     const query = req.body.query.toLowerCase();
 
-    const results = await PlaylistModel.find({ $text: { $search: query } });
+    const results = await Playlist.find({ $text: { $search: query } });
 
     res.json(results);
   },
@@ -140,9 +137,13 @@ export const PlaylistController = {
     const { id } = req.params;
 
     try {
-      const playlist = await PlaylistModel.findById(id);
+      const playlist = await Playlist.findById(id);
 
-      const results = await MediaModel.find({ _id: { $in: playlist.items } });
+      if (playlist === null) {
+        return res.sendStatus(404);
+      }
+
+      const results = await Media.find({ _id: { $in: playlist.items } });
 
       res.json(results);
     } catch (e) {

@@ -1,4 +1,3 @@
-import _ from "lodash";
 import { Nullable } from "@common/types";
 import { createSlice } from "@reduxjs/toolkit";
 

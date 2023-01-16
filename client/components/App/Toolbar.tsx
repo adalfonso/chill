@@ -1,29 +1,29 @@
 import "./Toolbar.scss";
 import { useState } from "react";
-import { AdminSettings as AdminSettings } from "./Toolbar/AdminSettings";
+import { AppSettings as AppSettings } from "./Toolbar/AppSettings";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Search } from "./Toolbar/Search";
 import { UserSettings } from "./Toolbar/UserSettings";
 import { faGear, faUser } from "@fortawesome/free-solid-svg-icons";
 import { useHistory } from "react-router-dom";
 
-type SettingsMenu = "user" | "admin";
+type SettingsMenu = "user" | "app";
 
 export const Toolbar = () => {
   const [settings_vis, setSettingsVis] = useState({
     user: false,
-    admin: false,
+    app: false,
   });
 
   /**
    * Toggle the visibility of a menu
    *
-   * @param type - menu type, e.g. admin, user
+   * @param type - menu type, e.g. app, user
    */
   const toggleVis = (type: SettingsMenu) => () => {
     setSettingsVis({
       user: false,
-      admin: false,
+      app: false,
       [type]: !settings_vis[type],
     });
   };
@@ -38,9 +38,9 @@ export const Toolbar = () => {
       </div>
 
       <div className="tools">
-        <Icon icon={faGear} size="lg" onClick={toggleVis("admin")} />
-        {settings_vis.admin && (
-          <AdminSettings onClose={toggleVis("admin")}></AdminSettings>
+        <Icon icon={faGear} size="lg" onClick={toggleVis("app")} />
+        {settings_vis.app && (
+          <AppSettings onClose={toggleVis("app")}></AppSettings>
         )}
 
         <Icon icon={faUser} size="lg" onClick={toggleVis("user")} />

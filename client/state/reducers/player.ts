@@ -1,7 +1,6 @@
 import _ from "lodash";
-import { Media } from "@common/autogen";
+import { Media } from "@common/models/Media";
 import { Nullable } from "@common/types";
-import { WritableDraft } from "immer/dist/internal";
 import { createSlice } from "@reduxjs/toolkit";
 
 export let audio = new Audio();
@@ -20,7 +19,7 @@ export const getAudioProgress = () => {
  * @param state player state
  * @param use_crossover audio is loaded from the crossover audio
  */
-const load = (state: WritableDraft<PlayerState>, use_crossover = false) => {
+const load = (state: PlayerState, use_crossover = false) => {
   /**
    * If we have not swapped the audio with the crossover audio we should set the
    * src of the audio to be now playing. Otherwise the crossover will have

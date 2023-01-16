@@ -1,15 +1,15 @@
-import { useState, FormEvent } from "react";
-import { Playlist } from "@common/autogen";
+import { Playlist } from "@common/models/Playlist";
 import { PlaylistApi } from "@client/api/PlaylistApi";
 import { getState } from "@reducers/store";
 import { useSelector } from "react-redux";
+import { useState, FormEvent } from "react";
 
 interface PlaylistUpdateProps {
   onDone: () => void;
 }
 
 export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
-  const [input, setInput] = useState("");
+  const [_input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [results, setResults] = useState<Playlist[]>([]);
   const [selected, setSelected] = useState<Playlist>();
@@ -42,7 +42,7 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
 
     PlaylistApi.search(value)
       .then((res) => setResults(res.data))
-      .catch((_) => {})
+      .catch(console.error)
       .finally(() => setBusy(false));
   };
 

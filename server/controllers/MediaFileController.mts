@@ -1,8 +1,8 @@
 import fs from "fs/promises";
 import { AudioType } from "../media/types.mjs";
-import { Media, MediaDocument } from "../../common/autogen.js";
+import { Media } from "../../common/models/Media.js";
+import { Media as MediaModel } from "../models/Media.mjs";
 import { MediaCrawler } from "../media/MediaCrawler.mjs";
-import { MediaModel } from "../models/Media.mjs";
 import { Request, Response } from "express";
 import { adjustImage } from "../media/image/ImageAdjust.mjs";
 import { convert } from "../lib/conversion.mjs";
@@ -67,13 +67,13 @@ export const MediaFileController = {
   /** Load a media file from is ID */
   load: async (req: LoadReq, res: Response) => {
     try {
-      const media = await MediaModel.findById<MediaDocument>(req.params.id);
+      const media = await MediaModel.findById<Media>(req.params.id);
 
       if (!media) {
         throw new Error("Failed to load media file data");
       }
       const stats = await fs.stat(media.path);
-      const mp3_quality_preference_kbps = 120;
+      const mp3_quality_preference_kbps = 165;
       const quality_kbps = (stats.size / media.duration) * 8;
       const do_convert = mp3_quality_preference_kbps < quality_kbps;
 
@@ -116,7 +116,7 @@ export const MediaFileController = {
         .send(`Invalid size provided. "${req.query.size}" must be an integer`);
     }
 
-    const result = await MediaModel.findById<MediaDocument>(
+    const result = await MediaModel.findById<Media>(
       filename.replace(/\.[^.]+$/, ""),
     );
 
@@ -125,6 +125,10 @@ export const MediaFileController = {
     }
 
     try {
+      if (!result?.cover?.data) {
+        throw new Error("Could not find album cover data");
+      }
+
       const img = await adjustImage(result.cover.data, { size, quality: 50 });
 
       res.writeHead(200, {
@@ -149,7 +153,7 @@ export const MediaFileController = {
     });
 
     try {
-      res.json(await crawler.crawl("/opt/app/media"));
+      res.status(201).json(await crawler.crawl("/opt/app/media"));
     } catch (_) {
       res.status(500).send("Failed when scanning media");
     }
@@ -158,7 +162,7 @@ export const MediaFileController = {
   search: async (req: Request, res: Response) => {
     const query = req.body.query.toLowerCase();
 
-    const results = await MediaModel.find<{ _doc: MediaDocument }>({
+    const results = await MediaModel.find<{ _doc: Media }>({
       $text: { $search: query },
     });
 

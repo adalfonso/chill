@@ -1,18 +1,16 @@
-import { MediaDocument } from "../../common/autogen.js";
+import { Media } from "../../common/models/Media.js";
 import { randomBytes } from "node:crypto";
 import { spawnChild } from "./process.mjs";
 
+type Mp3Quality = "85" | "115" | "165" | "190" | "245";
+
 // mp3 vbr
-export const quality_map = {
-  96: -8,
-  112: -7,
-  120: -6,
-  130: -5,
-  160: -4,
-  170: -3,
-  190: -2,
-  220: -1,
-  240: 0,
+export const quality_map: Record<Mp3Quality, number> = {
+  85: -8, // trash
+  115: -6, // low
+  165: -4, // medium
+  190: -2, // standard
+  245: 0, // extreme
 };
 
 /**
@@ -22,7 +20,7 @@ export const quality_map = {
  * @param media - media mongo doc
  * @returns filename of converted audio file
  */
-export const convert = async (quality_kbps: number, media: MediaDocument) => {
+export const convert = async (quality_kbps: number, media: Media) => {
   const quality = quality_map[quality_kbps];
   const tmp_file = `/tmp/${randomBytes(16).toString("hex")}.mp3`;
   const args = [media.path, "-C", quality, tmp_file];

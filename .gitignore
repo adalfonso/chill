@@ -11,4 +11,5 @@ tests/__coverage__/
 tests/**/*.jsx
 .env
 coverage
+.vscode
 

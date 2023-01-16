@@ -4,11 +4,11 @@ import axios from "axios";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 
-interface AdminSettingsProps {
+interface AppSettingsProps {
   onClose: () => void;
 }
 
-export const AdminSettings = ({ onClose }: AdminSettingsProps) => {
+export const AppSettings = ({ onClose }: AppSettingsProps) => {
   const [busy, setBusy] = useState(false);
 
   // Cause file scanner to run

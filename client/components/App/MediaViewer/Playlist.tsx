@@ -1,22 +1,20 @@
 import "./MusicLibrary.scss";
-import { useEffect, useState } from "react";
+import { Playlist as PlaylistClass } from "@common/models/Playlist";
 import { PlaylistApi } from "@client/api/PlaylistApi";
-import { PlaylistObject } from "@common/autogen";
 import { PlaylistRow } from "./Playlist/PlaylistRow";
 import { play } from "@reducers/player";
 import { useDispatch } from "react-redux";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-
-interface PlaylistProps {}
 
 type PlaylistParams = {
   id: string;
 };
 
-export const Playlist = ({}: PlaylistProps) => {
+export const Playlist = () => {
   const id = decodeURIComponent(useParams<PlaylistParams>().id);
   const [files, setFiles] = useState([]);
-  const [playlist, setPlaylist] = useState<PlaylistObject>();
+  const [playlist, setPlaylist] = useState<PlaylistClass>();
   const dispatch = useDispatch();
 
   const playAll =

@@ -1,19 +1,16 @@
 import "./MusicLibrary.scss";
-import { useReducer, useRef, useState } from "react";
 import _ from "lodash";
 import { Action, fetchReducer, useFetch } from "@client/hooks/useFetch";
 import { AxiosResponse } from "axios";
-import { Media } from "@common/autogen";
+import { Media } from "@common/models/Media";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch as Match } from "@common/media/types";
 import { MediaTile, TileData } from "./MusicLibrary/MediaTile";
+import { PageAction, pageReducer } from "@hooks/useInfiniteScroll";
 import { PaginationOptions } from "@common/types";
 import { Select } from "../../ui/Select";
-import {
-  PageAction,
-  pageReducer,
-  useInfiniteScroll,
-} from "@hooks/useInfiniteScroll";
+import { useInfiniteScroll } from "@hooks/useInfiniteScroll";
+import { useReducer, useRef, useState } from "react";
 
 const ApiMap: Record<
   Match,
@@ -25,8 +22,8 @@ const ApiMap: Record<
   [Match.Path]: () => Promise.resolve(null),
 };
 
-type FetchedMedia = Media & {
-  _id: string[];
+type FetchedMedia = Omit<Media, "_id"> & {
+  _id: Record<string, string>;
   _count: number;
 };
 

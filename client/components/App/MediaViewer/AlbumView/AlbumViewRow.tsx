@@ -1,10 +1,10 @@
-import { useState } from "react";
 import { Equalizer } from "@client/components/ui/Equalizer";
 import { FileMenu } from "../FileMenu";
-import { Media } from "@common/autogen";
+import { Media } from "@common/models/Media";
 import { getState } from "@reducers/store";
 import { secondsToMinutes } from "@client/util";
 import { useSelector } from "react-redux";
+import { useState } from "react";
 
 export interface AlbumViewRowProps {
   file: Media;

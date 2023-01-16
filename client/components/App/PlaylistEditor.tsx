@@ -8,8 +8,6 @@ import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { toggle } from "@reducers/playlistEditor";
 import { useDispatch } from "react-redux";
 
-interface PlaylistEditorProps {}
-
 const modes = [
   { name: "Create New", value: "new" },
   { name: "Add to Existing", value: "existing" },
@@ -17,7 +15,7 @@ const modes = [
 
 const default_mode = "new";
 
-export const PlaylistEditor = ({}: PlaylistEditorProps) => {
+export const PlaylistEditor = () => {
   const [mode, setMode] = useState(default_mode);
   const dispatch = useDispatch();
   const onPlaylistTypeChange = (value: string) => setMode(value);

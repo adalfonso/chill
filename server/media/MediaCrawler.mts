@@ -1,18 +1,13 @@
 import fs from "fs/promises";
 import mm from "music-metadata";
 import path from "path";
-import { MediaModel } from "../models/Media.mjs";
-import { MediaObject, ScanDocument } from "../../common/autogen.js";
+import { Media as MediaModel } from "../models/Media.mjs";
+import { Media } from "../../common/models/Media.js";
 import { Nullable } from "../../common/types.js";
 import { ObjectId } from "mongodb";
-import { ScanModel } from "../models/Scan.mjs";
+import { Scan as ScanModel } from "../models/Scan.mjs";
+import { Scan, ScanStatus } from "../../common/models/Scan.js";
 import { adjustImage } from "./image/ImageAdjust.mjs";
-
-enum ScanStatus {
-  Active = "ACTIVE",
-  Failed = "FAILED",
-  Completed = "COMPLETED",
-}
 
 /** Config options used by the crawler */
 interface MediaCrawlerConfig {
@@ -27,7 +22,7 @@ export class MediaCrawler {
   private _queue: string[] = [];
 
   /** Fully processed file data */
-  private _processed: MediaObject[] = [];
+  private _processed: Media[] = [];
 
   /** Number of available workers */
   private _available_workers;
@@ -36,7 +31,7 @@ export class MediaCrawler {
   private _writing = false;
 
   /** Currently running scan document */
-  private _scan: Nullable<ScanDocument> = null;
+  private _scan: Nullable<Scan> = null;
 
   /**
    * @param _config crawler config
@@ -49,9 +44,9 @@ export class MediaCrawler {
    * @param dir directory to start from
    * @returns crawler results
    */
-  public async crawl(dir: string): Promise<ScanDocument> {
+  public async crawl(dir: string): Promise<Scan> {
     if (this._scan !== null) {
-      return;
+      return this._scan;
     }
 
     console.info("Crawling starting... 🐛");
@@ -61,10 +56,8 @@ export class MediaCrawler {
     this._scan = await new ScanModel().save();
     this._available_workers = this._config.workers;
 
-    return new Promise((resolve) => {
-      resolve(this._scan);
-      this._crawl(dir);
-    });
+    this._crawl(dir);
+    return this._scan;
   }
 
   /**
@@ -104,7 +97,9 @@ export class MediaCrawler {
       this._scan?.status === ScanStatus.Active
     ) {
       this._available_workers--;
-      const file_path = this._queue.shift();
+
+      // Will always be string due to while condition above
+      const file_path = this._queue.shift() as string;
       const stats = await fs.stat(file_path);
 
       if (stats.isDirectory()) {
@@ -172,7 +167,7 @@ export class MediaCrawler {
    * @param file_path file path
    * @returns meta data
    */
-  private async _getMetadata(file_path: string) {
+  private async _getMetadata(file_path: string): Promise<Partial<Media>> {
     const result = await mm.parseFile(file_path, { duration: true });
     const { common, format } = result;
     const cover = mm.selectCover(common.picture);
@@ -225,7 +220,8 @@ export class MediaCrawler {
       this._scan.records_written += records.length;
       this._scan.updated_at = new Date();
 
-      await this._scan.save();
+      // TODO: Fix hack
+      await (this._scan as any).save();
 
       console.info(
         `Crawler stored ${this._scan.records_written} records... 🐛`,
@@ -244,11 +240,19 @@ export class MediaCrawler {
 
     await this._write();
 
+    if (this._scan === null) {
+      throw new Error("Tried to complete scan but it was null");
+    }
+
     this._scan.status = status;
     this._scan.updated_at = new Date();
-    this._scan.completed_at =
-      status === ScanStatus.Completed ? this._scan.updated_at : null;
-    await this._scan.save();
+
+    if (status === ScanStatus.Completed) {
+      this._scan.completed_at = this._scan.updated_at;
+    }
+
+    // TODO: Fix hack
+    await (this._scan as any).save();
     this._scan = null;
 
     console.info(`Crawling ${status.toLowerCase()}... 🐛`);

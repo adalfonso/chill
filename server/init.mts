@@ -44,7 +44,7 @@ const required_vars = [
 ] as const;
 
 export type EnvStore = {
-  [K in typeof required_vars[number]]: string;
+  [K in (typeof required_vars)[number]]: string;
 };
 
 // "Singleton" that stores all the env vars

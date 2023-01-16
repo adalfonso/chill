@@ -1,14 +1,14 @@
 import "./AlbumView.scss";
-import { useState, useEffect } from "react";
 import { AlbumViewRow } from "./AlbumView/AlbumViewRow";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { Media } from "@common/autogen";
+import { Media } from "@common/models/Media";
 import { MediaApi } from "@client/api/MediaApi";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { play } from "@reducers/player";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@hooks/useQuery";
+import { useState, useEffect } from "react";
 
 interface AlbumViewProps {
   setLoading: (loading: boolean) => void;

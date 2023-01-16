@@ -1,5 +1,5 @@
 import type { SearchResult } from "../../common/types.js";
-import { Media } from "../../common/autogen.js";
+import { Media } from "../../common/models/Media.js";
 import { MediaMatch, mediaMatchKeys } from "../../common/media/types.js";
 import { compareTwoStrings } from "string-similarity";
 

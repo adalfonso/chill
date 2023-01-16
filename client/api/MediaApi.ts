@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Media } from "@common/autogen";
+import { Media } from "@common/models/Media";
 import { MediaMatch as Match } from "@common/media/types";
 import { PaginationOptions } from "@common/types";
 

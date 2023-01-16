@@ -47,4 +47,3 @@ _Project requires Docker_
 | `npm run test`       | Run tests                                                      |
 | `npm run lint`       | Run linter                                                     |
 | `npm run check`      | Run linting, type-checking, and tests                          |
-| `npm run autogen`    | Auto-generate TypeScript types from the mongoose schema        |

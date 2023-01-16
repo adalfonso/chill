@@ -1,15 +1,15 @@
 import "./MediaTile.scss";
-import { MouseEvent as ReactMouseEvent, useState } from "react";
 import { FileMenu } from "../FileMenu";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { Media } from "@common/autogen";
+import { Media } from "@common/models/Media";
 import { MediaApi } from "@client/api/MediaApi";
+import { MouseEvent as ReactMouseEvent, useState } from "react";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { play } from "@reducers/player";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
 
-export type TileData = Partial<Media> & {
+export type TileData = Partial<Omit<Media, "_id">> & {
   _id: Record<string, string>;
   _count: number;
   image?: string;

@@ -1,5 +1,5 @@
+import { Media } from "@common/models/Media";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Media } from "@common/autogen";
 
 export interface PlaylistEditorState {
   active: boolean;

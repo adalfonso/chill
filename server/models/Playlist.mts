@@ -1,21 +1,7 @@
-import mongoose from "mongoose";
+import { Playlist as PlaylistClass } from "../../common/models/Playlist.js";
+import { getModelForClass } from "@typegoose/typegoose";
+import { timestamps } from "./Base.mjs";
 
-const { Schema } = mongoose;
-
-export const PlaylistSchema = new Schema({
-  _id: { type: Schema.Types.ObjectId, required: true, index: true },
-  name: { type: String, required: true, index: true, unique: true },
-  items: { type: [Schema.Types.ObjectId], required: true },
-  created_at: { type: Date, default: Date.now },
-  updated_at: { type: Date, default: Date.now },
+export const Playlist = getModelForClass(PlaylistClass, {
+  schemaOptions: { timestamps, collection: "playlist" },
 });
-
-PlaylistSchema.index({
-  name: "text",
-});
-
-export const PlaylistModel = mongoose.model(
-  "Playlist",
-  PlaylistSchema,
-  "playlist",
-);

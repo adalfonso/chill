@@ -1,5 +1,5 @@
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { Media } from "@common/autogen";
+import { Media } from "@common/models/Media";
 import { MouseEvent, useEffect, useState } from "react";
 import { ObjectID } from "bson";
 import { addToQueue, playNext } from "@reducers/player";

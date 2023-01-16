@@ -1,11 +1,10 @@
 import "./Search.scss";
-import { useMemo, useState } from "react";
 import { MediaApi } from "@client/api/MediaApi";
 import { SearchResult as Result } from "@common/types";
 import { SearchResult } from "./Search/SearchResult";
-import { useHistory } from "react-router-dom";
-import _ from "lodash";
 import { useDebounce } from "@hooks/useDebounce";
+import { useHistory } from "react-router-dom";
+import { useState } from "react";
 
 export const Search = () => {
   const [query, setQuery] = useState("");

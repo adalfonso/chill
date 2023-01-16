@@ -1,7 +1,6 @@
 import "./MusicLibrary.scss";
-import { useReducer, useRef } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { Playlist } from "@common/autogen";
+import { Playlist } from "@common/models/Playlist";
 import { PlaylistApi } from "@client/api/PlaylistApi";
 import { faPlayCircle, faPen } from "@fortawesome/free-solid-svg-icons";
 import { fetchReducer, useFetch } from "@client/hooks/useFetch";
@@ -9,6 +8,7 @@ import { pageReducer, useInfiniteScroll } from "@hooks/useInfiniteScroll";
 import { play } from "@reducers/player";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
+import { useReducer, useRef } from "react";
 
 interface PlaylistsProps {
   setLoading: (loading: boolean) => void;

@@ -1,17 +1,7 @@
-import mongoose from "mongoose";
+import { Invitation as InvitationClass } from "../../common/models/Invitation.js";
+import { getModelForClass } from "@typegoose/typegoose";
+import { timestamps } from "./Base.mjs";
 
-const { Schema } = mongoose;
-
-const InvitationSchema = new Schema(
-  {
-    email: {
-      type: String,
-      required: true,
-      index: true,
-      unique: true,
-    },
-  },
-  { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } },
-);
-
-export const Invitation = mongoose.model("Invitation", InvitationSchema);
+export const Invitation = getModelForClass(InvitationClass, {
+  schemaOptions: { timestamps, collection: "invitation" },
+});

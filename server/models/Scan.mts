@@ -1,17 +1,7 @@
-import mongoose from "mongoose";
+import { Scan as ScanClass } from "../../common/models/Scan.js";
+import { getModelForClass } from "@typegoose/typegoose";
+import { timestamps } from "./Base.mjs";
 
-const { Schema } = mongoose;
-
-export const ScanSchema = new Schema({
-  status: {
-    type: String,
-    enum: ["ACTIVE", "FAILED", "COMPLETED"],
-    default: "ACTIVE",
-  },
-  records_written: { type: Number, default: 0 },
-  created_at: { type: Date, default: Date.now },
-  updated_at: { type: Date, default: Date.now },
-  completed_at: { type: Date, default: null },
+export const Scan = getModelForClass(ScanClass, {
+  schemaOptions: { timestamps, collection: "scan" },
 });
-
-export const ScanModel = mongoose.model("Scan", ScanSchema, "scans");
