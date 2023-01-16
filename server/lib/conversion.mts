@@ -1,4 +1,4 @@
-import { MediaDocument } from "../../common/autogen";
+import { MediaDocument } from "../../common/autogen.js";
 import { randomBytes } from "node:crypto";
 import { spawnChild } from "./process.mjs";
 

@@ -6,7 +6,6 @@
 - playlist/shuffle ui improvement for mobile
 - reorder playlist by drag mobile
 - shuffle should put currently playing track first
-- two audio streams play, 2nd one should only prep when 1st is almost over
 - investigate: certain images fail to load
 - investigate: certain tracks have capitalized spelling or artist name
 - optimize album art- don't store per track, group by album
