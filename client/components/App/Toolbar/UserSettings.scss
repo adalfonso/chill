@@ -1,6 +1,6 @@
 @import "@client/variables.scss";
 
-#settings {
+#user-settings {
   position: fixed;
   right: 0;
   background-color: $dm-background-2;
@@ -24,7 +24,7 @@
 }
 
 @media screen and (min-width: 768px) {
-  #settings {
+  #user-settings {
     position: absolute;
     bottom: auto;
     top: 100%;

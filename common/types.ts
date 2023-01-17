@@ -15,3 +15,17 @@ export interface PaginationOptions extends Record<string, string | number> {
   limit: number;
   page: number;
 }
+
+export enum UserType {
+  User = "user",
+  Admin = "admin",
+}
+
+export enum AudioQuality {
+  Original = "original",
+  Trash = "85",
+  Low = "115",
+  Medium = "165",
+  Standard = "190",
+  Extreme = "245",
+}

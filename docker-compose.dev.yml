@@ -5,7 +5,9 @@ services:
     build:
       context: .
     ports:
+      # node server port
       - 1337:1337
+      # node debug port
       - 9229:9229
       - 24678:24678
     environment:
@@ -16,6 +18,7 @@ services:
       # bind project root during development for HMR
       - ./client:/usr/src/app/client
       - ./server:/usr/src/app/server
+      - ./common:/usr/src/app/common
       - ./views:/usr/src/app/views
       - type: bind
         source: /srv/media

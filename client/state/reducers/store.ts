@@ -1,6 +1,7 @@
 import mediaMenu from "./mediaMenu";
 import player from "./player";
 import playlistEditor from "./playlistEditor";
+import user from "./user";
 import { configureStore } from "@reduxjs/toolkit";
 
 const store = configureStore({
@@ -8,6 +9,7 @@ const store = configureStore({
     player,
     mediaMenu,
     playlistEditor,
+    user,
   },
 });
 

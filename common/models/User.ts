@@ -1,19 +1,6 @@
+import { AudioQuality, UserType } from "../types.js";
 import { Base } from "./Base.js";
 import { prop } from "@typegoose/typegoose";
-
-export enum UserType {
-  User = "user",
-  Admin = "admin",
-}
-
-enum AudioQuality {
-  Original = "original",
-  _85 = "85",
-  _115 = "115",
-  _165 = "165",
-  _190 = "190",
-  _245 = "245",
-}
 
 export class UserSettings {
   @prop({ default: AudioQuality.Original })

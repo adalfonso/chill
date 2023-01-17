@@ -57,7 +57,7 @@
     "@types/react-router-dom": "^5.3.3",
     "@typescript-eslint/eslint-plugin": "^5.48.1",
     "@typescript-eslint/parser": "^5.48.1",
-    "@vitejs/plugin-react-swc": "^3.0.1",
+    "@vitejs/plugin-react": "^3.0.1",
     "concurrently": "^7.6.0",
     "connect-history-api-fallback": "^1.6.0",
     "core-js": "^3.27.1",
