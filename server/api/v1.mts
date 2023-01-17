@@ -1,7 +1,7 @@
 import express from "express";
-import media from "./media/index.mjs";
-import user from "./user.mjs";
-import { playlist, playlists } from "./playlist/index.mjs";
+import media from "./v1/media.mjs";
+import user from "./v1/user.mjs";
+import { playlist, playlists } from "./v1/playlist.mjs";
 
 const router = express.Router();
 

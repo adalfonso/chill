@@ -1,5 +1,5 @@
 import admin from "./admin/index.mjs";
-import api from "./api/index.mjs";
+import v1 from "./api/v1.mjs";
 import auth from "./auth/index.mjs";
 import historyApiFallback from "connect-history-api-fallback";
 import { Express } from "express";
@@ -21,5 +21,5 @@ export const initRouter = (app: Express) => {
   );
 
   // Register all API routes
-  app.use("/api/v1", isAuthenticated, api);
+  app.use("/api/v1", isAuthenticated, v1);
 };
