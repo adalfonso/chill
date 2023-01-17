@@ -1,7 +1,8 @@
 import fs from "fs/promises";
+import { AudioQuality } from "../../common/types.js";
 import { AudioType } from "../media/types.mjs";
-import { Media } from "../../common/models/Media.js";
 import { Media as MediaModel } from "../models/Media.mjs";
+import { Media } from "../../common/models/Media.js";
 import { MediaCrawler } from "../media/MediaCrawler.mjs";
 import { Request, Response } from "express";
 import { adjustImage } from "../media/image/ImageAdjust.mjs";
@@ -72,10 +73,14 @@ export const MediaFileController = {
       if (!media) {
         throw new Error("Failed to load media file data");
       }
+      const quality_setting =
+        (req as any).user?.settings?.audio_quality ?? null;
       const stats = await fs.stat(media.path);
-      const mp3_quality_preference_kbps = 165;
-      const quality_kbps = (stats.size / media.duration) * 8;
-      const do_convert = mp3_quality_preference_kbps < quality_kbps;
+      const mp3_quality_preference_kbps = parseInt(quality_setting) ?? 165;
+      const actual_quality_kbps = (stats.size * 8) / 1000 / media.duration;
+      const do_convert =
+        quality_setting !== AudioQuality.Original &&
+        mp3_quality_preference_kbps < actual_quality_kbps;
 
       if (do_convert) {
         try {
