@@ -35,8 +35,9 @@ export const ArtistView = ({ setLoading }: ArtistViewProps) => {
   };
 
   const url = (file: TileData) =>
-    `/album/${encodeURIComponent(file.album)}?artist=${file.artist}` +
-    (file._id?.album === null ? `&no_album=1` : ``);
+    `/album/${encodeURIComponent(file.album)}?artist=${encodeURIComponent(
+      file.artist,
+    )}` + (file._id?.album === null ? `&no_album=1` : ``);
 
   const displayAs = (file: TileData) => {
     const { _id, album, artist, year } = file;

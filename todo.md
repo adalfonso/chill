@@ -18,7 +18,6 @@
 - minimize audio toolbar when not playing
 - ditch mongoose
 - improve structure of API controllers
-- encode query strings e.g. ?artist-+44
 - add trying to action when reducers are used
 - when changing stream quality, chrome plays a cached version
 - rescanning creates new ids for all media an invalidates a playlist
