@@ -1,5 +1,9 @@
 @import "@client/variables.scss";
 
+.playlists-view {
+  width: 100%;
+}
+
 .playlist-panel {
   background-color: $dm-background-2;
   bottom: 0;
@@ -56,6 +60,10 @@
 }
 
 @media screen and (min-width: 768px) {
+  .playlists-view {
+    width: auto;
+  }
+
   .playlist-panel {
     width: 25rem;
 

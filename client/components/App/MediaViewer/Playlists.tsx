@@ -54,8 +54,11 @@ export const Playlists = ({ setLoading, per_page }: PlaylistsProps) => {
 
   return (
     <div id="media-viewer">
-      <div className="playlists-index">
-        <h1>Playlists</h1>
+      <div className="playlists-view">
+        <div className="info">
+          <h2>Playlists</h2>
+        </div>
+
         <div className="panel-list playlists">
           <div className="row">
             <div>

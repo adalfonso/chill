@@ -53,19 +53,19 @@
   display: grid;
   grid-template-columns: fit-content(4em) 1fr fit-content(6em);
   user-select: none;
+  width: calc(100% + 2rem);
+  margin-left: -1rem;
 
   &.playlists {
     grid-template-columns: 1fr 1fr 1fr fit-content(4em);
 
     .row {
-      &:hover {
-        .edit {
-          display: flex;
-        }
+      &:hover .edit {
+        visibility: visible;
       }
 
       .edit {
-        display: none;
+        visibility: hidden;
         justify-self: flex-end;
         margin-right: 1rem;
         cursor: pointer;
@@ -92,21 +92,22 @@
       padding: 0.6rem 0 0.6rem 1rem;
 
       &:first-of-type {
-        padding-left: 0;
+        padding-left: 1rem;
+      }
+      &:last-of-type {
+        padding-right: 1rem;
       }
     }
 
-    &:hover {
-      > div {
-        background-color: rgba(115, 115, 115, 0.95);
+    &:hover > div {
+      background-color: rgba(115, 115, 115, 0.95);
 
-        .duration {
-          display: none;
-        }
+      .duration {
+        display: none;
+      }
 
-        .file-menu-entry {
-          display: flex;
-        }
+      .file-menu-entry {
+        display: flex;
       }
     }
 
@@ -148,15 +149,13 @@
   }
 
   .panel-list {
-    .row {
-      > div {
-        &:first-of-type {
-          padding-left: 1rem;
-        }
+    .row > div {
+      &:first-of-type {
+        padding-left: 2rem;
+      }
 
-        &:last-of-type {
-          padding-right: 1rem;
-        }
+      &:last-of-type {
+        padding-right: 2rem;
       }
     }
   }
