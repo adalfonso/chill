@@ -3,13 +3,13 @@ import { MediaApi } from "@client/api/MediaApi";
 import { SearchResult as Result } from "@common/types";
 import { SearchResult } from "./Search/SearchResult";
 import { useDebounce } from "@hooks/useDebounce";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 export const Search = () => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   useDebounce(
     async () => {
@@ -30,7 +30,7 @@ export const Search = () => {
     const { path } = file;
 
     clear();
-    history.push(path);
+    navigate(path);
   };
 
   // Clear the search input/results

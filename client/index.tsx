@@ -3,15 +3,14 @@ import store from "@reducers/store";
 import { App } from "./App";
 import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
-import { render } from "react-dom";
+import { createRoot } from "react-dom/client";
 
-const rootEl = document.getElementById("root");
+const root = createRoot(document.getElementById("root"));
 
-render(
+root.render(
   <BrowserRouter>
     <Provider store={store}>
       <App />
     </Provider>
   </BrowserRouter>,
-  rootEl,
 );

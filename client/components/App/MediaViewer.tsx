@@ -5,7 +5,7 @@ import { GenreView } from "./MediaViewer/GenreView";
 import { MusicLibrary } from "./MediaViewer/MusicLibrary";
 import { Playlist } from "./MediaViewer/Playlist";
 import { Playlists } from "./MediaViewer/Playlists";
-import { Route, Switch } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { UserApi } from "@client/api/UserApi";
 import { setUser } from "@reducers/user";
 import { useDispatch } from "react-redux";
@@ -26,32 +26,37 @@ export const MediaViewer = () => {
   return (
     <>
       {loading && <div className="loading"></div>}
-      <Switch>
-        <Route path="/artist/:artist">
-          <ArtistView setLoading={setLoading} />
-        </Route>
 
-        <Route path="/album/:album">
-          <AlbumView setLoading={setLoading} />
-        </Route>
+      <Routes>
+        <Route
+          path="/artist/:artist"
+          element={<ArtistView setLoading={setLoading} />}
+        ></Route>
 
-        <Route path="/genre/:genre">
-          <GenreView setLoading={setLoading} />
-        </Route>
+        <Route
+          path="/album/:album"
+          element={<AlbumView setLoading={setLoading} />}
+        ></Route>
 
-        <Route path="/playlists">
-          <Playlists setLoading={setLoading} per_page={24} />
-        </Route>
+        <Route
+          path="/genre/:genre"
+          element={<GenreView setLoading={setLoading} />}
+        ></Route>
 
-        <Route path="/playlist/:id">
-          <Playlist />
-        </Route>
+        <Route
+          path="/playlists"
+          element={<Playlists setLoading={setLoading} per_page={24} />}
+        ></Route>
 
-        <Route path="/">
+        <Route path="/playlist/:id" element={<Playlist />}></Route>
+
+        <Route
+          path="/"
+          element={<MusicLibrary setLoading={setLoading} per_page={24} />}
+        >
           {/* 24 is the magic number to have good UI for 3,4,6-column layout */}
-          <MusicLibrary setLoading={setLoading} per_page={24} />
         </Route>
-      </Switch>
+      </Routes>
     </>
   );
 };

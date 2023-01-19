@@ -7,7 +7,7 @@ import { fetchReducer, useFetch } from "@client/hooks/useFetch";
 import { pageReducer, useInfiniteScroll } from "@hooks/useInfiniteScroll";
 import { play } from "@reducers/player";
 import { useDispatch } from "react-redux";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useReducer, useRef } from "react";
 
 interface PlaylistsProps {
@@ -23,7 +23,7 @@ export const Playlists = ({ setLoading, per_page }: PlaylistsProps) => {
     busy: true,
   });
   const dispatch = useDispatch();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const loadPlaylists = () => {
     setLoading(true);
@@ -49,7 +49,7 @@ export const Playlists = ({ setLoading, per_page }: PlaylistsProps) => {
   };
 
   const editPlaylist = (playlist: Playlist) => async () => {
-    history.push(`/playlist/${playlist._id}`);
+    navigate(`/playlist/${playlist._id}`);
   };
 
   return (

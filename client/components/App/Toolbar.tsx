@@ -5,7 +5,7 @@ import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Search } from "./Toolbar/Search";
 import { UserSettings } from "./Toolbar/UserSettings";
 import { faGear, faUser } from "@fortawesome/free-solid-svg-icons";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 type SettingsMenu = "user" | "app";
 
@@ -28,13 +28,13 @@ export const Toolbar = () => {
     });
   };
 
-  const history = useHistory();
+  const navigate = useNavigate();
 
   return (
     <div id="toolbar">
       <div className="libraries">
-        <div onClick={() => history.push("/")}>Music</div>
-        <div onClick={() => history.push("/playlists")}>Playlists</div>
+        <div onClick={() => navigate("/")}>Music</div>
+        <div onClick={() => navigate("/playlists")}>Playlists</div>
       </div>
 
       <div className="tools">

@@ -7,7 +7,7 @@ import { MouseEvent as ReactMouseEvent, useState } from "react";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { play } from "@reducers/player";
 import { useDispatch } from "react-redux";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export type TileData = Partial<Omit<Media, "_id">> & {
   _id: Record<string, string>;
@@ -23,7 +23,7 @@ interface MediaTileProps {
 
 export const MediaTile = ({ file, url, displayAs }: MediaTileProps) => {
   const [menu_visible, setMenuVisible] = useState(false);
-  const history = useHistory();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const class_name = "media-tile" + (menu_visible ? " active" : "");
 
@@ -52,7 +52,7 @@ export const MediaTile = ({ file, url, displayAs }: MediaTileProps) => {
 
   return (
     <div className="media-tile-wrapper">
-      <div className={class_name} onClick={() => history.push(url(file))}>
+      <div className={class_name} onClick={() => navigate(url(file))}>
         {file.image && (
           <img
             src={`/api/v1/media/cover/${file.image}?size=176`}
