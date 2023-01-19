@@ -1,10 +1,9 @@
 import { Equalizer } from "@client/components/ui/Equalizer";
-import { FileMenu } from "../FileMenu";
+import { FileMenu, FileMenuHandler } from "../FileMenu";
 import { Media } from "@common/models/Media";
 import { getState } from "@reducers/store";
 import { secondsToMinutes } from "@client/util";
 import { useSelector } from "react-redux";
-import { useState } from "react";
 
 export interface PlaylistRowProps {
   file: Media;
@@ -13,13 +12,11 @@ export interface PlaylistRowProps {
 }
 
 export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
-  const [menu_visible, setMenuVisible] = useState(false);
   const { player } = useSelector(getState);
 
   const menuHandler = {
     play: () => playAll(index)(),
     getFiles: () => Promise.resolve([file]),
-    toggle: setMenuVisible,
   };
 
   return (
@@ -40,8 +37,10 @@ export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
       </div>
       <div>{file.title}</div>
       <div>{file.artist}</div>
-      <div className={"tail" + (menu_visible ? " show-menu" : "")}>
+      <div>
         <div className="duration mono">{secondsToMinutes(file.duration)}</div>
+      </div>
+      <div className="tail">
         <FileMenu handler={menuHandler}></FileMenu>
       </div>
     </div>

@@ -1,14 +1,15 @@
 .file-menu-entry {
   color: $dm-font;
+  width: 1.25rem;
+  text-align: center;
   padding: 0 0.25rem;
-  display: none;
 
   &:hover {
     color: $dm-font-2;
   }
 
   &.active {
-    display: flex;
+    color: $primary-light;
   }
 }
 
@@ -16,11 +17,11 @@
   background-color: $dm-background-2;
   border-radius: 0.2rem;
   padding: 0.75rem 0;
-  position: absolute;
-  top: 100%;
+  position: fixed;
+  bottom: 0%;
   right: 0;
+  left: 0;
   z-index: 3;
-  width: 10rem;
 
   > div {
     padding: 0.5rem 1rem;
@@ -28,5 +29,16 @@
     &:hover {
       background-color: $dm-background;
     }
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .file-menu {
+    top: 100%;
+    bottom: auto;
+    right: 0;
+    left: auto;
+    width: 10rem;
+    position: absolute;
   }
 }

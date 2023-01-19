@@ -51,7 +51,7 @@
 
 .panel-list {
   display: grid;
-  grid-template-columns: fit-content(4em) 1fr fit-content(6em);
+  grid-template-columns: fit-content(5em) 1fr fit-content(6em) fit-content(4em);
   user-select: none;
   width: calc(100% + 2rem);
   margin-left: -1rem;
@@ -60,12 +60,7 @@
     grid-template-columns: 1fr 1fr 1fr fit-content(4em);
 
     .row {
-      &:hover .edit {
-        visibility: visible;
-      }
-
       .edit {
-        visibility: hidden;
         justify-self: flex-end;
         margin-right: 1rem;
         cursor: pointer;
@@ -79,7 +74,7 @@
   }
 
   &.playlist-tracks {
-    grid-template-columns: 4rem auto 4fr 4fr auto;
+    grid-template-columns: auto auto auto auto auto auto;
   }
 
   .row {
@@ -101,29 +96,11 @@
 
     &:hover > div {
       background-color: rgba(115, 115, 115, 0.95);
-
-      .duration {
-        display: none;
-      }
-
-      .file-menu-entry {
-        display: flex;
-      }
     }
 
     .tail {
       position: relative;
       justify-content: flex-end;
-
-      &.show-menu {
-        .duration {
-          display: none;
-        }
-
-        .file-menu-entry {
-          display: flex;
-        }
-      }
     }
   }
 
@@ -132,11 +109,6 @@
   }
 
   .duration {
-    justify-self: flex-end;
-  }
-
-  .file-menu-entry {
-    display: none;
     justify-self: flex-end;
   }
 }
@@ -157,6 +129,10 @@
       &:last-of-type {
         padding-right: 2rem;
       }
+    }
+
+    &.playlist-tracks {
+      grid-template-columns: 4.5rem auto 4fr 4fr auto auto;
     }
   }
 }

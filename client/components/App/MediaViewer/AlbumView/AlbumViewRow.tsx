@@ -4,8 +4,6 @@ import { Media } from "@common/models/Media";
 import { getState } from "@reducers/store";
 import { secondsToMinutes } from "@client/util";
 import { useSelector } from "react-redux";
-import { useState } from "react";
-
 export interface AlbumViewRowProps {
   file: Media;
   index: number;
@@ -13,13 +11,11 @@ export interface AlbumViewRowProps {
 }
 
 export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
-  const [menu_visible, setMenuVisible] = useState(false);
   const { player } = useSelector(getState);
 
   const menuHandler = {
     play: () => playAll(index)(),
     getFiles: () => Promise.resolve([file]),
-    toggle: setMenuVisible,
   };
 
   return (
@@ -31,8 +27,10 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
         )}
       </div>
       <div>{file.title}</div>
-      <div className={"tail" + (menu_visible ? " show-menu" : "")}>
+      <div>
         <div className="duration mono">{secondsToMinutes(file.duration)}</div>
+      </div>
+      <div className="tail">
         <FileMenu handler={menuHandler}></FileMenu>
       </div>
     </div>

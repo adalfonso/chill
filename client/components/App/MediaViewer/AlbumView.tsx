@@ -80,6 +80,7 @@ export const AlbumView = ({ setLoading }: AlbumViewProps) => {
         <div className="panel-list">
           <div className="header track"></div>
           <div className="header"></div>
+          <div className="header"></div>
           <div className="header align-right"></div>
 
           {files

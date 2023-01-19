@@ -9,10 +9,10 @@ import { setMenu } from "@reducers/mediaMenu";
 import { toggle } from "@reducers/playlistEditor";
 import { useDispatch, useSelector } from "react-redux";
 
-interface FileMenuHandler {
+export interface FileMenuHandler {
   play: (e: MouseEvent<HTMLElement>) => void;
   getFiles: () => Promise<Media[]>;
-  toggle: (visible: boolean) => void;
+  toggle?: (visible: boolean) => void;
 }
 
 interface FileMenuProps {
@@ -30,12 +30,12 @@ export const FileMenu = ({ handler }: FileMenuProps) => {
       return;
     }
 
-    handler.toggle(false);
+    handler.toggle && handler.toggle(false);
   }, [mediaMenu.menu_id]);
 
   const onEntryClick = (e: MouseEvent<HTMLElement>) => {
     e.stopPropagation();
-    handler.toggle(!active);
+    handler.toggle && handler.toggle(!active);
     dispatch(setMenu({ menu_id: active ? null : menu_id }));
   };
 
@@ -44,7 +44,8 @@ export const FileMenu = ({ handler }: FileMenuProps) => {
     (e: MouseEvent<HTMLElement>) => {
       e.stopPropagation();
       fn(e);
-      handler.toggle(false);
+      // TODO: why didn't optional chaining work?
+      handler.toggle && handler.toggle(false);
       dispatch(setMenu({ menu_id: null }));
     };
 

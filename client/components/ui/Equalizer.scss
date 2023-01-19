@@ -24,7 +24,7 @@
 
 .equalizer {
   position: relative;
-  display: flex;
+  display: none;
   justify-content: space-between;
   width: 13px;
   height: 13px;
@@ -45,5 +45,11 @@
     &:nth-of-type(3) {
       animation-delay: -3.7s;
     }
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .equalizer {
+    display: flex;
   }
 }

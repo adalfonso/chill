@@ -38,7 +38,7 @@
   }
 
   .track {
-    width: 4rem;
+    width: auto;
   }
 
   .play-icon {
@@ -53,6 +53,10 @@
       > * {
         margin: 1rem;
       }
+    }
+
+    .track {
+      width: 5rem;
     }
   }
 }
