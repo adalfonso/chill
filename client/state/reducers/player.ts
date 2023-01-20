@@ -15,9 +15,10 @@ export const getAudioProgress = () => {
 };
 
 /**
+ * Load an audio file
  *
- * @param state player state
- * @param use_crossover audio is loaded from the crossover audio
+ * @param state - player state
+ * @param use_crossover - audio is loaded from the crossover audio
  */
 const load = (state: PlayerState, use_crossover = false) => {
   /**
@@ -29,6 +30,20 @@ const load = (state: PlayerState, use_crossover = false) => {
     audio.src = `/api/v1/media/${state.now_playing?._id}/load`;
   }
 
+  crossover.src = state.next_playing
+    ? `/api/v1/media/${state.next_playing?._id}/load`
+    : null;
+};
+
+/**
+ * Force reload the next track
+ *
+ * This is used when something is added the the playlist but the crossover audio
+ * needs to be reloaded with the next track.
+ *
+ * @param state - player state
+ */
+const loadNext = (state: PlayerState) => {
   crossover.src = state.next_playing
     ? `/api/v1/media/${state.next_playing?._id}/load`
     : null;
@@ -120,6 +135,8 @@ export const playerSlice = createSlice({
       const tail = state.playlist.slice(state.index + 1);
 
       state.playlist = [...head, ...files, ...tail];
+      state.next_playing = state.playlist[state.index + 1] ?? null;
+      loadNext(state);
     },
 
     previous: (state) => {
