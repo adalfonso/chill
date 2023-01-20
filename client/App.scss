@@ -3,11 +3,6 @@
 * {
   box-sizing: border-box;
 
-  /* width */
-  &::-webkit-scrollbar {
-    width: 0.8rem;
-  }
-
   /* Track */
   &::-webkit-scrollbar-track {
     background: $dm-background;
@@ -112,4 +107,12 @@ h2 {
   left: calc(50% - 1.25rem);
   transform: translate3d(-50%, -50%, 0);
   will-change: transform;
+}
+
+@media screen and (min-width: 768px) {
+  * {
+    &::-webkit-scrollbar {
+      width: 0.8rem;
+    }
+  }
 }

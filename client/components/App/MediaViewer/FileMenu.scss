@@ -24,7 +24,7 @@
   z-index: 3;
 
   > div {
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
 
     &:hover {
       background-color: $dm-background;
@@ -40,5 +40,9 @@
     left: auto;
     width: 10rem;
     position: absolute;
+
+    > div {
+      padding: 0.3rem 1rem;
+    }
   }
 }
