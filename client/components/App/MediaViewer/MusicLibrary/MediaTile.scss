@@ -98,7 +98,13 @@
           display: flex;
         }
       }
+    }
+  }
+}
 
+@media (hover: hover) and (pointer: fine) {
+  #media-viewer {
+    .media-tile {
       &:hover,
       &.active {
         .more {

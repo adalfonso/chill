@@ -19,3 +19,6 @@
 - when changing stream quality, chrome plays a cached version
 - rescanning creates new ids for all media an invalidates a playlist
 - loading two files when there is only one results in null endpoint call
+- play artist, "play next" for another track. advance to next track and it shows the other artist, but plays different track. I don't think it queues up the next track properly.
+- hitting back button in mobile should close any fullscreened modals
+- holding artist tile should show their context menu on mobile
