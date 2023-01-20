@@ -17,7 +17,7 @@
     position: absolute;
     top: calc(100% + 0.5rem - 1px);
     z-index: 3;
-    max-height: 20rem;
+    max-height: 26rem;
     overflow: auto;
     width: 100%;
     border-top: 1px dashed $dm-background;
@@ -26,7 +26,7 @@
       background-color: $dm-background-2;
       border-bottom: 1px dashed $dm-background;
       padding: 0.35rem 1rem;
-      font-size: 0.75rem;
+      font-size: 0.9rem;
       cursor: pointer;
       user-select: none;
 
