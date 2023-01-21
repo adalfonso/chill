@@ -19,3 +19,4 @@
 - loading two files when there is only one results in null endpoint call
 - hitting back button in mobile should close any fullscreened modals
 - holding artist tile should show their context menu on mobile
+- playlist tracks without album art are misaligned

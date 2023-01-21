@@ -30,9 +30,9 @@ const load = (state: PlayerState, use_crossover = false) => {
     audio.src = `/api/v1/media/${state.now_playing?._id}/load`;
   }
 
-  crossover.src = state.next_playing
-    ? `/api/v1/media/${state.next_playing?._id}/load`
-    : null;
+  if (state.next_playing) {
+    crossover.src = `/api/v1/media/${state.next_playing?._id}/load`;
+  }
 };
 
 /**
