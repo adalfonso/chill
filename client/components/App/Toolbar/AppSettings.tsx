@@ -23,6 +23,10 @@ export const AppSettings = ({ onClose }: AppSettingsProps) => {
       return;
     }
 
+    if (!confirm("Are you sure you want to run a scan?")) {
+      return;
+    }
+
     setBusy(true);
     await triggerScan();
     setBusy(false);
