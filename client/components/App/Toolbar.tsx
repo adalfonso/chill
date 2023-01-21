@@ -6,6 +6,7 @@ import { Search } from "./Toolbar/Search";
 import { UserSettings } from "./Toolbar/UserSettings";
 import { faGear, faUser } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import { useLocationOverride } from "@hooks/useLocationOverride";
 
 type SettingsMenu = "user" | "app";
 
@@ -29,6 +30,13 @@ export const Toolbar = () => {
   };
 
   const navigate = useNavigate();
+
+  useLocationOverride(
+    // Override location change when either settings menu is open
+    () => settings_vis.app || settings_vis.user,
+    // Hide the playlist instead of changing location
+    () => setSettingsVis({ app: false, user: false }),
+  );
 
   return (
     <div id="toolbar">

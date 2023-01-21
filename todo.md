@@ -16,5 +16,4 @@
 - add typing to action when reducers are used
 - when changing stream quality, chrome plays a cached version
 - rescanning creates new ids for all media and invalidates a playlist
-- hitting back button in mobile should close any fullscreened modals
 - holding artist tile should show their context menu on mobile

@@ -21,7 +21,7 @@ export const Playlist = () => {
     setPlaylistVisible(!playlist_visible);
   };
 
-  useLocationInterrupt(
+  useLocationOverride(
     // Override location change when the playlist is visible
     () => playlist_visible,
     // Hide the playlist instead of changing location
