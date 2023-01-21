@@ -5,7 +5,6 @@ import { AuthController } from "../controllers/AuthController.mjs";
 const router = express.Router();
 
 router.get("/login", AuthController.login);
-
 router.get("/logout", AuthController.logout);
 
 router.get(

@@ -6,7 +6,7 @@ import express, { Express } from "express";
 import passport from "passport";
 import { Connection } from "./db/Client.mjs";
 import { configurePassport } from "./passportConfig.mjs";
-import { initRouter } from "./router.mjs";
+import { initRouter } from "./routes/router.mjs";
 
 /**
  * Initialize the express app

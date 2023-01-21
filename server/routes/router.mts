@@ -1,13 +1,11 @@
-import admin from "./admin/index.mjs";
-import v1 from "./api/v1.mjs";
-import auth from "./auth/index.mjs";
+import auth from "./auth.mjs";
 import historyApiFallback from "connect-history-api-fallback";
+import v1 from "./api/v1.mjs";
 import { Express } from "express";
-import { isAuthenticated } from "./middleware/isAuthenticated.mjs";
+import { isAuthenticated } from "../middleware/isAuthenticated.mjs";
 
 export const initRouter = (app: Express) => {
   // Register open routes
-  app.use("/admin", admin);
   app.use("/auth", auth);
 
   app.use(

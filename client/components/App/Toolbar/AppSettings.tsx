@@ -2,6 +2,7 @@ import "./AppSettings.scss";
 import axios from "axios";
 import { AudioQuality } from "./AppSettings/AudioQuality";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
+import { InviteUser } from "./AppSettings/InviteUser";
 import { UserType } from "@common/types";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { getState } from "@reducers/store";
@@ -39,7 +40,8 @@ export const AppSettings = ({ onClose }: AppSettingsProps) => {
       </div>
       <div className="settings">
         <AudioQuality user={user} />
-        <br />
+        <InviteUser />
+
         {user.type === UserType.Admin && (
           <div className="link" onMouseUp={scan}>
             Run Scan Now!

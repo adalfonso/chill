@@ -1,6 +1,6 @@
 import express from "express";
-import { MediaFileController } from "../../controllers/MediaFileController.mjs";
-import { isAdmin } from "../../middleware/isAdmin.mjs";
+import { MediaFileController } from "../../../controllers/MediaFileController.mjs";
+import { isAdmin } from "../../../middleware/isAdmin.mjs";
 
 /** /api/v1/media **/
 
