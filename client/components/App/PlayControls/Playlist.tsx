@@ -1,24 +1,46 @@
 import "./Playlist.scss";
-import { useState } from "react";
 import { Equalizer } from "../../ui/Equalizer";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { changeTrack } from "@reducers/player";
 import { faListDots, faClose } from "@fortawesome/free-solid-svg-icons";
 import { getState } from "@reducers/store";
 import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate, Location } from "react-router-dom";
 
 export const Playlist = () => {
   const { player } = useSelector(getState);
   const dispatch = useDispatch();
-  const [playlistVisible, setPlaylistVisible] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [playlist_visible, setPlaylistVisible] = useState(false);
+  const [last_location, setLastLocation] = useState<Location>();
 
-  const playlistClassName = playlistVisible
+  const playlistClassName = playlist_visible
     ? "playlist-panel"
     : "playlist-panel docked";
 
   const togglePlaylist = () => {
-    setPlaylistVisible(!playlistVisible);
+    setPlaylistVisible(!playlist_visible);
   };
+
+  // Intercept the location change, close model, and go back to the old location
+  useEffect(() => {
+    if (!playlist_visible) {
+      return setLastLocation(location);
+    }
+
+    setPlaylistVisible(false);
+
+    // Should not happen
+    if (last_location === undefined) {
+      return;
+    }
+
+    const { pathname, search } = last_location;
+
+    navigate(pathname + search);
+  }, [location]);
 
   return (
     <>

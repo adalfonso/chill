@@ -1,5 +1,5 @@
 import { Equalizer } from "@client/components/ui/Equalizer";
-import { FileMenu, FileMenuHandler } from "../FileMenu";
+import { FileMenu } from "../FileMenu";
 import { Media } from "@common/models/Media";
 import { getState } from "@reducers/store";
 import { secondsToMinutes } from "@client/util";
