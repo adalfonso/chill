@@ -3,7 +3,7 @@ import { AlbumView } from "./MediaViewer/AlbumView";
 import { ArtistView } from "./MediaViewer/ArtistView";
 import { GenreView } from "./MediaViewer/GenreView";
 import { MusicLibrary } from "./MediaViewer/MusicLibrary";
-import { Playlist } from "./MediaViewer/Playlist";
+import { PlaylistViewer } from "./MediaViewer/PlaylistViewer";
 import { Playlists } from "./MediaViewer/Playlists";
 import { Route, Routes } from "react-router-dom";
 import { UserApi } from "@client/api/UserApi";
@@ -48,7 +48,7 @@ export const MediaViewer = () => {
           element={<Playlists setLoading={setLoading} per_page={24} />}
         ></Route>
 
-        <Route path="/playlist/:id" element={<Playlist />}></Route>
+        <Route path="/playlist/:id" element={<PlaylistViewer />}></Route>
 
         <Route
           path="/"

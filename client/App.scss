@@ -109,7 +109,17 @@ h2 {
   will-change: transform;
 }
 
-@media screen and (min-width: 768px) {
+/* Don't show scrollbars on monitors simulating a mobile resolution */
+@media (pointer: fine) and (min-width: 0px) and (max-width: 834px) {
+  * {
+    &::-webkit-scrollbar {
+      width: 0rem;
+    }
+  }
+}
+
+/* Shrink scrollbars on monitors */
+@media (pointer: fine) and (min-width: 844px) {
   * {
     &::-webkit-scrollbar {
       width: 0.35rem;

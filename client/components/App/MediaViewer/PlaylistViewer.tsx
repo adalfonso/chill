@@ -11,7 +11,7 @@ type PlaylistParams = {
   id: string;
 };
 
-export const Playlist = () => {
+export const PlaylistViewer = () => {
   const id = decodeURIComponent(useParams<PlaylistParams>().id);
   const [files, setFiles] = useState([]);
   const [playlist, setPlaylist] = useState<PlaylistClass>();
@@ -35,7 +35,9 @@ export const Playlist = () => {
   return (
     <div id="media-viewer">
       <div className="playlist-viewer">
-        <h1>{playlist?.name}</h1>
+        <div className="info">
+          <h2>{playlist?.name}</h2>
+        </div>
 
         <div className="playlist-tracks panel-list">
           {files?.map((file, index) => (

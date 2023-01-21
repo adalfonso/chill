@@ -4,24 +4,17 @@
   .media-tiles {
     display: flex;
     flex-flow: row wrap;
-    justify-content: space-between;
-
-    &::after {
-      content: "";
-      // If we ever don't have a full row of 3 images, this moves the last one over
-      width: calc(33.33vw - 1.5rem);
-    }
 
     a {
       text-decoration: none;
     }
 
     .media-tile-wrapper {
-      width: calc(33.33vw - 1.5rem);
+      margin: 0 0 0 1rem;
 
       .display-as {
         font-size: 0.75rem;
-        margin: 0.25rem 0 0.5rem 0;
+        margin: 0.5em 0 1em 0;
       }
     }
 
@@ -29,9 +22,6 @@
       background-color: $dm-background-2;
       color: white;
       border-radius: 0.25rem;
-      height: calc(33.33vw - 1.5rem);
-      width: calc(33.33vw - 1.5rem);
-      transition: 0.2s;
       user-select: none;
       position: relative;
 
@@ -115,25 +105,48 @@
   }
 }
 
-// iPads
-@media screen and (min-device-width: 768px) {
-  #media-viewer {
-    .media-tiles {
-      &::after {
-        max-width: 75%;
-        width: 100%;
+// Cell phones (portrait) - 3 tiles wide
+@media screen and (min-width: 0px) and (max-width: 511px) {
+  #media-viewer .media-tiles {
+    .media-tile-wrapper {
+      /* 1/3 vw - 4/3rem */
+      width: calc(100vw / 3 - 1rem - 1rem / 3);
 
-        min-width: 25%;
+      &:nth-of-type(3n + 1) {
+        margin-left: 0;
+      }
+    }
+
+    .media-tile {
+      /* 1/3 vw - 4/3rem */
+      width: calc(100vw / 3 - 1rem - 1rem / 3);
+      height: calc(100vw / 3 - 1rem - 1rem / 3);
+    }
+  }
+}
+
+// Tablets (portrait) & cell phones (landscape)  - 5 tiles wide
+@media screen and (min-width: 512px) and (max-width: 843px) {
+  #media-viewer .media-tiles {
+    .media-tile-wrapper {
+      margin: 0 0 0 1.5rem;
+
+      /* 1/5vw - 9/5rem */
+      width: calc(100vw / 5 - 1.8rem);
+
+      &:nth-of-type(5n + 1) {
+        margin-left: 0.5rem;
       }
 
-      .media-tile-wrapper {
-        width: calc(25vw - 1.25rem);
+      .display-as {
+        font-size: 0.85rem;
       }
+    }
 
-      .media-tile {
-        height: calc(25vw - 1.25rem);
-        width: calc(25vw - 1.25rem);
-      }
+    .media-tile {
+      /* 1/5vw - 9/5rem */
+      width: calc(100vw / 5 - 1.8rem);
+      height: calc(100vw / 5 - 1.8rem);
     }
   }
 }
@@ -146,11 +159,13 @@
 
       .media-tile-wrapper {
         padding: 1rem 1rem 0 1rem;
+        margin: 0;
         width: 13rem;
         max-width: none;
 
         .display-as {
           font-size: 1rem;
+          margin: 0.5em 0 0 0;
         }
       }
 

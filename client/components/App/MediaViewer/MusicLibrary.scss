@@ -10,6 +10,12 @@
   }
 }
 
+@media screen and (min-width: 512px) and (max-width: 843px) {
+  .music-library {
+    padding: 1.5rem 1.5rem 0 1.5rem;
+  }
+}
+
 @media screen and (min-width: 844px) {
   .music-library {
     padding: 2rem 2rem 0 2rem;

@@ -18,6 +18,7 @@
       width: 160px;
       background-color: $dm-background-2;
       border-radius: 0.25rem;
+      display: inline-flex;
     }
 
     .info {
@@ -34,6 +35,7 @@
 
     img {
       border-radius: 0.25rem;
+      width: 100%;
     }
   }
 
@@ -47,7 +49,17 @@
   }
 }
 
-@media screen and (min-width: 768px) {
+@media screen and (min-width: 512px) and (max-width: 843px) {
+  .album-view {
+    .details {
+      > * {
+        margin: 0.5rem 1rem 0.5rem 0.5rem;
+      }
+    }
+  }
+}
+
+@media screen and (min-width: 844px) {
   .album-view {
     .details {
       > * {
