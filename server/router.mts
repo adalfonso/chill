@@ -15,6 +15,7 @@ export const initRouter = (app: Express) => {
     historyApiFallback({
       verbose: false,
       rewrites: [
+        // ignore for api routes
         { from: /^\/(api)\/.*$/, to: (context) => context.parsedUrl.path },
       ],
     }),

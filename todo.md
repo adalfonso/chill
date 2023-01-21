@@ -1,4 +1,3 @@
-- make scroll bar either invis, or more narrow
 - transcoding setting, wifi vs cell data
 - alpha band on side for quick scrolling
 - playlist/shuffle ui improvement for mobile
@@ -7,7 +6,6 @@
 - investigate: certain images fail to load
 - investigate: certain tracks have capitalized spelling or artist name
 - optimize album art- don't store per track, group by album
-- ui improve login page
 - refresh tokens
 - blacklist token cache
 - default artist image should be most recent album art

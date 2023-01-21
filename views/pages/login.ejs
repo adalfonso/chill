@@ -2,28 +2,73 @@
 <html>
   <head>
     <title>Login</title>
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
-    />
+
     <style>
       body {
-        padding-top: 70px;
+        background-color: rgba(44, 41, 41, 0.97);
+        color: #eee;
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      .container {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .items {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .items > * {
+        margin: 1rem 0;
+      }
+
+      .items h1 {
+        font-size: 2.75rem;
+      }
+
+      .login-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #aaa;
+        border-radius: 0.25rem;
+        background-color: #eee;
+        padding: 0.75rem 1.25rem;
+      }
+
+      .login-link img {
+        margin-right: 1rem;
+        width: 1.5rem;
+      }
+
+      a {
+        text-decoration: none;
+        color: rgba(72, 69, 69, 0.97);
+        font-size: 1.25rem;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <div class="jumbotron text-center text-primary">
-        <h1><span class="fa fa-lock"></span> Social Authentication</h1>
-        <p>Login or Register with:</p>
-        <a href="/auth/google" class="btn btn-danger"
-          ><span class="fa fa-google"></span> SignIn with Google</a
-        >
+      <div class="items">
+        <h1>Authentication</h1>
+
+        <a href="/auth/google">
+          <div class="login-link">
+            <img src="https://static.cdnlogo.com/logos/g/35/google-icon.svg" />
+            Sign in with Google
+          </div>
+        </a>
       </div>
     </div>
   </body>
