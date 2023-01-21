@@ -2,24 +2,23 @@ import "./ui.scss";
 import { useState } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
-import { MediaMatch as Match } from "@common/media/types";
 
-interface SelectProps {
-  onChange: (match: Match) => void;
+interface SelectProps<T> {
+  onChange: (match: T) => void;
   children: JSX.Element[];
-  value: Match;
+  value: T;
   displayAs: string;
 }
 
-export const Select = ({
+export function Select<T>({
   onChange,
   children,
   value,
   displayAs,
-}: SelectProps) => {
+}: SelectProps<T>) {
   const [expanded, setExpanded] = useState(false);
 
-  const select = (value: Match) => () => {
+  const select = (value: T) => () => {
     onChange(value);
     setExpanded(false);
   };
@@ -27,8 +26,11 @@ export const Select = ({
   return (
     <div className="ui-select">
       <div className="selection" onClick={() => setExpanded(!expanded)}>
-        {displayAs ?? value} <Icon icon={faAngleDown} size="sm" />
+        <>
+          {displayAs ?? value} <Icon icon={faAngleDown} size="sm" />
+        </>
       </div>
+
       <div className={expanded ? "children" : "children hidden"}>
         {children.map((child) => {
           return (
@@ -44,4 +46,4 @@ export const Select = ({
       </div>
     </div>
   );
-};
+}

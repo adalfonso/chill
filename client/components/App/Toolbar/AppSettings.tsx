@@ -33,7 +33,7 @@ export const AppSettings = ({ onClose }: AppSettingsProps) => {
       <div className="close">
         <Icon icon={faClose} size="lg" onClick={onClose} />
       </div>
-      <div>
+      <div className="settings">
         <AudioQuality user={user} />
         <br />
         {user.type === UserType.Admin && (

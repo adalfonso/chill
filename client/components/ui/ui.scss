@@ -12,6 +12,7 @@
   z-index: 2;
   user-select: none;
   cursor: pointer;
+  position: relative;
 
   .selection,
   .children > * {
@@ -23,7 +24,7 @@
   .selection {
     background-color: $dm-background-2;
     border: 1px solid $dm-shadow;
-    padding: 0.5rem 1.25rem;
+    padding: 0.5rem 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;

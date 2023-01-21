@@ -17,6 +17,20 @@
     &:last-of-type {
       border-bottom: 0;
     }
+
+    &.settings > * {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+
+      > * {
+        margin-right: 1rem;
+      }
+    }
+  }
+
+  .ui-select option {
+    z-index: 4;
   }
 
   .close {

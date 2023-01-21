@@ -17,3 +17,5 @@
 - when changing stream quality, chrome plays a cached version
 - rescanning creates new ids for all media and invalidates a playlist
 - holding artist tile should show their context menu on mobile
+- intercepting back button click and actually preventing location change
+- show media info screen

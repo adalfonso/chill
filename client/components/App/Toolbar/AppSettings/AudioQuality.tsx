@@ -1,4 +1,7 @@
+import _ from "lodash";
+import { AudioQuality as AudioQualityValues } from "@common/types";
 import { AudioQuality as qualityList } from "@common/types";
+import { Select } from "@client/components/ui/Select";
 import { UserApi } from "@client/api/UserApi";
 import { UserState } from "@reducers/user";
 import { updateUserSettings } from "@reducers/user";
@@ -17,16 +20,16 @@ export const AudioQuality = ({ user }: AudioQualityProps) => {
 
   const dispatch = useDispatch();
 
-  const changeQuality = async (e) => {
+  const changeQuality = async (quality: AudioQualityValues) => {
     if (busy) {
       return;
     }
     setBusy(true);
-    setInput(e.target.value);
+    setInput(quality);
 
     try {
       const update = await UserApi.updateSettings({
-        audio_quality: e.target.value,
+        audio_quality: quality,
       });
 
       dispatch(updateUserSettings({ settings: update.data }));
@@ -40,18 +43,31 @@ export const AudioQuality = ({ user }: AudioQualityProps) => {
     }
   };
 
+  const displayAsQuality = (key, value: AudioQualityValues) => {
+    if (value === AudioQualityValues.Original) {
+      return key;
+    }
+
+    return `${key} (~${value}kbps)`;
+  };
+
   return (
     <div className="audio-quality">
       <div>Audio Quality</div>
-      <select onChange={changeQuality} value={input}>
+
+      <Select
+        onChange={changeQuality}
+        displayAs={displayAsQuality(_.invert(AudioQualityValues)[input], input)}
+        value={input}
+      >
         {Object.entries(qualityList).map(([key, value]) => {
           return (
             <option key={key} value={value}>
-              {key} {value !== "original" && `(~${value}kbps)`}
+              {displayAsQuality(key, value)}
             </option>
           );
         })}
-      </select>
+      </Select>
     </div>
   );
 };
