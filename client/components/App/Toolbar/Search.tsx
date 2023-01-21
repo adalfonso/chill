@@ -46,6 +46,11 @@ export const Search = () => {
         value={query}
         onChange={(e) => setQuery(e.target.value.replace(/\s+/g, " "))}
       />
+      {query.length > 0 && (
+        <div className="close" onClick={clear}>
+          &times;
+        </div>
+      )}
       {results.length > 0 && (
         <div className="search-results">
           {results.map((result) => {
