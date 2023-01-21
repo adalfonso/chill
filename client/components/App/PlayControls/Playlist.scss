@@ -56,6 +56,10 @@
 
   .cover {
     margin-right: 1rem;
+    height: 36px;
+    width: 36px;
+    background-color: $dm-background;
+    border-radius: 0.125rem;
   }
 
   .content {

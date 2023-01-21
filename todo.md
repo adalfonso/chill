@@ -5,18 +5,16 @@
 - shuffle should put currently playing track first
 - investigate: certain images fail to load
 - investigate: certain tracks have capitalized spelling or artist name
-- optimize album art- don't store per track, group by album
+- optimize album art - don't store per track, group by album
 - refresh tokens
 - blacklist token cache
 - default artist image should be most recent album art
-- make media library hide so we can go back to it an resume browsing instead of reload
+- make media library hide so we can go back to it and resume browsing instead of reload
 - minimize audio toolbar when not playing
 - ditch mongoose
 - improve typings of API controllers
 - add typing to action when reducers are used
 - when changing stream quality, chrome plays a cached version
-- rescanning creates new ids for all media an invalidates a playlist
-- loading two files when there is only one results in null endpoint call
+- rescanning creates new ids for all media and invalidates a playlist
 - hitting back button in mobile should close any fullscreened modals
 - holding artist tile should show their context menu on mobile
-- playlist tracks without album art are misaligned
