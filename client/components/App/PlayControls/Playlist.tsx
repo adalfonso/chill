@@ -5,16 +5,13 @@ import { changeTrack } from "@reducers/player";
 import { faListDots, faClose } from "@fortawesome/free-solid-svg-icons";
 import { getState } from "@reducers/store";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
-import { useLocation, useNavigate, Location } from "react-router-dom";
+import { useLocationOverride } from "@hooks/useLocationOverride";
+import { useState } from "react";
 
 export const Playlist = () => {
   const { player } = useSelector(getState);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const location = useLocation();
   const [playlist_visible, setPlaylistVisible] = useState(false);
-  const [last_location, setLastLocation] = useState<Location>();
 
   const playlistClassName = playlist_visible
     ? "playlist-panel"
@@ -24,23 +21,12 @@ export const Playlist = () => {
     setPlaylistVisible(!playlist_visible);
   };
 
-  // Intercept the location change, close model, and go back to the old location
-  useEffect(() => {
-    if (!playlist_visible) {
-      return setLastLocation(location);
-    }
-
-    setPlaylistVisible(false);
-
-    // Should not happen
-    if (last_location === undefined) {
-      return;
-    }
-
-    const { pathname, search } = last_location;
-
-    navigate(pathname + search);
-  }, [location]);
+  useLocationInterrupt(
+    // Override location change when the playlist is visible
+    () => playlist_visible,
+    // Hide the playlist instead of changing location
+    () => setPlaylistVisible(false),
+  );
 
   return (
     <>
