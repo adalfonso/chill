@@ -94,6 +94,7 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
             .sort((a, b) => a[match].localeCompare(b[match]))
             .map((file) => (
               <MediaTile
+                tile_type={match}
                 key={JSON.stringify(file._id)}
                 file={file}
                 displayAs={displayAs}

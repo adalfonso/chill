@@ -3,6 +3,7 @@ import { FileMenu } from "../FileMenu";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/models/Media";
 import { MediaApi } from "@client/api/MediaApi";
+import { MediaMatch } from "@common/media/types";
 import { MouseEvent as ReactMouseEvent, useState } from "react";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { play } from "@reducers/player";
@@ -16,12 +17,18 @@ export type TileData = Partial<Omit<Media, "_id">> & {
 };
 
 interface MediaTileProps {
+  tile_type: MediaMatch;
   file: TileData;
   url: (file: TileData) => string;
   displayAs: (file: TileData) => string;
 }
 
-export const MediaTile = ({ file, url, displayAs }: MediaTileProps) => {
+export const MediaTile = ({
+  tile_type,
+  file,
+  url,
+  displayAs,
+}: MediaTileProps) => {
   const [menu_visible, setMenuVisible] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -70,10 +77,33 @@ export const MediaTile = ({ file, url, displayAs }: MediaTileProps) => {
             />
           </div>
 
-          <FileMenu handler={optionsHandler}></FileMenu>
+          <FileMenu
+            title={getFileMenuTitle(tile_type, file)}
+            handler={optionsHandler}
+          ></FileMenu>
         </div>
       </div>
       <div className="display-as">{displayAs(file)}</div>
     </div>
   );
+};
+
+/**
+ * Get the title for the tile menu
+ *
+ * @param tile_type - type of media tile, e.g. artist, album, genre
+ * @param file - file data
+ * @returns file menu title
+ */
+const getFileMenuTitle = (tile_type: MediaMatch, file: TileData) => {
+  switch (tile_type) {
+    case MediaMatch.Artist:
+      return file.artist;
+    case MediaMatch.Album:
+      return `${file.album} (${file.year})`;
+    case MediaMatch.Genre:
+      return file.genre;
+    default:
+      return "File Menu";
+  }
 };

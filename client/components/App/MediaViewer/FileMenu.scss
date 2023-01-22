@@ -15,34 +15,44 @@
 
 .file-menu {
   background-color: $dm-background-2;
-  border-radius: 0.2rem;
-  padding: 0.75rem 0;
+  padding: 0 0 0.75rem 0;
   position: fixed;
   bottom: 0%;
   right: 0;
   left: 0;
   z-index: 3;
 
-  > div {
+  > div:not(.title) {
     padding: 0.75rem 1rem;
 
     &:hover {
       background-color: $dm-background;
     }
   }
+
+  .title {
+    border-bottom: 1px solid $dm-background;
+    padding: 0.75rem 1rem;
+  }
 }
 
 @media screen and (min-width: 844px) {
   .file-menu {
+    padding: 0.75rem 0;
     top: 100%;
     bottom: auto;
     right: 0;
     left: auto;
     width: 10rem;
     position: absolute;
+    border-radius: 0.2rem;
 
-    > div {
-      padding: 0.3rem 1rem;
+    > div:not(.title) {
+      padding: 0.4rem 1rem;
+    }
+
+    .title {
+      display: none;
     }
   }
 }

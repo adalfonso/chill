@@ -41,7 +41,10 @@ export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
         <div className="duration mono">{secondsToMinutes(file.duration)}</div>
       </div>
       <div className="tail">
-        <FileMenu handler={menuHandler}></FileMenu>
+        <FileMenu
+          title={`${file.artist} - ${file.title}`}
+          handler={menuHandler}
+        ></FileMenu>
       </div>
     </div>
   );

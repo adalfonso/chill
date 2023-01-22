@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
 import { MediaApi } from "@client/api/MediaApi";
+import { MediaMatch } from "@common/media/types";
 import { MediaTile, TileData } from "./MusicLibrary/MediaTile";
 import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 interface GenreViewProps {
   setLoading: (loading: boolean) => void;
@@ -43,6 +44,7 @@ export const GenreView = ({ setLoading }: GenreViewProps) => {
         <div className="media-tiles">
           {artists.map((file) => (
             <MediaTile
+              tile_type={MediaMatch.Genre}
               key={JSON.stringify(file._id)}
               file={file}
               url={url}

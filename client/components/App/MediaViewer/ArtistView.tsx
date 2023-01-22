@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
 import { MediaApi } from "@client/api/MediaApi";
+import { MediaMatch } from "@common/media/types";
 import { MediaTile, TileData } from "./MusicLibrary/MediaTile";
 import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 interface ArtistViewProps {
   setLoading: (loading: boolean) => void;
@@ -54,6 +55,7 @@ export const ArtistView = ({ setLoading }: ArtistViewProps) => {
         <div className="media-tiles">
           {albums.map((file) => (
             <MediaTile
+              tile_type={MediaMatch.Album}
               key={JSON.stringify(file._id)}
               file={file}
               url={url}

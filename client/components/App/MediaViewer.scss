@@ -91,10 +91,6 @@
       }
     }
 
-    &:hover > div {
-      background-color: rgba(115, 115, 115, 0.95);
-    }
-
     .tail {
       position: relative;
       justify-content: flex-end;
@@ -116,6 +112,15 @@
 
   .duration {
     justify-self: flex-end;
+  }
+}
+
+// Only show row hover-highlight on desktop
+@media (hover: hover) and (pointer: fine) {
+  .panel-list {
+    .row:hover > div {
+      background-color: rgba(115, 115, 115, 0.95);
+    }
   }
 }
 

@@ -16,10 +16,11 @@ export interface FileMenuHandler {
 }
 
 interface FileMenuProps {
+  title: string;
   handler: FileMenuHandler;
 }
 
-export const FileMenu = ({ handler }: FileMenuProps) => {
+export const FileMenu = ({ title, handler }: FileMenuProps) => {
   const [menu_id] = useState(new ObjectID().toString());
   const { mediaMenu } = useSelector(getState);
   const active = menu_id === mediaMenu.menu_id;
@@ -68,6 +69,7 @@ export const FileMenu = ({ handler }: FileMenuProps) => {
       </div>
       {active && (
         <section className="file-menu">
+          <div className="title">{title}</div>
           <div onClick={onOptionClick(handler.play)}>Play</div>
           <div onClick={onOptionClick(local.playNext)}>Play Next</div>
           <div onClick={onOptionClick(local.addToQueue)}>Add to Queue</div>
