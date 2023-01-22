@@ -1,6 +1,8 @@
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch } from "@common/media/types";
-import { MediaTile, TileData } from "./MusicLibrary/MediaTile";
+import { MediaTile } from "./MusicLibrary/MediaTile";
+import { TileData } from "@client/lib/types";
+import { artistUrl } from "@client/lib/url";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -31,7 +33,6 @@ export const GenreView = ({ setLoading }: GenreViewProps) => {
       });
   }, [genre]);
 
-  const url = (file: TileData) => `/artist/${encodeURIComponent(file.artist)}`;
   const displayAs = (file: TileData) => file.artist;
 
   return (
@@ -47,7 +48,7 @@ export const GenreView = ({ setLoading }: GenreViewProps) => {
               tile_type={MediaMatch.Genre}
               key={JSON.stringify(file._id)}
               file={file}
-              url={url}
+              url={artistUrl}
               displayAs={displayAs}
             />
           ))}

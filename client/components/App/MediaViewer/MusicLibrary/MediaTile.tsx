@@ -6,18 +6,14 @@ import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch } from "@common/media/types";
 import { MouseEvent as ReactMouseEvent, useRef, useState } from "react";
 import { ObjectID } from "bson";
+import { TileData } from "@client/lib/types";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { play } from "@reducers/player";
 import { setMenu } from "@reducers/mediaMenu";
 import { useDispatch } from "react-redux";
 import { useLongPress } from "@hooks/useLongPress";
 import { useNavigate } from "react-router-dom";
-
-export type TileData = Partial<Omit<Media, "_id">> & {
-  _id: Record<string, string>;
-  _count: number;
-  image?: string;
-};
+import { albumUrl, artistUrl, matchUrl } from "@client/lib/url";
 
 interface MediaTileProps {
   tile_type: MediaMatch;
@@ -94,7 +90,25 @@ export const MediaTile = ({
             menu_id={menu_id.current}
             title={getFileMenuTitle(tile_type, file)}
             handler={optionsHandler}
-          ></FileMenu>
+          >
+            {tile_type === MediaMatch.Artist && (
+              <div onClick={() => navigate(artistUrl(file))}>
+                Go to Artist ({file.artist})
+              </div>
+            )}
+
+            {tile_type === MediaMatch.Album && (
+              <div onClick={() => navigate(albumUrl(file))}>
+                Go to Album ({file.album})
+              </div>
+            )}
+
+            {tile_type === MediaMatch.Genre && (
+              <div onClick={() => navigate(matchUrl(MediaMatch.Genre)(file))}>
+                Go to Genre ({file.genre})
+              </div>
+            )}
+          </FileMenu>
         </div>
       </div>
       <div className="display-as">{displayAs(file)}</div>

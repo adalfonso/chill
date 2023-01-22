@@ -18,9 +18,15 @@ interface FileMenuProps {
   menu_id: string;
   title: string;
   handler: FileMenuHandler;
+  children?: JSX.Element | JSX.Element[];
 }
 
-export const FileMenu = ({ menu_id, title, handler }: FileMenuProps) => {
+export const FileMenu = ({
+  menu_id,
+  title,
+  handler,
+  children,
+}: FileMenuProps) => {
   const { mediaMenu } = useSelector(getState);
   const active = menu_id === mediaMenu.menu_id;
   const dispatch = useDispatch();
@@ -75,6 +81,7 @@ export const FileMenu = ({ menu_id, title, handler }: FileMenuProps) => {
           <div onClick={onOptionClick(local.addToPlaylist)}>
             Add to Playlist
           </div>
+          {children}
         </section>
       )}
     </>

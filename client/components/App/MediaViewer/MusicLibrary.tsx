@@ -5,10 +5,12 @@ import { AxiosResponse } from "axios";
 import { Media } from "@common/models/Media";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch as Match } from "@common/media/types";
-import { MediaTile, TileData } from "./MusicLibrary/MediaTile";
+import { MediaTile } from "./MusicLibrary/MediaTile";
 import { PageAction, pageReducer } from "@hooks/useInfiniteScroll";
 import { PaginationOptions } from "@common/types";
 import { Select } from "../../ui/Select";
+import { TileData } from "@client/lib/types";
+import { matchUrl } from "@client/lib/url";
 import { useInfiniteScroll } from "@hooks/useInfiniteScroll";
 import { useReducer, useRef, useState } from "react";
 
@@ -56,8 +58,6 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
   };
 
   const displayAs = (file: TileData) => file[match];
-  const url = (file: TileData) =>
-    `/${match}/${encodeURIComponent(file[match])}`;
 
   useInfiniteScroll(bottomBoundaryRef, pagerDispatch);
 
@@ -98,7 +98,7 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
                 key={JSON.stringify(file._id)}
                 file={file}
                 displayAs={displayAs}
-                url={url}
+                url={matchUrl(match)}
               />
             ))}
         </div>

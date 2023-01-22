@@ -2,8 +2,10 @@ import { Equalizer } from "@client/components/ui/Equalizer";
 import { FileMenu } from "../FileMenu";
 import { Media } from "@common/models/Media";
 import { ObjectID } from "bson";
+import { albumUrl, artistUrl } from "@client/lib/url";
 import { getState } from "@reducers/store";
 import { secondsToMinutes } from "@client/util";
+import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
 import { useSelector } from "react-redux";
 
@@ -16,6 +18,7 @@ export interface PlaylistRowProps {
 export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
   const { player } = useSelector(getState);
   const menu_id = useRef(new ObjectID().toString());
+  const navigate = useNavigate();
 
   const menuHandler = {
     play: () => playAll(index)(),
@@ -48,7 +51,30 @@ export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
           menu_id={menu_id.current}
           title={`${file.artist} - ${file.title}`}
           handler={menuHandler}
-        ></FileMenu>
+        >
+          {
+            <div
+              // TODO: Find a less repetitive way to stop propagation
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(artistUrl(file));
+              }}
+            >
+              Go to Artist ({file.artist})
+            </div>
+          }
+
+          {
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(albumUrl(file));
+              }}
+            >
+              Go to Album ({file.album})
+            </div>
+          }
+        </FileMenu>
       </div>
     </div>
   );

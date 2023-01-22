@@ -1,6 +1,8 @@
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch } from "@common/media/types";
-import { MediaTile, TileData } from "./MusicLibrary/MediaTile";
+import { MediaTile } from "./MusicLibrary/MediaTile";
+import { TileData } from "@client/lib/types";
+import { albumUrl } from "@client/lib/url";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -35,11 +37,6 @@ export const ArtistView = ({ setLoading }: ArtistViewProps) => {
       });
   };
 
-  const url = (file: TileData) =>
-    `/album/${encodeURIComponent(file.album)}?artist=${encodeURIComponent(
-      file.artist,
-    )}` + (file._id?.album === null ? `&no_album=1` : ``);
-
   const displayAs = (file: TileData) => {
     const { _id, album, artist, year } = file;
     return `${album} (${year})`;
@@ -58,7 +55,7 @@ export const ArtistView = ({ setLoading }: ArtistViewProps) => {
               tile_type={MediaMatch.Album}
               key={JSON.stringify(file._id)}
               file={file}
-              url={url}
+              url={albumUrl}
               displayAs={displayAs}
             />
           ))}
