@@ -16,6 +16,7 @@ export const useLongPress = (
   callback: () => void,
   delay_ms = 300,
   input_types: InputTypes = { mouse: true, touch: true },
+  disable_context_menu = true,
 ) => {
   const timeout = useRef(null);
 
@@ -40,6 +41,10 @@ export const useLongPress = (
     ...((input_types.touch && {
       onTouchStart: startPress,
       onTouchEnd: cancelPress,
+    }) ||
+      {}),
+    ...((disable_context_menu && {
+      onContextMenu: (e) => e.preventDefault(),
     }) ||
       {}),
   };
