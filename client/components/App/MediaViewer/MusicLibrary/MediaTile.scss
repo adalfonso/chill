@@ -40,52 +40,12 @@
       }
 
       .more {
-        border-radius: 0.25rem;
-        height: 100%;
-        width: 100%;
-        justify-content: center;
-        align-items: center;
-        display: none;
-        background-color: $dm-background-2-transparent;
-        border: 1px solid $primary-dark;
-
         .play {
-          height: 1.8rem;
-          width: 1.8rem;
-          border-radius: 50%;
-          background-color: $dm-font;
-          box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px,
-            rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
-            rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          margin: 1rem;
-
-          &:hover {
-            .fa-circle-play {
-              color: $primary;
-            }
-          }
-
-          .fa-circle-play {
-            margin: 0;
-            font-size: 2rem;
-            color: $primary-dark;
-            transition: color 0.2s;
-          }
+          display: none;
         }
 
         .file-menu-entry {
-          position: absolute;
-          display: flex;
-          padding: 0.25rem 0.5rem;
-          bottom: calc(5% - 0.25rem);
-          right: calc(5% - 0.25rem);
-        }
-
-        &.active {
-          display: flex;
+          display: none;
         }
       }
     }
@@ -94,11 +54,13 @@
 
 @media (hover: hover) and (pointer: fine) {
   #media-viewer {
-    .media-tile {
-      &:hover,
-      &.active {
-        .more {
-          display: flex;
+    .media-tiles {
+      .media-tile {
+        &:hover,
+        &.active {
+          .more {
+            display: flex;
+          }
         }
       }
     }
@@ -172,6 +134,52 @@
       .media-tile {
         height: 11rem;
         width: 11rem;
+
+        .more {
+          border-radius: 0.25rem;
+          height: 100%;
+          width: 100%;
+          justify-content: center;
+          align-items: center;
+          display: none;
+          background-color: $dm-background-2-transparent;
+          border: 1px solid $primary-dark;
+
+          .play {
+            height: 1.8rem;
+            width: 1.8rem;
+            border-radius: 50%;
+            background-color: $dm-font;
+            box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px,
+              rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
+              rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 1rem;
+
+            &:hover {
+              .fa-circle-play {
+                color: $primary;
+              }
+            }
+
+            .fa-circle-play {
+              margin: 0;
+              font-size: 2rem;
+              color: $primary-dark;
+              transition: color 0.2s;
+            }
+          }
+
+          .file-menu-entry {
+            position: absolute;
+            display: flex;
+            padding: 0.25rem 0.5rem;
+            bottom: calc(5% - 0.25rem);
+            right: calc(5% - 0.25rem);
+          }
+        }
       }
     }
   }

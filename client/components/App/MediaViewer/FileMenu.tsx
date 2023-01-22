@@ -1,7 +1,6 @@
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/models/Media";
-import { MouseEvent, useEffect, useState } from "react";
-import { ObjectID } from "bson";
+import { MouseEvent, useEffect } from "react";
 import { addToQueue, playNext } from "@reducers/player";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import { getState } from "@reducers/store";
@@ -16,12 +15,12 @@ export interface FileMenuHandler {
 }
 
 interface FileMenuProps {
+  menu_id: string;
   title: string;
   handler: FileMenuHandler;
 }
 
-export const FileMenu = ({ title, handler }: FileMenuProps) => {
-  const [menu_id] = useState(new ObjectID().toString());
+export const FileMenu = ({ menu_id, title, handler }: FileMenuProps) => {
   const { mediaMenu } = useSelector(getState);
   const active = menu_id === mediaMenu.menu_id;
   const dispatch = useDispatch();

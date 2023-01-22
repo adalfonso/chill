@@ -4,10 +4,13 @@ import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/models/Media";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch } from "@common/media/types";
-import { MouseEvent as ReactMouseEvent, useState } from "react";
+import { MouseEvent as ReactMouseEvent, useRef, useState } from "react";
+import { ObjectID } from "bson";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { play } from "@reducers/player";
+import { setMenu } from "@reducers/mediaMenu";
 import { useDispatch } from "react-redux";
+import { useLongPress } from "@hooks/useLongPress";
 import { useNavigate } from "react-router-dom";
 
 export type TileData = Partial<Omit<Media, "_id">> & {
@@ -33,6 +36,16 @@ export const MediaTile = ({
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const class_name = "media-tile" + (menu_visible ? " active" : "");
+  const menu_id = useRef(new ObjectID().toString());
+
+  const onPress = useLongPress(
+    () => {
+      setMenuVisible(true);
+      dispatch(setMenu({ menu_id: menu_id.current }));
+    },
+    500,
+    { mouse: false, touch: true },
+  );
 
   const getSortString = (file: Media) =>
     (file.artist ?? "") +
@@ -58,7 +71,7 @@ export const MediaTile = ({
   };
 
   return (
-    <div className="media-tile-wrapper">
+    <div className="media-tile-wrapper" {...onPress}>
       <div className={class_name} onClick={() => navigate(url(file))}>
         {file.image && (
           <img
@@ -78,6 +91,7 @@ export const MediaTile = ({
           </div>
 
           <FileMenu
+            menu_id={menu_id.current}
             title={getFileMenuTitle(tile_type, file)}
             handler={optionsHandler}
           ></FileMenu>
