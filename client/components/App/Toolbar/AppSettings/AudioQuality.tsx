@@ -52,8 +52,8 @@ export const AudioQuality = ({ user }: AudioQualityProps) => {
   };
 
   return (
-    <div className="audio-quality">
-      <div>Audio Quality</div>
+    <div className="audio-quality setting">
+      <div>Audio Quality:</div>
 
       <Select
         onChange={changeQuality}

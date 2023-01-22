@@ -32,7 +32,7 @@ export const InviteUser = () => {
 
   return (
     <form onSubmit={sendInvite}>
-      <label htmlFor="invite-email">Invite new user to Chill:</label>
+      <p>Invite new user to Chill:</p>
       <input
         type="email"
         name="invite-email"

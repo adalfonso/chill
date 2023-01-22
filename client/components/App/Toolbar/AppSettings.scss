@@ -19,9 +19,16 @@
     }
 
     &.settings > * {
+      margin-bottom: 2rem;
+
+      > * {
+        margin-right: 1rem;
+      }
+    }
+
+    &.settings > .setting {
       display: flex;
       align-items: center;
-      margin-bottom: 2rem;
 
       > * {
         margin-right: 1rem;

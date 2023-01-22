@@ -40,10 +40,11 @@ export const AppSettings = ({ onClose }: AppSettingsProps) => {
       </div>
       <div className="settings">
         <AudioQuality user={user} />
-        <InviteUser />
+
+        {user.type === UserType.Admin && <InviteUser />}
 
         {user.type === UserType.Admin && (
-          <div className="link" onMouseUp={scan}>
+          <div className="link setting" onMouseUp={scan}>
             Run Scan Now!
           </div>
         )}
