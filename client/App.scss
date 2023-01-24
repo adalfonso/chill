@@ -101,14 +101,18 @@ h2 {
 
     .close {
       position: absolute;
-      top: 2rem;
-      right: 2rem;
+      top: 1em;
+      right: 1em;
     }
   }
 
   .close {
     text-align: right;
   }
+}
+
+.close {
+  padding: 1em;
 }
 
 @keyframes throbber {

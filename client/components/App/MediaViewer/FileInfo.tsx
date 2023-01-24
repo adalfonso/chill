@@ -21,7 +21,7 @@ export const FileInfo = ({ file }: FileInfoProps) => {
           dispatch(setMenu({ menu_id: null }));
         }}
       ></Close>
-      <div id="file-menu">
+      <div id="file-info">
         <table>
           <thead>
             <tr></tr>

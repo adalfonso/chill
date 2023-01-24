@@ -1,12 +1,11 @@
 import "./PlaylistEditor.scss";
 import { useState } from "react";
-import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { PlaylistCreate } from "./PlaylistEditor/PlaylistCreate";
 import { PlaylistUpdate } from "./PlaylistEditor/PlaylistUpdate";
 import { Radio } from "../ui/Radio";
-import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { toggle } from "@reducers/playlistEditor";
 import { useDispatch } from "react-redux";
+import { Close } from "../ui/Close";
 
 const modes = [
   { name: "Create New", value: "new" },
@@ -25,7 +24,7 @@ export const PlaylistEditor = () => {
     <div className="playlist-editor">
       <div className="ui-modal">
         <div className="toolbar">
-          <Icon className="close" icon={faClose} onClick={onClose} />
+          <Close onClose={onClose}></Close>
         </div>
         <h1>Add to playlist</h1>
         <Radio

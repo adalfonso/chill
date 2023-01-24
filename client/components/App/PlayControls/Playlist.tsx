@@ -1,8 +1,9 @@
 import "./Playlist.scss";
+import { Close } from "@client/components/ui/Close";
 import { Equalizer } from "../../ui/Equalizer";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { changeTrack } from "@reducers/player";
-import { faListDots, faClose } from "@fortawesome/free-solid-svg-icons";
+import { faListDots } from "@fortawesome/free-solid-svg-icons";
 import { getState } from "@reducers/store";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocationOverride } from "@hooks/useLocationOverride";
@@ -31,7 +32,7 @@ export const Playlist = () => {
   return (
     <>
       <div className={playlistClassName}>
-        <Icon className="close" icon={faClose} onClick={togglePlaylist} />
+        <Close onClose={togglePlaylist}></Close>
 
         {player.playlist.map((media, index) => (
           <div
