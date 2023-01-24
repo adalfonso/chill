@@ -5,7 +5,7 @@ import { Media } from "@common/models/Media";
 import { ObjectID } from "bson";
 import { artistUrl } from "@client/lib/url";
 import { getState } from "@reducers/store";
-import { secondsToMinutes } from "@client/util";
+import { noPropagate, secondsToMinutes } from "@client/util";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
@@ -47,21 +47,10 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
           title={`${file.artist} - ${file.title}`}
           handler={menuHandler}
         >
-          <div
-            // TODO: Find a less repetitive way to stop propagation
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(artistUrl(file));
-            }}
-          >
+          <div onClick={noPropagate(() => navigate(artistUrl(file)))}>
             Go to Artist
           </div>
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              file_info_menu.toggle();
-            }}
-          >
+          <div onClick={noPropagate(file_info_menu.toggle)}>
             File Information
           </div>
         </FileMenu>

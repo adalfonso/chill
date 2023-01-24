@@ -1,15 +1,16 @@
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/models/Media";
-import { MouseEvent, useEffect } from "react";
 import { addToQueue, playNext } from "@reducers/player";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import { getState } from "@reducers/store";
+import { noPropagate } from "@client/util";
 import { toggle } from "@reducers/playlistEditor";
 import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
 import { useMenu } from "@hooks/useMenu";
 
 export interface FileMenuHandler {
-  play: (e: MouseEvent<HTMLElement>) => void;
+  play: () => void;
   getFiles: () => Promise<Media[]>;
   toggle?: (visible: boolean) => void;
 }
@@ -40,21 +41,18 @@ export const FileMenu = ({
     handler.toggle && handler.toggle(false);
   }, [mediaMenu.menu_id]);
 
-  const onEntryClick = (e: MouseEvent<HTMLElement>) => {
-    e.stopPropagation();
+  const onEntryClick = noPropagate(() => {
     handler.toggle && handler.toggle(!menu.is_active);
     menu.toggle();
-  };
+  });
 
-  const onOptionClick =
-    (fn: (e: MouseEvent<HTMLElement>) => void) =>
-    (e: MouseEvent<HTMLElement>) => {
-      e.stopPropagation();
-      fn(e);
+  const onOptionClick = (fn: () => void) =>
+    noPropagate(() => {
+      fn();
       // TODO: why didn't optional chaining work?
       handler.toggle && handler.toggle(false);
       menu.clear();
-    };
+    });
 
   const local = {
     playNext: async () =>

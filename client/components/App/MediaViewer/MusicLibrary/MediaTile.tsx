@@ -4,16 +4,17 @@ import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/models/Media";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch } from "@common/media/types";
-import { MouseEvent as ReactMouseEvent, useRef, useState } from "react";
 import { ObjectID } from "bson";
 import { TileData } from "@client/lib/types";
 import { albumUrl, artistUrl, matchUrl } from "@client/lib/url";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
+import { noPropagate } from "@client/util";
 import { play } from "@reducers/player";
 import { useDispatch } from "react-redux";
 import { useLongPress } from "@hooks/useLongPress";
 import { useMenu } from "@hooks/useMenu";
 import { useNavigate } from "react-router-dom";
+import { useRef, useState } from "react";
 
 interface MediaTileProps {
   tile_type: MediaMatch;
@@ -55,11 +56,6 @@ export const MediaTile = ({
           getSortString(a).localeCompare(getSortString(b)),
         );
 
-  const onPlay = (e: ReactMouseEvent<HTMLElement>) => {
-    e.stopPropagation();
-    optionsHandler.play();
-  };
-
   const optionsHandler = {
     play: async () => dispatch(play({ files: await getFiles(), index: 0 })),
     getFiles,
@@ -80,7 +76,7 @@ export const MediaTile = ({
         )}
 
         <div className={"more" + (menu_visible ? " active" : "")}>
-          <div className="play" onClick={onPlay}>
+          <div className="play" onClick={noPropagate(optionsHandler.play)}>
             <Icon
               className="play-icon"
               icon={faPlayCircle}

@@ -1,3 +1,4 @@
+import { UIEvent } from "react";
 /**
  * Create an animation frame loop
  *
@@ -38,3 +39,16 @@ export const secondsToMinutes = (duration: number) => {
 
   return `${minutes}:${pad(seconds)}`;
 };
+
+/**
+ * Disables event propagation
+ *
+ * @param fn - callback fn
+ * @returns event handler fn
+ */
+export const noPropagate =
+  <Event extends UIEvent>(fn?: () => void) =>
+  (e: Event) => {
+    e.stopPropagation();
+    fn && fn();
+  };

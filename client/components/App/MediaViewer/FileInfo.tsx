@@ -1,7 +1,7 @@
 import "./FileInfo.scss";
 import { Close } from "@client/components/ui/Close";
 import { Media } from "@common/models/Media";
-import { secondsToMinutes } from "@client/util";
+import { noPropagate, secondsToMinutes } from "@client/util";
 import { useMenu } from "@hooks/useMenu";
 
 interface FileInfoProps {
@@ -13,16 +13,8 @@ export const FileInfo = ({ file, menu_id }: FileInfoProps) => {
   const menu = useMenu(menu_id);
 
   return (
-    <div
-      className="fullscreen center-content"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <Close
-        onClose={(e) => {
-          e.stopPropagation();
-          menu.clear();
-        }}
-      ></Close>
+    <div className="fullscreen center-content" onClick={noPropagate()}>
+      <Close onClose={noPropagate(menu.clear)}></Close>
       <div id="file-info">
         <table>
           <thead>
