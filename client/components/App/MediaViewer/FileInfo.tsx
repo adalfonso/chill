@@ -53,6 +53,11 @@ export const FileInfo = ({ file, menu_id }: FileInfoProps) => {
               <td>Path</td>
               <td>{file.path}</td>
             </tr>
+
+            <tr>
+              <td>File Type</td>
+              <td>{file.path.split(".").pop().toUpperCase()}</td>
+            </tr>
           </tbody>
         </table>
       </div>
