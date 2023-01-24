@@ -1,10 +1,9 @@
 import "./AppSettings.scss";
 import axios from "axios";
 import { AudioQuality } from "./AppSettings/AudioQuality";
-import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
+import { Close } from "@client/components/ui/Close";
 import { InviteUser } from "./AppSettings/InviteUser";
 import { UserType } from "@common/types";
-import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { getState } from "@reducers/store";
 import { useSelector } from "react-redux";
 import { useState } from "react";
@@ -34,20 +33,21 @@ export const AppSettings = ({ onClose }: AppSettingsProps) => {
   };
 
   return (
-    <div id="app-settings">
-      <div className="close">
-        <Icon icon={faClose} size="lg" onClick={onClose} />
-      </div>
-      <div className="settings">
-        <AudioQuality user={user} />
+    <div className="fullscreen">
+      <div id="app-settings">
+        <Close onClose={onClose}></Close>
 
-        {user.type === UserType.Admin && <InviteUser />}
+        <div className="settings">
+          <AudioQuality user={user} />
 
-        {user.type === UserType.Admin && (
-          <div className="link setting" onMouseUp={scan}>
-            Run Scan Now!
-          </div>
-        )}
+          {user.type === UserType.Admin && <InviteUser />}
+
+          {user.type === UserType.Admin && (
+            <div className="link setting" onMouseUp={scan}>
+              Run Scan Now!
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

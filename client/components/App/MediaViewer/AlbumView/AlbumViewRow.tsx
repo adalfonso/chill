@@ -1,13 +1,16 @@
 import { Equalizer } from "@client/components/ui/Equalizer";
+import { FileInfo } from "../FileInfo";
 import { FileMenu } from "../FileMenu";
 import { Media } from "@common/models/Media";
 import { ObjectID } from "bson";
 import { artistUrl } from "@client/lib/url";
 import { getState } from "@reducers/store";
 import { secondsToMinutes } from "@client/util";
+import { setMenu } from "@reducers/mediaMenu";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
-import { useSelector } from "react-redux";
+
 export interface AlbumViewRowProps {
   file: Media;
   index: number;
@@ -15,9 +18,12 @@ export interface AlbumViewRowProps {
 }
 
 export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
-  const { player } = useSelector(getState);
+  const { player, mediaMenu } = useSelector(getState);
   const menu_id = useRef(new ObjectID().toString());
+  const file_info_id = useRef(new ObjectID().toString());
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const show_file_info = file_info_id.current === mediaMenu.menu_id;
 
   const menuHandler = {
     play: () => playAll(index)(),
@@ -49,9 +55,24 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
               navigate(artistUrl(file));
             }}
           >
-            Go to Artist ({file.artist})
+            Go to Artist
+          </div>
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              dispatch(
+                setMenu({
+                  menu_id: show_file_info ? null : file_info_id.current,
+                }),
+              );
+            }}
+          >
+            File Information
           </div>
         </FileMenu>
+        {show_file_info && (
+          <FileInfo menu_id={file_info_id.current} file={file}></FileInfo>
+        )}
       </div>
     </div>
   );

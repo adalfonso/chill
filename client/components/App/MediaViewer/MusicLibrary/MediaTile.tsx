@@ -92,20 +92,16 @@ export const MediaTile = ({
             handler={optionsHandler}
           >
             {tile_type === MediaMatch.Artist && (
-              <div onClick={() => navigate(artistUrl(file))}>
-                Go to Artist ({file.artist})
-              </div>
+              <div onClick={() => navigate(artistUrl(file))}>Go to Artist</div>
             )}
 
             {tile_type === MediaMatch.Album && (
-              <div onClick={() => navigate(albumUrl(file))}>
-                Go to Album ({file.album})
-              </div>
+              <div onClick={() => navigate(albumUrl(file))}>Go to Album</div>
             )}
 
             {tile_type === MediaMatch.Genre && (
               <div onClick={() => navigate(matchUrl(MediaMatch.Genre)(file))}>
-                Go to Genre ({file.genre})
+                Go to Genre
               </div>
             )}
           </FileMenu>

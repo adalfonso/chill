@@ -60,7 +60,7 @@ export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
                 navigate(artistUrl(file));
               }}
             >
-              Go to Artist ({file.artist})
+              Go to Artist
             </div>
           }
 
@@ -71,7 +71,7 @@ export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
                 navigate(albumUrl(file));
               }}
             >
-              Go to Album ({file.album})
+              Go to Album
             </div>
           }
         </FileMenu>

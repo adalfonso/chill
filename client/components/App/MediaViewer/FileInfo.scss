@@ -1,0 +1,17 @@
+@import "../../../variables.scss";
+
+#file-menu {
+  display: flex;
+
+  table {
+    border-collapse: collapse;
+    td {
+      padding: 0.5rem 0;
+
+      &:first-of-type {
+        font-weight: 600;
+        padding-right: 1rem;
+      }
+    }
+  }
+}
