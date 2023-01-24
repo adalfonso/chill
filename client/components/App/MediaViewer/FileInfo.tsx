@@ -2,23 +2,25 @@ import "./FileInfo.scss";
 import { Close } from "@client/components/ui/Close";
 import { Media } from "@common/models/Media";
 import { secondsToMinutes } from "@client/util";
-import { setMenu } from "@reducers/mediaMenu";
-import { useDispatch } from "react-redux";
+import { useMenu } from "@hooks/useMenu";
 
 interface FileInfoProps {
   menu_id: string;
   file: Media;
 }
 
-export const FileInfo = ({ file }: FileInfoProps) => {
-  const dispatch = useDispatch();
+export const FileInfo = ({ file, menu_id }: FileInfoProps) => {
+  const menu = useMenu(menu_id);
 
   return (
-    <div className="fullscreen center-content">
+    <div
+      className="fullscreen center-content"
+      onClick={(e) => e.stopPropagation()}
+    >
       <Close
         onClose={(e) => {
           e.stopPropagation();
-          dispatch(setMenu({ menu_id: null }));
+          menu.clear();
         }}
       ></Close>
       <div id="file-info">

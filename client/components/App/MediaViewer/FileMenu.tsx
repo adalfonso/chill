@@ -4,9 +4,9 @@ import { MouseEvent, useEffect } from "react";
 import { addToQueue, playNext } from "@reducers/player";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import { getState } from "@reducers/store";
-import { setMenu } from "@reducers/mediaMenu";
 import { toggle } from "@reducers/playlistEditor";
 import { useDispatch, useSelector } from "react-redux";
+import { useMenu } from "@hooks/useMenu";
 
 export interface FileMenuHandler {
   play: (e: MouseEvent<HTMLElement>) => void;
@@ -30,6 +30,7 @@ export const FileMenu = ({
   const { mediaMenu } = useSelector(getState);
   const active = menu_id === mediaMenu.menu_id;
   const dispatch = useDispatch();
+  const menu = useMenu(menu_id);
 
   useEffect(() => {
     if (active) {
@@ -41,8 +42,8 @@ export const FileMenu = ({
 
   const onEntryClick = (e: MouseEvent<HTMLElement>) => {
     e.stopPropagation();
-    handler.toggle && handler.toggle(!active);
-    dispatch(setMenu({ menu_id: active ? null : menu_id }));
+    handler.toggle && handler.toggle(!menu.is_active);
+    menu.toggle();
   };
 
   const onOptionClick =
@@ -52,7 +53,7 @@ export const FileMenu = ({
       fn(e);
       // TODO: why didn't optional chaining work?
       handler.toggle && handler.toggle(false);
-      dispatch(setMenu({ menu_id: null }));
+      menu.clear();
     };
 
   const local = {

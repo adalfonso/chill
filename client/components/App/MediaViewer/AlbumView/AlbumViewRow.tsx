@@ -6,10 +6,10 @@ import { ObjectID } from "bson";
 import { artistUrl } from "@client/lib/url";
 import { getState } from "@reducers/store";
 import { secondsToMinutes } from "@client/util";
-import { setMenu } from "@reducers/mediaMenu";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
+import { useMenu } from "@hooks/useMenu";
 
 export interface AlbumViewRowProps {
   file: Media;
@@ -18,12 +18,11 @@ export interface AlbumViewRowProps {
 }
 
 export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
-  const { player, mediaMenu } = useSelector(getState);
+  const { player } = useSelector(getState);
   const menu_id = useRef(new ObjectID().toString());
   const file_info_id = useRef(new ObjectID().toString());
+  const file_info_menu = useMenu(file_info_id.current);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const show_file_info = file_info_id.current === mediaMenu.menu_id;
 
   const menuHandler = {
     play: () => playAll(index)(),
@@ -60,17 +59,13 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
           <div
             onClick={(e) => {
               e.stopPropagation();
-              dispatch(
-                setMenu({
-                  menu_id: show_file_info ? null : file_info_id.current,
-                }),
-              );
+              file_info_menu.toggle();
             }}
           >
             File Information
           </div>
         </FileMenu>
-        {show_file_info && (
+        {file_info_menu.is_active && (
           <FileInfo menu_id={file_info_id.current} file={file}></FileInfo>
         )}
       </div>

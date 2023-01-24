@@ -7,13 +7,13 @@ import { MediaMatch } from "@common/media/types";
 import { MouseEvent as ReactMouseEvent, useRef, useState } from "react";
 import { ObjectID } from "bson";
 import { TileData } from "@client/lib/types";
+import { albumUrl, artistUrl, matchUrl } from "@client/lib/url";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { play } from "@reducers/player";
-import { setMenu } from "@reducers/mediaMenu";
 import { useDispatch } from "react-redux";
 import { useLongPress } from "@hooks/useLongPress";
+import { useMenu } from "@hooks/useMenu";
 import { useNavigate } from "react-router-dom";
-import { albumUrl, artistUrl, matchUrl } from "@client/lib/url";
 
 interface MediaTileProps {
   tile_type: MediaMatch;
@@ -31,13 +31,13 @@ export const MediaTile = ({
   const [menu_visible, setMenuVisible] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const class_name = "media-tile" + (menu_visible ? " active" : "");
   const menu_id = useRef(new ObjectID().toString());
+  const menu = useMenu(menu_id.current);
 
   const onPress = useLongPress(
     () => {
       setMenuVisible(true);
-      dispatch(setMenu({ menu_id: menu_id.current }));
+      menu.set();
     },
     500,
     { mouse: false, touch: true },
@@ -68,7 +68,10 @@ export const MediaTile = ({
 
   return (
     <div className="media-tile-wrapper" {...onPress}>
-      <div className={class_name} onClick={() => navigate(url(file))}>
+      <div
+        className={"media-tile" + (menu_visible ? " active" : "")}
+        onClick={() => navigate(url(file))}
+      >
         {file.image && (
           <img
             src={`/api/v1/media/cover/${file.image}?size=176`}
