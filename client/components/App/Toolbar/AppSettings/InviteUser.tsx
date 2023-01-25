@@ -1,4 +1,5 @@
 import { AdminApi } from "@client/api/AdminApi";
+import { AxiosError } from "axios";
 import { SyntheticEvent, useState } from "react";
 
 export const InviteUser = () => {
@@ -24,7 +25,7 @@ export const InviteUser = () => {
 
       alert(`Successfully invited user`);
     } catch (e) {
-      alert(`Failed in invite user: ${e.response.data}`);
+      alert(`Failed in invite user: ${(e as AxiosError).response?.data}`);
     } finally {
       setBusy(false);
     }

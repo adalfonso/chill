@@ -4,7 +4,7 @@ import { User } from "../models/User.mjs";
 import { env } from "../init.mjs";
 
 export const AuthController = {
-  login: (_req, res) => res.render("pages/login"),
+  login: (_req: Request, res: Response) => res.render("pages/login"),
 
   logout: (_req: Request, res: Response) => {
     res.clearCookie("access_token");

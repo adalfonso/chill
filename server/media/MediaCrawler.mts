@@ -25,7 +25,7 @@ export class MediaCrawler {
   private _processed: Media[] = [];
 
   /** Number of available workers */
-  private _available_workers;
+  private _available_workers = 10;
 
   /** If the DB is currently being written to */
   private _writing = false;
@@ -134,16 +134,11 @@ export class MediaCrawler {
       const _id = new ObjectId();
 
       const meta = {
-        ...(await this._getMetadata(file_path)),
+        ...(await this._getMetadata(file_path, _id)),
         file_modified: ctime,
         file_type,
         _id,
       };
-
-      if (meta.cover?.data && meta.cover?.format) {
-        meta.cover.filename =
-          _id + "." + meta.cover.format.replace("image/", "");
-      }
 
       // TODO: Remove hack
       this._processed.push(meta as any);
@@ -167,7 +162,10 @@ export class MediaCrawler {
    * @param file_path file path
    * @returns meta data
    */
-  private async _getMetadata(file_path: string): Promise<Partial<Media>> {
+  private async _getMetadata(
+    file_path: string,
+    id: ObjectId,
+  ): Promise<Partial<Media>> {
     const result = await mm.parseFile(file_path, { duration: true });
     const { common, format } = result;
     const cover = mm.selectCover(common.picture);
@@ -194,9 +192,9 @@ export class MediaCrawler {
       year: common.year,
       cover: cover
         ? {
-            filename: null,
+            filename: id + "." + cover.format.replace("image/", ""),
             format: cover.format,
-            type: cover.type,
+            type: cover.type ?? "",
             data: cover_data,
           }
         : null,

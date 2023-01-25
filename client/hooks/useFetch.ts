@@ -1,4 +1,5 @@
 import { Dispatch, useEffect } from "react";
+import { Pager } from "./useInfiniteScroll";
 
 export enum Action {
   Stack,
@@ -23,7 +24,7 @@ export const fetchReducer = <T>(
 ) => {
   switch (action.type) {
     case Action.Stack:
-      return { ...state, items: state.items.concat(action.items) };
+      return { ...state, items: state.items.concat(action.items ?? []) };
     case Action.Fetch:
       return { ...state, busy: true };
     case Action.Release:
@@ -44,7 +45,7 @@ export const fetchReducer = <T>(
  * @param onDone optional callback
  */
 export const useFetch = <T>(
-  data,
+  data: Pager,
   dispatch: Dispatch<FetchAction<T>>,
   api: () => Promise<T[]>,
   onDone?: () => void,

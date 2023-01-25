@@ -1,6 +1,6 @@
 import "./MusicLibrary.scss";
 import _ from "lodash";
-import { Action, fetchReducer, useFetch } from "@client/hooks/useFetch";
+import { Action, fetchReducer, useFetch } from "@hooks/useFetch";
 import { AxiosResponse } from "axios";
 import { Media } from "@common/models/Media";
 import { MediaApi } from "@client/api/MediaApi";
@@ -16,7 +16,7 @@ import { useReducer, useRef, useState } from "react";
 
 const ApiMap: Record<
   Match,
-  (options?: PaginationOptions) => Promise<AxiosResponse>
+  (options?: PaginationOptions) => Promise<AxiosResponse | null>
 > = {
   [Match.Artist]: MediaApi.getGroupedByArtist,
   [Match.Album]: MediaApi.getGroupedByAlbum,
@@ -35,7 +35,7 @@ interface MusicLibraryProps {
 }
 
 export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
-  const bottomBoundaryRef = useRef(null);
+  const bottomBoundaryRef = useRef<HTMLDivElement>(null);
   const [match, setMatch] = useState<Match>(Match.Artist);
   const [pager, pagerDispatch] = useReducer(pageReducer, { page: 0 });
   const [mediaData, imgDispatch] = useReducer(fetchReducer<FetchedMedia>, {
@@ -57,7 +57,7 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
     return ApiMap[match]({ page: pager.page, limit: per_page });
   };
 
-  const displayAs = (file: TileData) => file[match];
+  const displayAs = (file: TileData) => file[match] ?? "";
 
   useInfiniteScroll(bottomBoundaryRef, pagerDispatch);
 
@@ -65,7 +65,7 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
   useFetch<FetchedMedia>(
     pager,
     imgDispatch,
-    () => loadMediaFiles(match).then((res) => res.data),
+    () => loadMediaFiles(match).then((res) => res?.data),
     () => setLoading(false),
   );
 
@@ -91,7 +91,7 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
       <div id="media-viewer" className="main-viewer">
         <div className="media-tiles">
           {mediaData.items
-            .sort((a, b) => a[match].localeCompare(b[match]))
+            .sort((a, b) => (a[match] ?? "").localeCompare(b[match] ?? ""))
             .map((file) => (
               <MediaTile
                 tile_type={match}

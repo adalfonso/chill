@@ -5,6 +5,7 @@ import { Media as MediaModel } from "../models/Media.mjs";
 import { Media } from "../../common/models/Media.js";
 import { MediaCrawler } from "../media/MediaCrawler.mjs";
 import { Request, Response } from "express";
+import { User } from "@common/models/User.js";
 import { adjustImage } from "../media/image/ImageAdjust.mjs";
 import { convert } from "../lib/conversion.mjs";
 import { getAsGroup } from "../db/utils.mjs";
@@ -74,13 +75,16 @@ export const MediaFileController = {
         throw new Error("Failed to load media file data");
       }
       const quality_setting =
-        (req as any).user?.settings?.audio_quality ?? null;
+        (req.user as User)?.settings?.audio_quality ?? null;
       const stats = await fs.stat(media.path);
-      const mp3_quality_preference_kbps = parseInt(quality_setting) ?? 165;
+      // TODO: Refactor this into own fn. parseInt for "original" audio quality will be NaN
+      const mp3_quality_preference_kbps =
+        quality_setting ?? AudioQuality.Medium;
+
       const actual_quality_kbps = (stats.size * 8) / 1000 / media.duration;
       const do_convert =
         quality_setting !== AudioQuality.Original &&
-        mp3_quality_preference_kbps < actual_quality_kbps;
+        parseInt(mp3_quality_preference_kbps) < actual_quality_kbps;
 
       if (do_convert) {
         try {

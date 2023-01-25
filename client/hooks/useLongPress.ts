@@ -1,4 +1,5 @@
-import { useCallback, useRef } from "react";
+import { Nullable } from "@common/types";
+import { UIEvent, useCallback, useRef } from "react";
 interface InputTypes {
   mouse: boolean;
   touch: true;
@@ -18,7 +19,7 @@ export const useLongPress = (
   input_types: InputTypes = { mouse: true, touch: true },
   disable_context_menu = true,
 ) => {
-  const timeout = useRef(null);
+  const timeout = useRef<Nullable<NodeJS.Timeout>>(null);
 
   const startPress = useCallback(() => {
     timeout.current = setTimeout(() => {
@@ -44,7 +45,7 @@ export const useLongPress = (
     }) ||
       {}),
     ...((disable_context_menu && {
-      onContextMenu: (e) => e.preventDefault(),
+      onContextMenu: (e: UIEvent) => e.preventDefault(),
     }) ||
       {}),
   };

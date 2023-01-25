@@ -9,7 +9,7 @@ import { useState } from "react";
 
 export const Search = () => {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<Result[]>([]);
   const navigate = useNavigate();
 
   useDebounce(

@@ -14,7 +14,10 @@ export const initRouter = (app: Express) => {
       verbose: false,
       rewrites: [
         // ignore for api routes
-        { from: /^\/(api)\/.*$/, to: (context) => context.parsedUrl.path },
+        {
+          from: /^\/(api)\/.*$/,
+          to: (context) => context.parsedUrl.path ?? "/missing",
+        },
       ],
     }),
   );

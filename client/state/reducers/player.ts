@@ -46,7 +46,7 @@ const load = (state: PlayerState, use_crossover = false) => {
 const loadNext = (state: PlayerState) => {
   crossover.src = state.next_playing
     ? `/api/v1/media/${state.next_playing?._id}/load`
-    : null;
+    : "";
 };
 
 export interface PlayerState {

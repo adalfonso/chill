@@ -4,24 +4,24 @@ import { prop } from "@typegoose/typegoose";
 
 export class UserSettings {
   @prop({ default: AudioQuality.Original })
-  public audio_quality: AudioQuality;
+  public audio_quality?: AudioQuality;
 }
 
 export class UserAuth {
   @prop()
-  public id: string;
+  public id?: string;
 
   @prop()
-  public name: string;
+  public name?: string;
 
   @prop()
-  public email: string;
+  public email?: string;
 
   @prop()
-  public access_token: string;
+  public access_token?: string;
 
   @prop()
-  public type: "google_oauth";
+  public type?: "google_oauth";
 }
 
 export class User extends Base {
@@ -32,8 +32,8 @@ export class User extends Base {
   public type!: UserType;
 
   @prop()
-  public settings: UserSettings;
+  public settings?: UserSettings;
 
   @prop()
-  public auth: UserAuth;
+  public auth?: UserAuth;
 }

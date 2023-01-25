@@ -43,7 +43,7 @@ export const AudioQuality = ({ user }: AudioQualityProps) => {
     }
   };
 
-  const displayAsQuality = (key, value: AudioQualityValues) => {
+  const displayAsQuality = (key: string, value: AudioQualityValues) => {
     if (value === AudioQualityValues.Original) {
       return key;
     }

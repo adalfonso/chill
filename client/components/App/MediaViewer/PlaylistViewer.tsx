@@ -1,4 +1,5 @@
 import "./MusicLibrary.scss";
+import { Media } from "@common/models/Media";
 import { Playlist as PlaylistClass } from "@common/models/Playlist";
 import { PlaylistApi } from "@client/api/PlaylistApi";
 import { PlaylistRow } from "./Playlist/PlaylistRow";
@@ -12,8 +13,8 @@ type PlaylistParams = {
 };
 
 export const PlaylistViewer = () => {
-  const id = decodeURIComponent(useParams<PlaylistParams>().id);
-  const [files, setFiles] = useState([]);
+  const id = decodeURIComponent(useParams<PlaylistParams>().id ?? "");
+  const [files, setFiles] = useState<Media[]>([]);
   const [playlist, setPlaylist] = useState<PlaylistClass>();
   const dispatch = useDispatch();
 

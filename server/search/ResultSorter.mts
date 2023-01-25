@@ -25,10 +25,10 @@ const displayer: Record<MediaMatch, (file: Media) => string[]> = {
 };
 
 const pathfinder: Record<MediaMatch, (file: Media) => string> = {
-  artist: (file: Media) => `/artist/${encodeURIComponent(file.artist)}`,
-  genre: (file: Media) => `/genre/${encodeURIComponent(file.genre)}`,
-  path: (file: Media) => `/album/${encodeURIComponent(file.album)}`,
-  album: (file: Media) => `/album/${encodeURIComponent(file.album)}`,
+  artist: (file: Media) => `/artist/${encodeURIComponent(file.artist ?? "")}`,
+  genre: (file: Media) => `/genre/${encodeURIComponent(file.genre ?? "")}`,
+  path: (file: Media) => `/album/${encodeURIComponent(file.album ?? "")}`,
+  album: (file: Media) => `/album/${encodeURIComponent(file.album ?? "")}`,
 };
 
 /**
@@ -71,7 +71,7 @@ const processFile = (
     const key = `${type}|${value}`;
     const displayAs = displayer[type](file);
     const compare_value = (
-      type === "path" ? title : file[type] ?? ""
+      type === "path" ? title ?? "" : file[type] ?? ""
     ).toLowerCase();
 
     if (!compare_value || acc[key] !== undefined) {

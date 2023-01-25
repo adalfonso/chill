@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 
-export const useMultiClick = (on_click, on_double_click, delay = 300) => {
+export const useMultiClick = (
+  on_click: () => void,
+  on_double_click: () => void,
+  delay = 300,
+) => {
   const [count, setCount] = useState(0);
 
   useEffect(() => {

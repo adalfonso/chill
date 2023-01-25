@@ -19,7 +19,7 @@ type AlbumParams = {
 };
 
 export const AlbumView = ({ setLoading }: AlbumViewProps) => {
-  const album = decodeURIComponent(useParams<AlbumParams>().album);
+  const album = decodeURIComponent(useParams<AlbumParams>().album ?? "");
   const artist = useQuery().get("artist");
   const no_album = useQuery().get("no_album") === "1";
   const [files, setFiles] = useState<Media[]>([]);
@@ -84,7 +84,7 @@ export const AlbumView = ({ setLoading }: AlbumViewProps) => {
           <div className="header align-right"></div>
 
           {files
-            .sort((a, b) => a.track - b.track)
+            .sort((a, b) => (a.track ?? 0) - (b.track ?? 0))
             .map((file, index) => (
               <AlbumViewRow
                 index={index}

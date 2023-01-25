@@ -38,19 +38,18 @@ export const FileMenu = ({
       return;
     }
 
-    handler.toggle && handler.toggle(false);
+    handler.toggle?.(false);
   }, [mediaMenu.menu_id]);
 
   const onEntryClick = noPropagate(() => {
-    handler.toggle && handler.toggle(!menu.is_active);
+    handler.toggle?.(!menu.is_active);
     menu.toggle();
   });
 
   const onOptionClick = (fn: () => void) =>
     noPropagate(() => {
       fn();
-      // TODO: why didn't optional chaining work?
-      handler.toggle && handler.toggle(false);
+      handler.toggle?.(false);
       menu.clear();
     });
 

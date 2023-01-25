@@ -4,7 +4,7 @@ export type Nullable<T> = T | null;
 
 export interface SearchResult {
   type: MediaMatch;
-  displayAs: string;
+  displayAs: string[];
   value: string;
   path: string;
   score: number;

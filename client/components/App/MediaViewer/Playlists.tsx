@@ -3,7 +3,7 @@ import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Playlist } from "@common/models/Playlist";
 import { PlaylistApi } from "@client/api/PlaylistApi";
 import { faPlayCircle, faPen } from "@fortawesome/free-solid-svg-icons";
-import { fetchReducer, useFetch } from "@client/hooks/useFetch";
+import { fetchReducer, useFetch } from "@hooks/useFetch";
 import { pageReducer, useInfiniteScroll } from "@hooks/useInfiniteScroll";
 import { play } from "@reducers/player";
 import { useDispatch } from "react-redux";
@@ -16,7 +16,7 @@ interface PlaylistsProps {
 }
 
 export const Playlists = ({ setLoading, per_page }: PlaylistsProps) => {
-  const bottomBoundaryRef = useRef(null);
+  const bottomBoundaryRef = useRef<HTMLDivElement>(null);
   const [pager, pagerDispatch] = useReducer(pageReducer, { page: 0 });
   const [playlistData, playlistDispatch] = useReducer(fetchReducer<Playlist>, {
     items: [],

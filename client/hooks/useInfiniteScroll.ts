@@ -1,4 +1,4 @@
-import { Dispatch, MutableRefObject, useCallback, useEffect } from "react";
+import { Dispatch, RefObject, useCallback, useEffect } from "react";
 
 export enum PageAction {
   Advance,
@@ -31,11 +31,11 @@ export const pageReducer = (state: Pager, action: PageDispatchAction) => {
  * @param dispatch page dispatcher
  */
 export const useInfiniteScroll = (
-  scroll_ref: MutableRefObject<HTMLElement>,
+  scroll_ref: RefObject<HTMLElement>,
   dispatch: Dispatch<PageDispatchAction>,
 ) => {
   const scrollObserver = useCallback(
-    (node) => {
+    (node: Element) => {
       new IntersectionObserver((entries) => {
         entries.forEach((en) => {
           en.intersectionRatio > 0 && dispatch({ type: PageAction.Advance });
@@ -46,7 +46,7 @@ export const useInfiniteScroll = (
   );
 
   useEffect(() => {
-    if (scroll_ref.current) {
+    if (scroll_ref?.current) {
       scrollObserver(scroll_ref.current);
     }
   }, [scrollObserver, scroll_ref]);

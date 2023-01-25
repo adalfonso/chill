@@ -1,3 +1,4 @@
+import { Media } from "@common/models/Media";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch } from "@common/media/types";
 import { MediaTile } from "./MusicLibrary/MediaTile";
@@ -15,8 +16,8 @@ type AlbumParams = {
 };
 
 export const ArtistView = ({ setLoading }: ArtistViewProps) => {
-  const artist = decodeURIComponent(useParams<AlbumParams>().artist);
-  const [albums, setAlbums] = useState([]);
+  const artist = decodeURIComponent(useParams<AlbumParams>().artist ?? "");
+  const [albums, setAlbums] = useState<TileData[]>([]);
 
   useEffect(() => {
     loadAlbums();
@@ -27,7 +28,9 @@ export const ArtistView = ({ setLoading }: ArtistViewProps) => {
 
     return MediaApi.getGroupedByAlbum(undefined, artist)
       .then((res) => {
-        setAlbums(res.data.sort((a, b) => b.year - a.year));
+        setAlbums(
+          res.data.sort((a: Media, b: Media) => (b.year ?? 0) - (a.year ?? 0)),
+        );
       })
       .catch((err) => {
         console.error("Failed to load artist albums");

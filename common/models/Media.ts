@@ -9,8 +9,8 @@ export class AlbumCover {
   @prop({ required: true })
   public format!: string;
 
-  @prop({ required: true })
-  public data!: string;
+  @prop({ required: true, default: null })
+  public data!: Nullable<string>;
 
   @prop({ required: true })
   public type!: string;

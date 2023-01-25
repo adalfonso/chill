@@ -52,7 +52,7 @@ export const MediaTile = ({
   const getFiles = async () =>
     file._count === undefined
       ? [file]
-      : (await MediaApi.query(file._id)).data.sort((a, b) =>
+      : (await MediaApi.query(file._id)).data.sort((a: Media, b: Media) =>
           getSortString(a).localeCompare(getSortString(b)),
         );
 
@@ -60,6 +60,35 @@ export const MediaTile = ({
     play: async () => dispatch(play({ files: await getFiles(), index: 0 })),
     getFiles,
     toggle: setMenuVisible,
+  };
+
+  // TODO: This is ugly, will TS allow these to be conditional children?
+  const getFileMenuChildren = () => {
+    const children: [boolean, JSX.Element][] = [
+      [
+        tile_type === MediaMatch.Artist,
+        <div key="artist" onClick={() => navigate(artistUrl(file))}>
+          Go to Artist
+        </div>,
+      ],
+      [
+        tile_type === MediaMatch.Album,
+        <div key="album" onClick={() => navigate(albumUrl(file))}>
+          Go to Album
+        </div>,
+      ],
+      [
+        tile_type === MediaMatch.Genre,
+        <div
+          key="genre"
+          onClick={() => navigate(matchUrl(MediaMatch.Genre)(file))}
+        >
+          Go to Genre
+        </div>,
+      ],
+    ];
+
+    return children.filter(([cond]) => cond).map(([_, jsx]) => jsx);
   };
 
   return (
@@ -87,22 +116,10 @@ export const MediaTile = ({
 
           <FileMenu
             menu_id={menu_id}
-            title={getFileMenuTitle(tile_type, file)}
+            title={getFileMenuTitle(tile_type, file) ?? ""}
             handler={optionsHandler}
           >
-            {tile_type === MediaMatch.Artist && (
-              <div onClick={() => navigate(artistUrl(file))}>Go to Artist</div>
-            )}
-
-            {tile_type === MediaMatch.Album && (
-              <div onClick={() => navigate(albumUrl(file))}>Go to Album</div>
-            )}
-
-            {tile_type === MediaMatch.Genre && (
-              <div onClick={() => navigate(matchUrl(MediaMatch.Genre)(file))}>
-                Go to Genre
-              </div>
-            )}
+            {getFileMenuChildren()}
           </FileMenu>
         </div>
       </div>

@@ -5,7 +5,13 @@ import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import { createRoot } from "react-dom/client";
 
-const root = createRoot(document.getElementById("root"));
+const element = document.getElementById("root");
+
+if (element === null) {
+  throw new Error('Could not locate "root" element');
+}
+
+const root = createRoot(element);
 
 root.render(
   <BrowserRouter>

@@ -10,7 +10,7 @@ import {
 import { getState } from "@reducers/store";
 import { getTimeTracking, startAnimationLoop } from "@client/util";
 import { useDispatch, useSelector } from "react-redux";
-import { useDrag } from "@client/hooks/useDrag";
+import { useDrag } from "@hooks/useDrag";
 
 const gap_offset = 0.25;
 

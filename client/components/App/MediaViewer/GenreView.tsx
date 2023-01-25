@@ -10,13 +10,13 @@ interface GenreViewProps {
   setLoading: (loading: boolean) => void;
 }
 
-interface GenreParams {
+type GenreParams = {
   genre: string;
-}
+};
 
 export const GenreView = ({ setLoading }: GenreViewProps) => {
-  const genre = decodeURIComponent(useParams<GenreParams>().genre);
-  const [artists, setArtists] = useState([]);
+  const genre = decodeURIComponent(useParams<GenreParams>().genre ?? "");
+  const [artists, setArtists] = useState<TileData[]>([]);
 
   useEffect(() => {
     setLoading(true);
@@ -33,7 +33,7 @@ export const GenreView = ({ setLoading }: GenreViewProps) => {
       });
   }, [genre]);
 
-  const displayAs = (file: TileData) => file.artist;
+  const displayAs = (file: TileData) => file.artist ?? "";
 
   return (
     <div id="media-viewer">

@@ -18,7 +18,7 @@ export const PlaylistEditor = () => {
   const [mode, setMode] = useState(default_mode);
   const dispatch = useDispatch();
   const onPlaylistTypeChange = (value: string) => setMode(value);
-  const onClose = () => dispatch(toggle());
+  const onClose = () => dispatch(toggle({ items: [] }));
 
   return (
     <div className="playlist-editor">

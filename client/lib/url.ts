@@ -4,12 +4,12 @@ import { TileData } from "./types";
 import { ObjectID } from "bson";
 
 export const artistUrl = (file: TileData | Media) =>
-  `/artist/${encodeURIComponent(file.artist)}`;
+  `/artist/${encodeURIComponent(file.artist ?? "")}`;
 
 export const albumUrl = (file: TileData | Media) => {
   const base = `/album/${encodeURIComponent(
-    file.album,
-  )}?artist=${encodeURIComponent(file.artist)}`;
+    file.album ?? "",
+  )}?artist=${encodeURIComponent(file.artist ?? "")}`;
 
   // Regular media file, not aggregated
   if (file._id instanceof ObjectID) {
@@ -20,4 +20,4 @@ export const albumUrl = (file: TileData | Media) => {
 };
 
 export const matchUrl = (match: MediaMatch) => (file: TileData | Media) =>
-  `/${match}/${encodeURIComponent(file[match])}`;
+  `/${match}/${encodeURIComponent(file[match] ?? "")}`;

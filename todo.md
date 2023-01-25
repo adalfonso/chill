@@ -18,4 +18,4 @@
 - rescanning creates new ids for all media and invalidates a playlist
 - holding artist tile should show their context menu on mobile
 - intercepting back button click and actually preventing location change
-- show media info screen
+- what happens when album, artist, etc are missing from files? what happens to urls based on them?

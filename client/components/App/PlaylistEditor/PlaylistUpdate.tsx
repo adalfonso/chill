@@ -15,7 +15,7 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
   const [selected, setSelected] = useState<Playlist>();
   const { playlistEditor } = useSelector(getState);
 
-  const submit = () => {
+  const submit = (selected: Playlist) => () => {
     if (busy) {
       return;
     }
@@ -46,7 +46,7 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
       .finally(() => setBusy(false));
   };
 
-  const choosePlaylist = (playlist) => () => {
+  const choosePlaylist = (playlist: Playlist) => () => {
     setSelected(playlist);
     setResults([]);
   };
@@ -73,7 +73,7 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
             {selected.name} - {selected.items.length} items (+
             {playlistEditor.items.length} new)
           </div>
-          <button onClick={submit}>Update</button>
+          <button onClick={submit(selected)}>Update</button>
         </>
       )}
     </div>

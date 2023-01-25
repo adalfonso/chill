@@ -80,7 +80,7 @@ export const PlaylistController = {
     } catch (e) {
       console.error(e);
 
-      if (e.message.match(/duplicate key/)) {
+      if ((e as Error).message.match(/duplicate key/)) {
         return res.status(422).send("Playlist name is already taken");
       }
 

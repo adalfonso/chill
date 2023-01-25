@@ -50,5 +50,5 @@ export const noPropagate =
   <Event extends UIEvent>(fn?: () => void) =>
   (e: Event) => {
     e.stopPropagation();
-    fn && fn();
+    fn?.();
   };

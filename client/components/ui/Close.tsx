@@ -4,7 +4,7 @@ import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { MouseEvent } from "react";
 
 interface CloseProps {
-  onClose: (e: MouseEvent<SVGSVGElement>) => void;
+  onClose: (e: MouseEvent<HTMLElement>) => void;
   size?: SizeProp;
 }
 
