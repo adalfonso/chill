@@ -1,12 +1,11 @@
 import { Equalizer } from "@client/components/ui/Equalizer";
 import { FileMenu } from "../FileMenu";
 import { Media } from "@common/models/Media";
-import { ObjectID } from "bson";
 import { albumUrl, artistUrl } from "@client/lib/url";
 import { getState } from "@reducers/store";
 import { noPropagate, secondsToMinutes } from "@client/util";
 import { useNavigate } from "react-router-dom";
-import { useRef } from "react";
+import { useObjectId } from "@hooks/useObjectId";
 import { useSelector } from "react-redux";
 
 export interface PlaylistRowProps {
@@ -17,7 +16,7 @@ export interface PlaylistRowProps {
 
 export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
   const { player } = useSelector(getState);
-  const menu_id = useRef(new ObjectID().toString());
+  const menu_id = useObjectId();
   const navigate = useNavigate();
 
   const menuHandler = {
@@ -48,7 +47,7 @@ export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
       </div>
       <div className="tail">
         <FileMenu
-          menu_id={menu_id.current}
+          menu_id={menu_id}
           title={`${file.artist} - ${file.title}`}
           handler={menuHandler}
         >

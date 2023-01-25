@@ -2,14 +2,13 @@ import { Equalizer } from "@client/components/ui/Equalizer";
 import { FileInfo } from "../FileInfo";
 import { FileMenu } from "../FileMenu";
 import { Media } from "@common/models/Media";
-import { ObjectID } from "bson";
 import { artistUrl } from "@client/lib/url";
 import { getState } from "@reducers/store";
 import { noPropagate, secondsToMinutes } from "@client/util";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { useRef } from "react";
 import { useMenu } from "@hooks/useMenu";
+import { useNavigate } from "react-router-dom";
+import { useObjectId } from "@hooks/useObjectId";
+import { useSelector } from "react-redux";
 
 export interface AlbumViewRowProps {
   file: Media;
@@ -19,9 +18,9 @@ export interface AlbumViewRowProps {
 
 export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
   const { player } = useSelector(getState);
-  const menu_id = useRef(new ObjectID().toString());
-  const file_info_id = useRef(new ObjectID().toString());
-  const file_info_menu = useMenu(file_info_id.current);
+  const file_menu_id = useObjectId();
+  const file_info_id = useObjectId();
+  const file_info_menu = useMenu(file_info_id);
   const navigate = useNavigate();
 
   const menuHandler = {
@@ -43,7 +42,7 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
       </div>
       <div className="tail">
         <FileMenu
-          menu_id={menu_id.current}
+          menu_id={file_menu_id}
           title={`${file.artist} - ${file.title}`}
           handler={menuHandler}
         >
@@ -55,7 +54,7 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
           </div>
         </FileMenu>
         {file_info_menu.is_active && (
-          <FileInfo menu_id={file_info_id.current} file={file}></FileInfo>
+          <FileInfo menu_id={file_info_id} file={file}></FileInfo>
         )}
       </div>
     </div>

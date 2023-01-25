@@ -4,7 +4,6 @@ import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/models/Media";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch } from "@common/media/types";
-import { ObjectID } from "bson";
 import { TileData } from "@client/lib/types";
 import { albumUrl, artistUrl, matchUrl } from "@client/lib/url";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
@@ -14,7 +13,8 @@ import { useDispatch } from "react-redux";
 import { useLongPress } from "@hooks/useLongPress";
 import { useMenu } from "@hooks/useMenu";
 import { useNavigate } from "react-router-dom";
-import { useRef, useState } from "react";
+import { useObjectId } from "@hooks/useObjectId";
+import { useState } from "react";
 
 interface MediaTileProps {
   tile_type: MediaMatch;
@@ -32,8 +32,8 @@ export const MediaTile = ({
   const [menu_visible, setMenuVisible] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const menu_id = useRef(new ObjectID().toString());
-  const menu = useMenu(menu_id.current);
+  const menu_id = useObjectId();
+  const menu = useMenu(menu_id);
 
   const onPress = useLongPress(
     () => {
@@ -86,7 +86,7 @@ export const MediaTile = ({
           </div>
 
           <FileMenu
-            menu_id={menu_id.current}
+            menu_id={menu_id}
             title={getFileMenuTitle(tile_type, file)}
             handler={optionsHandler}
           >
