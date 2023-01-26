@@ -37,11 +37,11 @@ namespace Req {
   }
 }
 
-type CreateRequest = Request<{}, {}, Req.create.body>;
-type IndexRequest = Request<{}, {}, {}, Req.index.query>;
-type QueryRequest = Request<{}, {}, Req.query.body>;
+type CreateRequest = Request<unknown, unknown, Req.create.body>;
+type IndexRequest = Request<unknown, unknown, unknown, Req.index.query>;
+type QueryRequest = Request<unknown, unknown, Req.query.body>;
 type ReadRequest = Request<Req.read.params>;
-type UpdateRequest = Request<Req.update.params, {}, Req.update.body>;
+type UpdateRequest = Request<Req.update.params, unknown, Req.update.body>;
 
 export const PlaylistController = {
   index: async (req: IndexRequest, res: Response) => {
