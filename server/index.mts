@@ -2,7 +2,6 @@ import express from "express";
 import { init } from "./init.mjs";
 
 const app = express();
-
 const env = init(app);
 
 // Must run after history fallback

@@ -18,9 +18,12 @@ export const Search = () => {
         return clear();
       }
 
-      const results = await MediaApi.search(query);
-
-      setResults(results.data);
+      try {
+        const results = await MediaApi.search(query);
+        setResults(results);
+      } catch ({ message }) {
+        console.error(`Search Failed:`, message);
+      }
     },
     [query],
     300,

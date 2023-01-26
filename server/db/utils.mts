@@ -1,6 +1,5 @@
 import _ from "lodash";
 import { Model, PipelineStage } from "mongoose";
-import { ObjectId } from "mongodb";
 
 interface GroupOptions {
   match: Record<string, unknown>;
@@ -73,5 +72,3 @@ export const getAsGroup = async <M extends Model<S>, S>(
     .skip(page > 0 ? (page + 1) * limit : 0)
     .limit(limit);
 };
-
-export const toObjectId = (id: string) => new ObjectId(id);

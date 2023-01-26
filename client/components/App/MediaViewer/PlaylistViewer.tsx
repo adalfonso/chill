@@ -1,6 +1,6 @@
 import "./MusicLibrary.scss";
 import { Media } from "@common/models/Media";
-import { Playlist as PlaylistClass } from "@common/models/Playlist";
+import { Playlist } from "@common/models/Playlist";
 import { PlaylistApi } from "@client/api/PlaylistApi";
 import { PlaylistRow } from "./Playlist/PlaylistRow";
 import { play } from "@reducers/player";
@@ -15,7 +15,7 @@ type PlaylistParams = {
 export const PlaylistViewer = () => {
   const id = decodeURIComponent(useParams<PlaylistParams>().id ?? "");
   const [files, setFiles] = useState<Media[]>([]);
-  const [playlist, setPlaylist] = useState<PlaylistClass>();
+  const [playlist, setPlaylist] = useState<Playlist>();
   const dispatch = useDispatch();
 
   const playAll =
@@ -25,10 +25,11 @@ export const PlaylistViewer = () => {
     };
 
   useEffect(() => {
-    Promise.all([PlaylistApi.read(id), PlaylistApi.tracks(id)]).then(
+    Promise.all([PlaylistApi.get(id), PlaylistApi.tracks(id)]).then(
       ([playlist, files]) => {
-        setPlaylist(playlist.data);
-        setFiles(files.data);
+        // TODO: Fix hacks
+        setPlaylist(playlist as Playlist);
+        setFiles(files as Media[]);
       },
     );
   }, [id]);

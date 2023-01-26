@@ -27,21 +27,19 @@ export const ArtistView = ({ setLoading }: ArtistViewProps) => {
     setLoading(true);
 
     return MediaApi.getGroupedByAlbum(undefined, artist)
-      .then((res) => {
+      .then((data) =>
         setAlbums(
-          res.data.sort((a: Media, b: Media) => (b.year ?? 0) - (a.year ?? 0)),
-        );
-      })
-      .catch((err) => {
-        console.error("Failed to load artist albums");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+          data.sort((a: Media, b: Media) => (b.year ?? 0) - (a.year ?? 0)),
+        ),
+      )
+      .catch(({ message }) =>
+        console.error("Failed to load artist albums:", { message }),
+      )
+      .finally(() => setLoading(false));
   };
 
   const displayAs = (file: TileData) => {
-    const { _id, album, artist, year } = file;
+    const { album, year } = file;
     return `${album} (${year})`;
   };
 

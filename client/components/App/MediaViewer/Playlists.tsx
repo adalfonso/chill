@@ -36,7 +36,8 @@ export const Playlists = ({ setLoading, per_page }: PlaylistsProps) => {
   useFetch<Playlist>(
     pager,
     playlistDispatch,
-    () => loadPlaylists().then((res) => res.data),
+    // TODO: Fix hack
+    loadPlaylists as () => Promise<Playlist[]>,
     () => setLoading(false),
   );
 
@@ -44,8 +45,10 @@ export const Playlists = ({ setLoading, per_page }: PlaylistsProps) => {
     try {
       const files = await PlaylistApi.tracks(playlist._id.toString());
 
-      dispatch(play({ files: [...files.data], index: 0 }));
-    } catch (e) {}
+      dispatch(play({ files, index: 0 }));
+    } catch ({ message }) {
+      console.error("Failed to play playlist", message);
+    }
   };
 
   const editPlaylist = (playlist: Playlist) => async () => {

@@ -1,4 +1,4 @@
-import { ObjectID } from "bson";
+import { ObjectId } from "bson";
 import { useRef } from "react";
 
-export const useObjectId = () => useRef(new ObjectID().toString()).current;
+export const useObjectId = () => useRef(new ObjectId().toString()).current;

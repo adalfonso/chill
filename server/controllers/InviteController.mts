@@ -1,25 +1,31 @@
 import { Invitation } from "../models/Invitation.mjs";
-import { Request, Response } from "express";
+import { Request } from "../trpc.mjs";
 import { User } from "../models/User.mjs";
+import { z } from "zod";
+import { TRPCError } from "@trpc/server";
+
+export const schema = {
+  invite: z.string(),
+};
 
 export const InviteController = {
-  create: async (req: Request, res: Response) => {
-    const { email } = req.body;
-
-    if (!email) {
-      return res.status(422).send("Missing email");
-    }
-
+  create: async ({ input: email }: Request<typeof schema.invite>) => {
     // TODO: check email is valid format
 
     if (!/gmail\.com$/.test(email)) {
-      return res.status(422).send("Email should be gmail only for now");
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Email should be gmail only for now.",
+      });
     }
 
     const existing_user = await User.findOne({ email });
 
     if (existing_user) {
-      return res.status(422).send("User already exists with this email");
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "User already exists with this email.",
+      });
     }
 
     const previous_invitation = await Invitation.findOne({ email });
@@ -27,13 +33,13 @@ export const InviteController = {
     if (previous_invitation) {
       // TODO: resend email
 
-      return res.status(201).send("success - previously created");
+      return `Success: ${email} was previously invited.`;
     }
 
     await Invitation.create({ email });
 
     // TODO: send email invite to user
 
-    res.status(201).send("success - created");
+    return `Success: invited ${email}.`;
   },
 };

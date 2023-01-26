@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 
+// Express-only middleware
 export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
   const { user } = req;
 

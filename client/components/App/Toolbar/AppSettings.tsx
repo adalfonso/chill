@@ -1,8 +1,8 @@
 import "./AppSettings.scss";
-import axios from "axios";
 import { AudioQuality } from "./AppSettings/AudioQuality";
 import { Close } from "@client/components/ui/Close";
 import { InviteUser } from "./AppSettings/InviteUser";
+import { MediaApi } from "@client/api/MediaApi";
 import { UserType } from "@common/types";
 import { getState } from "@reducers/store";
 import { useSelector } from "react-redux";
@@ -28,7 +28,7 @@ export const AppSettings = ({ onClose }: AppSettingsProps) => {
     }
 
     setBusy(true);
-    await triggerScan();
+    await MediaApi.scan();
     setBusy(false);
   };
 
@@ -52,5 +52,3 @@ export const AppSettings = ({ onClose }: AppSettingsProps) => {
     </div>
   );
 };
-
-const triggerScan = async () => axios.get("/api/v1/media/scan");

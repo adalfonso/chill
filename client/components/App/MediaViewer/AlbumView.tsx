@@ -38,15 +38,11 @@ export const AlbumView = ({ setLoading }: AlbumViewProps) => {
       album: no_album ? null : album,
       artist: artist ?? undefined,
     })
-      .then((res) => {
-        setFiles(res.data);
-      })
-      .catch((_err) => {
-        console.error("Failed to load album tracks data");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      .then(setFiles)
+      .catch(({ message }) =>
+        console.error("Failed to load album tracks data:", message),
+      )
+      .finally(() => setLoading(false));
   }, [album]);
 
   const artists = () => [...new Set(files.map((file) => file.artist))];

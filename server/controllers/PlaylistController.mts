@@ -1,154 +1,128 @@
 import { Media } from "../models/Media.mjs";
-import { ObjectId } from "mongodb";
-import { PaginationOptions } from "../../common/types.js";
 import { Playlist } from "../models/Playlist.mjs";
-import { Request, Response } from "express";
-import { toObjectId } from "../db/utils.mjs";
+import { Request } from "../trpc.mjs";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 
-namespace Req {
-  export namespace read {
-    export interface params {
-      id: string;
-    }
-  }
-  export namespace index {
-    export type query = PaginationOptions;
-  }
+export const schema = {
+  create: z.object({
+    name: z.string(),
+    items: z.array(z.string()).optional(),
+  }),
 
-  export namespace create {
-    export interface body {
-      name: string;
-      items: string[];
-    }
-  }
+  get: z.string(),
 
-  export namespace update {
-    export interface params {
-      id: string;
-    }
-    export interface body {
-      items: string[];
-    }
-  }
-  export namespace query {
-    export interface body {
-      query: string;
-    }
-  }
-}
+  index: z.object({
+    limit: z.number(),
+    page: z.number(),
+  }),
 
-type CreateRequest = Request<unknown, unknown, Req.create.body>;
-type IndexRequest = Request<unknown, unknown, unknown, Req.index.query>;
-type QueryRequest = Request<unknown, unknown, Req.query.body>;
-type ReadRequest = Request<Req.read.params>;
-type UpdateRequest = Request<Req.update.params, unknown, Req.update.body>;
+  search: z.string(),
+
+  tracks: z.string(),
+
+  update: z.object({
+    id: z.string(),
+    items: z.array(z.string()),
+  }),
+};
 
 export const PlaylistController = {
-  index: async (req: IndexRequest, res: Response) => {
-    const { limit = Infinity, page = 0 } = req.query ?? {};
+  create: async ({
+    input: { name, items = [] },
+  }: Request<typeof schema.create>) => {
+    try {
+      const playlist = new Playlist({ name, items });
 
+      await playlist.save();
+    } catch (e) {
+      console.error(e);
+
+      if ((e as Error).message.match(/duplicate key/)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Playlist name is already taken.",
+        });
+      }
+
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+    }
+  },
+
+  get: async ({ input: id }: Request<typeof schema.get>) => {
+    try {
+      const playlist = await Playlist.findById(id);
+
+      return playlist;
+    } catch (e) {
+      console.error("Failed to get Playlist: ", e);
+
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+    }
+  },
+
+  index: async ({
+    input: { limit = Infinity, page = 0 },
+  }: Request<typeof schema.index>) => {
     try {
       const results = await Playlist.find()
         .sort({ created_at: "asc" })
         .skip(page > 0 ? (page + 1) * limit : 0)
         .limit(limit);
 
-      res.json(results);
+      return results;
     } catch (e) {
       console.error("Failed to GET playlist/index: ", e);
-      res.sendStatus(500);
+
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
     }
   },
 
-  create: async (req: CreateRequest, res: Response) => {
-    const { name, items = [] } = req.body;
+  search: async ({ input: query }: Request<typeof schema.search>) => {
+    // TODO: Add error handling
+    const results = await Playlist.find({
+      $text: { $search: query.toLowerCase() },
+    });
 
-    if (!name) {
-      return res.status(422).send(`Missing required property "name"`);
-    }
-
-    try {
-      const playlist = new Playlist({
-        _id: new ObjectId(),
-        name,
-        items: items.map(toObjectId),
-      });
-
-      await playlist.save();
-
-      res.sendStatus(201);
-    } catch (e) {
-      console.error(e);
-
-      if ((e as Error).message.match(/duplicate key/)) {
-        return res.status(422).send("Playlist name is already taken");
-      }
-
-      res.sendStatus(500);
-    }
+    return results;
   },
 
-  update: async (req: UpdateRequest, res: Response) => {
-    const { id } = req.params;
-    const { items = [] } = req.body;
-
-    try {
-      const playlist = await Playlist.findById(new ObjectId(id));
-
-      if (!playlist) {
-        return res.sendStatus(404);
-      }
-
-      // TODO: Fix hack
-      (playlist as any).items = [...playlist.items, ...items.map(toObjectId)];
-
-      await playlist.save();
-
-      res.sendStatus(204);
-    } catch (e) {
-      console.error(e);
-
-      res.sendStatus(500);
-    }
-  },
-
-  read: async (req: ReadRequest, res: Response) => {
-    const { id } = req.params;
-
-    try {
-      const playlist = await Playlist.findById(id);
-
-      res.json(playlist);
-    } catch (e) {
-      console.error("Failed to get Playlist: ", e);
-      res.sendStatus(500);
-    }
-  },
-
-  search: async (req: QueryRequest, res: Response) => {
-    const query = req.body.query.toLowerCase();
-
-    const results = await Playlist.find({ $text: { $search: query } });
-
-    res.json(results);
-  },
-
-  tracks: async (req: ReadRequest, res: Response) => {
-    const { id } = req.params;
-
+  tracks: async ({ input: id }: Request<typeof schema.tracks>) => {
     try {
       const playlist = await Playlist.findById(id);
 
       if (playlist === null) {
-        return res.sendStatus(404);
+        throw new TRPCError({ code: "NOT_FOUND" });
       }
 
       const results = await Media.find({ _id: { $in: playlist.items } });
 
-      res.json(results);
+      return results;
     } catch (e) {
       console.error("Failed to get Playlist tracks: ", e);
-      res.sendStatus(500);
+
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+    }
+  },
+
+  update: async ({
+    input: { id, items = [] },
+  }: Request<typeof schema.update>) => {
+    try {
+      const playlist = await Playlist.findById(id);
+
+      if (!playlist) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      // TODO: Fix hack
+      (playlist as any).items = [...playlist.items, ...items];
+
+      await playlist.save();
+    } catch (e) {
+      console.error(e);
+
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
     }
   },
 };

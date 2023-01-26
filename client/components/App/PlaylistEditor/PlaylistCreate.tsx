@@ -29,14 +29,7 @@ export const PlaylistCreate = ({ onDone }: PlaylistCreateProps) => {
 
     PlaylistApi.create(input, items)
       .then(onDone)
-      .catch((err) => {
-        if (err?.response?.data === undefined) {
-          return;
-        }
-
-        setError(err.response.data);
-      })
-
+      .catch(({ message }) => message && setError(message))
       .finally(() => setBusy(false));
   };
 

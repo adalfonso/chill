@@ -1,41 +1,37 @@
-import axios from "axios";
-import { Media } from "@common/models/Media";
 import { MediaMatch as Match } from "@common/media/types";
 import { PaginationOptions } from "@common/types";
+import { client } from "../client";
 
-const v1 = `/api/v1`;
-
-export type MatchMap = Record<Match & "year", string | number>;
+export type MatchMap = Record<Match & "year", string>;
 
 export const MediaApi = {
-  search: (query: string) => axios.post(`${v1}/media/search`, { query }),
-  query: (match: Partial<MatchMap>) =>
-    axios.post(`${v1}/media/query`, { match }),
-  load: (file: Media) => axios.get(`${v1}/media/${file._id}/load`),
+  getGroupedByAlbum: (options?: PaginationOptions, artist?: string) =>
+    client.media.query.query({
+      options,
+      group: ["album", "artist", "year"],
+      // Get all albums for an artist or get all albums
+      match: artist ? { artist } : { album: { $ne: null } },
+    }),
 
-  getGroupedByArtist: (options?: PaginationOptions, genre?: string) => {
-    const match = genre ? { genre } : { artist: { $ne: null } };
-    return axios.post(`${v1}/media/query`, {
+  getGroupedByArtist: async (options?: PaginationOptions, genre?: string) =>
+    client.media.query.query({
       options,
       group: ["artist"],
-      match,
-    });
-  },
-
-  getGroupedByAlbum: (options?: PaginationOptions, artist?: string) => {
-    const match = artist ? { artist } : { album: { $ne: null } };
-
-    return axios.post(`${v1}/media/query`, {
-      options: options ?? {},
-      group: ["album", "artist", "year"],
-      match,
-    });
-  },
+      // Get all artists for a genre or get all the artists
+      match: genre ? { genre } : { artist: { $ne: null } },
+    }),
 
   getGroupedByGenre: (options?: PaginationOptions) =>
-    axios.post(`${v1}/media/query`, {
+    client.media.query.query({
       options,
       group: ["genre"],
+      // Get all genres
       match: { genre: { $ne: null } },
     }),
+
+  query: (match: Partial<MatchMap>) => client.media.query.query({ match }),
+
+  search: (query: string) => client.media.search.query(query),
+
+  scan: () => client.media.scan.mutate(),
 };

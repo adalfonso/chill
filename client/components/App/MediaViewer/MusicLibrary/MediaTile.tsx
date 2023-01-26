@@ -52,7 +52,7 @@ export const MediaTile = ({
   const getFiles = async () =>
     file._count === undefined
       ? [file]
-      : (await MediaApi.query(file._id)).data.sort((a: Media, b: Media) =>
+      : (await MediaApi.query(file._id)).sort((a: Media, b: Media) =>
           getSortString(a).localeCompare(getSortString(b)),
         );
 

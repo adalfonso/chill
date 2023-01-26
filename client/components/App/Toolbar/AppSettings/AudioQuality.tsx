@@ -28,13 +28,12 @@ export const AudioQuality = ({ user }: AudioQualityProps) => {
     setInput(quality);
 
     try {
-      const update = await UserApi.updateSettings({
-        audio_quality: quality,
-      });
+      const settings = await UserApi.updateSettings({ audio_quality: quality });
 
-      dispatch(updateUserSettings({ settings: update.data }));
+      dispatch(updateUserSettings({ settings }));
     } catch (e) {
       // TODO: show a toast here
+      console.error("Failed to change audio quality:", e);
 
       // Reset on failure
       setInput(user?.settings?.audio_quality ?? qualityList.Original);

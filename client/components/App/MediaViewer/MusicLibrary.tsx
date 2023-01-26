@@ -1,7 +1,6 @@
 import "./MusicLibrary.scss";
 import _ from "lodash";
 import { Action, fetchReducer, useFetch } from "@hooks/useFetch";
-import { AxiosResponse } from "axios";
 import { Media } from "@common/models/Media";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch as Match } from "@common/media/types";
@@ -16,7 +15,8 @@ import { useReducer, useRef, useState } from "react";
 
 const ApiMap: Record<
   Match,
-  (options?: PaginationOptions) => Promise<AxiosResponse | null>
+  // TODO: Fix hack
+  (options?: PaginationOptions) => Promise<unknown | null>
 > = {
   [Match.Artist]: MediaApi.getGroupedByArtist,
   [Match.Album]: MediaApi.getGroupedByAlbum,
@@ -65,7 +65,8 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
   useFetch<FetchedMedia>(
     pager,
     imgDispatch,
-    () => loadMediaFiles(match).then((res) => res?.data),
+    // TODO: Fix hack
+    () => loadMediaFiles(match) as Promise<FetchedMedia[]>,
     () => setLoading(false),
   );
 

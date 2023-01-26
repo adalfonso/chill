@@ -12,10 +12,10 @@
 - make media library hide so we can go back to it and resume browsing instead of reload
 - minimize audio toolbar when not playing
 - ditch mongoose
-- improve typings of API controllers
 - add typing to action when reducers are used
 - when changing stream quality, chrome plays a cached version
 - rescanning creates new ids for all media and invalidates a playlist
-- holding artist tile should show their context menu on mobile
 - intercepting back button click and actually preventing location change
 - what happens when album, artist, etc are missing from files? what happens to urls based on them?
+- use @server aliases within the server code
+- add output types to trpc

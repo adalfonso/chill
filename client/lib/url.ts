@@ -1,7 +1,7 @@
 import { Media } from "@common/models/Media";
 import { MediaMatch } from "@common/media/types";
 import { TileData } from "./types";
-import { ObjectID } from "bson";
+import { ObjectId } from "bson";
 
 export const artistUrl = (file: TileData | Media) =>
   `/artist/${encodeURIComponent(file.artist ?? "")}`;
@@ -12,7 +12,7 @@ export const albumUrl = (file: TileData | Media) => {
   )}?artist=${encodeURIComponent(file.artist ?? "")}`;
 
   // Regular media file, not aggregated
-  if (file._id instanceof ObjectID) {
+  if (file._id instanceof ObjectId) {
     return base;
   }
 

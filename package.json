@@ -21,6 +21,8 @@
     "@fortawesome/free-solid-svg-icons": "^6.2.1",
     "@fortawesome/react-fontawesome": "^0.1.19",
     "@reduxjs/toolkit": "^1.9.1",
+    "@trpc/client": "^10.9.0",
+    "@trpc/server": "^10.9.0",
     "axios": "^0.26.1",
     "bson": "^4.7.2",
     "cookie-parser": "^1.4.6",
@@ -38,7 +40,8 @@
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.7.0",
     "sharp": "^0.30.7",
-    "string-similarity": "^4.0.4"
+    "string-similarity": "^4.0.4",
+    "zod": "^3.20.2"
   },
   "devDependencies": {
     "@redux-devtools/core": "^3.13.1",

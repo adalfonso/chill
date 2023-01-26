@@ -22,15 +22,11 @@ export const GenreView = ({ setLoading }: GenreViewProps) => {
     setLoading(true);
 
     MediaApi.getGroupedByArtist(undefined, genre)
-      .then((res) => {
-        setArtists(res.data);
-      })
-      .catch((err) => {
-        console.error("Failed to load artist albums");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      .then(setArtists)
+      .catch(({ message }) =>
+        console.error("Failed to load artist albums:", message),
+      )
+      .finally(() => setLoading(false));
   }, [genre]);
 
   const displayAs = (file: TileData) => file.artist ?? "";

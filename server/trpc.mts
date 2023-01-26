@@ -1,0 +1,47 @@
+import * as trpcExpress from "@trpc/server/adapters/express";
+import { admin } from "./routes/api/v1/trpc/adminRouter.mjs";
+import { inferAsyncReturnType, initTRPC, TRPCError } from "@trpc/server";
+import { media } from "./routes/api/v1/trpc/mediaRouter.mjs";
+import { playlist } from "./routes/api/v1/trpc/playlistRouter.mjs";
+import { user } from "./routes/api/v1/trpc/userRouter.mjs";
+import { z, ZodType } from "zod";
+
+export const createContext = ({
+  req,
+  res,
+}: trpcExpress.CreateExpressContextOptions) => ({ req, res });
+
+type Context = inferAsyncReturnType<typeof createContext>;
+
+const t = initTRPC.context<Context>().create();
+
+export const { router, middleware, procedure } = t;
+
+const isAdmin = middleware(async ({ ctx: { req }, next }) => {
+  const { user } = req;
+
+  if (!user || (user as any).type !== "admin") {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  return next();
+});
+
+export const admin_procedure = procedure.use(isAdmin);
+
+// Initialize the tRPC router
+export const api_router = t.router({
+  admin: admin(router),
+  media: media(router),
+  playlist: playlist(router),
+  user: user(router),
+});
+
+export type ApiRouter = typeof api_router;
+
+const empty = z.symbol();
+
+export type Request<T extends ZodType = typeof empty> = {
+  input: z.infer<T>;
+  ctx: Context;
+};

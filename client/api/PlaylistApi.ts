@@ -1,26 +1,18 @@
-import axios from "axios";
 import { PaginationOptions } from "@common/types";
-
-const v1 = `/api/v1`;
-
-const toQueryString = (options: Record<string, string | number>) =>
-  `?${Object.entries(options)
-    .map(([key, value]) => `${key}=${value.toString()}`)
-    .join("&")}`;
+import { client } from "../client";
 
 export const PlaylistApi = {
   create: (name: string, items: string[]) =>
-    axios.post(`${v1}/playlists`, { name, items }),
+    client.playlist.create.mutate({ name, items }),
 
-  index: (options: PaginationOptions) =>
-    axios.get(`${v1}/playlists${toQueryString(options)}`),
+  index: (options: PaginationOptions) => client.playlist.index.query(options),
 
-  read: (id: string) => axios.get(`${v1}/playlist/${id}`),
+  get: (id: string) => client.playlist.get.query(id),
 
-  search: (query: string) => axios.post(`${v1}/playlist/search`, { query }),
+  search: (query: string) => client.playlist.search.query(query),
 
-  tracks: (id: string) => axios.get(`${v1}/playlist/${id}/tracks`),
+  tracks: (id: string) => client.playlist.tracks.query(id),
 
   update: (id: string, items: string[]) =>
-    axios.patch(`${v1}/playlist/${id}`, { items }),
+    client.playlist.update.mutate({ id, items }),
 };
