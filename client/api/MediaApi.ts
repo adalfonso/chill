@@ -8,7 +8,7 @@ export const MediaApi = {
   getGroupedByAlbum: (options?: PaginationOptions, artist?: string) =>
     client.media.query_as_group.query({
       options,
-      group: ["album", "artist", "year"],
+      group: ["album", "year"],
       // Get all albums for an artist or get all albums
       match: artist ? { artist } : { album: { $ne: null } },
     }),

@@ -19,4 +19,3 @@
 - what happens when album, artist, etc are missing from files? what happens to urls based on them?
 - use @server aliases within the server code
 - 1000 degress all listed as "piste"
-- compilation albums are not all grouped (atticus I)
