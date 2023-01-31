@@ -27,16 +27,20 @@ export interface PaginationOptions extends Record<string, string | number> {
   page: number;
 }
 
-export enum UserType {
-  User = "user",
-  Admin = "admin",
-}
+export const UserType = {
+  User: "user",
+  Admin: "admin",
+};
 
-export enum AudioQuality {
-  Original = "original",
-  Trash = "85",
-  Low = "115",
-  Medium = "165",
-  Standard = "190",
-  Extreme = "245",
-}
+export type UserType = ObjectValues<typeof UserType>;
+
+export const AudioQuality = {
+  Original: "original",
+  Trash: "85",
+  Low: "115",
+  Medium: "165",
+  Standard: "190",
+  Extreme: "245",
+} as const;
+
+export type AudioQuality = ObjectValues<typeof AudioQuality>;

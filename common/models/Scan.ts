@@ -1,12 +1,14 @@
 import { Base } from "./Base.js";
-import { Nullable } from "../types.js";
+import { Nullable, ObjectValues } from "../types.js";
 import { prop } from "@typegoose/typegoose";
 
-export enum ScanStatus {
-  Active = "ACTIVE",
-  Failed = "FAILED",
-  Completed = "COMPLETED",
-}
+export const ScanStatus = {
+  Active: "ACTIVE",
+  Failed: "FAILED",
+  Completed: "COMPLETED",
+} as const;
+
+export type ScanStatus = ObjectValues<typeof ScanStatus>;
 
 export class Scan extends Base {
   @prop({ default: ScanStatus.Active })

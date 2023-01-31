@@ -1,9 +1,12 @@
 import { Dispatch, RefObject, useCallback, useEffect } from "react";
+import { ObjectValues } from "@common/types";
 
-export enum PageAction {
-  Advance,
-  Reset,
-}
+export const PageAction = {
+  Advance: "advance",
+  Reset: "reset",
+} as const;
+
+export type PageAction = ObjectValues<typeof PageAction>;
 
 export interface Pager {
   page: number;

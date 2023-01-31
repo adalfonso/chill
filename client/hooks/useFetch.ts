@@ -1,12 +1,15 @@
 import { Dispatch, useEffect } from "react";
+import { ObjectValues } from "@common/types";
 import { Pager } from "./useInfiniteScroll";
 
-export enum Action {
-  Stack,
-  Fetch,
-  Release,
-  Reset,
-}
+export const Action = {
+  Stack: "stack",
+  Fetch: "fetch",
+  Release: "release",
+  Reset: "reset",
+} as const;
+
+export type Action = ObjectValues<typeof Action>;
 
 interface FetchState<T> {
   items: T[];

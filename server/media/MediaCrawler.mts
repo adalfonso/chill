@@ -232,7 +232,7 @@ export class MediaCrawler {
   }
 
   /** Complete crawling */
-  private async _complete(status = ScanStatus.Completed) {
+  private async _complete(status: ScanStatus = ScanStatus.Completed) {
     this._available_workers = this._config.workers;
     this._queue = [];
 
