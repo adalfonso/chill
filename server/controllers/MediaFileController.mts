@@ -19,18 +19,22 @@ const mongo_filter = z.object({
   $ne: z.null(),
 });
 
+// TODO: Is this match too permissible? It seems hard to keep track of
+const media_match = z.object({
+  artist: z.string().or(mongo_filter).optional(),
+  album: z.string().nullable().or(mongo_filter).optional(),
+  genre: z.string().or(mongo_filter).optional(),
+  year: z.number().nullable().optional(),
+});
+
 export const schema = {
   search: z.string(),
 
-  query: z.object({
-    // TODO: Is this match too permissible? It seems hard to keep track of
-    match: z.object({
-      artist: z.string().or(mongo_filter).optional(),
-      album: z.string().nullable().or(mongo_filter).optional(),
-      genre: z.string().or(mongo_filter).optional(),
-      year: z.number().nullable().optional(),
-    }),
-    group: z.array(z.string()).optional(),
+  query: media_match,
+
+  query_as_group: z.object({
+    match: media_match,
+    group: z.array(z.enum(["album", "artist", "genre", "year"])),
     sort: z.string().optional(),
     options: z
       .object({
@@ -170,24 +174,36 @@ export const MediaFileController = {
   },
 
   /** Get media files */
-  query: async ({ input }: Request<typeof schema.query>) => {
+  query: async ({ input: match }: Request<typeof schema.query>) => {
     try {
-      // TODO: utilize sort
-      const { match, group, sort, options: pagination } = input;
+      const result = await MediaModel.find(match);
 
-      if (group) {
-        // TODO: remove hack
-        const result = await getAsGroup<any, any>(MediaModel, group, {
-          match,
-          pagination,
-        });
-
-        return result;
-      } else {
-        const result = await MediaModel.find(match);
-
-        return result;
+      if (result.length === null) {
+        throw new Error("Could not find media during query.");
       }
+
+      return result;
+    } catch (e) {
+      console.error(e);
+
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to query Media.",
+      });
+    }
+  },
+
+  queryAsGroup: async ({ input }: Request<typeof schema.query_as_group>) => {
+    try {
+      const { match, group, options: pagination } = input;
+
+      // TODO: remove hack
+      const result = await getAsGroup(MediaModel, group, {
+        match,
+        pagination,
+      });
+
+      return result;
     } catch (e) {
       console.error(e);
 

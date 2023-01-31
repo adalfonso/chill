@@ -1,25 +1,22 @@
 import _ from "lodash";
-import { Model, PipelineStage } from "mongoose";
-
-interface GroupOptions {
-  match: Record<string, unknown>;
-  pagination?: {
-    limit: number;
-    page: number;
-  };
-}
+import { BeAnObject } from "@typegoose/typegoose/lib/types.js";
+import { GroupOptions } from "@server/types.js";
+import { GroupedMedia } from "@common/types.js";
+import { Media } from "../../common/models/Media.js";
+import { PipelineStage } from "mongoose";
+import { ReturnModelType } from "@typegoose/typegoose";
 
 /**
- * Perform a common DB select with a group by
+ * Perform a common DB select with a groupBy
  *
  * @param model Data Model
- * @param grouping Grouping feilds
+ * @param grouping Grouping fields
  * @param options Additional aggregation options
  * @returns grouped data
  */
-export const getAsGroup = async <M extends Model<S>, S>(
-  model: M,
-  grouping: (keyof S)[],
+export const getAsGroup = async (
+  model: ReturnModelType<typeof Media, BeAnObject>,
+  grouping: (keyof Media)[],
   options: Partial<GroupOptions> = {},
 ) => {
   const { limit = Infinity, page = 0 } = options.pagination ?? {};
@@ -67,7 +64,7 @@ export const getAsGroup = async <M extends Model<S>, S>(
   ];
 
   return model
-    .aggregate(group)
+    .aggregate<GroupedMedia>(group)
     .sort({ _id: "asc" })
     .skip(page > 0 ? (page + 1) * limit : 0)
     .limit(limit);

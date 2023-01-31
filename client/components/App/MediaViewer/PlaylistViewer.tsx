@@ -27,9 +27,8 @@ export const PlaylistViewer = () => {
   useEffect(() => {
     Promise.all([PlaylistApi.get(id), PlaylistApi.tracks(id)]).then(
       ([playlist, files]) => {
-        // TODO: Fix hacks
-        setPlaylist(playlist as Playlist);
-        setFiles(files as Media[]);
+        setPlaylist(playlist);
+        setFiles(files);
       },
     );
   }, [id]);

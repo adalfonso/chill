@@ -1,12 +1,12 @@
-import { MediaMatch as Match } from "@common/media/types";
+import { MediaMatch } from "@common/media/types";
 import { PaginationOptions } from "@common/types";
 import { client } from "../client";
 
-export type MatchMap = Record<Match & "year", string>;
+type Match = Record<MediaMatch & "year", string>;
 
 export const MediaApi = {
   getGroupedByAlbum: (options?: PaginationOptions, artist?: string) =>
-    client.media.query.query({
+    client.media.query_as_group.query({
       options,
       group: ["album", "artist", "year"],
       // Get all albums for an artist or get all albums
@@ -14,7 +14,7 @@ export const MediaApi = {
     }),
 
   getGroupedByArtist: async (options?: PaginationOptions, genre?: string) =>
-    client.media.query.query({
+    client.media.query_as_group.query({
       options,
       group: ["artist"],
       // Get all artists for a genre or get all the artists
@@ -22,14 +22,14 @@ export const MediaApi = {
     }),
 
   getGroupedByGenre: (options?: PaginationOptions) =>
-    client.media.query.query({
+    client.media.query_as_group.query({
       options,
       group: ["genre"],
       // Get all genres
       match: { genre: { $ne: null } },
     }),
 
-  query: (match: Partial<MatchMap>) => client.media.query.query({ match }),
+  query: (match: Partial<Match>) => client.media.query.query(match),
 
   search: (query: string) => client.media.search.query(query),
 

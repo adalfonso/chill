@@ -61,6 +61,7 @@ specifiers:
   sass: ^1.57.1
   sharp: ^0.30.7
   string-similarity: ^4.0.4
+  superjson: ^1.12.2
   ts-node: ^10.9.1
   typescript: ^4.9.4
   vite: ^4.0.4
@@ -92,6 +93,7 @@ dependencies:
   react-router-dom: 6.7.0_biqbaboplfbrettd7655fr4n2y
   sharp: 0.30.7
   string-similarity: 4.0.4
+  superjson: 1.12.2
   zod: 3.20.2
 
 devDependencies:
@@ -2881,6 +2883,13 @@ packages:
     engines: {node: '>= 0.6'}
     dev: false
 
+  /copy-anything/3.0.3:
+    resolution: {integrity: sha512-fpW2W/BqEzqPp29QS+MwwfisHCQZtiduTe/m8idFo0xbti9fIZ2WVhAsCv4ggFVH3AgCkVdpoOCtQC6gBrdhjw==}
+    engines: {node: '>=12.13'}
+    dependencies:
+      is-what: 4.1.8
+    dev: false
+
   /core-js/3.27.1:
     resolution: {integrity: sha512-GutwJLBChfGCpwwhbYoqfv03LAfmiz7e7D/BNxzeMxwQf10GRSzqiOjx7AmtEk+heiD/JWmBuyBPgFtx0Sg1ww==}
     requiresBuild: true
@@ -4149,6 +4158,11 @@ packages:
     dependencies:
       call-bind: 1.0.2
     dev: true
+
+  /is-what/4.1.8:
+    resolution: {integrity: sha512-yq8gMao5upkPoGEU9LsB2P+K3Kt8Q3fQFCGyNCWOAnJAMzEXVV9drYb0TXr42TTliLLhKIBvulgAXgtLLnwzGA==}
+    engines: {node: '>=12.13'}
+    dev: false
 
   /isexe/2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
@@ -6117,6 +6131,13 @@ packages:
     dependencies:
       '@tokenizer/token': 0.3.0
       peek-readable: 4.1.0
+    dev: false
+
+  /superjson/1.12.2:
+    resolution: {integrity: sha512-ugvUo9/WmvWOjstornQhsN/sR9mnGtWGYeTxFuqLb4AiT4QdUavjGFRALCPKWWnAiUJ4HTpytj5e0t5HoMRkXg==}
+    engines: {node: '>=10'}
+    dependencies:
+      copy-anything: 3.0.3
     dev: false
 
   /supports-color/5.5.0:

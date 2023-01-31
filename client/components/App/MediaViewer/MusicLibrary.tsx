@@ -1,32 +1,23 @@
 import "./MusicLibrary.scss";
 import _ from "lodash";
 import { Action, fetchReducer, useFetch } from "@hooks/useFetch";
-import { Media } from "@common/models/Media";
+import { GroupedMedia, PaginationOptions } from "@common/types";
 import { MediaApi } from "@client/api/MediaApi";
-import { MediaMatch as Match } from "@common/media/types";
+import { MediaMatch } from "@common/media/types";
 import { MediaTile } from "./MusicLibrary/MediaTile";
 import { PageAction, pageReducer } from "@hooks/useInfiniteScroll";
-import { PaginationOptions } from "@common/types";
 import { Select } from "../../ui/Select";
-import { TileData } from "@client/lib/types";
 import { matchUrl } from "@client/lib/url";
 import { useInfiniteScroll } from "@hooks/useInfiniteScroll";
 import { useReducer, useRef, useState } from "react";
 
 const ApiMap: Record<
-  Match,
-  // TODO: Fix hack
-  (options?: PaginationOptions) => Promise<unknown | null>
+  MediaMatch,
+  (options?: PaginationOptions) => Promise<GroupedMedia[]>
 > = {
-  [Match.Artist]: MediaApi.getGroupedByArtist,
-  [Match.Album]: MediaApi.getGroupedByAlbum,
-  [Match.Genre]: MediaApi.getGroupedByGenre,
-  [Match.Path]: () => Promise.resolve(null),
-};
-
-type FetchedMedia = Omit<Media, "_id"> & {
-  _id: Record<string, string>;
-  _count: number;
+  [MediaMatch.Artist]: MediaApi.getGroupedByArtist,
+  [MediaMatch.Album]: MediaApi.getGroupedByAlbum,
+  [MediaMatch.Genre]: MediaApi.getGroupedByGenre,
 };
 
 interface MusicLibraryProps {
@@ -36,37 +27,37 @@ interface MusicLibraryProps {
 
 export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
   const bottomBoundaryRef = useRef<HTMLDivElement>(null);
-  const [match, setMatch] = useState<Match>(Match.Artist);
+  const [match, setMatch] = useState<MediaMatch>(MediaMatch.Artist);
   const [pager, pagerDispatch] = useReducer(pageReducer, { page: 0 });
-  const [mediaData, imgDispatch] = useReducer(fetchReducer<FetchedMedia>, {
+  const [mediaData, imgDispatch] = useReducer(fetchReducer<GroupedMedia>, {
     items: [],
     busy: true,
   });
 
   // Change the media match drop down
-  const changeMediaMatch = (match: Match) => {
+  const changeMediaMatch = (match: MediaMatch) => {
     imgDispatch({ type: Action.Reset });
     pagerDispatch({ type: PageAction.Reset });
     setMatch(match);
   };
 
   // Cause media files to reload
-  const loadMediaFiles = (match: Match) => {
+  const loadMediaFiles = (match: MediaMatch) => {
     setLoading(true);
 
     return ApiMap[match]({ page: pager.page, limit: per_page });
   };
 
-  const displayAs = (file: TileData) => file[match] ?? "";
+  const displayAs = (file: GroupedMedia) => file[match] ?? "";
 
   useInfiniteScroll(bottomBoundaryRef, pagerDispatch);
 
   // make API calls
-  useFetch<FetchedMedia>(
+  useFetch<GroupedMedia>(
     pager,
     imgDispatch,
     // TODO: Fix hack
-    () => loadMediaFiles(match) as Promise<FetchedMedia[]>,
+    () => loadMediaFiles(match),
     () => setLoading(false),
   );
 
@@ -79,7 +70,7 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
             displayAs={_.capitalize(match)}
             value={match}
           >
-            {Object.values(_.omit(Match, "Path")).map((option) => {
+            {Object.values(MediaMatch).map((option) => {
               return (
                 <option key={option} value={option}>
                   {_.capitalize(option)}

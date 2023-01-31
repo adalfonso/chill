@@ -1,6 +1,8 @@
+import { Media } from "./models/Media.js";
 import { MediaMatch } from "./media/types.js";
 
 export type Nullable<T> = T | null;
+export type ObjectValues<T> = T[keyof T];
 
 export interface SearchResult {
   type: MediaMatch;
@@ -10,6 +12,15 @@ export interface SearchResult {
   score: number;
   match: Record<string, string | number>;
 }
+
+export type Grouped<T> = Omit<T, "_id"> & {
+  _id: Record<string, string>;
+  _count: number;
+};
+
+export type GroupedMedia = Grouped<Media> & {
+  image?: string;
+};
 
 export interface PaginationOptions extends Record<string, string | number> {
   limit: number;

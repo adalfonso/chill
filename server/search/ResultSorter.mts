@@ -1,9 +1,12 @@
 import type { SearchResult } from "../../common/types.js";
 import { Media } from "../../common/models/Media.js";
-import { MediaMatch, mediaMatchKeys } from "../../common/media/types.js";
+import { MediaMatch } from "../../common/media/types.js";
 import { compareTwoStrings } from "string-similarity";
 
-const matcher: Record<MediaMatch, (file: Media) => unknown> = {
+const Match = { ...MediaMatch, Path: "path" } as const;
+type Match = (typeof Match)[keyof typeof Match];
+
+const matcher: Record<Match, (file: Media) => unknown> = {
   artist: (file: Media) => ({ artist: file.artist }),
   genre: (file: Media) => ({ genre: file.genre }),
   path: (file: Media) => ({ path: file.path }),
@@ -14,7 +17,7 @@ const matcher: Record<MediaMatch, (file: Media) => unknown> = {
   }),
 };
 
-const displayer: Record<MediaMatch, (file: Media) => string[]> = {
+const displayer: Record<Match, (file: Media) => string[]> = {
   artist: (file: Media) => [`${file.artist}`, `Artist`],
   genre: (file: Media) => [`${file.genre}`, `Genre`],
   path: (file: Media) => [`${file.title}`, `Track - ${file.artist}`],
@@ -24,7 +27,7 @@ const displayer: Record<MediaMatch, (file: Media) => string[]> = {
   },
 };
 
-const pathfinder: Record<MediaMatch, (file: Media) => string> = {
+const pathfinder: Record<Match, (file: Media) => string> = {
   artist: (file: Media) => `/artist/${encodeURIComponent(file.artist ?? "")}`,
   genre: (file: Media) => `/genre/${encodeURIComponent(file.genre ?? "")}`,
   path: (file: Media) => `/album/${encodeURIComponent(file.album ?? "")}`,
@@ -66,7 +69,7 @@ const processFile = (
   const { title, path } = file;
   const threshold = 0.5;
 
-  return mediaMatchKeys.reduce((carry, type) => {
+  return Object.values(Match).reduce((carry, type) => {
     const value = type === "path" ? path : file[type] ?? "";
     const key = `${type}|${value}`;
     const displayAs = displayer[type](file);

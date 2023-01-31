@@ -53,6 +53,10 @@ export const PlaylistController = {
     try {
       const playlist = await Playlist.findById(id);
 
+      if (playlist === null) {
+        throw new Error("Can't find playlist");
+      }
+
       return playlist;
     } catch (e) {
       console.error("Failed to get Playlist: ", e);
@@ -69,6 +73,10 @@ export const PlaylistController = {
         .sort({ created_at: "asc" })
         .skip(page > 0 ? (page + 1) * limit : 0)
         .limit(limit);
+
+      if (results === null) {
+        throw new Error("Can't find playlists");
+      }
 
       return results;
     } catch (e) {

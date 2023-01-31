@@ -1,9 +1,9 @@
-export enum MediaMatch {
-  Artist = "artist",
-  Album = "album",
-  Genre = "genre",
-  Path = "path",
-}
+import { ObjectValues } from "../types.js";
 
-// Make sure these stay in sync
-export const mediaMatchKeys = ["artist", "album", "genre", "path"] as const;
+export const MediaMatch = {
+  Artist: "artist",
+  Album: "album",
+  Genre: "genre",
+} as const;
+
+export type MediaMatch = ObjectValues<typeof MediaMatch>;

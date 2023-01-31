@@ -1,6 +1,5 @@
-import * as mongoose from "mongoose";
 import { Base } from "./Base.js";
-import { index, prop } from "@typegoose/typegoose";
+import { index, mongoose, prop } from "@typegoose/typegoose";
 
 @index({ name: "text" })
 export class Playlist extends Base {

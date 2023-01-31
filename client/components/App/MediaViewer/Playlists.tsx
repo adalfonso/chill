@@ -33,12 +33,8 @@ export const Playlists = ({ setLoading, per_page }: PlaylistsProps) => {
 
   useInfiniteScroll(bottomBoundaryRef, pagerDispatch);
 
-  useFetch<Playlist>(
-    pager,
-    playlistDispatch,
-    // TODO: Fix hack
-    loadPlaylists as () => Promise<Playlist[]>,
-    () => setLoading(false),
+  useFetch<Playlist>(pager, playlistDispatch, loadPlaylists, () =>
+    setLoading(false),
   );
 
   const playPlaylist = (playlist: Playlist) => async () => {

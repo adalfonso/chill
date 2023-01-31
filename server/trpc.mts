@@ -1,4 +1,5 @@
 import * as trpcExpress from "@trpc/server/adapters/express";
+import superjson from "superjson";
 import { admin } from "./routes/api/v1/trpc/adminRouter.mjs";
 import { inferAsyncReturnType, initTRPC, TRPCError } from "@trpc/server";
 import { media } from "./routes/api/v1/trpc/mediaRouter.mjs";
@@ -13,13 +14,14 @@ export const createContext = ({
 
 type Context = inferAsyncReturnType<typeof createContext>;
 
-const t = initTRPC.context<Context>().create();
+const t = initTRPC.context<Context>().create({ transformer: superjson });
 
 export const { router, middleware, procedure } = t;
 
 const isAdmin = middleware(async ({ ctx: { req }, next }) => {
   const { user } = req;
 
+  // TODO: fix hack
   if (!user || (user as any).type !== "admin") {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }

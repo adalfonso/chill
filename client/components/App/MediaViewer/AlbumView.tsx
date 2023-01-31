@@ -34,10 +34,16 @@ export const AlbumView = ({ setLoading }: AlbumViewProps) => {
   useEffect(() => {
     setLoading(true);
 
-    MediaApi.query({
+    const match = {
       album: no_album ? null : album,
       artist: artist ?? undefined,
-    })
+    };
+
+    if (match.artist === undefined) {
+      delete match.artist;
+    }
+
+    MediaApi.query(match)
       .then(setFiles)
       .catch(({ message }) =>
         console.error("Failed to load album tracks data:", message),

@@ -1,8 +1,7 @@
-import { Media } from "@common/models/Media";
+import { GroupedMedia } from "@common/types";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch } from "@common/media/types";
 import { MediaTile } from "./MusicLibrary/MediaTile";
-import { TileData } from "@client/lib/types";
 import { albumUrl } from "@client/lib/url";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -17,7 +16,7 @@ type AlbumParams = {
 
 export const ArtistView = ({ setLoading }: ArtistViewProps) => {
   const artist = decodeURIComponent(useParams<AlbumParams>().artist ?? "");
-  const [albums, setAlbums] = useState<TileData[]>([]);
+  const [albums, setAlbums] = useState<GroupedMedia[]>([]);
 
   useEffect(() => {
     loadAlbums();
@@ -28,9 +27,7 @@ export const ArtistView = ({ setLoading }: ArtistViewProps) => {
 
     return MediaApi.getGroupedByAlbum(undefined, artist)
       .then((data) =>
-        setAlbums(
-          data.sort((a: Media, b: Media) => (b.year ?? 0) - (a.year ?? 0)),
-        ),
+        setAlbums(data.sort((a, b) => (b.year ?? 0) - (a.year ?? 0))),
       )
       .catch(({ message }) =>
         console.error("Failed to load artist albums:", { message }),
@@ -38,7 +35,7 @@ export const ArtistView = ({ setLoading }: ArtistViewProps) => {
       .finally(() => setLoading(false));
   };
 
-  const displayAs = (file: TileData) => {
+  const displayAs = (file: GroupedMedia) => {
     const { album, year } = file;
     return `${album} (${year})`;
   };

@@ -1,7 +1,7 @@
+import { GroupedMedia } from "@common/types";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch } from "@common/media/types";
 import { MediaTile } from "./MusicLibrary/MediaTile";
-import { TileData } from "@client/lib/types";
 import { artistUrl } from "@client/lib/url";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -16,7 +16,7 @@ type GenreParams = {
 
 export const GenreView = ({ setLoading }: GenreViewProps) => {
   const genre = decodeURIComponent(useParams<GenreParams>().genre ?? "");
-  const [artists, setArtists] = useState<TileData[]>([]);
+  const [artists, setArtists] = useState<GroupedMedia[]>([]);
 
   useEffect(() => {
     setLoading(true);
@@ -29,7 +29,7 @@ export const GenreView = ({ setLoading }: GenreViewProps) => {
       .finally(() => setLoading(false));
   }, [genre]);
 
-  const displayAs = (file: TileData) => file.artist ?? "";
+  const displayAs = (file: GroupedMedia) => file.artist ?? "";
 
   return (
     <div id="media-viewer">

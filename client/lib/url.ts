@@ -1,12 +1,12 @@
+import { GroupedMedia } from "@common/types";
 import { Media } from "@common/models/Media";
 import { MediaMatch } from "@common/media/types";
-import { TileData } from "./types";
 import { ObjectId } from "bson";
 
-export const artistUrl = (file: TileData | Media) =>
+export const artistUrl = (file: GroupedMedia | Media) =>
   `/artist/${encodeURIComponent(file.artist ?? "")}`;
 
-export const albumUrl = (file: TileData | Media) => {
+export const albumUrl = (file: GroupedMedia | Media) => {
   const base = `/album/${encodeURIComponent(
     file.album ?? "",
   )}?artist=${encodeURIComponent(file.artist ?? "")}`;
@@ -19,5 +19,5 @@ export const albumUrl = (file: TileData | Media) => {
   return base + (file._id?.album === null ? `&no_album=1` : ``);
 };
 
-export const matchUrl = (match: MediaMatch) => (file: TileData | Media) =>
+export const matchUrl = (match: MediaMatch) => (file: GroupedMedia | Media) =>
   `/${match}/${encodeURIComponent(file[match] ?? "")}`;
