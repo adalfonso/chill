@@ -52,7 +52,7 @@ export const ArtistView = ({ setLoading }: ArtistViewProps) => {
             <MediaTile
               tile_type={MediaMatch.Album}
               key={JSON.stringify(file._id)}
-              file={file}
+              file={{ ...file, artist }}
               url={albumUrl}
               displayAs={displayAs}
             />
