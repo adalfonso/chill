@@ -30,5 +30,13 @@ module.exports = {
       },
     ],
     "unused-imports/no-unused-imports": "error",
+    "no-restricted-syntax": [
+      "error",
+      {
+        selector: "TSEnumDeclaration",
+        message:
+          "TypeScript enums are forbidden in this project due to their inconsistency",
+      },
+    ],
   },
 };
