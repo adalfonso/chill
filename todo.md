@@ -1,7 +1,7 @@
 - transcoding setting, wifi vs cell data
 - alpha band on side for quick scrolling
-- playlist/shuffle ui improvement for mobile
-- reorder playlist by drag mobile
+- playlist/shuffle ui icons improvement for mobile
+- reorder playlist by drag mobile/desktop
 - shuffle should put currently playing track first
 - investigate: certain images fail to load
 - investigate: certain tracks have capitalized spelling or artist name
@@ -11,11 +11,9 @@
 - default artist image should be most recent album art
 - make media library hide so we can go back to it and resume browsing instead of reload
 - minimize audio toolbar when not playing
-- ditch mongoose
 - add typing to action when reducers are used
 - when changing stream quality, chrome plays a cached version
 - rescanning creates new ids for all media and invalidates a playlist
 - intercepting back button click and actually preventing location change
 - what happens when album, artist, etc are missing from files? what happens to urls based on them?
-- use @server aliases within the server code
 - 1000 degress all listed as "piste"

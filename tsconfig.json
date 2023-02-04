@@ -18,11 +18,15 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "paths": {
+      "@client/*": ["./client/*"],
       "@reducers/*": ["./client/state/reducers/*"],
       "@hooks/*": ["./client/hooks/*"],
+
+      "@common/*": ["./common/*"],
+
       "@server/*": ["./server/*"],
-      "@client/*": ["./client/*"],
-      "@common/*": ["./common/*"]
+      "@controllers/*": ["./server/controllers/*"],
+      "@routes/*": ["./server/routes/*"]
     }
   },
   "include": ["client", "common", "server"],

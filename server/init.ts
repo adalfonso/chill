@@ -6,7 +6,7 @@ import express, { Express } from "express";
 import passport from "passport";
 import { Connection } from "./db/Client";
 import { configurePassport } from "./passportConfig";
-import { initRouter } from "./routes/router";
+import { initRouter } from "@routes/router";
 
 /**
  * Initialize the express app

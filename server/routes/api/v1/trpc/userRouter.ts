@@ -1,5 +1,5 @@
-import { schema, UserController } from "../../../../controllers/UserController";
-import { procedure, router } from "../../../../trpc";
+import { procedure, router } from "@server/trpc";
+import { schema, UserController } from "@controllers/UserController";
 
 export const user = (routes: typeof router) =>
   routes({
