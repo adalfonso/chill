@@ -1,11 +1,11 @@
-import { Invitation } from "./models/Invitation.mjs";
+import { Invitation } from "./models/Invitation";
 import { PassportStatic } from "passport";
 import { Request } from "express";
 import { Strategy as GoogleStrategy } from "passport-google-oauth2";
 import { Strategy as JwtStrategy, VerifiedCallback } from "passport-jwt";
-import { User } from "./models/User.mjs";
+import { User } from "./models/User";
 import { VerifyCallback } from "passport-google-oauth2";
-import { env } from "./init.mjs";
+import { env } from "./init";
 
 export const configurePassport = (passport: PassportStatic) => {
   passport.use(

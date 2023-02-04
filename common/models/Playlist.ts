@@ -1,11 +1,6 @@
-import { Base } from "./Base.js";
-import { index, mongoose, prop } from "@typegoose/typegoose";
+import { Base } from "./Base";
+export interface Playlist extends Base {
+  name: string;
 
-@index({ name: "text" })
-export class Playlist extends Base {
-  @prop({ required: true, index: true, unique: true })
-  public name!: string;
-
-  @prop({ required: true, default: [] })
-  public items!: mongoose.Types.ObjectId[];
+  items: string[];
 }

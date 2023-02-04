@@ -1,6 +1,6 @@
-import { Media } from "../../common/models/Media.js";
+import { Media } from "@common/models/Media";
 import { randomBytes } from "node:crypto";
-import { spawnChild } from "./process.mjs";
+import { spawnChild } from "./process";
 
 type Mp3Quality = "85" | "115" | "165" | "190" | "245" | "original";
 

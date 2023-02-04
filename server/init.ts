@@ -4,9 +4,9 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import express, { Express } from "express";
 import passport from "passport";
-import { Connection } from "./db/Client.mjs";
-import { configurePassport } from "./passportConfig.mjs";
-import { initRouter } from "./routes/router.mjs";
+import { Connection } from "./db/Client";
+import { configurePassport } from "./passportConfig";
+import { initRouter } from "./routes/router";
 
 /**
  * Initialize the express app
@@ -19,7 +19,6 @@ export const init = (app: Express) => {
 
   configurePassport(passport);
 
-  app.set("view engine", "ejs");
   app.use(cookieParser(env.SIGNING_KEY));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));

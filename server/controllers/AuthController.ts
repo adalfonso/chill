@@ -1,10 +1,12 @@
 import jwt from "jsonwebtoken";
+import path from "node:path";
 import { Request, Response } from "express";
-import { User } from "../models/User.mjs";
-import { env } from "../init.mjs";
+import { User } from "../models/User";
+import { env } from "../init";
 
 export const AuthController = {
-  login: (_req: Request, res: Response) => res.render("pages/login"),
+  login: (_req: Request, res: Response) =>
+    res.sendFile(path.join(path.resolve(), "views/login.html")),
 
   logout: (_req: Request, res: Response) => {
     res.clearCookie("access_token");

@@ -1,18 +1,18 @@
 import fs from "fs/promises";
-import { AudioQuality } from "../../common/types.js";
-import { AudioType } from "../media/types.mjs";
-import { Media as MediaModel } from "../models/Media.mjs";
-import { Media } from "../../common/models/Media.js";
-import { MediaCrawler } from "../media/MediaCrawler.mjs";
+import { AudioQuality } from "@common/types";
+import { AudioType } from "../media/types";
+import { Media as MediaModel } from "../models/Media";
+import { Media } from "@common/models/Media";
+import { MediaCrawler } from "../media/MediaCrawler";
 import { Request as Req, Response as Res } from "express";
-import { Request } from "../trpc.mjs";
+import { Request } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { User } from "@common/models/User.js";
-import { adjustImage } from "../media/image/ImageAdjust.mjs";
-import { convert } from "../lib/conversion.mjs";
-import { getAsGroup } from "../db/utils.mjs";
-import { sortResults } from "../search/ResultSorter.mjs";
-import { stream_file } from "../lib/stream.mjs";
+import { User } from "@common/models/User";
+import { adjustImage } from "../media/image/ImageAdjust";
+import { convert } from "../lib/conversion";
+import { getAsGroup } from "../db/utils";
+import { sortResults } from "../search/ResultSorter";
+import { stream_file } from "../lib/stream";
 import { z } from "zod";
 
 const mongo_filter = z.object({

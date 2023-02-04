@@ -1,8 +1,8 @@
 import {
   PlaylistController,
   schema,
-} from "../../../../controllers/PlaylistController.mjs";
-import { procedure, router } from "../../../../trpc.mjs";
+} from "../../../../controllers/PlaylistController";
+import { procedure, router } from "../../../../trpc";
 
 export const playlist = (routes: typeof router) =>
   routes({

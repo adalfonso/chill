@@ -1,4 +1,4 @@
-import { ObjectValues } from "../../common/types.js";
+import { ObjectValues } from "@common/types";
 
 export const AudioType = {
   mp3: "mp3",

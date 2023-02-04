@@ -1,8 +1,8 @@
 import {
   MediaFileController,
   schema,
-} from "../../../../controllers/MediaFileController.mjs";
-import { procedure, router } from "../../../../trpc.mjs";
+} from "../../../../controllers/MediaFileController";
+import { procedure, router } from "../../../../trpc";
 
 export const media = (routes: typeof router) =>
   routes({

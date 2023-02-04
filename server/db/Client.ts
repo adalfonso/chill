@@ -19,7 +19,7 @@ export class Connection {
 
     try {
       mongoose.set("strictQuery", true);
-      const uri = `mongodb://${host}:${port}`;
+      const uri = `mongodb://${host}:${port}/chill`;
       Connection._instance = await mongoose.connect(uri);
       console.info("Connected to mongodb");
 

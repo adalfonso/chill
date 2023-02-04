@@ -1,8 +1,8 @@
-import { admin_procedure, router } from "../../../../trpc.mjs";
+import { admin_procedure, router } from "../../../../trpc";
 import {
   InviteController,
   schema,
-} from "../../../../controllers/InviteController.mjs";
+} from "../../../../controllers/InviteController";
 
 export const admin = (routes: typeof router) =>
   routes({

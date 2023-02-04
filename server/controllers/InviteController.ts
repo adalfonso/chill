@@ -1,6 +1,6 @@
-import { Invitation } from "../models/Invitation.mjs";
-import { Request } from "../trpc.mjs";
-import { User } from "../models/User.mjs";
+import { Invitation } from "../models/Invitation";
+import { Request } from "../trpc";
+import { User } from "../models/User";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 

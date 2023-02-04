@@ -1,5 +1,5 @@
-import { Media } from "./models/Media.js";
-import { MediaMatch } from "./media/types.js";
+import { Media } from "./models/Media";
+import { MediaMatch } from "./media/types";
 
 export type Nullable<T> = T | null;
 export type ObjectValues<T> = T[keyof T];

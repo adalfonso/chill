@@ -1,7 +1,5 @@
-import { Base } from "./Base.js";
-import { prop } from "@typegoose/typegoose";
+import { Base } from "./Base";
 
-export class Invitation extends Base {
-  @prop({ required: true, unique: true, index: true })
-  public email!: string;
+export interface Invitation extends Base {
+  email: string;
 }

@@ -1,10 +1,10 @@
 import * as trpcExpress from "@trpc/server/adapters/express";
 import superjson from "superjson";
-import { admin } from "./routes/api/v1/trpc/adminRouter.mjs";
+import { admin } from "./routes/api/v1/trpc/adminRouter";
 import { inferAsyncReturnType, initTRPC, TRPCError } from "@trpc/server";
-import { media } from "./routes/api/v1/trpc/mediaRouter.mjs";
-import { playlist } from "./routes/api/v1/trpc/playlistRouter.mjs";
-import { user } from "./routes/api/v1/trpc/userRouter.mjs";
+import { media } from "./routes/api/v1/trpc/mediaRouter";
+import { playlist } from "./routes/api/v1/trpc/playlistRouter";
+import { user } from "./routes/api/v1/trpc/userRouter";
 import { z, ZodType } from "zod";
 
 export const createContext = ({

@@ -1,5 +1,5 @@
 import { Response } from "express";
-import fs from "fs/promises";
+import fs from "node:fs/promises";
 
 interface StreamFile {
   path: string;

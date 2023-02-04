@@ -1,4 +1,4 @@
-import { ObjectValues } from "../types.js";
+import { ObjectValues } from "../types";
 
 export const MediaMatch = {
   Artist: "artist",

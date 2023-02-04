@@ -1,8 +1,8 @@
 import _ from "lodash";
-import { AudioQuality } from "../../common/types.js";
-import { Request } from "../trpc.mjs";
+import { AudioQuality } from "@common/types";
+import { Request } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { User } from "../models/User.mjs";
+import { User } from "../models/User";
 import { z } from "zod";
 
 export const schema = {

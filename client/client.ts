@@ -1,5 +1,5 @@
 import superjson from "superjson";
-import type { ApiRouter } from "../server/trpc.mjs";
+import type { ApiRouter } from "../server/trpc";
 import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
 
 export const client = createTRPCProxyClient<ApiRouter>({

@@ -1,10 +1,9 @@
 import _ from "lodash";
-import { BeAnObject } from "@typegoose/typegoose/lib/types.js";
-import { GroupOptions } from "@server/types.js";
-import { GroupedMedia } from "@common/types.js";
-import { Media } from "../../common/models/Media.js";
+import { GroupOptions } from "@server/types";
+import { GroupedMedia } from "@common/types";
+import { Media as IMedia } from "@common/models/Media";
+import { Media } from "@server/models/Media";
 import { PipelineStage } from "mongoose";
-import { ReturnModelType } from "@typegoose/typegoose";
 
 /**
  * Perform a common DB select with a groupBy
@@ -15,8 +14,8 @@ import { ReturnModelType } from "@typegoose/typegoose";
  * @returns grouped data
  */
 export const getAsGroup = async (
-  model: ReturnModelType<typeof Media, BeAnObject>,
-  grouping: (keyof Media)[],
+  model: typeof Media,
+  grouping: (keyof IMedia)[],
   options: Partial<GroupOptions> = {},
 ) => {
   const { limit = Infinity, page = 0 } = options.pagination ?? {};

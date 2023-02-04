@@ -1,6 +1,6 @@
-import type { SearchResult } from "../../common/types.js";
-import { Media } from "../../common/models/Media.js";
-import { MediaMatch } from "../../common/media/types.js";
+import type { SearchResult } from "../../common/types";
+import { Media } from "@common/models/Media";
+import { MediaMatch } from "@common/media/types";
 import { compareTwoStrings } from "string-similarity";
 
 const Match = { ...MediaMatch, Path: "path" } as const;

@@ -1,13 +1,13 @@
-import fs from "fs/promises";
+import fs from "node:fs/promises";
 import mm from "music-metadata";
-import path from "path";
-import { Media as MediaModel } from "../models/Media.mjs";
-import { Media } from "../../common/models/Media.js";
-import { Nullable } from "../../common/types.js";
+import path from "node:path";
+import { Media as MediaModel } from "../models/Media";
+import { Media } from "@common/models/Media";
+import { Nullable } from "@common/types";
 import { ObjectId } from "mongodb";
-import { Scan as ScanModel } from "../models/Scan.mjs";
-import { Scan, ScanStatus } from "../../common/models/Scan.js";
-import { adjustImage } from "./image/ImageAdjust.mjs";
+import { Scan as ScanModel } from "../models/Scan";
+import { Scan, ScanStatus } from "@common/models/Scan";
+import { adjustImage } from "./image/ImageAdjust";
 
 /** Config options used by the crawler */
 interface MediaCrawlerConfig {
@@ -181,6 +181,7 @@ export class MediaCrawler {
         console.error(`Failed to convert cover data for ${file_path}: ${e}`);
       }
     }
+
     return {
       path: file_path,
       duration: format.duration ?? 0,
@@ -190,14 +191,15 @@ export class MediaCrawler {
       album: common.album,
       genre: common.genre?.[0] ?? null,
       year: common.year,
-      cover: cover
-        ? {
-            filename: id + "." + cover.format.replace("image/", ""),
-            format: cover.format,
-            type: cover.type ?? "",
-            data: cover_data,
-          }
-        : null,
+      cover:
+        cover && cover_data
+          ? {
+              filename: id + "." + cover.format.replace("image/", ""),
+              format: cover.format,
+              type: cover.type ?? "",
+              data: cover_data,
+            }
+          : undefined,
     };
   }
 
