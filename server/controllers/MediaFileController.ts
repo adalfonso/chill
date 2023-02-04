@@ -1,18 +1,18 @@
 import fs from "fs/promises";
 import { AudioQuality } from "@common/types";
-import { AudioType } from "../media/types";
-import { Media as MediaModel } from "../models/Media";
+import { AudioType } from "@server/lib/media/types";
+import { Media as MediaModel } from "@server/models/Media";
 import { Media } from "@common/models/Media";
-import { MediaCrawler } from "../media/MediaCrawler";
+import { MediaCrawler } from "@server/lib/media/MediaCrawler";
 import { Request as Req, Response as Res } from "express";
-import { Request } from "../trpc";
+import { Request } from "@server/trpc";
 import { TRPCError } from "@trpc/server";
 import { User } from "@common/models/User";
-import { adjustImage } from "../media/image/ImageAdjust";
-import { convert } from "../lib/conversion";
-import { getAsGroup } from "../db/utils";
-import { sortResults } from "../search/ResultSorter";
-import { stream_file } from "../lib/stream";
+import { adjustImage } from "@server/lib/media/image/ImageAdjust";
+import { convert } from "@server/lib/conversion";
+import { getAsGroup } from "@server/lib/db/utils";
+import { sortResults } from "@server/lib/search/ResultSorter";
+import { stream_file } from "@server/lib/stream";
 import { z } from "zod";
 
 const mongo_filter = z.object({

@@ -1,6 +1,6 @@
-import { Media } from "../models/Media";
-import { Playlist } from "../models/Playlist";
-import { Request } from "../trpc";
+import { Media } from "@server/models/Media";
+import { Playlist } from "@server/models/Playlist";
+import { Request } from "@server/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 

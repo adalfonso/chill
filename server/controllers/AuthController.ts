@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 import path from "node:path";
 import { Request, Response } from "express";
-import { User } from "../models/User";
-import { env } from "../init";
+import { User } from "@server/models/User";
+import { env } from "@server/init";
 
 export const AuthController = {
   login: (_req: Request, res: Response) =>

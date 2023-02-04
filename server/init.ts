@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import express, { Express } from "express";
 import passport from "passport";
-import { Connection } from "./db/Client";
+import { Connection } from "./lib/db/Client";
 import { configurePassport } from "./passportConfig";
 import { initRouter } from "@routes/router";
 

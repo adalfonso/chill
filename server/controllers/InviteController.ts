@@ -1,8 +1,8 @@
-import { Invitation } from "../models/Invitation";
-import { Request } from "../trpc";
-import { User } from "../models/User";
-import { z } from "zod";
+import { Invitation } from "@server/models/Invitation";
+import { Request } from "@server/trpc";
 import { TRPCError } from "@trpc/server";
+import { User } from "@server/models/User";
+import { z } from "zod";
 
 export const schema = {
   invite: z.string(),

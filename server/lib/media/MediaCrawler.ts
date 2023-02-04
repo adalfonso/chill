@@ -1,11 +1,11 @@
 import fs from "node:fs/promises";
 import mm from "music-metadata";
 import path from "node:path";
-import { Media as MediaModel } from "../models/Media";
+import { Media as MediaModel } from "@server/models/Media";
 import { Media } from "@common/models/Media";
 import { Nullable } from "@common/types";
 import { ObjectId } from "mongodb";
-import { Scan as ScanModel } from "../models/Scan";
+import { Scan as ScanModel } from "@server/models/Scan";
 import { Scan, ScanStatus } from "@common/models/Scan";
 import { adjustImage } from "./image/ImageAdjust";
 

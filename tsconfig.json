@@ -26,6 +26,7 @@
 
       "@server/*": ["./server/*"],
       "@controllers/*": ["./server/controllers/*"],
+      "@middleware/*": ["./server/middleware/*"],
       "@routes/*": ["./server/routes/*"]
     }
   },
