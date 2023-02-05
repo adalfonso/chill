@@ -30,7 +30,6 @@ specifiers:
   '@vitejs/plugin-react-swc': ^3.1.0
   connect-history-api-fallback: ^2.0.0
   cookie-parser: ^1.4.6
-  core-js: ^3.27.2
   dotenv: ^16.0.3
   eslint: ^8.33.0
   eslint-config-prettier: ^8.6.0
@@ -53,7 +52,6 @@ specifiers:
   react-dom: ^18.2.0
   react-redux: ^8.0.5
   react-router-dom: ^6.8.0
-  regenerator-runtime: ^0.13.11
   sass: ^1.58.0
   sharp: ^0.30.7
   string-similarity: ^4.0.4
@@ -111,7 +109,6 @@ devDependencies:
   '@typescript-eslint/eslint-plugin': 5.50.0_go4drrxstycfikanvu45pi4vgq
   '@typescript-eslint/parser': 5.50.0_4vsywjlpuriuw3tl5oq6zy5a64
   '@vitejs/plugin-react-swc': 3.1.0_vite@4.1.1
-  core-js: 3.27.2
   eslint: 8.33.0
   eslint-config-prettier: 8.6.0_eslint@8.33.0
   eslint-plugin-prettier: 4.2.1_jqplj6qf3uqpxpu4gdyhwwasnq
@@ -121,7 +118,6 @@ devDependencies:
   nodemon: 2.0.20
   prettier: 2.8.3
   react-dom: 18.2.0_react@18.2.0
-  regenerator-runtime: 0.13.11
   sass: 1.58.0
   typescript: 4.9.5
   vite: 4.1.1_cfy6wpbf4pkoel5siokh7ytvce
@@ -2976,11 +2972,6 @@ packages:
     dependencies:
       is-what: 4.1.8
     dev: false
-
-  /core-js/3.27.2:
-    resolution: {integrity: sha512-9ashVQskuh5AZEZ1JdQWp1GqSoC1e1G87MzRqg2gIfVAQ7Qn9K+uFj8EcniUFA4P2NLZfV+TOlX1SzoKfo+s7w==}
-    requiresBuild: true
-    dev: true
 
   /cross-spawn/7.0.3:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}

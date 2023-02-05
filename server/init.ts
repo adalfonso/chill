@@ -1,5 +1,3 @@
-import "core-js";
-import "regenerator-runtime";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import express, { Express } from "express";

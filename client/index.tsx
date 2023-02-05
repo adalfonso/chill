@@ -1,4 +1,3 @@
-import "regenerator-runtime";
 import store from "@reducers/store";
 import { App } from "./App";
 import { BrowserRouter } from "react-router-dom";
