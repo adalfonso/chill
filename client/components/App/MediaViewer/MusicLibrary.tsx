@@ -1,5 +1,5 @@
 import "./MusicLibrary.scss";
-import _ from "lodash";
+import * as _ from "lodash-es";
 import { Action, fetchReducer, useFetch } from "@hooks/useFetch";
 import { GroupedMedia, PaginationOptions } from "@common/types";
 import { MediaApi } from "@client/api/MediaApi";

@@ -1,4 +1,4 @@
-import _ from "lodash";
+import * as _ from "lodash-es";
 import { AudioQuality } from "@common/types";
 import { Request } from "@server/trpc";
 import { TRPCError } from "@trpc/server";

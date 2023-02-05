@@ -1,7 +1,6 @@
 import { GroupedMedia } from "@common/types";
 import { Media } from "@common/models/Media";
 import { MediaMatch } from "@common/media/types";
-import { ObjectId } from "bson";
 
 export const artistUrl = (file: GroupedMedia | Media) =>
   `/artist/${encodeURIComponent(file.artist ?? "")}`;
@@ -12,7 +11,7 @@ export const albumUrl = (file: GroupedMedia | Media) => {
   )}?artist=${encodeURIComponent(file.artist ?? "")}`;
 
   // Regular media file, not aggregated
-  if (file._id instanceof ObjectId) {
+  if (typeof file._id === "string") {
     return base;
   }
 

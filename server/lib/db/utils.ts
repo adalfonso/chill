@@ -1,4 +1,4 @@
-import _ from "lodash";
+import * as _ from "lodash-es";
 import { GroupOptions } from "@server/types";
 import { GroupedMedia } from "@common/types";
 import { Media as IMedia } from "@common/models/Media";

@@ -5,9 +5,9 @@ import { Media } from "@common/models/Media";
 import { artistUrl } from "@client/lib/url";
 import { getState } from "@reducers/store";
 import { noPropagate, secondsToMinutes } from "@client/util";
+import { useId } from "@hooks/useObjectId";
 import { useMenu } from "@hooks/useMenu";
 import { useNavigate } from "react-router-dom";
-import { useObjectId } from "@hooks/useObjectId";
 import { useSelector } from "react-redux";
 
 export interface AlbumViewRowProps {
@@ -18,8 +18,8 @@ export interface AlbumViewRowProps {
 
 export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
   const { player } = useSelector(getState);
-  const file_menu_id = useObjectId();
-  const file_info_id = useObjectId();
+  const file_menu_id = useId();
+  const file_info_id = useId();
   const file_info_menu = useMenu(file_info_id);
   const navigate = useNavigate();
 

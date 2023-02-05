@@ -1,4 +1,4 @@
-import _ from "lodash";
+import * as _ from "lodash-es";
 import { AudioQuality as AudioQualityValues } from "@common/types";
 import { AudioQuality as qualityList } from "@common/types";
 import { Select } from "@client/components/ui/Select";

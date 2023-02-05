@@ -1,4 +1,4 @@
-import _ from "lodash";
+import * as _ from "lodash-es";
 import { Media } from "@common/models/Media";
 import { Nullable } from "@common/types";
 import { createSlice } from "@reduxjs/toolkit";

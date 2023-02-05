@@ -10,10 +10,10 @@ import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { noPropagate } from "@client/util";
 import { play } from "@reducers/player";
 import { useDispatch } from "react-redux";
+import { useId } from "@hooks/useObjectId";
 import { useLongPress } from "@hooks/useLongPress";
 import { useMenu } from "@hooks/useMenu";
 import { useNavigate } from "react-router-dom";
-import { useObjectId } from "@hooks/useObjectId";
 import { useState } from "react";
 
 interface MediaTileProps {
@@ -32,7 +32,7 @@ export const MediaTile = ({
   const [menu_visible, setMenuVisible] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const menu_id = useObjectId();
+  const menu_id = useId();
   const menu = useMenu(menu_id);
 
   const onPress = useLongPress(

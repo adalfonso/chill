@@ -4,8 +4,8 @@ import { Media } from "@common/models/Media";
 import { albumUrl, artistUrl } from "@client/lib/url";
 import { getState } from "@reducers/store";
 import { noPropagate, secondsToMinutes } from "@client/util";
+import { useId } from "@hooks/useObjectId";
 import { useNavigate } from "react-router-dom";
-import { useObjectId } from "@hooks/useObjectId";
 import { useSelector } from "react-redux";
 
 export interface PlaylistRowProps {
@@ -16,7 +16,7 @@ export interface PlaylistRowProps {
 
 export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
   const { player } = useSelector(getState);
-  const menu_id = useObjectId();
+  const menu_id = useId();
   const navigate = useNavigate();
 
   const menuHandler = {
