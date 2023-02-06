@@ -1,19 +1,87 @@
 @import "@client/variables.scss";
 
+#play-controls-minimized {
+  padding: 1rem;
+  background-color: $dm-background-2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .controls {
+    display: flex;
+    align-items: center;
+    flex-grow: 0;
+
+    > * {
+      padding: 0 0.5rem;
+
+      &:last-of-type {
+        margin-right: -0.5rem;
+      }
+    }
+  }
+}
+
 #play-controls {
   border-top: 1px solid $dm-shadow;
   background-color: $dm-background-2;
   text-align: center;
   color: #ddd;
-  padding: 0 0 1.5rem 0;
+  padding: 1rem 0;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+
+  &.none,
+  &.minimized {
+    display: none;
+  }
+
+  > .content {
+    flex-grow: 1;
+    padding: 0 1rem;
+    display: flex;
+    flex-direction: column;
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .cover-wrapper {
+      display: flex;
+      width: 100%;
+      flex-direction: column;
+      align-items: center;
+      flex-grow: 1;
+      justify-content: center;
+
+      .cover {
+        border-radius: 0.25rem;
+        width: calc(100vw - 4rem);
+        height: calc(100vw - 4rem);
+
+        margin: 1rem 0;
+
+        img {
+          width: 100%;
+          border-radius: 0.25rem;
+        }
+      }
+    }
+  }
 
   .panel {
     display: flex;
     justify-content: space-between;
+    flex-direction: column;
 
     > div {
       margin: 0 1rem;
-      width: 20%;
     }
 
     .side-panel {
@@ -27,15 +95,20 @@
       font-size: 1.5rem;
       user-select: none;
       min-width: 64%;
-      margin: 0;
-    }
-  }
+      margin: 1.5rem 0;
+      padding: 0 1rem;
 
-  .controls {
-    margin-top: 1rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+      .controls {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .title {
+        margin: 0 0 1.5rem 0;
+      }
+    }
   }
 
   .circle-button {
@@ -81,7 +154,27 @@
 }
 
 @media screen and (min-width: 844px) {
+  #play-controls-minimized {
+    display: none;
+  }
+
   #play-controls {
+    position: static;
+    top: auto;
+    right: auto;
+    left: auto;
+    bottom: auto;
+    padding: 0 0 1rem 0;
+
+    &.none,
+    &.minimized {
+      display: flex;
+    }
+
+    > .content {
+      display: none;
+    }
+
     .circle-button {
       height: 2.5rem;
       width: 2.5rem;
@@ -89,8 +182,20 @@
     }
 
     .panel {
+      flex-direction: row;
+
+      > div {
+        margin: 0 2rem;
+        width: 20%;
+      }
+
       .now-playing {
         font-size: 1.75rem;
+        margin: 0 0 0.5rem 0;
+
+        .title {
+          margin: auto;
+        }
       }
     }
 

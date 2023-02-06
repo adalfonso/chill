@@ -1,6 +1,6 @@
 import * as _ from "lodash-es";
 import { Media } from "@common/models/Media";
-import { Nullable } from "@common/types";
+import { Nullable, ObjectValues } from "@common/types";
 import { createSlice } from "@reduxjs/toolkit";
 
 export let audio = new Audio();
@@ -13,6 +13,14 @@ export const getAudioProgress = () => {
 
   return (audio.currentTime / audio.duration) * 100;
 };
+
+export const MobileDisplayMode = {
+  Fullscreen: "fullscreen",
+  Minimized: "minimized",
+  None: "none",
+} as const;
+
+export type MobileDisplayMode = ObjectValues<typeof MobileDisplayMode>;
 
 /**
  * Load an audio file
@@ -58,6 +66,7 @@ export interface PlayerState {
   playlist: Media[];
   index: number;
   volume: number;
+  mobile_display_mode: MobileDisplayMode;
 }
 
 const initialState: PlayerState = {
@@ -69,6 +78,7 @@ const initialState: PlayerState = {
   playlist: [],
   index: 0,
   volume: 1,
+  mobile_display_mode: MobileDisplayMode.None,
 };
 
 export const playerSlice = createSlice({
@@ -104,6 +114,15 @@ export const playerSlice = createSlice({
       state.volume = audio.volume = action.payload.percent;
     },
 
+    clear: (state) => {
+      audio.pause();
+      state.is_playing = false;
+      state.now_playing = null;
+      state.next_playing = null;
+      state.playlist = [];
+      state.index = 0;
+    },
+
     pause: (state) => {
       audio.pause();
       state.is_playing = false;
@@ -117,6 +136,7 @@ export const playerSlice = createSlice({
         state.index = index;
         state.now_playing = files[index];
         state.next_playing = files[index + 1] ?? null;
+        state.mobile_display_mode = MobileDisplayMode.Fullscreen;
         load(state);
       }
 
@@ -213,6 +233,10 @@ export const playerSlice = createSlice({
         (file) => file.path === state.now_playing?.path,
       );
     },
+
+    setMobileDisplayMode: (state, action) => {
+      state.mobile_display_mode = action.payload.mobile_display_mode;
+    },
   },
 });
 
@@ -221,6 +245,7 @@ export const {
   changeTrack,
   changeVolume,
   next,
+  clear,
   pause,
   play,
   playNext,
@@ -228,6 +253,7 @@ export const {
   seek,
   setPlaylist,
   shuffle,
+  setMobileDisplayMode,
 } = playerSlice.actions;
 
 export default playerSlice.reducer;
