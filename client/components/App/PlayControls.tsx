@@ -132,9 +132,8 @@ export const PlayControls = () => {
             <Icon
               icon={player.is_playing ? faPause : faPlay}
               onClick={noPropagate(togglePlayer)}
-              size="lg"
             />
-            <Icon icon={faClose} onClick={noPropagate(stop)} size="lg" />
+            <Icon icon={faClose} onClick={noPropagate(stop)} />
           </div>
         </div>
       )}
