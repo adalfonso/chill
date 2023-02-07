@@ -8,7 +8,7 @@ import {
   seek,
 } from "@reducers/player";
 import { getState } from "@reducers/store";
-import { getTimeTracking, startAnimationLoop } from "@client/util";
+import { getTimeTracking, startAnimationLoop } from "@client/lib/util";
 import { useDispatch, useSelector } from "react-redux";
 import { useDrag } from "@hooks/useDrag";
 
@@ -70,10 +70,10 @@ export const Scrubber = () => {
 
       <div className="time-tracking">
         <div className="current-time">
-          {player.is_playing && getTimeTracking(audio.currentTime)}
+          {player.now_playing && getTimeTracking(audio.currentTime)}
         </div>
         <div className="end-time">
-          {player.is_playing &&
+          {player.now_playing &&
             !Number.isNaN(audio.duration) &&
             getTimeTracking(audio.duration)}
         </div>

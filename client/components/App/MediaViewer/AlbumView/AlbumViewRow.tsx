@@ -4,7 +4,7 @@ import { FileMenu } from "../FileMenu";
 import { Media } from "@common/models/Media";
 import { artistUrl } from "@client/lib/url";
 import { getState } from "@reducers/store";
-import { noPropagate, secondsToMinutes } from "@client/util";
+import { noPropagate, secondsToMinutes } from "@client/lib/util";
 import { useId } from "@hooks/useObjectId";
 import { useMenu } from "@hooks/useMenu";
 import { useNavigate } from "react-router-dom";

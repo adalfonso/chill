@@ -1,7 +1,7 @@
 import "./FileInfo.scss";
 import { Close } from "@client/components/ui/Close";
 import { Media } from "@common/models/Media";
-import { noPropagate, secondsToMinutes } from "@client/util";
+import { noPropagate, secondsToMinutes } from "@client/lib/util";
 import { useMenu } from "@hooks/useMenu";
 
 interface FileInfoProps {

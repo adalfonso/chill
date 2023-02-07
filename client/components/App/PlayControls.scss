@@ -1,4 +1,5 @@
 @import "@client/variables.scss";
+@import "@client/mixins.scss";
 
 #play-controls-minimized {
   padding: 1rem;
@@ -28,11 +29,7 @@
   text-align: center;
   color: #ddd;
   padding: 1rem 0;
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
-  bottom: 0;
+  @include fullscreen;
   display: flex;
   flex-direction: column;
 
@@ -64,12 +61,16 @@
         border-radius: 0.25rem;
         width: calc(100vw - 4rem);
         height: calc(100vw - 4rem);
-
+        background-color: $dm-background;
+        box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px,
+          rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px,
+          rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
         margin: 1rem 0;
 
         img {
           width: 100%;
           border-radius: 0.25rem;
+          height: 100%;
         }
       }
     }
@@ -95,7 +96,7 @@
       font-size: 1.5rem;
       user-select: none;
       min-width: 64%;
-      margin: 1.5rem 0;
+      margin: 1rem 0;
       padding: 0 1rem;
 
       .controls {
@@ -107,6 +108,11 @@
 
       .title {
         margin: 0 0 1.5rem 0;
+
+        .artist {
+          font-size: 1.25rem;
+          margin-top: 0.5em;
+        }
       }
     }
   }
@@ -136,11 +142,11 @@
 
   .icons {
     > * {
-      margin-left: 1rem;
+      margin-left: 1em;
     }
 
     svg {
-      font-size: 1rem;
+      font-size: 1.25rem;
     }
 
     .active {
@@ -195,7 +201,14 @@
 
         .title {
           margin: auto;
+          margin-top: -1rem;
         }
+      }
+    }
+
+    .icons {
+      svg {
+        font-size: 1rem;
       }
     }
 

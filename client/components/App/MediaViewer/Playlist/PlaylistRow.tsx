@@ -3,7 +3,7 @@ import { FileMenu } from "../FileMenu";
 import { Media } from "@common/models/Media";
 import { albumUrl, artistUrl } from "@client/lib/url";
 import { getState } from "@reducers/store";
-import { noPropagate, secondsToMinutes } from "@client/util";
+import { noPropagate, secondsToMinutes } from "@client/lib/util";
 import { useId } from "@hooks/useObjectId";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";

@@ -5,6 +5,7 @@ import { Media } from "@common/models/Media";
 import { MediaApi } from "@client/api/MediaApi";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { play } from "@reducers/player";
+import { truncate } from "lodash-es";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@hooks/useQuery";
@@ -69,8 +70,12 @@ export const AlbumView = ({ setLoading }: AlbumViewProps) => {
 
           <div className="info">
             <h2>{artists().length > 1 ? "Various Artists" : artists()[0]}</h2>
-            {artists().length > 1 && <h4>{artists().join(",  ")}</h4>}
-            <h4>{album}</h4>
+            {artists().length > 1 && (
+              <h4 title={artists().join(",  ")}>
+                {truncate(artists().join(",  "), { length: 72 })}
+              </h4>
+            )}
+            <h4>{truncate(album, { length: 50 })}</h4>
             <h4>{getYear()}</h4>
             <div className="play-button" onClick={() => playAll()()}>
               <Icon icon={faPlayCircle} size="sm" pull="right" />

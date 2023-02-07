@@ -1,7 +1,7 @@
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { type SizeProp } from "@fortawesome/fontawesome-svg-core";
-import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { MouseEvent } from "react";
+import { SizeProp } from "@fortawesome/fontawesome-svg-core";
+import { faClose } from "@fortawesome/free-solid-svg-icons";
 
 interface CloseProps {
   onClose: (e: MouseEvent<HTMLElement>) => void;

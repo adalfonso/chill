@@ -1,6 +1,5 @@
 - transcoding setting, wifi vs cell data
 - alpha band on side for quick scrolling
-- playlist/shuffle ui icons improvement for mobile
 - reorder playlist by drag mobile/desktop
 - shuffle should put currently playing track first
 - investigate: certain images fail to load

@@ -5,7 +5,7 @@ import { Scrubber } from "./PlayControls/Scrubber";
 import { Shuffle } from "./PlayControls/Shuffle";
 import { VolumeControl } from "./PlayControls/VolumeControl";
 import { getState } from "@reducers/store";
-import { noPropagate } from "@client/util";
+import { noPropagate } from "@client/lib/util";
 import { useDispatch, useSelector } from "react-redux";
 import {
   clear,
@@ -32,9 +32,14 @@ export const PlayControls = () => {
   const dispatch = useDispatch();
 
   const getNowPlaying = () =>
-    player.now_playing
-      ? `${player.now_playing.artist} - ${player.now_playing.title}`
-      : default_now_playing;
+    player.now_playing ? (
+      <>
+        <div>{player.now_playing.title}</div>
+        <div className="artist">{player.now_playing.artist}</div>
+      </>
+    ) : (
+      default_now_playing
+    );
 
   const togglePlayer = async () => {
     const operation = player.is_playing ? pause() : play({});
@@ -65,7 +70,7 @@ export const PlayControls = () => {
           <div className="controls">
             <Icon
               icon={faAngleDown}
-              size="lg"
+              size="xl"
               onClick={() =>
                 dispatch(
                   setMobileDisplayMode({
@@ -122,13 +127,14 @@ export const PlayControls = () => {
       </div>
       {player.mobile_display_mode === MobileDisplayMode.Minimized && (
         <div id="play-controls-minimized" onClick={noPropagate(goFullscreen)}>
-          {getNowPlaying()}
+          {player?.now_playing?.artist} - {player?.now_playing?.title}
           <div className="controls">
             <Icon
               icon={player.is_playing ? faPause : faPlay}
               onClick={noPropagate(togglePlayer)}
+              size="lg"
             />
-            <Icon icon={faClose} onClick={noPropagate(stop)} />
+            <Icon icon={faClose} onClick={noPropagate(stop)} size="lg" />
           </div>
         </div>
       )}

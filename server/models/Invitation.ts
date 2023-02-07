@@ -1,4 +1,4 @@
-import type { Invitation as IInvitation } from "@common/models/Invitation";
+import { Invitation as IInvitation } from "@common/models/Invitation";
 import { model, Schema } from "mongoose";
 import { timestamps } from "./Base";
 

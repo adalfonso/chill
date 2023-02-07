@@ -7,7 +7,7 @@ import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch } from "@common/media/types";
 import { albumUrl, artistUrl, matchUrl } from "@client/lib/url";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
-import { noPropagate } from "@client/util";
+import { noPropagate } from "@client/lib/util";
 import { play } from "@reducers/player";
 import { useDispatch } from "react-redux";
 import { useId } from "@hooks/useObjectId";

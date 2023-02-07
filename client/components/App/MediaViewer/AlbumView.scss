@@ -14,8 +14,8 @@
     }
 
     .album-art {
-      height: 160px;
-      width: 160px;
+      height: 128px;
+      width: 128px;
       background-color: $dm-background-2;
       border-radius: 0.25rem;
       display: inline-flex;
@@ -24,7 +24,7 @@
     .info {
       display: flex;
       flex-direction: column;
-      height: 160px;
+      height: 128px;
       justify-content: space-between;
       align-items: flex-start;
 
@@ -35,7 +35,7 @@
 
     img {
       border-radius: 0.25rem;
-      width: 160px;
+      width: 128px;
     }
   }
 
@@ -64,6 +64,19 @@
     .details {
       > * {
         margin: 1rem;
+      }
+
+      .album-art {
+        height: 160px;
+        width: 160px;
+      }
+
+      .info {
+        height: 160px;
+      }
+
+      img {
+        width: 160px;
       }
     }
 

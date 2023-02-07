@@ -3,7 +3,7 @@ import { Media } from "@common/models/Media";
 import { addToQueue, playNext } from "@reducers/player";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import { getState } from "@reducers/store";
-import { noPropagate } from "@client/util";
+import { noPropagate } from "@client/lib/util";
 import { toggle } from "@reducers/playlistEditor";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
