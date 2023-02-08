@@ -1,7 +1,6 @@
 - transcoding setting, wifi vs cell data
 - alpha band on side for quick scrolling
 - reorder playlist by drag mobile/desktop
-- shuffle should put currently playing track first
 - investigate: certain images fail to load
 - investigate: certain tracks have capitalized spelling or artist name
 - optimize album art - don't store per track, group by album

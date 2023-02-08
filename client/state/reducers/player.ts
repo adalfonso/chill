@@ -232,6 +232,14 @@ export const playerSlice = createSlice({
         state.playlist,
         (file) => file.path === state.now_playing?.path,
       );
+
+      // Move now playing to be first after shuffling
+      if (state.is_shuffled) {
+        state.playlist = [
+          state.playlist.splice(state.index, 1)[0],
+          ...state.playlist,
+        ];
+      }
     },
 
     setMobileDisplayMode: (state, action) => {
