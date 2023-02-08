@@ -22,6 +22,7 @@ export const Scrubber = () => {
     (percent: number) => dispatch(seek({ percent })),
   );
 
+  // TODO: Should useEffect return a fn to break out of the loop?
   useEffect(() => {
     startAnimationLoop(() => {
       if (getAudioProgress() === progress) {

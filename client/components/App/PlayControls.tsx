@@ -6,7 +6,9 @@ import { Shuffle } from "./PlayControls/Shuffle";
 import { VolumeControl } from "./PlayControls/VolumeControl";
 import { getState } from "@reducers/store";
 import { noPropagate } from "@client/lib/util";
+import { screen_breakpoint_px } from "@client/lib/constants";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocationOverride } from "@client/hooks/useLocationOverride";
 import {
   clear,
   MobileDisplayMode,
@@ -24,13 +26,17 @@ import {
   faAngleDown,
   faClose,
 } from "@fortawesome/free-solid-svg-icons";
+import { useViewport } from "@client/hooks/useViewport";
 
 const default_now_playing = "";
 
 export const PlayControls = () => {
-  const { player } = useSelector(getState);
   const dispatch = useDispatch();
+  const { player } = useSelector(getState);
+  const { width } = useViewport();
+  const isMobile = () => width < screen_breakpoint_px;
 
+  // Helper that gets the "now playing" section
   const getNowPlaying = () =>
     player.now_playing ? (
       <>
@@ -41,6 +47,7 @@ export const PlayControls = () => {
       default_now_playing
     );
 
+  // Toggle audio play / pause
   const togglePlayer = async () => {
     const operation = player.is_playing ? pause() : play({});
     dispatch(operation);
@@ -55,6 +62,15 @@ export const PlayControls = () => {
     dispatch(clear());
   };
 
+  // Minimize the fullscreen player on mobile
+  const minimize = () =>
+    dispatch(
+      setMobileDisplayMode({
+        mobile_display_mode: MobileDisplayMode.Minimized,
+      }),
+    );
+
+  // Fullscreen the mobile player
   const goFullscreen = () => {
     dispatch(
       setMobileDisplayMode({
@@ -63,22 +79,20 @@ export const PlayControls = () => {
     );
   };
 
+  useLocationOverride(
+    // Override location change when the player is fullscreen
+    () =>
+      isMobile() && player.mobile_display_mode === MobileDisplayMode.Fullscreen,
+    // minimize the player instead of changing location
+    minimize,
+  );
+
   return (
     <>
       <div id="play-controls" className={player.mobile_display_mode}>
         <div className="content">
           <div className="controls">
-            <Icon
-              icon={faAngleDown}
-              size="xl"
-              onClick={() =>
-                dispatch(
-                  setMobileDisplayMode({
-                    mobile_display_mode: MobileDisplayMode.Minimized,
-                  }),
-                )
-              }
-            />
+            <Icon icon={faAngleDown} size="xl" onClick={minimize} />
           </div>
           <div className="cover-wrapper">
             <div className="cover">
