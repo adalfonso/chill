@@ -8,7 +8,8 @@ import { getState } from "@reducers/store";
 import { noPropagate } from "@client/lib/util";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocationOverride } from "@client/hooks/useLocationOverride";
+import { useOnBackNavigate } from "@client/hooks/useLocationOverride";
+import { useViewport } from "@client/hooks/useViewport";
 import {
   clear,
   MobileDisplayMode,
@@ -26,15 +27,17 @@ import {
   faAngleDown,
   faClose,
 } from "@fortawesome/free-solid-svg-icons";
-import { useViewport } from "@client/hooks/useViewport";
 
 const default_now_playing = "";
 
 export const PlayControls = () => {
   const dispatch = useDispatch();
+
   const { player } = useSelector(getState);
   const { width } = useViewport();
-  const isMobile = () => width < screen_breakpoint_px;
+  const is_mobile = width < screen_breakpoint_px;
+  const is_fullscreen =
+    is_mobile && player.mobile_display_mode === MobileDisplayMode.Fullscreen;
 
   // Helper that gets the "now playing" section
   const getNowPlaying = () =>
@@ -79,13 +82,8 @@ export const PlayControls = () => {
     );
   };
 
-  useLocationOverride(
-    // Override location change when the player is fullscreen
-    () =>
-      isMobile() && player.mobile_display_mode === MobileDisplayMode.Fullscreen,
-    // minimize the player instead of changing location
-    minimize,
-  );
+  // Minimize the player on back navigation when fullscreen
+  useOnBackNavigate(() => is_fullscreen, minimize);
 
   return (
     <>
