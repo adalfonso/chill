@@ -1,12 +1,12 @@
 import "./Toolbar.scss";
-import { useState } from "react";
 import { AppSettings as AppSettings } from "./Toolbar/AppSettings";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Search } from "./Toolbar/Search";
 import { UserSettings } from "./Toolbar/UserSettings";
 import { faGear, faUser } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
-import { useLocationOverride } from "@hooks/useLocationOverride";
+import { useBackNavigate } from "@hooks/useBackNavigate";
+import { useState } from "react";
 
 type SettingsMenu = "user" | "app";
 
@@ -29,14 +29,15 @@ export const Toolbar = () => {
     });
   };
 
-  const navigate = useNavigate();
-
-  useLocationOverride(
+  // Minimize the player on back navigation when fullscreen
+  useBackNavigate(
     // Override location change when either settings menu is open
     () => settings_vis.app || settings_vis.user,
     // Hide the playlist instead of changing location
     () => setSettingsVis({ app: false, user: false }),
   );
+
+  const navigate = useNavigate();
 
   return (
     <div id="toolbar">

@@ -12,7 +12,6 @@
 - add typing to action when reducers are used
 - when changing stream quality, chrome plays a cached version
 - rescanning creates new ids for all media and invalidates a playlist
-- intercepting back button click and actually preventing location change
 - what happens when album, artist, etc are missing from files? what happens to urls based on them?
 - 1000 degress all listed as "piste"
 - cast to device

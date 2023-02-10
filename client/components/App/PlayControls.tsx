@@ -7,8 +7,8 @@ import { VolumeControl } from "./PlayControls/VolumeControl";
 import { getState } from "@reducers/store";
 import { noPropagate } from "@client/lib/util";
 import { screen_breakpoint_px } from "@client/lib/constants";
+import { useBackNavigate } from "@client/hooks/useBackNavigate";
 import { useDispatch, useSelector } from "react-redux";
-import { useOnBackNavigate } from "@client/hooks/useLocationOverride";
 import { useViewport } from "@client/hooks/useViewport";
 import {
   clear,
@@ -83,7 +83,7 @@ export const PlayControls = () => {
   };
 
   // Minimize the player on back navigation when fullscreen
-  useOnBackNavigate(() => is_fullscreen, minimize);
+  useBackNavigate(() => is_fullscreen, minimize);
 
   return (
     <>
