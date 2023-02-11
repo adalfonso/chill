@@ -10,7 +10,7 @@ import { TRPCError } from "@trpc/server";
 import { User } from "@common/models/User";
 import { adjustImage } from "@server/lib/media/image/ImageAdjust";
 import { convert } from "@server/lib/conversion";
-import { getAsGroup } from "@server/lib/db/utils";
+import { getAsGroup } from "@server/lib/data/utils";
 import { sortResults } from "@server/lib/search/ResultSorter";
 import { stream_file } from "@server/lib/stream";
 import { z } from "zod";

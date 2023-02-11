@@ -1,9 +1,9 @@
-import mongoose from "mongoose";
+import mongoose, { Mongoose } from "mongoose";
 
 /** Singleton DB connection instance */
-export class Connection {
+export class Database {
   /** Database Connection */
-  private static _instance: Connection;
+  static _instance: Mongoose;
 
   /**
    * Create a new connection
@@ -12,18 +12,18 @@ export class Connection {
    * @param port DB port
    * @throws when DB already connected or fails to connect
    */
-  static async create(host: string, port: string) {
-    if (Connection._instance) {
+  static async connect(host: string, port: string) {
+    if (Database._instance) {
       throw new Error("Database is already connected");
     }
 
     try {
       mongoose.set("strictQuery", true);
       const uri = `mongodb://${host}:${port}/chill`;
-      Connection._instance = await mongoose.connect(uri);
+      Database._instance = await mongoose.connect(uri);
       console.info("Connected to mongodb");
 
-      return Connection._instance;
+      return Database._instance;
     } catch (err) {
       console.error(`Unable to connect to mongo: ${err}`);
 
@@ -37,10 +37,10 @@ export class Connection {
    * @returns DB conection
    */
   static instance() {
-    if (!Connection._instance) {
+    if (!Database._instance) {
       throw new Error("Failed to get DB connection instance.");
     }
 
-    return Connection._instance;
+    return Database._instance;
   }
 }

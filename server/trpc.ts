@@ -41,7 +41,7 @@ export const api_router = t.router({
 
 export type ApiRouter = typeof api_router;
 
-const empty = z.symbol();
+const empty = z.undefined();
 
 export type Request<T extends ZodType = typeof empty> = {
   input: z.infer<T>;

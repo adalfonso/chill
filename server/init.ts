@@ -2,7 +2,8 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import express, { Express } from "express";
 import passport from "passport";
-import { Connection } from "./lib/db/Client";
+import { Cache } from "./lib/data/Cache";
+import { Database } from "./lib/data/Database";
 import { configurePassport } from "./passportConfig";
 import { initRouter } from "@routes/router";
 
@@ -12,7 +13,7 @@ import { initRouter } from "@routes/router";
  * @param app - express app
  * @returns env var store
  */
-export const init = (app: Express) => {
+export const init = async (app: Express) => {
   const env = initEnvVars();
 
   configurePassport(passport);
@@ -23,7 +24,10 @@ export const init = (app: Express) => {
 
   initRouter(app);
 
-  Connection.create(env.MONGO_HOST, env.MONGO_PORT);
+  await Promise.all([
+    Database.connect(env.MONGO_HOST, env.MONGO_PORT),
+    Cache.connect(env.REDIS_HOST),
+  ]);
 
   return env;
 };
@@ -36,6 +40,7 @@ const required_vars = [
   "MONGO_HOST",
   "MONGO_PORT",
   "NODE_PORT",
+  "REDIS_HOST",
   "SIGNING_KEY",
   "SOURCE_DIR",
 ] as const;

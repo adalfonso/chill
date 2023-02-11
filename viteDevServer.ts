@@ -8,7 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 interface ConfigOptions {
   port?: number;
-  initializer?: (app: Express) => void;
+  initializer?: (app: Express) => Promise<unknown>;
 }
 
 /**

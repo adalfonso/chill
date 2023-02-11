@@ -39,6 +39,7 @@
     "react": "^18.2.0",
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.8.0",
+    "redis": "^4.6.4",
     "sharp": "^0.30.7",
     "string-similarity": "^4.0.4",
     "superjson": "^1.12.2",

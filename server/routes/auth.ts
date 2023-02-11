@@ -1,11 +1,12 @@
 import express from "express";
 import passport from "passport";
 import { AuthController } from "@controllers/AuthController";
+import { isAuthenticated } from "@server/middleware/isAuthenticated";
 
 const router = express.Router();
 
 router.get("/login", AuthController.login);
-router.get("/logout", AuthController.logout);
+router.get("/logout", isAuthenticated, AuthController.logout);
 
 router.get(
   "/google",
