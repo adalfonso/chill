@@ -45,6 +45,14 @@ const required_vars = [
   "SOURCE_DIR",
 ] as const;
 
+const defaults: Record<string, string> = {
+  MONGO_HOST: "mongo",
+  MONGO_PORT: "27017",
+  NODE_PORT: "1337",
+  REDIS_HOST: "redis",
+  SOURCE_DIR: "dist/client",
+} as const;
+
 export type EnvStore = {
   [K in (typeof required_vars)[number]]: string;
 };
@@ -61,7 +69,7 @@ const initEnvVars = () => {
 
   // Check for required env vars
   required_vars.map((key) => {
-    const value = process.env[key];
+    const value = process.env[key] ?? defaults[key];
 
     if (value === undefined) {
       throw new Error(`Missing env value for ${key}`);
