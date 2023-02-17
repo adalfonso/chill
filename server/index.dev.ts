@@ -1,4 +1,4 @@
 import { init as initializer } from "./init";
 import { createServer } from "../viteDevServer";
 
-createServer({ port: 1337, initializer });
+createServer({ port: 3201, initializer });

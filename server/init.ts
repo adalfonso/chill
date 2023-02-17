@@ -34,11 +34,13 @@ export const init = async (app: Express) => {
 
 // List of required env vars
 const required_vars = [
+  "APP_PORT",
   "GOOGLE_OAUTH_ID",
   "GOOGLE_OAUTH_SECRET",
   "HOST",
   "MONGO_HOST",
   "MONGO_PORT",
+  "NODE_ENV",
   "NODE_PORT",
   "REDIS_HOST",
   "SIGNING_KEY",
@@ -46,9 +48,11 @@ const required_vars = [
 ] as const;
 
 const defaults: Record<string, string> = {
+  APP_PORT: "3200",
   MONGO_HOST: "mongo",
   MONGO_PORT: "27017",
-  NODE_PORT: "1337",
+  NODE_ENV: "development",
+  NODE_PORT: "3201",
   REDIS_HOST: "redis",
   SOURCE_DIR: "dist/client",
 } as const;

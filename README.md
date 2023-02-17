@@ -27,7 +27,7 @@ _Project requires Docker_
 ```
 
 - HMR enabled
-- App served @ `http://localhost:1337`
+- App served @ `http://localhost:3200`
 - Server run with Nodemon and Vite Dev Server
 
 **Running in Production**
@@ -42,8 +42,8 @@ _Project requires Docker_
 
 | Command              | Description                                                    |
 | -------------------- | -------------------------------------------------------------- |
-| `npm run docker:dev` | Run in docker, HMR enabled and serve @ `http://localhost:1337` |
-| `npm run docker`     | Build app, run in docker, and serve @ `http://localhost:1337`  |
+| `npm run docker:dev` | Run in docker, HMR enabled and serve @ `http://localhost:3200` |
+| `npm run docker`     | Build app, run in docker, and serve @ `http://localhost:3200`  |
 | `npm run test`       | Run tests                                                      |
 | `npm run lint`       | Run linter                                                     |
 | `npm run check`      | Run linting, type-checking, and tests                          |

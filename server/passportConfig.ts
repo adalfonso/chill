@@ -13,7 +13,7 @@ export const configurePassport = (passport: PassportStatic) => {
       {
         clientID: env.GOOGLE_OAUTH_ID,
         clientSecret: env.GOOGLE_OAUTH_SECRET,
-        callbackURL: `${env.HOST}:${env.NODE_PORT}/auth/google/cb`,
+        callbackURL: `${env.HOST}:${env.APP_PORT}/auth/google/cb`,
         passReqToCallback: true,
       },
       verifyGoogleAuth,

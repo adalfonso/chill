@@ -8,5 +8,5 @@ RUN corepack prepare pnpm@7.25.0 --activate
 RUN apk update & apk add sox
 RUN pnpm i
 COPY . .
-EXPOSE 1337
+EXPOSE 3201
 CMD ["pnpm","start"]

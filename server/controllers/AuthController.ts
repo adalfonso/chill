@@ -53,8 +53,7 @@ export const AuthController = {
         .cookie("access_token", token, {
           httpOnly: true,
           sameSite: "lax",
-          // signed: true,
-          // secure: true,
+          secure: env.NODE_ENV === "production",
         })
         .redirect("/");
     };
