@@ -10,7 +10,12 @@ services:
     env_file:
       - .env
     volumes:
+      # TODO: Provide path to media
       - /path/to/media:/opt/app/media
+
+      # Map work dir paths to (shared) named volumes
+      - public_html:/usr/src/app/dist/client
+      - nginx_config:/usr/src/app/nginx
     depends_on:
       - mongo
       - redis
@@ -22,9 +27,8 @@ services:
     ports:
       - 27017:27017
     volumes:
-      # TODO: Provide paths to mongo data
-      - /path/to/chill/mongodb:/data/db
-      - /path/to/chill/mongodb_config:/data/configdb
+      - mongodb:/data/db
+      - mongodb_config:/data/configdb
 
   redis:
     container_name: chill-cache
@@ -36,8 +40,7 @@ services:
     ports:
       - 6379:6379
     volumes:
-      # TODO: Provide path to redis data
-      - /path/to/chill/redis:/data/cache
+      - redis:/data/cache
 
   nginx:
     container_name: chill-gateway
@@ -46,12 +49,18 @@ services:
     ports:
       - 3200:3200
     volumes:
-      # TODO: Provide paths to nginx conf
-      # n.b. on Unraid this config is actually stored in the application data for now
-      - /path/to/chill/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - nginx_config:/etc/nginx/conf.d
+      - public_html:/var/www/html:ro
 
       # TODO: Provide paths to SSL cert and key
       - /path/to/chill/certs/chill.crt:/etc/ssl/chill.crt
       - /path/to/chill/certs/chill.key:/etc/ssl/chill.key
     depends_on:
       - app
+
+volumes:
+  mongodb:
+  mongodb_config:
+  redis:
+  public_html:
+  nginx_config:
