@@ -197,11 +197,7 @@ export const MediaFileController = {
     try {
       const { match, group, options: pagination } = input;
 
-      // TODO: remove hack
-      const result = await getAsGroup(MediaModel, group, {
-        match,
-        pagination,
-      });
+      const result = await getAsGroup(MediaModel, group, { match, pagination });
 
       return result;
     } catch (e) {

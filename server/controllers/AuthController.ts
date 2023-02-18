@@ -17,9 +17,7 @@ export const AuthController = {
     } else {
       console.warn(
         "Unable to find access_token cookie when a user logged out",
-
-        // TODO: Fix hack
-        (req.user as any)?.email,
+        req.user?.email,
       );
     }
 
@@ -41,10 +39,7 @@ export const AuthController = {
       }
 
       try {
-        // TODO: fix types
-        await User.findByIdAndUpdate((req as any).user._id, {
-          access_token: token,
-        });
+        await User.findByIdAndUpdate(req.user?._id, { access_token: token });
       } catch (e) {
         console.error("Failed to store access_token", e);
       }

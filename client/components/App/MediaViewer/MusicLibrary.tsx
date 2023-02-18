@@ -56,7 +56,6 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
   useFetch<GroupedMedia>(
     pager,
     imgDispatch,
-    // TODO: Fix hack
     () => loadMediaFiles(match),
     () => setLoading(false),
   );

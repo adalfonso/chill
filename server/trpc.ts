@@ -21,8 +21,7 @@ export const { router, middleware, procedure } = t;
 const isAdmin = middleware(async ({ ctx: { req }, next }) => {
   const { user } = req;
 
-  // TODO: fix hack
-  if (!user || (user as any).type !== "admin") {
+  if (!user || user.type !== "admin") {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 

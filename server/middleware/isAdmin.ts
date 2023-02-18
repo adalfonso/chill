@@ -8,8 +8,7 @@ export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
     return res.redirect("/auth/login");
   }
 
-  // TODO: Remove hack
-  if ((user as any).type !== "admin") {
+  if (user.type !== "admin") {
     return res.status(401).send();
   }
 

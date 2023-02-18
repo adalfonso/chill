@@ -28,7 +28,8 @@
       "@controllers/*": ["./server/controllers/*"],
       "@middleware/*": ["./server/middleware/*"],
       "@routes/*": ["./server/routes/*"]
-    }
+    },
+    "typeRoots": ["./server/@types", "./node_modules/@types"]
   },
   "include": ["client", "common", "server"],
   "references": [{ "path": "./tsconfig.node.json" }]
