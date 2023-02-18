@@ -1,13 +1,14 @@
 import fs from "node:fs/promises";
 import mm from "music-metadata";
-import path from "node:path";
 import { Media as MediaModel } from "@server/models/Media";
 import { Media } from "@common/models/Media";
 import { Nullable } from "@common/types";
 import { ObjectId } from "mongodb";
 import { Scan as ScanModel } from "@server/models/Scan";
 import { Scan, ScanStatus } from "@common/models/Scan";
+import { Unsaved } from "@common/models/Base";
 import { adjustImage } from "./image/ImageAdjust";
+import { extname, join } from "node:path";
 
 /** Config options used by the crawler */
 interface MediaCrawlerConfig {
@@ -22,7 +23,7 @@ export class MediaCrawler {
   private _queue: string[] = [];
 
   /** Fully processed file data */
-  private _processed: Media[] = [];
+  private _processed: Unsaved<Media>[] = [];
 
   /** Number of available workers */
   private _available_workers = 10;
@@ -67,7 +68,7 @@ export class MediaCrawler {
    */
   private async _crawl(dir: string) {
     const contents = await fs.readdir(dir);
-    const paths = contents.map((c) => path.join(dir, c));
+    const paths = contents.map((c) => join(dir, c));
 
     for (const p of paths) {
       this._queue.push(p);
@@ -121,7 +122,7 @@ export class MediaCrawler {
    * @param file_path file path
    */
   private async _processFile(file_path: string) {
-    const file_type = path.extname(file_path).replace(".", "").toLowerCase();
+    const file_type = extname(file_path).replace(".", "").toLowerCase();
 
     // Not a valid file
     if (!this._config.file_types.includes(file_type)) {
@@ -130,18 +131,7 @@ export class MediaCrawler {
     }
 
     try {
-      const { ctime } = await fs.stat(file_path);
-      const _id = new ObjectId();
-
-      const meta = {
-        ...(await this._getMetadata(file_path, _id)),
-        file_modified: ctime,
-        file_type,
-        _id,
-      };
-
-      // TODO: Remove hack
-      this._processed.push(meta as any);
+      this._processed.push(await this._getMetadata(file_path));
     } catch (e) {
       console.error(e);
       // don't relinquish the worker
@@ -162,10 +152,8 @@ export class MediaCrawler {
    * @param file_path file path
    * @returns meta data
    */
-  private async _getMetadata(
-    file_path: string,
-    id: ObjectId,
-  ): Promise<Partial<Media>> {
+  private async _getMetadata(file_path: string): Promise<Unsaved<Media>> {
+    const id = new ObjectId().toString();
     const result = await mm.parseFile(file_path, { duration: true });
     const { common, format } = result;
     const cover = mm.selectCover(common.picture);
@@ -183,14 +171,16 @@ export class MediaCrawler {
     }
 
     return {
+      _id: id,
       path: file_path,
+      file_type: extname(file_path).replace(".", "").toLowerCase(),
       duration: format.duration ?? 0,
-      artist: common.artist,
-      title: common.title,
+      artist: common.artist ?? null,
+      title: common.title ?? null,
       track: common.track?.no ?? null,
-      album: common.album,
+      album: common.album ?? null,
       genre: common.genre?.[0] ?? null,
-      year: common.year,
+      year: common.year ?? null,
       cover:
         cover && cover_data
           ? {
@@ -200,6 +190,8 @@ export class MediaCrawler {
               data: cover_data,
             }
           : undefined,
+
+      file_modified: (await fs.stat(file_path)).ctime,
     };
   }
 
