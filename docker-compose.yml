@@ -2,27 +2,23 @@ version: "3.8"
 
 services:
   app:
-    container_name: chill
+    container_name: chill-app
     image: adalfonso/chill
+    restart: unless-stopped
     ports:
       - 3201:3201
-    environment:
-      # TODO: Provide values
-      - HOST=
-      - GOOGLE_OAUTH_ID=
-      - GOOGLE_OAUTH_SECRET=
-      - SIGNING_KEY=
+    env_file:
+      - .env
     volumes:
-      - type: bind
-        # TODO: Provide path to media
-        source: /path/to/media
-        target: /opt/app/media
+      - /path/to/media:/opt/app/media
     depends_on:
       - mongo
       - redis
 
   mongo:
-    image: mongo:4.4
+    container_name: chill-database
+    image: mongo:5.0
+    restart: unless-stopped
     ports:
       - 27017:27017
     volumes:
@@ -31,7 +27,9 @@ services:
       - /path/to/chill/mongodb_config:/data/configdb
 
   redis:
+    container_name: chill-cache
     image: redis:7.0-alpine
+    restart: unless-stopped
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
       - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL,CONFIG
@@ -42,6 +40,7 @@ services:
       - /path/to/chill/redis:/data/cache
 
   nginx:
+    container_name: chill-gateway
     image: nginx:mainline-alpine
     restart: unless-stopped
     ports:

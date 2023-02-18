@@ -6,13 +6,10 @@ services:
       context: .
     ports:
       # node server port
-      - 3201:3201
+      - 3200:3200
       # node debug port
       - 9229:9229
       - 24678:24678
-    environment:
-      - MONGO_HOST=mongo
-      - REDIS_HOST=redis
     env_file:
       - .env
     volumes:
@@ -25,9 +22,12 @@ services:
         source: /srv/media
         target: /opt/app/media
     command: pnpm dev
+    depends_on:
+      - mongo
+      - redis
 
   mongo:
-    image: mongo:4.4
+    image: mongo:5.0
     ports:
       - 27017:27017
     volumes:
@@ -43,20 +43,6 @@ services:
       - 6379:6379
     volumes:
       - redis:/data/cache
-
-  nginx:
-    image: nginx:mainline-alpine
-    restart: unless-stopped
-    ports:
-      - 3200:3200
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      # Provide path to local certs
-      # If not using SSL (locally) remove these and remove SSL from nginx.conf
-      - /etc/ssl/chill.crt:/etc/ssl/chill.crt
-      - /etc/ssl/chill.key:/etc/ssl/chill.key
-    depends_on:
-      - app
 
 volumes:
   mongodb:

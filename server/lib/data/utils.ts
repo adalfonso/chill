@@ -18,7 +18,8 @@ export const getAsGroup = async (
   grouping: (keyof IMedia)[],
   options: Partial<GroupOptions> = {},
 ) => {
-  const { limit = Infinity, page = 0 } = options.pagination ?? {};
+  const { limit = Number.MAX_SAFE_INTEGER, page = 0 } =
+    options.pagination ?? {};
 
   // Aggregate all grouping keys to form an _id for the aggregation
   const aggregate_id = grouping.reduce(
