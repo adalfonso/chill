@@ -123,8 +123,7 @@ export const PlaylistController = {
         throw new TRPCError({ code: "NOT_FOUND" });
       }
 
-      // TODO: Fix hack
-      (playlist as any).items = [...playlist.items, ...items];
+      playlist.items = [...playlist.items, ...items];
 
       await playlist.save();
     } catch (e) {

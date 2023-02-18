@@ -6,6 +6,7 @@ import { Strategy as JwtStrategy, VerifiedCallback } from "passport-jwt";
 import { User } from "./models/User";
 import { VerifyCallback } from "passport-google-oauth2";
 import { env } from "./init";
+import { z } from "zod";
 
 export const configurePassport = (passport: PassportStatic) => {
   passport.use(
@@ -49,7 +50,6 @@ async function verifyGoogleAuth(
 ) {
   try {
     const email = profile.emails[0].value;
-
     const existing_user = await User.findOne({ email });
 
     if (existing_user) {
@@ -85,21 +85,26 @@ async function verifyGoogleAuth(
   }
 }
 
+// What we expect the JWT to contain
+const jwt_payload = z.object({
+  user: z.object({
+    _id: z.string(),
+  }),
+});
+
 /**
  * Verify the user from a JWT
  *
- * @param payload - JWT payload
+ * @param unverified_payload - JWT payload
  * @param done - verification callback
  */
 async function verifyJwtAuth(
-  payload: { user?: unknown },
+  unverified_payload: unknown,
   done: VerifiedCallback,
 ) {
   try {
-    // TODO: Remove hack
-    const { _id } = payload.user as any;
-
-    const user = await User.findById(_id);
+    const payload = jwt_payload.parse(unverified_payload);
+    const user = await User.findById(payload.user._id);
 
     if (user) {
       return done(null, user);
