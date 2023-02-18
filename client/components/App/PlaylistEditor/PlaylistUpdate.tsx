@@ -41,8 +41,7 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
     setBusy(true);
 
     PlaylistApi.search(value)
-      // TODO: Fix hack
-      .then(setResults as () => Promise<Playlist>)
+      .then(setResults)
       .catch(({ message }) =>
         console.error("Failed to search playlist:", message),
       )

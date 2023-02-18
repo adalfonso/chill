@@ -7,7 +7,7 @@ import { z } from "zod";
 
 export const schema = {
   update_settings: z.object({
-    audio_quality: z.string().optional(),
+    audio_quality: z.nativeEnum(AudioQuality).optional(),
   }),
 };
 
@@ -29,25 +29,13 @@ export const UserController = {
     ctx: { req },
     input,
   }: Request<typeof schema.update_settings>) => {
-    // TODO: Fix types
-    const { user } = req as any;
-    const { audio_quality } = input as any;
+    const { user } = req;
+    const { audio_quality } = input;
 
     if (!user) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Could not get user.",
-      });
-    }
-
-    // TODO: Create a better validation strategy
-    if (
-      !audio_quality ||
-      !Object.values(AudioQuality).includes(audio_quality)
-    ) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Invalid settings update.",
       });
     }
 
