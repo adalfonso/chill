@@ -5,13 +5,11 @@ import { User } from "@server/models/User";
 import { z } from "zod";
 
 export const schema = {
-  invite: z.string(),
+  invite: z.string().email(),
 };
 
 export const InviteController = {
   create: async ({ input: email }: Request<typeof schema.invite>) => {
-    // TODO: check email is valid format
-
     if (!/gmail\.com$/.test(email)) {
       throw new TRPCError({
         code: "BAD_REQUEST",

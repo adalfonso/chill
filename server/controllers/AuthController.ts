@@ -22,9 +22,6 @@ export const AuthController = {
     }
 
     res.clearCookie("access_token");
-
-    // TODO: store unexpired tokens in a redis blacklist
-
     res.redirect("/auth/login");
   },
 
