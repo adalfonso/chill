@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import mm from "music-metadata";
+import { Doc } from "@server/models/Base";
 import { Media as MediaModel } from "@server/models/Media";
 import { Media } from "@common/models/Media";
 import { Nullable } from "@common/types";
@@ -32,7 +33,7 @@ export class MediaCrawler {
   private _writing = false;
 
   /** Currently running scan document */
-  private _scan: Nullable<Scan> = null;
+  private _scan: Nullable<Doc<Scan>> = null;
 
   /**
    * @param _config crawler config
@@ -45,7 +46,7 @@ export class MediaCrawler {
    * @param dir directory to start from
    * @returns crawler results
    */
-  public async crawl(dir: string): Promise<Scan> {
+  public async crawl(dir: string): Promise<Doc<Scan>> {
     if (this._scan !== null) {
       return this._scan;
     }
@@ -212,8 +213,7 @@ export class MediaCrawler {
       this._scan.records_written += records.length;
       this._scan.updated_at = new Date();
 
-      // TODO: Fix hack
-      await (this._scan as any).save();
+      await this._scan.save();
 
       console.info(
         `Crawler stored ${this._scan.records_written} records... 🐛`,
@@ -243,8 +243,7 @@ export class MediaCrawler {
       this._scan.completed_at = this._scan.updated_at;
     }
 
-    // TODO: Fix hack
-    await (this._scan as any).save();
+    await this._scan.save();
     this._scan = null;
 
     console.info(`Crawling ${status.toLowerCase()}... 🐛`);
