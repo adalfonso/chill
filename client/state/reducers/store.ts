@@ -1,3 +1,4 @@
+import app from "./app";
 import mediaMenu from "./mediaMenu";
 import player from "./player";
 import playlistEditor from "./playlistEditor";
@@ -10,6 +11,7 @@ const store = configureStore({
     mediaMenu,
     playlistEditor,
     user,
+    app,
   },
 });
 

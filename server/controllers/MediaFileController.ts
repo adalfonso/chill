@@ -1,5 +1,6 @@
 import fs from "fs/promises";
-import { AudioQuality } from "@common/types";
+import jwt from "jsonwebtoken";
+import { AudioQuality as Quality } from "@common/types";
 import { AudioType } from "@server/lib/media/types";
 import { Media as MediaModel } from "@server/models/Media";
 import { Media } from "@common/models/Media";
@@ -7,9 +8,9 @@ import { MediaCrawler } from "@server/lib/media/MediaCrawler";
 import { Request as Req, Response as Res } from "express";
 import { Request } from "@server/trpc";
 import { TRPCError } from "@trpc/server";
-import { User } from "@common/models/User";
 import { adjustImage } from "@server/lib/media/image/ImageAdjust";
 import { convert } from "@server/lib/conversion";
+import { env } from "@server/init";
 import { getAsGroup } from "@server/lib/data/utils";
 import { sortResults } from "@server/lib/search/ResultSorter";
 import { stream_file } from "@server/lib/stream";
@@ -28,6 +29,10 @@ const media_match = z.object({
 });
 
 export const schema = {
+  cast_info: z.object({
+    media_ids: z.array(z.string()),
+  }),
+
   search: z.string(),
 
   query: media_match,
@@ -46,6 +51,47 @@ export const schema = {
 };
 
 export const MediaFileController = {
+  castInfo: async ({
+    ctx: { req },
+    input: { media_ids },
+  }: Request<typeof schema.cast_info>) => {
+    if (req.user === undefined) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+
+    const documents = await MediaModel.find({ _id: { $in: media_ids } });
+
+    const mapped = documents.reduce<Record<string, Media>>((carry, media) => {
+      carry[media._id.toString()] = media;
+
+      return carry;
+    }, {});
+
+    return media_ids
+      .filter((id) => mapped[id] !== undefined)
+      .map((id) => {
+        const media = mapped[id];
+
+        // TODO: What happens if the user queues a playlist with original flac
+        // audio, then sets the audio quality to medium after?
+        const file_type =
+          req.user?.settings?.audio_quality === Quality.Original
+            ? media.file_type
+            : "mp3";
+
+        const content_type = `audio/${file_type}`;
+        const url = `${env.HOST}:${env.APP_PORT}/cast/media/${id}.${file_type}`;
+
+        const token = jwt.sign(
+          { for: req.user?.email, media_id: id },
+          env.SIGNING_KEY,
+          { expiresIn: "1h" },
+        );
+
+        return { url, token, content_type, meta: media };
+      });
+  },
+
   cover: async (req: Req, res: Res) => {
     const { filename } = req.params;
     const raw_size = req.query.size;
@@ -97,21 +143,24 @@ export const MediaFileController = {
   /** Load a media file from is ID */
   load: async (req: Req, res: Res) => {
     try {
-      const media = await MediaModel.findById<Media>(req.params.id);
+      // Handles both /media/[123]/load and /media/[123.mp3]
+      const [id, _ext] = req.params.id.split(".");
+      const media = await MediaModel.findById<Media>(id);
 
       if (!media) {
         throw new Error("Failed to load media file data.");
       }
-      const quality_setting =
-        (req.user as User)?.settings?.audio_quality ?? null;
-      const stats = await fs.stat(media.path);
-      // TODO: Refactor this into own fn. parseInt for "original" audio quality will be NaN
-      const mp3_quality_preference_kbps =
-        quality_setting ?? AudioQuality.Medium;
 
+      if (req.user === undefined) {
+        return res.sendStatus(401);
+      }
+
+      const quality_setting = req.user.settings?.audio_quality ?? null;
+      const stats = await fs.stat(media.path);
+      const mp3_quality_preference_kbps = quality_setting ?? Quality.Medium;
       const actual_quality_kbps = (stats.size * 8) / 1000 / media.duration;
       const do_convert =
-        quality_setting !== AudioQuality.Original &&
+        quality_setting !== Quality.Original &&
         parseInt(mp3_quality_preference_kbps) < actual_quality_kbps;
 
       if (do_convert) {

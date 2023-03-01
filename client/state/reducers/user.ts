@@ -9,7 +9,7 @@ export type UserState = {
 
 const initialState: UserState = { type: UserType.User, settings: null };
 
-export const mediaMenuSlice = createSlice({
+export const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
@@ -28,6 +28,6 @@ export const mediaMenuSlice = createSlice({
   },
 });
 
-export const { setUser, updateUserSettings } = mediaMenuSlice.actions;
+export const { setUser, updateUserSettings } = userSlice.actions;
 
-export default mediaMenuSlice.reducer;
+export default userSlice.reducer;

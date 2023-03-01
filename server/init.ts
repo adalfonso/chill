@@ -6,7 +6,6 @@ import { Cache } from "./lib/data/Cache";
 import { Database } from "./lib/data/Database";
 import { configurePassport } from "./passportConfig";
 import { initRouter } from "@routes/router";
-
 /**
  * Initialize the express app
  *
@@ -35,6 +34,7 @@ export const init = async (app: Express) => {
 // List of required env vars
 const required_vars = [
   "APP_PORT",
+  "CAST_APP_ID",
   "GOOGLE_OAUTH_ID",
   "GOOGLE_OAUTH_SECRET",
   "HOST",
@@ -42,6 +42,7 @@ const required_vars = [
   "MONGO_PORT",
   "NODE_ENV",
   "NODE_PORT",
+  "RECEIVER_SOURCE_DIR",
   "REDIS_HOST",
   "SIGNING_KEY",
   "SOURCE_DIR",
@@ -49,12 +50,15 @@ const required_vars = [
 
 const defaults: Record<string, string> = {
   APP_PORT: "3200",
+  // Default receiver
+  CAST_APP_ID: "CC1AD845",
   MONGO_HOST: "mongo",
   MONGO_PORT: "27017",
   NODE_ENV: "development",
   NODE_PORT: "3201",
   REDIS_HOST: "redis",
   SOURCE_DIR: "dist/client",
+  RECEIVER_SOURCE_DIR: "dist/receiver",
 } as const;
 
 export type EnvStore = {

@@ -29,6 +29,11 @@
       cursor: pointer;
     }
   }
+
+  google-cast-launcher {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
 }
 
 @media screen and (min-width: 512px) and (max-width: 843px) {

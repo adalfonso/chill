@@ -13,3 +13,12 @@ export const AudioType = {
 } as const;
 
 export type AudioType = ObjectValues<typeof AudioType>;
+
+export const ImageType = {
+  jpeg: "jpeg",
+  jpg: "jpg",
+  png: "png",
+  gif: "gif",
+} as const;
+
+export type ImageType = ObjectValues<typeof ImageType>;

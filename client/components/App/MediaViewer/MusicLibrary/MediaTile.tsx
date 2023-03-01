@@ -1,4 +1,5 @@
 import "./MediaTile.scss";
+import { Cast } from "@client/lib/cast/Cast";
 import { FileMenu } from "../FileMenu";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { GroupedMedia } from "@common/types";
@@ -6,6 +7,7 @@ import { Media } from "@common/models/Media";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch } from "@common/media/types";
 import { albumUrl, artistUrl, matchUrl } from "@client/lib/url";
+import { client } from "@client/client";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { noPropagate } from "@client/lib/util";
 import { play } from "@reducers/player";
@@ -55,7 +57,16 @@ export const MediaTile = ({
     );
 
   const optionsHandler = {
-    play: async () => dispatch(play({ files: await getFiles(), index: 0 })),
+    play: async () => {
+      const files = await getFiles();
+      dispatch(play({ files, index: 0 }));
+
+      const media = await client.media.castInfo.query({
+        media_ids: files.map((file) => file._id),
+      });
+
+      Cast.instance().play(media);
+    },
     getFiles,
     toggle: setMenuVisible,
   };

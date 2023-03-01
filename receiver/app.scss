@@ -1,0 +1,26 @@
+#debug {
+  position: fixed;
+  top: 0;
+  right: 0;
+  color: white;
+  white-space: pre-wrap;
+  z-index: 9999999;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.75rem;
+  padding: 0.75rem;
+  background-color: rgba(0, 5, 5, 0.95);
+  border-radius: 0.25rem;
+  border-color: 2px solid #fafafa;
+  max-width: 33vw;
+  margin: 0.25rem;
+}
+
+.logo {
+  visibility: hidden;
+}
+
+cast-media-player {
+  --progress-color: rgb(85, 167, 255);
+  --splash-image: url("/chill.svg");
+  --background-image: linear-gradient(rgb(31, 29, 29), rgb(44, 41, 41));
+}

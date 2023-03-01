@@ -14,3 +14,4 @@
 - 1000 degress all listed as "piste"
 - cast to device
 - dont make node serve static assets, make nginx do it
+- consider a monorepo structure

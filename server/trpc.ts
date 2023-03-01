@@ -1,6 +1,7 @@
 import * as trpcExpress from "@trpc/server/adapters/express";
 import superjson from "superjson";
 import { admin } from "@routes/api/v1/trpc/adminRouter";
+import { app } from "@routes/api/v1/trpc/appRouter";
 import { inferAsyncReturnType, initTRPC, TRPCError } from "@trpc/server";
 import { media } from "@routes/api/v1/trpc/mediaRouter";
 import { playlist } from "@routes/api/v1/trpc/playlistRouter";
@@ -33,6 +34,7 @@ export const admin_procedure = procedure.use(isAdmin);
 // Initialize the tRPC router
 export const api_router = t.router({
   admin: admin(router),
+  app: app(router),
   media: media(router),
   playlist: playlist(router),
   user: user(router),

@@ -3,6 +3,7 @@ import { App } from "./App";
 import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import { createRoot } from "react-dom/client";
+import { initCast } from "./lib/cast/Cast";
 
 const element = document.getElementById("root");
 
@@ -19,3 +20,5 @@ root.render(
     </Provider>
   </BrowserRouter>,
 );
+
+initCast();

@@ -3,6 +3,8 @@ import { MediaMatch } from "./media/types";
 
 export type Nullable<T> = T | null;
 export type ObjectValues<T> = T[keyof T];
+export type ArrayElement<ArrayType extends readonly unknown[]> =
+  ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 
 export interface SearchResult {
   type: MediaMatch;

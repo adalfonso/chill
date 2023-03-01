@@ -10,6 +10,9 @@ specifiers:
   '@reduxjs/toolkit': ^1.9.2
   '@trpc/client': ^10.11.1
   '@trpc/server': ^10.11.1
+  '@types/chrome': ^0.0.217
+  '@types/chromecast-caf-receiver': ^6.0.8
+  '@types/chromecast-caf-sender': ^1.0.5
   '@types/connect-history-api-fallback': ^1.3.5
   '@types/cookie-parser': ^1.4.3
   '@types/express': ^4.17.17
@@ -93,6 +96,9 @@ dependencies:
 devDependencies:
   '@esbuild-kit/esm-loader': 2.5.5
   '@redux-devtools/core': 3.13.1_k4ae6lp43ej6mezo3ztvx6pykq
+  '@types/chrome': 0.0.217
+  '@types/chromecast-caf-receiver': 6.0.8
+  '@types/chromecast-caf-sender': 1.0.5
   '@types/connect-history-api-fallback': 1.3.5
   '@types/cookie-parser': 1.4.3
   '@types/express': 4.17.17
@@ -2305,6 +2311,23 @@ packages:
       '@types/node': 17.0.45
     dev: true
 
+  /@types/chrome/0.0.217:
+    resolution: {integrity: sha512-q8fLzCCoHiR9gYRoqvrx12+HaJjRTqUom5Ks/wLSR8Ac83qAqWaA4NgUBUcDjM1O1ACczygxIHCEENXs1zmbqQ==}
+    dependencies:
+      '@types/filesystem': 0.0.32
+      '@types/har-format': 1.2.10
+    dev: true
+
+  /@types/chromecast-caf-receiver/6.0.8:
+    resolution: {integrity: sha512-QtHJdXyFNxhZEvQ45QSTsTGhGXSMeDcMphLZD50SfrSz3+GLHuHGxnz3TgQPOrtg21v+SqDAwqKDCRDrqdHMBw==}
+    dev: true
+
+  /@types/chromecast-caf-sender/1.0.5:
+    resolution: {integrity: sha512-8d6RRCOYYiKzDyFJKAYKOp7Eo0kUfj9imnLQj0uuh/QGSz8euL9OOeKmh8XizqTcKW5tXva6li0mRYtnvzVIcA==}
+    dependencies:
+      '@types/chrome': 0.0.217
+    dev: true
+
   /@types/connect-history-api-fallback/1.3.5:
     resolution: {integrity: sha512-h8QJa8xSb1WD4fpKBDcATDNGXghFj6/3GRWG6dhmRcu0RX1Ubasur2Uvx5aeEwlf0MwblEC2bMzzMQntxnw/Cw==}
     dependencies:
@@ -2341,10 +2364,24 @@ packages:
       '@types/serve-static': 1.15.0
     dev: true
 
+  /@types/filesystem/0.0.32:
+    resolution: {integrity: sha512-Yuf4jR5YYMR2DVgwuCiP11s0xuVRyPKmz8vo6HBY3CGdeMj8af93CFZX+T82+VD1+UqHOxTq31lO7MI7lepBtQ==}
+    dependencies:
+      '@types/filewriter': 0.0.29
+    dev: true
+
+  /@types/filewriter/0.0.29:
+    resolution: {integrity: sha512-BsPXH/irW0ht0Ji6iw/jJaK8Lj3FJemon2gvEqHKpCdDCeemHa+rI3WBGq5z7cDMZgoLjY40oninGxqk+8NzNQ==}
+    dev: true
+
   /@types/graceful-fs/4.1.6:
     resolution: {integrity: sha512-Sig0SNORX9fdW+bQuTEovKj3uHcUL6LQKbCrrqb1X7J6/ReAbhCXRAhc+SMejhLELFj2QcyuxmUooZ4bt5ReSw==}
     dependencies:
       '@types/node': 17.0.45
+    dev: true
+
+  /@types/har-format/1.2.10:
+    resolution: {integrity: sha512-o0J30wqycjF5miWDKYKKzzOU1ZTLuA42HZ4HE7/zqTOc/jTLdQ5NhYWvsRQo45Nfi1KHoRdNhteSI4BAxTF1Pg==}
     dev: true
 
   /@types/history/4.7.11:
