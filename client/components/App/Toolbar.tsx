@@ -1,5 +1,6 @@
 import "./Toolbar.scss";
 import { AppSettings as AppSettings } from "./Toolbar/AppSettings";
+import { CastPlayer } from "./CastPlayer";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Search } from "./Toolbar/Search";
 import { UserSettings } from "./Toolbar/UserSettings";
@@ -14,7 +15,7 @@ type SettingsMenu = "user" | "app";
 
 export const Toolbar = () => {
   const [settings_vis, setSettingsVis] = useState({ user: false, app: false });
-  const { app } = useSelector(getState);
+  const { caster } = useSelector(getState);
 
   /**
    * Toggle the visibility of a menu
@@ -47,7 +48,9 @@ export const Toolbar = () => {
       </div>
 
       <div className="tools">
-        {app.cast_id && <google-cast-launcher></google-cast-launcher>}
+        {caster.ready && <google-cast-launcher></google-cast-launcher>}
+        {/* Invisible, just used to mediate between redux stores */}
+        <CastPlayer></CastPlayer>
 
         <Icon icon={faGear} size="lg" onClick={toggleVis("app")} />
         {settings_vis.app && (

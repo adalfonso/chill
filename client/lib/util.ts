@@ -15,7 +15,7 @@ export const startAnimationLoop = (callback: (dt: number) => unknown) => {
     requestAnimationFrame(frame);
   };
 
-  requestAnimationFrame(frame);
+  return requestAnimationFrame(frame);
 };
 
 export const getTimeTracking = (time: number) => {

@@ -1,4 +1,4 @@
-import app from "./app";
+import caster from "./caster";
 import mediaMenu from "./mediaMenu";
 import player from "./player";
 import playlistEditor from "./playlistEditor";
@@ -7,11 +7,11 @@ import { configureStore } from "@reduxjs/toolkit";
 
 const store = configureStore({
   reducer: {
-    player,
+    caster,
     mediaMenu,
+    player,
     playlistEditor,
     user,
-    app,
   },
 });
 

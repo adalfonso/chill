@@ -3,10 +3,13 @@ import { AlbumViewRow } from "./AlbumView/AlbumViewRow";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/models/Media";
 import { MediaApi } from "@client/api/MediaApi";
+import { client } from "@client/client";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
+import { getState } from "@client/state/reducers/store";
+import { play as castPlay } from "@client/lib/cast/Cast";
 import { play } from "@reducers/player";
 import { truncate } from "lodash-es";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@hooks/useQuery";
 import { useState, useEffect } from "react";
@@ -21,6 +24,7 @@ type AlbumParams = {
 
 export const AlbumView = ({ setLoading }: AlbumViewProps) => {
   const album = decodeURIComponent(useParams<AlbumParams>().album ?? "");
+  const { caster } = useSelector(getState);
   const artist = useQuery().get("artist");
   const no_album = useQuery().get("no_album") === "1";
   const [files, setFiles] = useState<Media[]>([]);
@@ -28,8 +32,17 @@ export const AlbumView = ({ setLoading }: AlbumViewProps) => {
 
   const playAll =
     (index = 0) =>
-    () => {
-      dispatch(play({ files: [...files], index }));
+    async () => {
+      // TODO: Second place we do similar logic. Can it be centralized?
+      if (!caster.is_casting) {
+        return dispatch(play({ files: [...files], index }));
+      }
+
+      const media = await client.media.castInfo.query({
+        media_ids: files.map((file) => file._id),
+      });
+
+      castPlay(media, index);
     };
 
   useEffect(() => {

@@ -1,5 +1,9 @@
 import "./Scrubber.scss";
-import { useState, useEffect } from "react";
+import { getState } from "@reducers/store";
+import { getTimeTracking, startAnimationLoop } from "@client/lib/util";
+import { useDispatch, useSelector } from "react-redux";
+import { useDrag } from "@hooks/useDrag";
+import { useState, useEffect, useRef } from "react";
 import {
   audio,
   crossover,
@@ -7,29 +11,33 @@ import {
   next,
   seek,
 } from "@reducers/player";
-import { getState } from "@reducers/store";
-import { getTimeTracking, startAnimationLoop } from "@client/lib/util";
-import { useDispatch, useSelector } from "react-redux";
-import { useDrag } from "@hooks/useDrag";
 
 const gap_offset = 0.25;
 
 export const Scrubber = () => {
   const [progress, setProgress] = useState(0);
-  const { player } = useSelector(getState);
+  const { player, caster } = useSelector(getState);
   const dispatch = useDispatch();
   const { startDrag, cancelDrag, updateDrag, dragging } = useDrag(
     (percent: number) => dispatch(seek({ percent })),
   );
 
-  // TODO: Should useEffect return a fn to break out of the loop?
+  const is_casting = useRef(caster.is_casting);
+
+  // TODO: Hack - can this be done some other way?
   useEffect(() => {
-    startAnimationLoop(() => {
+    is_casting.current = caster.is_casting;
+  }, [caster.is_casting]);
+
+  useEffect(() => {
+    const loop = startAnimationLoop(() => {
       if (getAudioProgress() === progress) {
         return;
       }
 
-      setProgress(getAudioProgress());
+      setProgress(
+        is_casting.current ? caster.current_track_progress : getAudioProgress(),
+      );
     });
 
     /**
@@ -45,9 +53,25 @@ export const Scrubber = () => {
       audio.duration - audio.currentTime < gap_offset &&
       dispatch(next({ auto: true }));
 
-    audio.addEventListener("timeupdate", onCrossover);
-    crossover.addEventListener("timeupdate", onCrossover);
-  }, []);
+    // Copy of this value in case it changes before this effect is cleaned up
+    const is_casting_local_var = is_casting.current;
+
+    if (!is_casting_local_var) {
+      audio.addEventListener("timeupdate", onCrossover);
+      crossover.addEventListener("timeupdate", onCrossover);
+    }
+
+    return () => {
+      console.info("Cancelling scrubber animation frame");
+
+      cancelAnimationFrame(loop);
+
+      if (!is_casting_local_var) {
+        audio.removeEventListener("timeupdate", onCrossover);
+        crossover.removeEventListener("timeupdate", onCrossover);
+      }
+    };
+  }, [is_casting.current]);
 
   return (
     <>

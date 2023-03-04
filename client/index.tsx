@@ -3,7 +3,6 @@ import { App } from "./App";
 import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import { createRoot } from "react-dom/client";
-import { initCast } from "./lib/cast/Cast";
 
 const element = document.getElementById("root");
 
@@ -13,6 +12,10 @@ if (element === null) {
 
 const root = createRoot(element);
 
+window.__chill_app = {
+  cast_ready: false,
+};
+
 root.render(
   <BrowserRouter>
     <Provider store={store}>
@@ -21,4 +24,10 @@ root.render(
   </BrowserRouter>,
 );
 
-initCast();
+window["__onGCastApiAvailable"] = (isAvailable) => {
+  if (!isAvailable) {
+    return;
+  }
+
+  window.__chill_app.cast_ready = true;
+};

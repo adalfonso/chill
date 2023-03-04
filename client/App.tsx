@@ -5,28 +5,19 @@ import { PlaylistEditor } from "./components/App/PlaylistEditor";
 import { Toolbar } from "./components/App/Toolbar";
 import { client } from "./client";
 import { getState } from "@reducers/store";
-import { setCastId } from "./state/reducers/app";
+import { setCastAppId } from "./state/reducers/caster";
 import { setMenu } from "@reducers/mediaMenu";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { Cast } from "./lib/cast/Cast";
 
 export const App = () => {
   const dispatch = useDispatch();
   const clearActiveFileMenu = () => dispatch(setMenu({ menu_id: null }));
-  const { playlistEditor, app } = useSelector(getState);
+  const { playlistEditor } = useSelector(getState);
 
   useEffect(() => {
-    client.app.getCastId.query().then((id) => dispatch(setCastId({ id })));
-  });
-
-  useEffect(() => {
-    if (app.cast_id === null) {
-      return;
-    }
-
-    Cast.instance().app_id = app.cast_id;
-  }, [app.cast_id]);
+    client.app.getCastId.query().then((id) => dispatch(setCastAppId({ id })));
+  }, []);
 
   return (
     <div className="app" onClick={clearActiveFileMenu}>

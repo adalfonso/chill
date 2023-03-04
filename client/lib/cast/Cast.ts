@@ -1,148 +1,74 @@
 import { CastMedia, CastSdk } from "./CastSdk";
-import { CastPayload, Session } from "./types";
-import { Nullable } from "@common/types";
+import { CastPayload } from "./types";
 
-/** Interfaces with a Chromecast */
-export class Cast {
-  // Singleton instance
-  static _instance: Nullable<Cast> = null;
+/**
+ * Play media files from a payload
+ *
+ * @param payload - playlist items
+ */
+export const play = async (payload: CastPayload, index = 0) => {
+  const session = cast.framework.CastContext.getInstance().getCurrentSession();
 
-  // Default Receiver
-  private _app_id = chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID;
-
-  // Cast Context
-  private _ctx: Nullable<cast.framework.CastContext> = null;
-
-  // If the SDK has loaded
-  private _sdk_ready = false;
-
-  // If the app ID and context have been initialized
-  private _app_ready = false;
-
-  // Controls playback on the session
-  private _controller: cast.framework.RemotePlayerController;
-
-  /** Create a new Cast instance */
-  constructor() {
-    this._controller = new cast.framework.RemotePlayerController(
-      new cast.framework.RemotePlayer(),
-    );
-
-    this._controller.addEventListener(
-      cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED,
-      (event) => {
-        console.info("Current time:", event.value);
-      },
-    );
+  if (session === null) {
+    return console.warn("Can't play audio because there is no cast session.");
   }
 
-  // TODO: Use this for displaying the cast icon
-  public get ready() {
-    return this._sdk_ready && this._app_ready;
+  const tracks = payload.map(CastSdk.Media);
+  const track = tracks.splice(index, 1)[0];
+  const previous = tracks.splice(0, index);
+  const next = tracks;
+
+  // Load the first track, then queue any others
+  session.loadMedia(CastSdk.Request(track)).then(
+    () => {
+      console.info("Load media request succeeded");
+
+      if (previous.length + next.length === 0) {
+        return;
+      }
+
+      queue(previous, next);
+    },
+    (errorCode) => console.error("Load media request failed: " + errorCode),
+  );
+};
+
+/**
+ * Queue tracks on the current media session
+ *
+ * @param next - tracks to queue
+ */
+const queue = (previous: CastMedia[], next: CastMedia[]) => {
+  console.info("Queueing additional tracks");
+  const session = cast.framework.CastContext.getInstance().getCurrentSession();
+
+  if (session === null) {
+    return console.warn("Can't queue tracks because there is no cast session.");
   }
 
-  /**
-   * Sets the cast application id and initializes context
-   *
-   * @param id - app id
-   */
-  public set app_id(id: string) {
-    this._app_id = id;
-    this._ctx = cast.framework.CastContext.getInstance();
-
-    this._ctx.setOptions({
-      receiverApplicationId: this._app_id,
-      autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
-    });
-
-    this._app_ready = true;
-  }
-
-  public set sdk_ready(ready: boolean) {
-    if (this._sdk_ready) {
-      return;
-    }
-
-    this._sdk_ready = ready;
-  }
-
-  /**
-   * Get a singleton instance
-   *
-   * @returns instance
-   */
-  public static instance() {
-    if (Cast._instance === null) {
-      Cast._instance = new Cast();
-    }
-
-    return Cast._instance;
-  }
-
-  /**
-   * Play media files from a payload
-   *
-   * @param payload - playlist items
-   */
-  public async play(payload: CastPayload) {
-    if (!this.ready) {
-      console.warn("Tried to play but Cast is not ready");
-      return;
-    }
-
-    const session =
-      cast.framework.CastContext.getInstance().getCurrentSession();
-
-    if (session === null) {
-      return console.warn(
-        "Can't play audio because there is no Google cast session.",
-      );
-    }
-
-    const [first_track, ...remaining_tracks] = payload.map(CastSdk.Media);
-
-    // Load the first track, then queue any others
-    session.loadMedia(CastSdk.Request(first_track)).then(
-      () => {
-        console.info("Load media request succeeded");
-
-        if (remaining_tracks.length === 0) {
-          return;
-        }
-
-        this._queue(remaining_tracks, session);
-      },
-      (errorCode) => console.error("Load media request failed: " + errorCode),
-    );
-  }
-
-  /**
-   * Queue tracks on the current media session
-   *
-   * @param tracks - tracks to queue
-   * @param session - current session
-   */
-  private _queue(tracks: CastMedia[], session: Session) {
-    console.info("Queueing additional tracks");
-
+  if (previous.length) {
     const loadRequest = new chrome.cast.media.QueueInsertItemsRequest(
-      tracks.map((track) => new chrome.cast.media.QueueItem(track)),
+      previous.map((track) => new chrome.cast.media.QueueItem(track)),
+    );
+
+    loadRequest.insertBefore = 0;
+
+    session.getMediaSession()?.queueInsertItems(
+      loadRequest,
+      () => console.info(`Successfully queued ${next.length} tracks`),
+      (errorCode) => console.error("Queueing tracks failed: " + errorCode),
+    );
+  }
+
+  if (next.length) {
+    const loadRequest = new chrome.cast.media.QueueInsertItemsRequest(
+      next.map((track) => new chrome.cast.media.QueueItem(track)),
     );
 
     session.getMediaSession()?.queueInsertItems(
       loadRequest,
-      () => console.info(`Successfully queued ${tracks.length} tracks`),
+      () => console.info(`Successfully queued ${next.length} tracks`),
       (errorCode) => console.error("Queueing tracks failed: " + errorCode),
     );
   }
-}
-
-// Register the cast init event on the window
-export const initCast = () => {
-  window["__onGCastApiAvailable"] = (isAvailable) => {
-    if (isAvailable) {
-      // Init Cast
-      Cast.instance();
-    }
-  };
 };

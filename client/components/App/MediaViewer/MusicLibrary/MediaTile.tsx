@@ -1,5 +1,4 @@
 import "./MediaTile.scss";
-import { Cast } from "@client/lib/cast/Cast";
 import { FileMenu } from "../FileMenu";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { GroupedMedia } from "@common/types";
@@ -9,9 +8,11 @@ import { MediaMatch } from "@common/media/types";
 import { albumUrl, artistUrl, matchUrl } from "@client/lib/url";
 import { client } from "@client/client";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
+import { getState } from "@client/state/reducers/store";
 import { noPropagate } from "@client/lib/util";
+import { play as castPlay } from "@client/lib/cast/Cast";
 import { play } from "@reducers/player";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useId } from "@hooks/useObjectId";
 import { useLongPress } from "@hooks/useLongPress";
 import { useMenu } from "@hooks/useMenu";
@@ -34,6 +35,7 @@ export const MediaTile = ({
   const [menu_visible, setMenuVisible] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { caster } = useSelector(getState);
   const menu_id = useId();
   const menu = useMenu(menu_id);
 
@@ -59,13 +61,17 @@ export const MediaTile = ({
   const optionsHandler = {
     play: async () => {
       const files = await getFiles();
-      dispatch(play({ files, index: 0 }));
 
+      if (!caster.is_casting) {
+        return dispatch(play({ files, index: 0 }));
+      }
+
+      // TODO: See if we can just make one XHR instead
       const media = await client.media.castInfo.query({
         media_ids: files.map((file) => file._id),
       });
 
-      Cast.instance().play(media);
+      castPlay(media);
     },
     getFiles,
     toggle: setMenuVisible,
