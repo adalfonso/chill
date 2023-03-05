@@ -31,13 +31,13 @@ export const Scrubber = () => {
 
   useEffect(() => {
     const loop = startAnimationLoop(() => {
-      if (getAudioProgress() === progress) {
+      const audio_progress = getAudioProgress(is_casting.current);
+
+      if (audio_progress === progress) {
         return;
       }
 
-      setProgress(
-        is_casting.current ? caster.current_track_progress : getAudioProgress(),
-      );
+      setProgress(audio_progress);
     });
 
     /**
@@ -62,8 +62,6 @@ export const Scrubber = () => {
     }
 
     return () => {
-      console.info("Cancelling scrubber animation frame");
-
       cancelAnimationFrame(loop);
 
       if (!is_casting_local_var) {

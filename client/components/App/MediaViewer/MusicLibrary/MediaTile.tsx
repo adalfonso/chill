@@ -62,9 +62,7 @@ export const MediaTile = ({
     play: async () => {
       const files = await getFiles();
 
-      if (!caster.is_casting) {
-        return dispatch(play({ files, index: 0 }));
-      }
+      dispatch(play({ files, index: 0, is_casting: caster.is_casting }));
 
       // TODO: See if we can just make one XHR instead
       const media = await client.media.castInfo.query({

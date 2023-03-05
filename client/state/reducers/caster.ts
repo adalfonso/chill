@@ -6,7 +6,6 @@ export type CastState = {
   is_casting: boolean;
   current_track_progress: number;
   ready: boolean;
-  context: Nullable<cast.framework.CastContext>;
 };
 
 const initialState: CastState = {
@@ -14,7 +13,6 @@ const initialState: CastState = {
   is_casting: false,
   current_track_progress: 0,
   ready: false,
-  context: null,
 };
 
 export const casterSlice = createSlice({

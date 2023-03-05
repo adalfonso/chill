@@ -6,7 +6,16 @@ import { createSlice } from "@reduxjs/toolkit";
 export let audio = new Audio();
 export let crossover = new Audio();
 
-export const getAudioProgress = () => {
+export const getAudioProgress = (is_casting = false) => {
+  if (is_casting) {
+    return (
+      cast.framework.CastContext.getInstance()
+        .getCurrentSession()
+        ?.getMediaSession()
+        ?.getEstimatedTime() ?? 0
+    );
+  }
+
   if (!audio.duration || !audio.currentTime) {
     return 0;
   }
@@ -129,7 +138,7 @@ export const playerSlice = createSlice({
     },
 
     play: (state, action) => {
-      const { files, index = 0 } = action.payload;
+      const { files, index = 0, is_casting = false } = action.payload;
 
       if (files) {
         state.playlist = files;
@@ -137,14 +146,14 @@ export const playerSlice = createSlice({
         state.now_playing = files[index];
         state.next_playing = files[index + 1] ?? null;
         state.mobile_display_mode = MobileDisplayMode.Fullscreen;
-        load(state);
+        !is_casting && load(state);
       }
 
       if (!state.now_playing) {
         return;
       }
 
-      audio.play();
+      !is_casting && audio.play();
       state.is_playing = true;
       state.is_shuffled = false;
     },
