@@ -32,7 +32,7 @@ const default_now_playing = "";
 
 export const PlayControls = () => {
   const dispatch = useDispatch();
-  const { player } = useSelector(getState);
+  const { player, caster } = useSelector(getState);
   const { width } = useViewport();
   const is_mobile = width < screen_breakpoint_px;
   const is_fullscreen =
@@ -51,7 +51,9 @@ export const PlayControls = () => {
 
   // Toggle audio play / pause
   const togglePlayer = async () => {
-    const operation = player.is_playing ? pause() : play({});
+    const operation = player.is_playing
+      ? pause({ is_casting: caster.is_casting })
+      : play({ is_casting: caster.is_casting });
     dispatch(operation);
   };
 

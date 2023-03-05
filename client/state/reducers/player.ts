@@ -1,4 +1,5 @@
 import * as _ from "lodash-es";
+import { CastSdk } from "@client/lib/cast/CastSdk";
 import { Media } from "@common/models/Media";
 import { Nullable, ObjectValues } from "@common/types";
 import { createSlice } from "@reduxjs/toolkit";
@@ -8,12 +9,7 @@ export let crossover = new Audio();
 
 export const getAudioProgress = (is_casting = false) => {
   if (is_casting) {
-    return (
-      cast.framework.CastContext.getInstance()
-        .getCurrentSession()
-        ?.getMediaSession()
-        ?.getEstimatedTime() ?? 0
-    );
+    return CastSdk.currentTime();
   }
 
   if (!audio.duration || !audio.currentTime) {
@@ -132,8 +128,10 @@ export const playerSlice = createSlice({
       state.index = 0;
     },
 
-    pause: (state) => {
-      audio.pause();
+    pause: (state, action) => {
+      const { is_casting = false } = action.payload;
+
+      is_casting ? CastSdk.Pause() : audio.pause();
       state.is_playing = false;
     },
 
@@ -153,7 +151,7 @@ export const playerSlice = createSlice({
         return;
       }
 
-      !is_casting && audio.play();
+      is_casting ? CastSdk.Play() : audio.play();
       state.is_playing = true;
       state.is_shuffled = false;
     },

@@ -49,4 +49,38 @@ export class CastSdk {
 
     return request;
   }
+
+  /** Play the currently paused track */
+  static Play() {
+    return cast.framework.CastContext.getInstance()
+      .getCurrentSession()
+      ?.getMediaSession()
+      ?.play(
+        new chrome.cast.media.PlayRequest(),
+        () => {},
+        () => console.info("Failed to play media"),
+      );
+  }
+
+  /** Pause the currently playing track */
+  static Pause() {
+    return cast.framework.CastContext.getInstance()
+      .getCurrentSession()
+      ?.getMediaSession()
+      ?.pause(
+        new chrome.cast.media.PauseRequest(),
+        () => {},
+        () => console.info("Failed to pause media"),
+      );
+  }
+
+  /** Get the current time of the track playing */
+  static currentTime() {
+    return (
+      cast.framework.CastContext.getInstance()
+        .getCurrentSession()
+        ?.getMediaSession()
+        ?.getEstimatedTime() ?? 0
+    );
+  }
 }
