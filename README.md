@@ -5,15 +5,15 @@ DIY media platform
 ## Installation
 
 ```bash
-  npm i
+pnpm i
 ```
 
 ## Environment
 
-Copy sample env and configure values accordingly
+Copy sample env and configure values accordingly.
 
 ```bash
-  cp .env.sample .env
+cp .env.sample .env
 ```
 
 ## Usage
@@ -22,18 +22,27 @@ _Project requires Docker_
 
 **Development**
 
+This project uses tilt to run docker containers for local development:
+[Download Tilt](https://docs.tilt.dev/install.html)
+
+Once Tilt is installed, run:
+
 ```bash
-  npm run docker:dev
+tilt up
 ```
 
-- HMR enabled
+Alternatively development without Tilt can be started with:
+
+```bash
+npm run docker:dev
+```
+
 - App served @ `http://localhost:3200`
-- Server run with Nodemon and Vite Dev Server
 
 **Running in Production**
 
 ```bash
-  npm run docker
+npm run docker
 ```
 
 ---
