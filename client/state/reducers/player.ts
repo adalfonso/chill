@@ -166,7 +166,9 @@ export const playerSlice = createSlice({
       loadNext(state);
     },
 
-    previous: (state) => {
+    previous: (state, action) => {
+      const { is_casting = false } = action.payload;
+
       state.index--;
 
       if (state.index < 0) {
@@ -180,13 +182,18 @@ export const playerSlice = createSlice({
       state.now_playing = state.playlist[state.index];
       state.next_playing = state.playlist[state.index + 1] ?? null;
 
-      load(state);
-      audio.play();
+      if (is_casting) {
+        CastSdk.Previous();
+      } else {
+        load(state);
+        audio.play();
+      }
+
       state.is_playing = true;
     },
 
     next: (state, action) => {
-      const { auto = false } = action.payload ?? {};
+      const { auto = false, is_casting = false } = action.payload ?? {};
 
       state.index++;
 
@@ -208,8 +215,13 @@ export const playerSlice = createSlice({
         [audio, crossover] = [crossover, audio];
       }
 
-      load(state, !!crossover.src);
-      audio.play();
+      if (is_casting) {
+        CastSdk.Next();
+      } else {
+        load(state, !!crossover.src);
+        audio.play();
+      }
+
       state.is_playing = true;
     },
 

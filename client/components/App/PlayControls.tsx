@@ -113,7 +113,9 @@ export const PlayControls = () => {
             <div className="controls">
               <div
                 className="circle-button"
-                onClick={() => dispatch(previous())}
+                onClick={() =>
+                  dispatch(previous({ is_casting: caster.is_casting }))
+                }
               >
                 <Icon icon={faFastBackward} />
               </div>
@@ -122,7 +124,9 @@ export const PlayControls = () => {
               </div>
               <div
                 className="circle-button"
-                onClick={() => dispatch(next(false))}
+                onClick={() =>
+                  dispatch(next({ auto: false, is_casting: caster.is_casting }))
+                }
               >
                 <Icon icon={faFastForward} />
               </div>

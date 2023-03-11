@@ -59,7 +59,10 @@ export const MediaFileController = {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
 
-    const documents = await MediaModel.find({ _id: { $in: media_ids } });
+    const documents = await MediaModel.find(
+      { _id: { $in: media_ids } },
+      { "cover.data": 0 },
+    );
 
     const mapped = documents.reduce<Record<string, Media>>((carry, media) => {
       carry[media._id.toString()] = media;

@@ -52,26 +52,62 @@ export class CastSdk {
 
   /** Play the currently paused track */
   static Play() {
-    return cast.framework.CastContext.getInstance()
-      .getCurrentSession()
-      ?.getMediaSession()
-      ?.play(
-        new chrome.cast.media.PlayRequest(),
-        () => {},
-        () => console.info("Failed to play media"),
-      );
+    return new Promise((resolve, reject) => {
+      cast.framework.CastContext.getInstance()
+        .getCurrentSession()
+        ?.getMediaSession()
+        ?.play(new chrome.cast.media.PlayRequest(), resolve, () =>
+          reject("Failed to play media"),
+        );
+    });
   }
 
   /** Pause the currently playing track */
   static Pause() {
-    return cast.framework.CastContext.getInstance()
-      .getCurrentSession()
-      ?.getMediaSession()
-      ?.pause(
-        new chrome.cast.media.PauseRequest(),
-        () => {},
-        () => console.info("Failed to pause media"),
-      );
+    return new Promise((resolve, reject) => {
+      cast.framework.CastContext.getInstance()
+        .getCurrentSession()
+        ?.getMediaSession()
+        ?.pause(new chrome.cast.media.PauseRequest(), resolve, () =>
+          reject("Failed to pause media"),
+        );
+    });
+  }
+
+  /** Pause the currently playing track */
+  static Previous() {
+    return new Promise((resolve, reject) => {
+      cast.framework.CastContext.getInstance()
+        .getCurrentSession()
+        ?.getMediaSession()
+        ?.queuePrev(resolve, () => reject("Failed to queue previous media"));
+    });
+  }
+
+  /** Pause the currently playing track */
+  static Next() {
+    return new Promise((resolve, reject) => {
+      cast.framework.CastContext.getInstance()
+        .getCurrentSession()
+        ?.getMediaSession()
+        ?.queueNext(resolve, () => reject("Failed to queue next media"));
+    });
+  }
+
+  static goToIndex(index: number) {
+    console.log("go to index", index);
+
+    return new Promise((resolve, reject) => {
+      const session = cast.framework.CastContext.getInstance()
+        .getCurrentSession()
+        ?.getMediaSession();
+
+      console.log({ session });
+      return cast.framework.CastContext.getInstance()
+        .getCurrentSession()
+        ?.getMediaSession()
+        ?.queueJumpToItem(index, resolve, () => reject("Failed to goToIndex"));
+    });
   }
 
   /** Get the current time of the track playing */

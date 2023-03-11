@@ -55,7 +55,7 @@ const queue = (previous: CastMedia[], next: CastMedia[]) => {
 
     session.getMediaSession()?.queueInsertItems(
       loadRequest,
-      () => console.info(`Successfully queued ${next.length} tracks`),
+      () => console.info(`Successfully queued ${previous.length} tracks`),
       (errorCode) => console.error("Queueing tracks failed: " + errorCode),
     );
   }
