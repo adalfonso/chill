@@ -2,7 +2,9 @@ import * as _ from "lodash-es";
 import { CastSdk } from "@client/lib/cast/CastSdk";
 import { Media } from "@common/models/Media";
 import { Nullable, ObjectValues } from "@common/types";
+import { client } from "@client/client";
 import { createSlice } from "@reduxjs/toolkit";
+import { play as castPlay } from "@client/lib/cast/Cast";
 
 export let audio = new Audio();
 export let crossover = new Audio();
@@ -183,6 +185,12 @@ export const playerSlice = createSlice({
       state.next_playing = state.playlist[state.index + 1] ?? null;
 
       if (is_casting) {
+        // TODO: does this have to be done every time?
+        const index = state.index;
+        client.media.castInfo
+          .query({ media_ids: state.playlist.map((file) => file._id) })
+          .then((media) => castPlay(media, index));
+
         CastSdk.Previous();
       } else {
         load(state);
@@ -216,7 +224,15 @@ export const playerSlice = createSlice({
       }
 
       if (is_casting) {
-        CastSdk.Next();
+        if (auto) {
+          CastSdk.Next();
+        } else {
+          // TODO: does this have to be done every time?
+          const index = state.index;
+          client.media.castInfo
+            .query({ media_ids: state.playlist.map((file) => file._id) })
+            .then((media) => castPlay(media, index));
+        }
       } else {
         load(state, !!crossover.src);
         audio.play();
