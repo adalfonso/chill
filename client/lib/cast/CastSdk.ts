@@ -95,14 +95,11 @@ export class CastSdk {
   }
 
   static goToIndex(index: number) {
-    console.log("go to index", index);
-
     return new Promise((resolve, reject) => {
       const session = cast.framework.CastContext.getInstance()
         .getCurrentSession()
         ?.getMediaSession();
 
-      console.log({ session });
       return cast.framework.CastContext.getInstance()
         .getCurrentSession()
         ?.getMediaSession()

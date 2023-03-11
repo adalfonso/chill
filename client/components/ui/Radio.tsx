@@ -19,6 +19,7 @@ export const Radio = ({ default_value, options, onChange }: RadioProps) => {
     setSelectedOption(value);
   };
 
+  // TODO: should this be strict?
   const isSelected = (value: string) => selected_option == value;
 
   return (

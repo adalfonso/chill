@@ -31,7 +31,10 @@ export const Scrubber = () => {
 
   useEffect(() => {
     const loop = startAnimationLoop(() => {
-      const audio_progress = getAudioProgress(is_casting.current);
+      const audio_progress = getAudioProgress(
+        player.now_playing,
+        is_casting.current,
+      );
 
       if (audio_progress === progress) {
         return;
@@ -69,7 +72,7 @@ export const Scrubber = () => {
         crossover.removeEventListener("timeupdate", onCrossover);
       }
     };
-  }, [is_casting.current]);
+  }, [is_casting.current, player.now_playing]);
 
   return (
     <>
@@ -93,12 +96,15 @@ export const Scrubber = () => {
 
       <div className="time-tracking">
         <div className="current-time">
-          {player.now_playing && getTimeTracking(audio.currentTime)}
+          {player.now_playing &&
+            getTimeTracking(
+              caster.is_casting
+                ? (progress / 100) * player.now_playing.duration
+                : audio.currentTime,
+            )}
         </div>
         <div className="end-time">
-          {player.now_playing &&
-            !Number.isNaN(audio.duration) &&
-            getTimeTracking(audio.duration)}
+          {player.now_playing && getTimeTracking(player.now_playing.duration)}
         </div>
       </div>
     </>

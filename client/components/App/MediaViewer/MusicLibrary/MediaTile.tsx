@@ -10,7 +10,6 @@ import { client } from "@client/client";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { getState } from "@client/state/reducers/store";
 import { noPropagate } from "@client/lib/util";
-import { play as castPlay } from "@client/lib/cast/Cast";
 import { play } from "@reducers/player";
 import { useDispatch, useSelector } from "react-redux";
 import { useId } from "@hooks/useObjectId";

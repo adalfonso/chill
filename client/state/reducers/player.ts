@@ -9,16 +9,26 @@ import { play as castPlay } from "@client/lib/cast/Cast";
 export let audio = new Audio();
 export let crossover = new Audio();
 
-export const getAudioProgress = (is_casting = false) => {
-  if (is_casting) {
-    return CastSdk.currentTime();
-  }
-
-  if (!audio.duration || !audio.currentTime) {
+/**
+ * Get the audio progress for a playing track
+ *
+ * @param media - media that is playing
+ * @param is_casting - if the media is playing on chromecast
+ * @returns progress percentage 0-100
+ */
+export const getAudioProgress = (
+  media: Nullable<Media>,
+  is_casting = false,
+) => {
+  if (media === null || !media.duration) {
     return 0;
   }
 
-  return (audio.currentTime / audio.duration) * 100;
+  if (is_casting) {
+    return (CastSdk.currentTime() / media.duration) * 100;
+  }
+
+  return audio.currentTime ? (audio.currentTime / media.duration) * 100 : 0;
 };
 
 /**
