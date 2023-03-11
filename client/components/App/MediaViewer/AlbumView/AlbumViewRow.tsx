@@ -25,7 +25,8 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
 
   const menuHandler = {
     play: () => playAll(index)(),
-    getFiles: () => Promise.resolve([file]),
+    // TODO: Provide cast info
+    getFiles: () => Promise.resolve({ files: [file], cast_info: null }),
   };
 
   return (

@@ -21,6 +21,7 @@ export const PlaylistViewer = () => {
   const playAll =
     (index = 0) =>
     () => {
+      // TODO: Support casting
       dispatch(play({ files: [...files], index }));
     };
 

@@ -21,7 +21,8 @@ export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
 
   const menuHandler = {
     play: () => playAll(index)(),
-    getFiles: () => Promise.resolve([file]),
+    // TODO: Provide cast info
+    getFiles: () => Promise.resolve({ files: [file], cast_info: null }),
   };
 
   return (

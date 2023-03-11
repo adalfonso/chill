@@ -6,7 +6,6 @@ import { MediaApi } from "@client/api/MediaApi";
 import { client } from "@client/client";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { getState } from "@client/state/reducers/store";
-import { play as castPlay } from "@client/lib/cast/Cast";
 import { play } from "@reducers/player";
 import { truncate } from "lodash-es";
 import { useDispatch, useSelector } from "react-redux";
@@ -33,16 +32,14 @@ export const AlbumView = ({ setLoading }: AlbumViewProps) => {
   const playAll =
     (index = 0) =>
     async () => {
-      // TODO: Second place we do similar logic. Can it be centralized?
-      if (!caster.is_casting) {
-        return dispatch(play({ files: [...files], index }));
-      }
+      const is_casting = caster.is_casting;
+      const cast_info = is_casting
+        ? await client.media.castInfo.query({
+            media_ids: files.map((file) => file._id),
+          })
+        : null;
 
-      const media = await client.media.castInfo.query({
-        media_ids: files.map((file) => file._id),
-      });
-
-      castPlay(media, index);
+      dispatch(play({ files: [...files], cast_info, index, is_casting }));
     };
 
   useEffect(() => {

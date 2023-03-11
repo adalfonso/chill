@@ -91,7 +91,7 @@ export const MediaFileController = {
           { expiresIn: "1h" },
         );
 
-        return { url, token, content_type, meta: media };
+        return { url, token, content_type };
       });
   },
 

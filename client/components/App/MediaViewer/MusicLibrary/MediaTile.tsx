@@ -53,23 +53,28 @@ export const MediaTile = ({
     (file.album ?? "") +
     (file.track ?? "").toString().padStart(3, "0");
 
-  const getFiles = async () =>
-    (await MediaApi.query(file._id)).sort((a, b) =>
+  const getFiles = async (is_casting = false) => {
+    const files = (await MediaApi.query(file._id)).sort((a, b) =>
       getSortString(a).localeCompare(getSortString(b)),
     );
 
+    if (!is_casting) {
+      return { files, cast_info: null };
+    }
+
+    const cast_info = await client.media.castInfo.query({
+      media_ids: files.map((file) => file._id),
+    });
+
+    return { files, cast_info };
+  };
+
   const optionsHandler = {
     play: async () => {
-      const files = await getFiles();
+      const is_casting = caster.is_casting;
+      const { files, cast_info } = await getFiles(is_casting);
 
-      dispatch(play({ files, index: 0, is_casting: caster.is_casting }));
-
-      // TODO: See if we can just make one XHR instead
-      const media = await client.media.castInfo.query({
-        media_ids: files.map((file) => file._id),
-      });
-
-      castPlay(media);
+      dispatch(play({ files, cast_info, index: 0, is_casting }));
     },
     getFiles,
     toggle: setMenuVisible,

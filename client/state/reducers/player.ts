@@ -2,7 +2,7 @@ import * as _ from "lodash-es";
 import { CastSdk } from "@client/lib/cast/CastSdk";
 import { Media } from "@common/models/Media";
 import { Nullable, ObjectValues } from "@common/types";
-import { client } from "@client/client";
+import { PreCastPayload } from "@client/lib/cast/types";
 import { createSlice } from "@reduxjs/toolkit";
 import { play as castPlay } from "@client/lib/cast/Cast";
 
@@ -19,6 +19,17 @@ export const getAudioProgress = (is_casting = false) => {
   }
 
   return (audio.currentTime / audio.duration) * 100;
+};
+
+/**
+ * Merge media and their cast information into a single cast payload
+ *
+ * @param files - media files
+ * @param info - cast play info
+ * @returns merged data
+ */
+const getCastPayload = (files: Media[], info: PreCastPayload) => {
+  return info.map((info, index) => ({ ...info, meta: files[index] }));
 };
 
 export const MobileDisplayMode = {
@@ -71,6 +82,7 @@ export interface PlayerState {
   next_playing: Nullable<Media>;
   original_playlist: Media[];
   playlist: Media[];
+  cast_info: Nullable<PreCastPayload>;
   index: number;
   volume: number;
   mobile_display_mode: MobileDisplayMode;
@@ -83,6 +95,7 @@ const initialState: PlayerState = {
   next_playing: null,
   original_playlist: [],
   playlist: [],
+  cast_info: null,
   index: 0,
   volume: 1,
   mobile_display_mode: MobileDisplayMode.None,
@@ -138,7 +151,12 @@ export const playerSlice = createSlice({
     },
 
     play: (state, action) => {
-      const { files, index = 0, is_casting = false } = action.payload;
+      const {
+        files,
+        cast_info,
+        index = 0,
+        is_casting = false,
+      } = action.payload;
 
       if (files) {
         state.playlist = files;
@@ -146,13 +164,27 @@ export const playerSlice = createSlice({
         state.now_playing = files[index];
         state.next_playing = files[index + 1] ?? null;
         state.mobile_display_mode = MobileDisplayMode.Fullscreen;
-        !is_casting && load(state);
+        state.cast_info = cast_info;
+
+        if (is_casting) {
+          if (state.cast_info === null) {
+            return console.error(
+              "Tried to play items on cast but could not find their information",
+            );
+          }
+
+          const payload = getCastPayload(state.playlist, state.cast_info);
+          castPlay(payload, state.index);
+        } else {
+          load(state);
+        }
       }
 
       if (!state.now_playing) {
         return;
       }
 
+      // TODO: Create a common interface and facade over the cast SDK and audio
       is_casting ? CastSdk.Play() : audio.play();
       state.is_playing = true;
       state.is_shuffled = false;
@@ -185,11 +217,13 @@ export const playerSlice = createSlice({
       state.next_playing = state.playlist[state.index + 1] ?? null;
 
       if (is_casting) {
-        // TODO: does this have to be done every time?
-        const index = state.index;
-        client.media.castInfo
-          .query({ media_ids: state.playlist.map((file) => file._id) })
-          .then((media) => castPlay(media, index));
+        if (state.cast_info === null) {
+          return console.error(
+            "Tried to play previous items on cast but could not find their information",
+          );
+        }
+        const payload = getCastPayload(state.playlist, state.cast_info);
+        castPlay(payload, state.index);
 
         CastSdk.Previous();
       } else {
@@ -226,12 +260,13 @@ export const playerSlice = createSlice({
       if (is_casting) {
         if (auto) {
           CastSdk.Next();
+        } else if (state.cast_info === null) {
+          return console.error(
+            "Tried to play next items on cast but could not find their information",
+          );
         } else {
-          // TODO: does this have to be done every time?
-          const index = state.index;
-          client.media.castInfo
-            .query({ media_ids: state.playlist.map((file) => file._id) })
-            .then((media) => castPlay(media, index));
+          const payload = getCastPayload(state.playlist, state.cast_info);
+          castPlay(payload, state.index);
         }
       } else {
         load(state, !!crossover.src);
