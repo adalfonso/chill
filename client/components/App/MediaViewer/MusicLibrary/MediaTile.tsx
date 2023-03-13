@@ -1,5 +1,5 @@
 import "./MediaTile.scss";
-import { FileMenu } from "../FileMenu";
+import { FileMenu, FileMenuHandler } from "../FileMenu";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { GroupedMedia } from "@common/types";
 import { Media } from "@common/models/Media";
@@ -34,7 +34,7 @@ export const MediaTile = ({
   const [menu_visible, setMenuVisible] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { caster } = useSelector(getState);
+  const { player } = useSelector(getState);
   const menu_id = useId();
   const menu = useMenu(menu_id);
 
@@ -68,10 +68,9 @@ export const MediaTile = ({
     return { files, cast_info };
   };
 
-  const optionsHandler = {
+  const optionsHandler: FileMenuHandler = {
     play: async () => {
-      const is_casting = caster.is_casting;
-      const { files, cast_info } = await getFiles(is_casting);
+      const { files, cast_info } = await getFiles(player.is_casting);
 
       dispatch(play({ files, cast_info, index: 0 }));
     },

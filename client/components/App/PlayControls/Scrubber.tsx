@@ -16,18 +16,18 @@ const gap_offset = 0.25;
 
 export const Scrubber = () => {
   const [progress, setProgress] = useState(0);
-  const { player, caster } = useSelector(getState);
+  const { player } = useSelector(getState);
   const dispatch = useDispatch();
   const { startDrag, cancelDrag, updateDrag, dragging } = useDrag(
     (percent: number) => dispatch(seek({ percent })),
   );
 
-  const is_casting = useRef(caster.is_casting);
+  const is_casting = useRef(player.is_casting);
 
   // TODO: Hack - can this be done some other way?
   useEffect(() => {
-    is_casting.current = caster.is_casting;
-  }, [caster.is_casting]);
+    is_casting.current = player.is_casting;
+  }, [player.is_casting]);
 
   useEffect(() => {
     const loop = startAnimationLoop(() => {
@@ -98,7 +98,7 @@ export const Scrubber = () => {
         <div className="current-time">
           {player.now_playing &&
             getTimeTracking(
-              caster.is_casting
+              player.is_casting
                 ? (progress / 100) * player.now_playing.duration
                 : audio.currentTime,
             )}

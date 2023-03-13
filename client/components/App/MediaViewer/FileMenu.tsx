@@ -36,7 +36,7 @@ export const FileMenu = ({
   const active = menu_id === mediaMenu.menu_id;
   const dispatch = useDispatch();
   const menu = useMenu(menu_id);
-  const { caster } = useSelector(getState);
+  const { player } = useSelector(getState);
 
   useEffect(() => {
     if (active) {
@@ -61,17 +61,17 @@ export const FileMenu = ({
   const local = {
     playNext: async () =>
       dispatch(
-        playNext({ files: (await handler.getFiles(caster.is_casting)).files }),
+        playNext({ files: (await handler.getFiles(player.is_casting)).files }),
       ),
     addToQueue: async () =>
       dispatch(
         addToQueue({
-          files: (await handler.getFiles(caster.is_casting)).files,
+          files: (await handler.getFiles(player.is_casting)).files,
         }),
       ),
     addToPlaylist: async () =>
       dispatch(
-        toggle({ items: (await handler.getFiles(caster.is_casting)).files }),
+        toggle({ items: (await handler.getFiles(player.is_casting)).files }),
       ),
   };
 

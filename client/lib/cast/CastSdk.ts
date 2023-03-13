@@ -1,3 +1,4 @@
+import { Media } from "@common/models/Media";
 import { ArrayElement } from "@common/types";
 import { CastPayload } from "./types";
 
@@ -123,7 +124,7 @@ export class CastSdk {
    * @param time - time to seek to
    * @returns promise
    */
-  static seek(time: number) {
+  static Seek(time: number) {
     return new Promise((resolve, reject) => {
       const request = new chrome.cast.media.SeekRequest();
       request.currentTime = time;

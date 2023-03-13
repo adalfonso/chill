@@ -3,6 +3,7 @@ import { CastSdk } from "@client/lib/cast/CastSdk";
 import { Media } from "@common/models/Media";
 import { Nullable, ObjectValues } from "@common/types";
 import { PreCastPayload } from "@client/lib/cast/types";
+import { client } from "@client/client";
 import { createSlice } from "@reduxjs/toolkit";
 import { play as castPlay } from "@client/lib/cast/Cast";
 
@@ -289,7 +290,7 @@ export const playerSlice = createSlice({
       const time = state.now_playing.duration * percent;
 
       if (state.is_casting) {
-        CastSdk.seek(time);
+        CastSdk.Seek(time);
         return;
       }
 
@@ -353,3 +354,16 @@ export const {
 } = playerSlice.actions;
 
 export default playerSlice.reducer;
+
+export const getPlayPayload =
+  (is_casting: boolean, files: Media[]) => async () => {
+    let cast_info: Nullable<PreCastPayload> = null;
+
+    if (is_casting) {
+      cast_info = await client.media.castInfo.query({
+        media_ids: files.map((file) => file._id),
+      });
+    }
+
+    return { files, cast_info };
+  };

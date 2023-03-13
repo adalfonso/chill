@@ -2,7 +2,6 @@ import "./Toolbar.scss";
 import { Nullable } from "@common/types";
 import { getState } from "@client/state/reducers/store";
 import { setPlayerIsCasting } from "@client/state/reducers/player";
-import { toggleCasting } from "@client/state/reducers/caster";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef } from "react";
 
@@ -31,10 +30,8 @@ export const CastPlayer = () => {
         const active_states = ["SESSION_STARTED", "SESSION_RESUMED"];
 
         if (active_states.includes(sessionState)) {
-          dispatch(toggleCasting({ active: true }));
           dispatch(setPlayerIsCasting({ active: true }));
         } else if (sessionState === "SESSION_ENDED") {
-          dispatch(toggleCasting({ active: false }));
           dispatch(setPlayerIsCasting({ active: false }));
         }
       },

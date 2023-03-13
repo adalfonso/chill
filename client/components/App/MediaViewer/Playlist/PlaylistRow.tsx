@@ -1,7 +1,8 @@
 import { Equalizer } from "@client/components/ui/Equalizer";
-import { FileMenu } from "../FileMenu";
+import { FileMenu, FileMenuHandler } from "../FileMenu";
 import { Media } from "@common/models/Media";
 import { albumUrl, artistUrl } from "@client/lib/url";
+import { getPlayPayload } from "@client/state/reducers/player";
 import { getState } from "@reducers/store";
 import { noPropagate, secondsToMinutes } from "@client/lib/util";
 import { useId } from "@hooks/useObjectId";
@@ -19,10 +20,10 @@ export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
   const menu_id = useId();
   const navigate = useNavigate();
 
-  const menuHandler = {
+  const menuHandler: FileMenuHandler = {
     play: () => playAll(index)(),
-    // TODO: Provide cast info
-    getFiles: () => Promise.resolve({ files: [file], cast_info: null }),
+
+    getFiles: getPlayPayload(player.is_casting, [file]),
   };
 
   return (

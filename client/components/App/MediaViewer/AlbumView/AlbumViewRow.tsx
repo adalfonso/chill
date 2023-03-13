@@ -1,6 +1,6 @@
 import { Equalizer } from "@client/components/ui/Equalizer";
 import { FileInfo } from "../FileInfo";
-import { FileMenu } from "../FileMenu";
+import { FileMenu, FileMenuHandler } from "../FileMenu";
 import { Media } from "@common/models/Media";
 import { artistUrl } from "@client/lib/url";
 import { getState } from "@reducers/store";
@@ -9,6 +9,7 @@ import { useId } from "@hooks/useObjectId";
 import { useMenu } from "@hooks/useMenu";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { getPlayPayload } from "@client/state/reducers/player";
 
 export interface AlbumViewRowProps {
   file: Media;
@@ -23,10 +24,9 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
   const file_info_menu = useMenu(file_info_id);
   const navigate = useNavigate();
 
-  const menuHandler = {
+  const menuHandler: FileMenuHandler = {
     play: () => playAll(index)(),
-    // TODO: Provide cast info
-    getFiles: () => Promise.resolve({ files: [file], cast_info: null }),
+    getFiles: getPlayPayload(player.is_casting, [file]),
   };
 
   return (

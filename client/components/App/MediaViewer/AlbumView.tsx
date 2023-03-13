@@ -23,7 +23,7 @@ type AlbumParams = {
 
 export const AlbumView = ({ setLoading }: AlbumViewProps) => {
   const album = decodeURIComponent(useParams<AlbumParams>().album ?? "");
-  const { caster } = useSelector(getState);
+  const { player } = useSelector(getState);
   const artist = useQuery().get("artist");
   const no_album = useQuery().get("no_album") === "1";
   const [files, setFiles] = useState<Media[]>([]);
@@ -32,7 +32,7 @@ export const AlbumView = ({ setLoading }: AlbumViewProps) => {
   const playAll =
     (index = 0) =>
     async () => {
-      const is_casting = caster.is_casting;
+      const is_casting = player.is_casting;
       const cast_info = is_casting
         ? await client.media.castInfo.query({
             media_ids: files.map((file) => file._id),
