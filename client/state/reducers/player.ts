@@ -273,8 +273,10 @@ export const playerSlice = createSlice({
           castPlay(payload, state.index);
         }
       } else {
-        load(state, !!crossover.src);
+        // Use the crossover (previously queued) after the first track
+        load(state, state.index > 0 && !!crossover.src);
         audio.play();
+        crossover.pause();
       }
 
       state.is_playing = true;
