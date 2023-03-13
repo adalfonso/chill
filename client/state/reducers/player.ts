@@ -286,12 +286,21 @@ export const playerSlice = createSlice({
       state.is_playing = true;
     },
 
-    seek: (_state, action) => {
-      if (Number.isNaN(audio.duration)) {
+    seek: (state, action) => {
+      const { is_casting, percent } = action.payload;
+
+      if (!state.now_playing || Number.isNaN(state.now_playing?.duration)) {
         return;
       }
 
-      audio.currentTime = audio.duration * action.payload.percent;
+      const time = state.now_playing.duration * percent;
+
+      if (is_casting) {
+        CastSdk.seek(time);
+        return;
+      }
+
+      audio.currentTime = time;
     },
 
     setPlaylist: (state, action) => {

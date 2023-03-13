@@ -116,4 +116,22 @@ export class CastSdk {
         ?.getEstimatedTime() ?? 0
     );
   }
+
+  /**
+   * Seek a time on the currently playing track
+   *
+   * @param time - time to seek to
+   * @returns promise
+   */
+  static seek(time: number) {
+    return new Promise((resolve, reject) => {
+      const request = new chrome.cast.media.SeekRequest();
+      request.currentTime = time;
+
+      cast.framework.CastContext.getInstance()
+        .getCurrentSession()
+        ?.getMediaSession()
+        ?.seek(request, resolve, () => reject("Failed to seek"));
+    });
+  }
 }
