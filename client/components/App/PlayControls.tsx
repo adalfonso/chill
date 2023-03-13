@@ -51,9 +51,7 @@ export const PlayControls = () => {
 
   // Toggle audio play / pause
   const togglePlayer = async () => {
-    const operation = player.is_playing
-      ? pause({ is_casting: caster.is_casting })
-      : play({ is_casting: caster.is_casting });
+    const operation = player.is_playing ? pause() : play({});
     dispatch(operation);
   };
 
@@ -113,9 +111,7 @@ export const PlayControls = () => {
             <div className="controls">
               <div
                 className="circle-button"
-                onClick={() =>
-                  dispatch(previous({ is_casting: caster.is_casting }))
-                }
+                onClick={() => dispatch(previous())}
               >
                 <Icon icon={faFastBackward} />
               </div>
@@ -124,9 +120,7 @@ export const PlayControls = () => {
               </div>
               <div
                 className="circle-button"
-                onClick={() =>
-                  dispatch(next({ auto: false, is_casting: caster.is_casting }))
-                }
+                onClick={() => dispatch(next({ auto: false }))}
               >
                 <Icon icon={faFastForward} />
               </div>

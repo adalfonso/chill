@@ -39,7 +39,7 @@ export const AlbumView = ({ setLoading }: AlbumViewProps) => {
           })
         : null;
 
-      dispatch(play({ files: [...files], cast_info, index, is_casting }));
+      dispatch(play({ files: [...files], cast_info, index }));
     };
 
   useEffect(() => {

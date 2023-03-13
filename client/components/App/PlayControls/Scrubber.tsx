@@ -19,8 +19,7 @@ export const Scrubber = () => {
   const { player, caster } = useSelector(getState);
   const dispatch = useDispatch();
   const { startDrag, cancelDrag, updateDrag, dragging } = useDrag(
-    (percent: number) =>
-      dispatch(seek({ percent, is_casting: caster.is_casting })),
+    (percent: number) => dispatch(seek({ percent })),
   );
 
   const is_casting = useRef(caster.is_casting);

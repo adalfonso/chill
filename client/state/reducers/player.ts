@@ -86,6 +86,7 @@ const loadNext = (state: PlayerState) => {
 };
 
 export interface PlayerState {
+  is_casting: boolean;
   is_playing: boolean;
   is_shuffled: boolean;
   now_playing: Nullable<Media>;
@@ -99,6 +100,7 @@ export interface PlayerState {
 }
 
 const initialState: PlayerState = {
+  is_casting: false,
   is_playing: false,
   is_shuffled: false,
   now_playing: null,
@@ -153,20 +155,13 @@ export const playerSlice = createSlice({
       state.index = 0;
     },
 
-    pause: (state, action) => {
-      const { is_casting = false } = action.payload;
-
-      is_casting ? CastSdk.Pause() : audio.pause();
+    pause: (state) => {
+      state.is_casting ? CastSdk.Pause() : audio.pause();
       state.is_playing = false;
     },
 
     play: (state, action) => {
-      const {
-        files,
-        cast_info,
-        index = 0,
-        is_casting = false,
-      } = action.payload;
+      const { files, cast_info, index = 0 } = action.payload;
 
       if (files) {
         state.playlist = files;
@@ -176,7 +171,7 @@ export const playerSlice = createSlice({
         state.mobile_display_mode = MobileDisplayMode.Fullscreen;
         state.cast_info = cast_info;
 
-        if (is_casting) {
+        if (state.is_casting) {
           if (state.cast_info === null) {
             return console.error(
               "Tried to play items on cast but could not find their information",
@@ -195,7 +190,7 @@ export const playerSlice = createSlice({
       }
 
       // TODO: Create a common interface and facade over the cast SDK and audio
-      is_casting ? CastSdk.Play() : audio.play();
+      state.is_casting ? CastSdk.Play() : audio.play();
       state.is_playing = true;
       state.is_shuffled = false;
     },
@@ -210,9 +205,7 @@ export const playerSlice = createSlice({
       loadNext(state);
     },
 
-    previous: (state, action) => {
-      const { is_casting = false } = action.payload;
-
+    previous: (state) => {
       state.index--;
 
       if (state.index < 0) {
@@ -226,7 +219,7 @@ export const playerSlice = createSlice({
       state.now_playing = state.playlist[state.index];
       state.next_playing = state.playlist[state.index + 1] ?? null;
 
-      if (is_casting) {
+      if (state.is_casting) {
         if (state.cast_info === null) {
           return console.error(
             "Tried to play previous items on cast but could not find their information",
@@ -245,7 +238,7 @@ export const playerSlice = createSlice({
     },
 
     next: (state, action) => {
-      const { auto = false, is_casting = false } = action.payload ?? {};
+      const { auto = false } = action.payload ?? {};
 
       state.index++;
 
@@ -267,7 +260,7 @@ export const playerSlice = createSlice({
         [audio, crossover] = [crossover, audio];
       }
 
-      if (is_casting) {
+      if (state.is_casting) {
         if (auto) {
           CastSdk.Next();
         } else if (state.cast_info === null) {
@@ -287,7 +280,7 @@ export const playerSlice = createSlice({
     },
 
     seek: (state, action) => {
-      const { is_casting, percent } = action.payload;
+      const { percent } = action.payload;
 
       if (!state.now_playing || Number.isNaN(state.now_playing?.duration)) {
         return;
@@ -295,7 +288,7 @@ export const playerSlice = createSlice({
 
       const time = state.now_playing.duration * percent;
 
-      if (is_casting) {
+      if (state.is_casting) {
         CastSdk.seek(time);
         return;
       }
@@ -334,6 +327,11 @@ export const playerSlice = createSlice({
     setMobileDisplayMode: (state, action) => {
       state.mobile_display_mode = action.payload.mobile_display_mode;
     },
+
+    setPlayerIsCasting: (state, action) => {
+      const { active = false } = action.payload;
+      state.is_casting = active;
+    },
   },
 });
 
@@ -351,6 +349,7 @@ export const {
   setPlaylist,
   shuffle,
   setMobileDisplayMode,
+  setPlayerIsCasting,
 } = playerSlice.actions;
 
 export default playerSlice.reducer;

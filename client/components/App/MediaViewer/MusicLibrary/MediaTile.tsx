@@ -73,7 +73,7 @@ export const MediaTile = ({
       const is_casting = caster.is_casting;
       const { files, cast_info } = await getFiles(is_casting);
 
-      dispatch(play({ files, cast_info, index: 0, is_casting }));
+      dispatch(play({ files, cast_info, index: 0 }));
     },
     getFiles,
     toggle: setMenuVisible,

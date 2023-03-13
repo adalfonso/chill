@@ -41,7 +41,6 @@ export const Playlists = ({ setLoading, per_page }: PlaylistsProps) => {
     try {
       const files = await PlaylistApi.tracks(playlist._id.toString());
 
-      // TODO: Support casting
       dispatch(play({ files, index: 0 }));
     } catch ({ message }) {
       console.error("Failed to play playlist", message);
