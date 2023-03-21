@@ -10,6 +10,7 @@ import {
   getAudioProgress,
   next,
   seek,
+  setAudioProgress,
 } from "@reducers/player";
 
 const gap_offset = 0.25;
@@ -41,6 +42,7 @@ export const Scrubber = () => {
       }
 
       setProgress(audio_progress);
+      dispatch(setAudioProgress({ progress: audio_progress }));
     });
 
     /**
@@ -87,10 +89,10 @@ export const Scrubber = () => {
         onTouchCancel={cancelDrag}
         onTouchMove={updateDrag}
       >
-        <div className="scrubber" style={{ width: `${progress}%` }}></div>
+        <div className="scrubber" style={{ width: `${progress * 100}%` }}></div>
         <div
           className={"slider" + (dragging ? " visible" : "")}
-          style={{ left: `${progress}%` }}
+          style={{ left: `${progress * 100}%` }}
         ></div>
       </div>
 
@@ -99,7 +101,7 @@ export const Scrubber = () => {
           {player.now_playing &&
             getTimeTracking(
               player.is_casting
-                ? (progress / 100) * player.now_playing.duration
+                ? progress * player.now_playing.duration
                 : audio.currentTime,
             )}
         </div>

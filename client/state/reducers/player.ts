@@ -10,39 +10,6 @@ import { play as castPlay } from "@client/lib/cast/Cast";
 export let audio = new Audio();
 export let crossover = new Audio();
 
-/**
- * Get the audio progress for a playing track
- *
- * @param media - media that is playing
- * @param is_casting - if the media is playing on chromecast
- * @returns progress percentage 0-100
- */
-export const getAudioProgress = (
-  media: Nullable<Media>,
-  is_casting = false,
-) => {
-  if (media === null || !media.duration) {
-    return 0;
-  }
-
-  if (is_casting) {
-    return (CastSdk.currentTime() / media.duration) * 100;
-  }
-
-  return audio.currentTime ? (audio.currentTime / media.duration) * 100 : 0;
-};
-
-/**
- * Merge media and their cast information into a single cast payload
- *
- * @param files - media files
- * @param info - cast play info
- * @returns merged data
- */
-const getCastPayload = (files: Media[], info: PreCastPayload) => {
-  return info.map((info, index) => ({ ...info, meta: files[index] }));
-};
-
 export const MobileDisplayMode = {
   Fullscreen: "fullscreen",
   Minimized: "minimized",
@@ -51,45 +18,11 @@ export const MobileDisplayMode = {
 
 export type MobileDisplayMode = ObjectValues<typeof MobileDisplayMode>;
 
-/**
- * Load an audio file
- *
- * @param state - player state
- * @param use_crossover - audio is loaded from the crossover audio
- */
-const load = (state: PlayerState, use_crossover = false) => {
-  /**
-   * If we have not swapped the audio with the crossover audio we should set the
-   * src of the audio to be now playing. Otherwise the crossover will have
-   * already been set as the current audio.
-   */
-  if (!use_crossover) {
-    audio.src = `/api/v1/media/${state.now_playing?._id}/load`;
-  }
-
-  if (state.next_playing) {
-    crossover.src = `/api/v1/media/${state.next_playing?._id}/load`;
-  }
-};
-
-/**
- * Force reload the next track
- *
- * This is used when something is added the the playlist but the crossover audio
- * needs to be reloaded with the next track.
- *
- * @param state - player state
- */
-const loadNext = (state: PlayerState) => {
-  crossover.src = state.next_playing
-    ? `/api/v1/media/${state.next_playing?._id}/load`
-    : "";
-};
-
 export interface PlayerState {
   is_casting: boolean;
   is_playing: boolean;
   is_shuffled: boolean;
+  progress: Nullable<number>;
   now_playing: Nullable<Media>;
   next_playing: Nullable<Media>;
   original_playlist: Media[];
@@ -104,6 +37,7 @@ const initialState: PlayerState = {
   is_casting: false,
   is_playing: false,
   is_shuffled: false,
+  progress: null,
   now_playing: null,
   next_playing: null,
   original_playlist: [],
@@ -162,25 +96,29 @@ export const playerSlice = createSlice({
     },
 
     play: (state, action) => {
-      const { files, cast_info, index = 0 } = action.payload;
+      const { files, cast_info, index = 0, progress = 0 } = action.payload;
 
       if (files) {
         state.playlist = files;
         state.index = index;
+        state.progress = progress;
         state.now_playing = files[index];
         state.next_playing = files[index + 1] ?? null;
         state.mobile_display_mode = MobileDisplayMode.Fullscreen;
         state.cast_info = cast_info;
 
         if (state.is_casting) {
-          if (state.cast_info === null) {
+          if (state.cast_info === null || state.now_playing === null) {
             return console.error(
               "Tried to play items on cast but could not find their information",
             );
           }
 
           const payload = getCastPayload(state.playlist, state.cast_info);
-          castPlay(payload, state.index);
+          const current_time = state.progress
+            ? progress * state.now_playing.duration
+            : 0;
+          castPlay(payload, state.index, current_time);
         } else {
           load(state);
         }
@@ -304,6 +242,12 @@ export const playerSlice = createSlice({
       state.playlist = action.payload.playlist;
     },
 
+    setAudioProgress: (state, action) => {
+      const { progress } = action.payload;
+
+      state.progress = progress;
+    },
+
     shuffle: (state) => {
       if (state.is_shuffled) {
         state.playlist = [...state.original_playlist];
@@ -334,6 +278,7 @@ export const playerSlice = createSlice({
     setPlayerIsCasting: (state, action) => {
       const { active = false } = action.payload;
       state.is_casting = active;
+      state.is_playing = false;
     },
   },
 });
@@ -350,12 +295,81 @@ export const {
   previous,
   seek,
   setPlaylist,
+  setAudioProgress,
   shuffle,
   setMobileDisplayMode,
   setPlayerIsCasting,
 } = playerSlice.actions;
 
 export default playerSlice.reducer;
+
+/**
+ * Get the audio progress for a playing track
+ *
+ * @param media - media that is playing
+ * @param is_casting - if the media is playing on chromecast
+ * @returns progress percentage 0-1
+ */
+export const getAudioProgress = (
+  media: Nullable<Media>,
+  is_casting = false,
+) => {
+  if (media === null || !media.duration) {
+    return 0;
+  }
+
+  if (is_casting) {
+    return CastSdk.currentTime() / media.duration;
+  }
+
+  return audio.currentTime ? audio.currentTime / media.duration : 0;
+};
+
+/**
+ * Merge media and their cast information into a single cast payload
+ *
+ * @param files - media files
+ * @param info - cast play info
+ * @returns merged data
+ */
+const getCastPayload = (files: Media[], info: PreCastPayload) => {
+  return info.map((info, index) => ({ ...info, meta: files[index] }));
+};
+
+/**
+ * Load an audio file
+ *
+ * @param state - player state
+ * @param use_crossover - audio is loaded from the crossover audio
+ */
+const load = (state: PlayerState, use_crossover = false) => {
+  /**
+   * If we have not swapped the audio with the crossover audio we should set the
+   * src of the audio to be now playing. Otherwise the crossover will have
+   * already been set as the current audio.
+   */
+  if (!use_crossover) {
+    audio.src = `/api/v1/media/${state.now_playing?._id}/load`;
+  }
+
+  if (state.next_playing) {
+    crossover.src = `/api/v1/media/${state.next_playing?._id}/load`;
+  }
+};
+
+/**
+ * Force reload the next track
+ *
+ * This is used when something is added the the playlist but the crossover audio
+ * needs to be reloaded with the next track.
+ *
+ * @param state - player state
+ */
+const loadNext = (state: PlayerState) => {
+  crossover.src = state.next_playing
+    ? `/api/v1/media/${state.next_playing?._id}/load`
+    : "";
+};
 
 export const getPlayPayload =
   (is_casting: boolean, files: Media[]) => async () => {

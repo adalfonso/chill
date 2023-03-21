@@ -12,6 +12,5 @@
 - rescanning creates new ids for all media and invalidates a playlist
 - what happens when album, artist, etc are missing from files? what happens to urls based on them?
 - 1000 degress all listed as "piste"
-- cast to device
 - dont make node serve static assets, make nginx do it
 - consider a monorepo structure

@@ -5,8 +5,14 @@ import { CastPayload } from "./types";
  * Play media files from a payload
  *
  * @param payload - playlist items
+ * @param index - track index to play first
+ * @param current_time - offset in seconds to begin playback from
  */
-export const play = async (payload: CastPayload, index = 0) => {
+export const play = async (
+  payload: CastPayload,
+  index = 0,
+  current_time = 0,
+) => {
   const session = cast.framework.CastContext.getInstance().getCurrentSession();
 
   if (session === null) {
@@ -19,7 +25,7 @@ export const play = async (payload: CastPayload, index = 0) => {
   const next = tracks;
 
   // Load the first track, then queue any others
-  session.loadMedia(CastSdk.Request(track)).then(
+  session.loadMedia(CastSdk.Request(track, current_time)).then(
     () => {
       console.info("Load media request succeeded");
 

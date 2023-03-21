@@ -1,4 +1,3 @@
-import { Media } from "@common/models/Media";
 import { ArrayElement } from "@common/types";
 import { CastPayload } from "./types";
 
@@ -41,12 +40,17 @@ export class CastSdk {
    * Create a cast LoadRequest with media
    *
    * @param media - media to load
+   * @param current_time - offset in seconds to start playback from
    * @returns request
    */
-  static Request(media: CastMedia) {
+  static Request(media: CastMedia, current_time = 0) {
     const request = new chrome.cast.media.LoadRequest(media);
     request.autoplay = true;
     request.customData = {};
+
+    if (current_time > 0) {
+      request.currentTime = current_time;
+    }
 
     return request;
   }
