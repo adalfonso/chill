@@ -4,7 +4,7 @@ import { Media } from "@common/models/Media";
 import { Nullable, ObjectValues } from "@common/types";
 import { PreCastPayload } from "@client/lib/cast/types";
 import { client } from "@client/client";
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { play as castPlay } from "@client/lib/cast/Cast";
 
 export let audio = new Audio();
@@ -22,7 +22,7 @@ export interface PlayerState {
   is_casting: boolean;
   is_playing: boolean;
   is_shuffled: boolean;
-  progress: Nullable<number>;
+  progress: number;
   now_playing: Nullable<Media>;
   next_playing: Nullable<Media>;
   original_playlist: Media[];
@@ -37,7 +37,7 @@ const initialState: PlayerState = {
   is_casting: false,
   is_playing: false,
   is_shuffled: false,
-  progress: null,
+  progress: 0,
   now_playing: null,
   next_playing: null,
   original_playlist: [],
@@ -48,17 +48,23 @@ const initialState: PlayerState = {
   mobile_display_mode: MobileDisplayMode.None,
 };
 
+type PlayLoad = {
+  files?: Media[];
+  cast_info?: Nullable<PreCastPayload>;
+  index?: number;
+  progress?: number;
+};
+
 export const playerSlice = createSlice({
   name: "player",
   initialState,
   reducers: {
-    addToQueue: (state, action) => {
-      const { files } = action.payload;
-      state.playlist = [...state.playlist, ...files];
+    addToQueue: (state, action: PayloadAction<Media[]>) => {
+      state.playlist = [...state.playlist, ...action.payload];
     },
 
-    changeTrack: (state, action) => {
-      const index = action.payload.index;
+    changeTrack: (state, action: PayloadAction<number>) => {
+      const index = action.payload;
 
       if (index < 0 || index >= state.playlist.length) {
         console.error(
@@ -77,8 +83,8 @@ export const playerSlice = createSlice({
       state.is_playing = true;
     },
 
-    changeVolume: (state, action) => {
-      state.volume = audio.volume = action.payload.percent;
+    changeVolume: (state, action: PayloadAction<number>) => {
+      state.volume = audio.volume = action.payload;
     },
 
     clear: (state) => {
@@ -95,8 +101,13 @@ export const playerSlice = createSlice({
       state.is_playing = false;
     },
 
-    play: (state, action) => {
-      const { files, cast_info, index = 0, progress = 0 } = action.payload;
+    play: (state, action: PayloadAction<PlayLoad>) => {
+      const {
+        files,
+        cast_info = null,
+        index = 0,
+        progress = 0,
+      } = action.payload;
 
       if (files) {
         state.playlist = files;
@@ -116,7 +127,7 @@ export const playerSlice = createSlice({
 
           const payload = getCastPayload(state.playlist, state.cast_info);
           const current_time = state.progress
-            ? progress * state.now_playing.duration
+            ? state.progress * state.now_playing.duration
             : 0;
           castPlay(payload, state.index, current_time);
         } else {
@@ -134,12 +145,11 @@ export const playerSlice = createSlice({
       state.is_shuffled = false;
     },
 
-    playNext: (state, action) => {
-      const { files } = action.payload;
+    playNext: (state, action: PayloadAction<Media[]>) => {
       const head = state.playlist.slice(0, state.index + 1);
       const tail = state.playlist.slice(state.index + 1);
 
-      state.playlist = [...head, ...files, ...tail];
+      state.playlist = [...head, ...action.payload, ...tail];
       state.next_playing = state.playlist[state.index + 1] ?? null;
       loadNext(state);
     },
@@ -176,8 +186,8 @@ export const playerSlice = createSlice({
       state.is_playing = true;
     },
 
-    next: (state, action) => {
-      const { auto = false } = action.payload ?? {};
+    next: (state, action: PayloadAction<{ auto?: boolean }>) => {
+      const { auto = false } = action.payload;
 
       state.index++;
 
@@ -220,8 +230,8 @@ export const playerSlice = createSlice({
       state.is_playing = true;
     },
 
-    seek: (state, action) => {
-      const { percent } = action.payload;
+    seek: (state, action: PayloadAction<number>) => {
+      const percent = action.payload;
 
       if (!state.now_playing || Number.isNaN(state.now_playing?.duration)) {
         return;
@@ -237,15 +247,8 @@ export const playerSlice = createSlice({
       audio.currentTime = time;
     },
 
-    setPlaylist: (state, action) => {
-      load(state);
-      state.playlist = action.payload.playlist;
-    },
-
-    setAudioProgress: (state, action) => {
-      const { progress } = action.payload;
-
-      state.progress = progress;
+    setAudioProgress: (state, action: PayloadAction<number>) => {
+      state.progress = action.payload;
     },
 
     shuffle: (state) => {
@@ -271,12 +274,12 @@ export const playerSlice = createSlice({
       }
     },
 
-    setMobileDisplayMode: (state, action) => {
-      state.mobile_display_mode = action.payload.mobile_display_mode;
+    setMobileDisplayMode: (state, action: PayloadAction<MobileDisplayMode>) => {
+      state.mobile_display_mode = action.payload;
     },
 
-    setPlayerIsCasting: (state, action) => {
-      const { active = false } = action.payload;
+    setPlayerIsCasting: (state, action: PayloadAction<boolean>) => {
+      const active = action.payload ?? false;
       state.is_casting = active;
       state.is_playing = false;
     },
@@ -294,7 +297,6 @@ export const {
   playNext,
   previous,
   seek,
-  setPlaylist,
   setAudioProgress,
   shuffle,
   setMobileDisplayMode,

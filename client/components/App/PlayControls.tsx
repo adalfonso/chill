@@ -57,28 +57,18 @@ export const PlayControls = () => {
 
   // Stop all audio from playing
   const stop = () => {
-    dispatch(
-      setMobileDisplayMode({ mobile_display_mode: MobileDisplayMode.None }),
-    );
+    dispatch(setMobileDisplayMode(MobileDisplayMode.None));
 
     dispatch(clear());
   };
 
   // Minimize the fullscreen player on mobile
   const minimize = () =>
-    dispatch(
-      setMobileDisplayMode({
-        mobile_display_mode: MobileDisplayMode.Minimized,
-      }),
-    );
+    dispatch(setMobileDisplayMode(MobileDisplayMode.Minimized));
 
   // Fullscreen the mobile player
   const goFullscreen = () => {
-    dispatch(
-      setMobileDisplayMode({
-        mobile_display_mode: MobileDisplayMode.Fullscreen,
-      }),
-    );
+    dispatch(setMobileDisplayMode(MobileDisplayMode.Fullscreen));
   };
 
   // Minimize the player on back navigation when fullscreen

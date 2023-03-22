@@ -20,7 +20,7 @@ export const Scrubber = () => {
   const { player } = useSelector(getState);
   const dispatch = useDispatch();
   const { startDrag, cancelDrag, updateDrag, dragging } = useDrag(
-    (percent: number) => dispatch(seek({ percent })),
+    (percent: number) => dispatch(seek(percent)),
   );
 
   const is_casting = useRef(player.is_casting);
@@ -42,7 +42,7 @@ export const Scrubber = () => {
       }
 
       setProgress(audio_progress);
-      dispatch(setAudioProgress({ progress: audio_progress }));
+      dispatch(setAudioProgress(audio_progress));
     });
 
     /**

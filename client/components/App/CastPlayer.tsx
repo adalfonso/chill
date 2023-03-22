@@ -42,11 +42,11 @@ export const CastPlayer = () => {
 
         // Pause currently playing HTML Audio
         dispatch(pause());
-        dispatch(setPlayerIsCasting({ active: true }));
+        dispatch(setPlayerIsCasting(true));
         dispatch(play({ files: playlist, cast_info, index, progress }));
       } else if (sessionState === "SESSION_ENDED") {
-        dispatch(setPlayerIsCasting({ active: false }));
-        dispatch(seek({ percent: progress ?? 0 }));
+        dispatch(setPlayerIsCasting(false));
+        dispatch(seek(progress));
       }
     };
 

@@ -15,7 +15,7 @@ export const VolumeControl = () => {
       return;
     }
 
-    dispatch(changeVolume({ percent }));
+    dispatch(changeVolume(percent));
   });
 
   return (

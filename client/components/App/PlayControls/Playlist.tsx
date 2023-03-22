@@ -36,7 +36,7 @@ export const Playlist = () => {
         {player.playlist.map((media, index) => (
           <div
             className="playlist-item"
-            onClick={() => dispatch(changeTrack({ index }))}
+            onClick={() => dispatch(changeTrack(index))}
             key={media._id.toString() + index}
           >
             <div className="cover">
