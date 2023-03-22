@@ -25,6 +25,8 @@ export const CastPlayer = () => {
     }
 
     const ctx = cast.framework.CastContext.getInstance();
+    const SESSION_CHANGED =
+      cast.framework.CastContextEventType.SESSION_STATE_CHANGED;
 
     const onSessionChanged = async (
       event: cast.framework.SessionStateEventData,
@@ -55,19 +57,11 @@ export const CastPlayer = () => {
       autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
     });
 
-    ctx.addEventListener(
-      cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
-      onSessionChanged,
-    );
+    ctx.addEventListener(SESSION_CHANGED, onSessionChanged);
 
     context.current = ctx;
 
-    return () => {
-      ctx.removeEventListener(
-        cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
-        onSessionChanged,
-      );
-    };
+    return () => ctx.removeEventListener(SESSION_CHANGED, onSessionChanged);
   }, [caster.ready]);
 
   return <div id="cast-player"></div>;
