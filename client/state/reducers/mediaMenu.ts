@@ -1,5 +1,5 @@
 import { Nullable } from "@common/types";
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction as Action } from "@reduxjs/toolkit";
 
 export interface MediaMenuState {
   menu_id: Nullable<string>;
@@ -13,8 +13,8 @@ export const mediaMenuSlice = createSlice({
   name: "media_menu",
   initialState,
   reducers: {
-    setMenu: (state, action) => {
-      state.menu_id = action.payload.menu_id;
+    setMenu: (state, action: Action<Nullable<string>>) => {
+      state.menu_id = action.payload;
     },
   },
 });

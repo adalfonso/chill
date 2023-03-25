@@ -12,7 +12,7 @@ import { useEffect } from "react";
 
 export const App = () => {
   const dispatch = useDispatch();
-  const clearActiveFileMenu = () => dispatch(setMenu({ menu_id: null }));
+  const clearActiveFileMenu = () => dispatch(setMenu(null));
   const { playlistEditor } = useSelector(getState);
 
   useEffect(() => {
