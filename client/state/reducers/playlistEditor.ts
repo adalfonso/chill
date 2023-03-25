@@ -1,5 +1,5 @@
 import { Media } from "@common/models/Media";
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction as Action } from "@reduxjs/toolkit";
 
 export interface PlaylistEditorState {
   active: boolean;
@@ -15,7 +15,7 @@ export const playlistEditorSlice = createSlice({
   name: "playlist_editor",
   initialState,
   reducers: {
-    toggle: (state, action: PayloadAction<{ items: Media[] }>) => {
+    toggle: (state, action: Action<{ items: Media[] }>) => {
       const { items = [] } = action.payload ?? {};
 
       state.active = !state.active;
