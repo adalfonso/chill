@@ -67,7 +67,6 @@ async function verifyGoogleAuth(
     console.info("Creating new user...");
 
     const new_user = new User({
-      method: "google",
       email,
       type: "user",
       auth: {

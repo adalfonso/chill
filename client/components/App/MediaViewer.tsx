@@ -18,7 +18,7 @@ export const MediaViewer = () => {
   // Let's load the user once and expect that any updates to the user through
   // the UI will return updated user bits that we will merge into the state
   useEffect(() => {
-    UserApi.get().then((user) => dispatch(setUser({ user })));
+    UserApi.get().then((user) => dispatch(setUser(user)));
   }, []);
 
   return (

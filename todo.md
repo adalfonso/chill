@@ -7,7 +7,6 @@
 - refresh tokens
 - default artist image should be most recent album art
 - make media library hide so we can go back to it and resume browsing instead of reload
-- add typing to action when reducers are used
 - when changing stream quality, chrome plays a cached version
 - rescanning creates new ids for all media and invalidates a playlist
 - what happens when album, artist, etc are missing from files? what happens to urls based on them?

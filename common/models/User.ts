@@ -16,6 +16,6 @@ export interface UserSettings {
 export interface User extends Base {
   email: string;
   type: UserType;
-  settings?: UserSettings;
+  settings: UserSettings;
   auth?: UserAuth;
 }

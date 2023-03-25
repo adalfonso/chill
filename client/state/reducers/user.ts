@@ -1,5 +1,5 @@
 import { Nullable, UserType } from "@common/types";
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction as Action } from "@reduxjs/toolkit";
 import { UserSettings } from "@common/models/User";
 
 export type UserState = {
@@ -13,8 +13,8 @@ export const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    setUser: (state, action) => {
-      const { type, settings } = action.payload.user;
+    setUser: (state, action: Action<UserState>) => {
+      const { type, settings } = action.payload;
 
       state.type = type;
       state.settings = settings ?? null;
