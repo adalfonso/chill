@@ -13,3 +13,4 @@
 - 1000 degress all listed as "piste"
 - dont make node serve static assets, make nginx do it
 - consider a monorepo structure
+- dragging scrubber while casting is choppy
