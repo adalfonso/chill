@@ -1,5 +1,5 @@
 import { Nullable } from "@common/types";
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction as Action } from "@reduxjs/toolkit";
 
 export type CastState = {
   app_id: Nullable<string>;
@@ -17,8 +17,8 @@ export const casterSlice = createSlice({
   name: "caster",
   initialState,
   reducers: {
-    setCastAppId: (state, action) => {
-      const { id } = action.payload;
+    setCastAppId: (state, action: Action<Nullable<string>>) => {
+      const id = action.payload;
 
       if (!id || id === state.app_id) {
         return;
