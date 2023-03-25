@@ -8,11 +8,11 @@
     "dev": "nodemon --watch './server' -e ts --exec 'node --loader @esbuild-kit/esm-loader ./server/index.dev.ts'",
     "build": "vite build && pnpm build-receiver",
     "build-receiver": "vite build --config receiver.vite.config.js",
-    "start": "npm run build && node --loader @esbuild-kit/esm-loader ./server/index.ts",
+    "start": "pnpm build && node --loader @esbuild-kit/esm-loader ./server/index.ts",
     "docker": "docker-compose up --build",
     "docker:dev": "docker-compose -f docker-compose.dev.yml up --build",
     "docker:publish": "docker build -t adalfonso/chill:latest . && docker push adalfonso/chill:latest",
-    "check": "tsc --noEmit && tsc --noEmit && npm run lint && jest",
+    "check": "tsc --noEmit && pnpm lint && jest",
     "lint": "eslint ./{server,client,common}/**/*.{mts,ts,tsx} --quiet",
     "test": "jest --coverage --watchAll",
     "viz": "npx vite-bundle-visualizer"
