@@ -13,7 +13,7 @@ import { useEffect } from "react";
 export const App = () => {
   const dispatch = useDispatch();
   const clearActiveFileMenu = () => dispatch(setMenu(null));
-  const { playlistEditor } = useSelector(getState);
+  const { playlistEditor, player } = useSelector(getState);
 
   useEffect(() => {
     client.app.getCastId.query().then((id) => dispatch(setCastAppId(id)));
@@ -23,7 +23,7 @@ export const App = () => {
     <div className="app" onClick={clearActiveFileMenu}>
       <Toolbar />
       <MediaViewer />
-      <PlayControls />
+      {player.playlist?.length > 0 && <PlayControls />}
       {playlistEditor.active && <PlaylistEditor />}
     </div>
   );

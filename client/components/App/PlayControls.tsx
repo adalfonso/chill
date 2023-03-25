@@ -32,7 +32,7 @@ const default_now_playing = "";
 
 export const PlayControls = () => {
   const dispatch = useDispatch();
-  const { player, caster } = useSelector(getState);
+  const { player } = useSelector(getState);
   const { width } = useViewport();
   const is_mobile = width < screen_breakpoint_px;
   const is_fullscreen =
