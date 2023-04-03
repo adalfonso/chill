@@ -15,7 +15,7 @@ type AlbumParams = {
 };
 
 export const ArtistView = ({ setLoading }: ArtistViewProps) => {
-  const artist = decodeURIComponent(useParams<AlbumParams>().artist ?? "");
+  const artist = useParams<AlbumParams>().artist ?? "";
   const [albums, setAlbums] = useState<GroupedMedia[]>([]);
 
   useEffect(() => {
