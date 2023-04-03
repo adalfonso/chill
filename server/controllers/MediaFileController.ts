@@ -97,7 +97,7 @@ export const MediaFileController = {
 
   cover: async (req: Req, res: Res) => {
     const { filename } = req.params;
-    const raw_size = req.query.size;
+    const raw_size = req.query.size ?? "256";
 
     if (typeof raw_size !== "string") {
       return res
@@ -116,6 +116,7 @@ export const MediaFileController = {
     }
 
     const result = await MediaModel.findById<Media>(
+      // removes file extension
       filename.replace(/\.[^.]+$/, ""),
     );
 

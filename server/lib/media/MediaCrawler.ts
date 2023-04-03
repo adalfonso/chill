@@ -164,7 +164,7 @@ export class MediaCrawler {
     if (cover_data !== null) {
       try {
         cover_data = (
-          await adjustImage(cover_data, { size: 256, quality: 100 })
+          await adjustImage(cover_data, { size: 512, quality: 100 })
         ).toString("base64");
       } catch (e) {
         console.error(`Failed to convert cover data for ${file_path}: ${e}`);
