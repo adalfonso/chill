@@ -1,5 +1,6 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { createClient } from "redis";
+import { jwt_expiration_seconds } from "@server/controllers/AuthController";
 
 /** Singleton cache connection instance */
 export class Cache {
@@ -70,11 +71,11 @@ const getJwtExpiresInSeconds = (
   payload: null | JwtPayload | string,
 ): number => {
   if (payload === null || typeof payload === "string") {
-    return 3600;
+    return jwt_expiration_seconds;
   }
 
   if (payload.exp === undefined) {
-    return 3600;
+    return jwt_expiration_seconds;
   }
 
   return payload.exp - Math.round(Date.now().valueOf() / 1000);

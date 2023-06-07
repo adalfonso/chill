@@ -5,6 +5,9 @@ import { User } from "@server/models/User";
 import { blacklistToken } from "@server/lib/data/Cache";
 import { env } from "@server/init";
 
+// Six hours
+export const jwt_expiration_seconds = 3600 * 6;
+
 export const AuthController = {
   login: (_req: Request, res: Response) =>
     res.sendFile(path.join(path.resolve(), "views/login.html")),
@@ -53,7 +56,7 @@ export const AuthController = {
     jwt.sign(
       { user: req.user },
       env.SIGNING_KEY,
-      { expiresIn: "1h" },
+      { expiresIn: jwt_expiration_seconds },
       signingCallback,
     );
   },
