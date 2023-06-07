@@ -1,3 +1,4 @@
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { createClient } from "redis";
 
 /** Singleton cache connection instance */
@@ -52,9 +53,8 @@ export class Cache {
 export const blacklistToken = async (token: string) => {
   try {
     const client = Cache.instance();
-
-    // TODO: this should be the number of seconds left in the JWT TTL
-    const expires_in_seconds = 3600;
+    const payload = jwt.decode(token);
+    const expires_in_seconds = getJwtExpiresInSeconds(payload);
 
     await client.set(getTokenKey(token), token, {
       EX: expires_in_seconds,
@@ -65,3 +65,17 @@ export const blacklistToken = async (token: string) => {
 };
 
 export const getTokenKey = (token: string) => `token.blacklist.${token}`;
+
+const getJwtExpiresInSeconds = (
+  payload: null | JwtPayload | string,
+): number => {
+  if (payload === null || typeof payload === "string") {
+    return 3600;
+  }
+
+  if (payload.exp === undefined) {
+    return 3600;
+  }
+
+  return payload.exp - Math.round(Date.now().valueOf() / 1000);
+};
