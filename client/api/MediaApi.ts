@@ -1,6 +1,8 @@
+import { GroupedMedia, PaginationOptions } from "@common/types";
 import { MediaMatch } from "@common/media/types";
-import { PaginationOptions } from "@common/types";
 import { client } from "../client";
+import { query_options } from "@common/models/Media";
+import { z } from "zod";
 
 type Match = Record<MediaMatch & "year", string>;
 
@@ -29,9 +31,19 @@ export const MediaApi = {
       match: { genre: { $ne: null } },
     }),
 
-  query: (match: Partial<Match>) => client.media.query.query(match),
+  query: (match: Partial<Match>, options?: z.infer<typeof query_options>) =>
+    client.media.query.query({ match, options }),
 
   search: (query: string) => client.media.search.query(query),
 
   scan: () => client.media.scan.mutate(),
+};
+
+export const ApiMap: Record<
+  MediaMatch,
+  (options?: PaginationOptions) => Promise<GroupedMedia[]>
+> = {
+  [MediaMatch.Artist]: MediaApi.getGroupedByArtist,
+  [MediaMatch.Album]: MediaApi.getGroupedByAlbum,
+  [MediaMatch.Genre]: MediaApi.getGroupedByGenre,
 };

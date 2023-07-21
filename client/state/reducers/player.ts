@@ -22,6 +22,7 @@ export interface PlayerState {
   is_casting: boolean;
   is_playing: boolean;
   is_shuffled: boolean;
+  is_random: boolean;
   progress: number;
   now_playing: Nullable<Media>;
   next_playing: Nullable<Media>;
@@ -37,6 +38,7 @@ const initialState: PlayerState = {
   is_casting: false,
   is_playing: false,
   is_shuffled: false,
+  is_random: false,
   progress: 0,
   now_playing: null,
   next_playing: null,
@@ -53,6 +55,7 @@ type PlayLoad = {
   cast_info?: Nullable<PreCastPayload>;
   index?: number;
   progress?: number;
+  is_random?: boolean;
 };
 
 export const playerSlice = createSlice({
@@ -107,6 +110,7 @@ export const playerSlice = createSlice({
         cast_info = null,
         index = 0,
         progress = 0,
+        is_random = false,
       } = action.payload;
 
       if (files) {
@@ -117,6 +121,7 @@ export const playerSlice = createSlice({
         state.next_playing = files[index + 1] ?? null;
         state.mobile_display_mode = MobileDisplayMode.Fullscreen;
         state.cast_info = cast_info;
+        state.is_random = is_random;
 
         if (state.is_casting) {
           if (state.cast_info === null || state.now_playing === null) {

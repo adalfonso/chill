@@ -20,6 +20,9 @@ import { useState } from "react";
 
 interface MediaTileProps {
   tile_type: MediaMatch;
+  // Fix: This file is not really GroupedMedia. This is because the return
+  // fields in the projection don't account for the type. See
+  // MediaFileController
   file: GroupedMedia;
   url: (file: GroupedMedia) => string;
   displayAs: (file: GroupedMedia) => string;
@@ -31,12 +34,12 @@ export const MediaTile = ({
   url,
   displayAs,
 }: MediaTileProps) => {
-  const [menu_visible, setMenuVisible] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { player } = useSelector(getState);
   const menu_id = useId();
   const menu = useMenu(menu_id);
+  const [menu_visible, setMenuVisible] = useState(false);
 
   const onPress = useLongPress(
     () => {
@@ -47,34 +50,13 @@ export const MediaTile = ({
     { mouse: false, touch: true },
   );
 
-  const getSortString = (file: Media) =>
-    (file.artist ?? "") +
-    (file.album ?? "") +
-    (file.track ?? "").toString().padStart(3, "0");
-
-  const getFiles = async (is_casting = false) => {
-    const files = (await MediaApi.query(file._id)).sort((a, b) =>
-      getSortString(a).localeCompare(getSortString(b)),
-    );
-
-    if (!is_casting) {
-      return { files, cast_info: null };
-    }
-
-    const cast_info = await client.media.castInfo.query({
-      media_ids: files.map((file) => file._id),
-    });
-
-    return { files, cast_info };
-  };
-
   const optionsHandler: FileMenuHandler = {
     play: async () => {
-      const { files, cast_info } = await getFiles(player.is_casting);
+      const { files, cast_info } = await getFiles(file)(player.is_casting);
 
       dispatch(play({ files, cast_info, index: 0 }));
     },
-    getFiles,
+    getFiles: getFiles(file),
     toggle: setMenuVisible,
   };
 
@@ -163,3 +145,28 @@ const getFileMenuTitle = (tile_type: MediaMatch, file: GroupedMedia) => {
       return "File Menu";
   }
 };
+
+const getSortString = (file: Media) =>
+  (file.artist ?? "") +
+  (file.album ?? "") +
+  (file.track ?? "").toString().padStart(3, "0");
+
+export const getFiles =
+  (group: GroupedMedia) =>
+  async (is_casting = false) => {
+    // TODO: The controller used here has an issue with the type
+    // e.g. duration is not available but the type thinks it's valid
+    const files = (await MediaApi.query(group._id)).sort((a, b) =>
+      getSortString(a).localeCompare(getSortString(b)),
+    );
+
+    if (!is_casting) {
+      return { files, cast_info: null };
+    }
+
+    const cast_info = await client.media.castInfo.query({
+      media_ids: files.map((file) => file._id),
+    });
+
+    return { files, cast_info };
+  };

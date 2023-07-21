@@ -18,6 +18,15 @@ export const startAnimationLoop = (callback: (dt: number) => unknown) => {
   return requestAnimationFrame(frame);
 };
 
+/** Haphazardly clear all animation frames */
+export const cancelAllAnimationFrames = () => {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  let id = requestAnimationFrame(() => {});
+  while (id--) {
+    cancelAnimationFrame(id);
+  }
+};
+
 export const getTimeTracking = (time: number) => {
   const cleaned = Math.round(time || 1);
 

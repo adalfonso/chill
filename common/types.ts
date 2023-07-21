@@ -6,6 +6,10 @@ export type ObjectValues<T> = T[keyof T];
 export type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 
+export type MongoProjection<T> = {
+  [P in keyof T]?: MongoProjection<T[P]> | 1 | 0;
+};
+
 export interface SearchResult {
   type: MediaMatch;
   displayAs: string[];

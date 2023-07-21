@@ -1,6 +1,10 @@
 import "./Scrubber.scss";
 import { getState } from "@reducers/store";
-import { getTimeTracking, startAnimationLoop } from "@client/lib/util";
+import {
+  cancelAllAnimationFrames,
+  getTimeTracking,
+  startAnimationLoop,
+} from "@client/lib/util";
 import { useDispatch, useSelector } from "react-redux";
 import { useDrag } from "@hooks/useDrag";
 import { useState, useEffect, useRef } from "react";
@@ -31,7 +35,7 @@ export const Scrubber = () => {
   }, [player.is_casting]);
 
   useEffect(() => {
-    const loop = startAnimationLoop(() => {
+    startAnimationLoop(() => {
       const audio_progress = getAudioProgress(
         player.now_playing,
         is_casting.current,
@@ -67,7 +71,7 @@ export const Scrubber = () => {
     }
 
     return () => {
-      cancelAnimationFrame(loop);
+      cancelAllAnimationFrames();
 
       if (!is_casting_local_var) {
         audio.removeEventListener("timeupdate", onCrossover);

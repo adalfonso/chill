@@ -1,20 +1,22 @@
 import fs from "fs/promises";
 import jwt from "jsonwebtoken";
-import { AudioQuality as Quality } from "@common/types";
+import { AudioQuality as Quality, GroupedMedia } from "@common/types";
 import { AudioType } from "@server/lib/media/types";
 import { Media as MediaModel } from "@server/models/Media";
-import { Media } from "@common/models/Media";
 import { MediaCrawler } from "@server/lib/media/MediaCrawler";
 import { Request as Req, Response as Res } from "express";
 import { Request } from "@server/trpc";
 import { TRPCError } from "@trpc/server";
 import { adjustImage } from "@server/lib/media/image/ImageAdjust";
+import { base_projection, Media, query_options } from "@common/models/Media";
 import { convert } from "@server/lib/conversion";
 import { env } from "@server/init";
 import { getAsGroup } from "@server/lib/data/utils";
 import { sortResults } from "@server/lib/search/ResultSorter";
 import { stream_file } from "@server/lib/stream";
 import { z } from "zod";
+
+const default_media_limit = 999;
 
 const mongo_filter = z.object({
   $ne: z.null(),
@@ -35,7 +37,14 @@ export const schema = {
 
   search: z.string(),
 
-  query: media_match,
+  query: z.object({
+    match: media_match,
+    options: query_options.optional(),
+  }),
+
+  queryRandom: z.object({
+    options: query_options.optional(),
+  }),
 
   query_as_group: z.object({
     match: media_match,
@@ -227,9 +236,15 @@ export const MediaFileController = {
   },
 
   /** Get media files */
-  query: async ({ input: match }: Request<typeof schema.query>) => {
+  query: async ({
+    input: { match, options },
+  }: Request<typeof schema.query>) => {
+    const { limit = default_media_limit, $nin = [] } = options ?? {};
+
     try {
-      const result = await MediaModel.find(match);
+      const result = await MediaModel.find({ ...match, _id: { $nin } })
+        .select(base_projection)
+        .limit(limit);
 
       if (result.length === null) {
         throw new Error("Could not find media during query.");
@@ -246,13 +261,38 @@ export const MediaFileController = {
     }
   },
 
+  queryRandom: async ({
+    input: { options },
+  }: Request<typeof schema.queryRandom>) => {
+    const { limit = default_media_limit, $nin = [] } = options ?? {};
+
+    try {
+      const result = await MediaModel.aggregate<Media>([
+        { $match: { _id: { $nin } } },
+        { $sample: { size: limit } },
+        { $project: base_projection },
+      ]);
+
+      if (result.length === null) {
+        throw new Error("Could not find random media during query.");
+      }
+
+      return result;
+    } catch (e) {
+      console.error(e);
+
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to query random Media.",
+      });
+    }
+  },
+
   queryAsGroup: async ({ input }: Request<typeof schema.query_as_group>) => {
     try {
       const { match, group, options: pagination } = input;
 
-      const result = await getAsGroup(MediaModel, group, { match, pagination });
-
-      return result;
+      return getAsGroup(MediaModel, group, { match, pagination });
     } catch (e) {
       console.error(e);
 
