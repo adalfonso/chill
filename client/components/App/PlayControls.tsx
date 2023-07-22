@@ -27,11 +27,17 @@ import {
   faAngleDown,
   faClose,
 } from "@fortawesome/free-solid-svg-icons";
+import { useId } from "@client/hooks/useObjectId";
+import { FileMenu } from "./MediaViewer/FileMenu";
+import { albumUrl, artistUrl } from "@client/lib/url";
+import { useNavigate } from "react-router-dom";
 
 const default_now_playing = "";
 
 export const PlayControls = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const menu_id = useId();
   const { player } = useSelector(getState);
   const { width } = useViewport();
   const is_mobile = width < screen_breakpoint_px;
@@ -70,6 +76,8 @@ export const PlayControls = () => {
   const goFullscreen = () => {
     dispatch(setMobileDisplayMode(MobileDisplayMode.Fullscreen));
   };
+
+  const now_playing = player.now_playing;
 
   // Minimize the player on back navigation when fullscreen
   useBackNavigate(() => is_fullscreen, minimize);
@@ -119,6 +127,30 @@ export const PlayControls = () => {
           <div className="side-panel">
             <div className="icons">
               <Shuffle></Shuffle>
+              <div>
+                {now_playing !== null && (
+                  <FileMenu
+                    menu_id={menu_id}
+                    title={`${now_playing.artist} - ${now_playing.title}`}
+                  >
+                    {[
+                      <div
+                        key="artist"
+                        onClick={() => navigate(artistUrl(now_playing))}
+                      >
+                        Go to Artist
+                      </div>,
+
+                      <div
+                        key="album"
+                        onClick={() => navigate(albumUrl(now_playing))}
+                      >
+                        Go to Album
+                      </div>,
+                    ]}
+                  </FileMenu>
+                )}
+              </div>
               <Playlist></Playlist>
             </div>
 

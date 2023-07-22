@@ -1,6 +1,6 @@
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Media } from "@common/models/Media";
-import { Nullable } from "@common/types";
+import { Nullable, ObjectValues } from "@common/types";
 import { PreCastPayload } from "@client/lib/cast/types";
 import { addToQueue, playNext } from "@reducers/player";
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
@@ -11,9 +11,22 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { useMenu } from "@hooks/useMenu";
 
+const FileMenuOption = {
+  Play: "Play",
+  PlayNext: "Play Next",
+  AddToQueue: "Add to Queue",
+  AddToPlaylist: "Add to Playlist",
+  GoToArtist: "Go to Artist",
+  GoToAlbum: "Go to Album",
+  FileInformation: "File Information",
+} as const;
+
+export type FileMenuOption = ObjectValues<typeof FileMenuOption>;
+
 export interface FileMenuHandler {
-  play: () => void;
-  getFiles: (
+  play?: () => void;
+  file?: Media;
+  getFiles?: (
     is_casting: boolean,
   ) => Promise<{ files: Media[]; cast_info: Nullable<PreCastPayload> }>;
   toggle?: (visible: boolean) => void;
@@ -22,14 +35,14 @@ export interface FileMenuHandler {
 interface FileMenuProps {
   menu_id: string;
   title: string;
-  handler: FileMenuHandler;
+  handler?: FileMenuHandler;
   children?: JSX.Element | JSX.Element[];
 }
 
 export const FileMenu = ({
   menu_id,
   title,
-  handler,
+  handler = {},
   children,
 }: FileMenuProps) => {
   const { mediaMenu } = useSelector(getState);
@@ -60,14 +73,19 @@ export const FileMenu = ({
 
   const local = {
     playNext: async () =>
+      handler?.getFiles &&
       dispatch(playNext((await handler.getFiles(player.is_casting)).files)),
     addToQueue: async () =>
+      handler?.getFiles &&
       dispatch(addToQueue((await handler.getFiles(player.is_casting)).files)),
     addToPlaylist: async () =>
+      handler?.getFiles &&
       dispatch(
         toggle({ items: (await handler.getFiles(player.is_casting)).files }),
       ),
   };
+
+  const options = [];
 
   return (
     <>
@@ -80,12 +98,20 @@ export const FileMenu = ({
       {active && (
         <section className="file-menu">
           <div className="title">{title}</div>
-          <div onClick={onOptionClick(handler.play)}>Play</div>
-          <div onClick={onOptionClick(local.playNext)}>Play Next</div>
-          <div onClick={onOptionClick(local.addToQueue)}>Add to Queue</div>
-          <div onClick={onOptionClick(local.addToPlaylist)}>
-            Add to Playlist
-          </div>
+          {handler.play && (
+            <div onClick={onOptionClick(handler.play)}>Play</div>
+          )}
+
+          {handler.getFiles && (
+            <>
+              <div onClick={onOptionClick(local.playNext)}>Play Next</div>
+              <div onClick={onOptionClick(local.addToQueue)}>Add to Queue</div>
+              <div onClick={onOptionClick(local.addToPlaylist)}>
+                Add to Playlist
+              </div>
+            </>
+          )}
+
           {children}
         </section>
       )}

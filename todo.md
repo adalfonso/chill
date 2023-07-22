@@ -16,4 +16,4 @@
 - dragging scrubber while casting is choppy
 - playNext, addToQueue, etc don't seem to account for playing on a chromecast
 - go to album/artist from now playing
-- shuffling large stuff doesnt work
+- shuffling large playlist downloads all images
