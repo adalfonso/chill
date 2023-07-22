@@ -11,12 +11,16 @@ import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { getState } from "@client/state/reducers/store";
 import { noPropagate } from "@client/lib/util";
 import { play } from "@reducers/player";
+import { screen_breakpoint_px } from "@client/lib/constants";
+import { setMenu } from "@client/state/reducers/mediaMenu";
+import { useBackNavigate } from "@client/hooks/useBackNavigate";
 import { useDispatch, useSelector } from "react-redux";
 import { useId } from "@hooks/useObjectId";
 import { useLongPress } from "@hooks/useLongPress";
 import { useMenu } from "@hooks/useMenu";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useViewport } from "@client/hooks/useViewport";
 
 interface MediaTileProps {
   tile_type: MediaMatch;
@@ -39,7 +43,19 @@ export const MediaTile = ({
   const { player } = useSelector(getState);
   const menu_id = useId();
   const menu = useMenu(menu_id);
+  const { width } = useViewport();
   const [menu_visible, setMenuVisible] = useState(false);
+
+  const is_mobile = width < screen_breakpoint_px;
+
+  // Minimize the context menu on back navigation
+  useBackNavigate(
+    () => is_mobile && menu_visible,
+    () => {
+      setMenuVisible(false);
+      dispatch(setMenu(null));
+    },
+  );
 
   const onPress = useLongPress(
     () => {
