@@ -277,6 +277,8 @@ export const playerSlice = createSlice({
           ...state.playlist,
         ];
       }
+
+      loadNext(state);
     },
 
     setMobileDisplayMode: (state, action: Action<MobileDisplayMode>) => {
@@ -373,6 +375,8 @@ const load = (state: PlayerState, use_crossover = false) => {
  * @param state - player state
  */
 const loadNext = (state: PlayerState) => {
+  state.next_playing = state.playlist[state.index + 1] ?? null;
+
   crossover.src = state.next_playing
     ? `/api/v1/media/${state.next_playing?._id}/load`
     : "";
