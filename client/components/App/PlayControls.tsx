@@ -83,7 +83,7 @@ export const PlayControls = () => {
           </div>
           <div className="cover-wrapper">
             <div className="cover">
-              {player.now_playing?.cover?.data && (
+              {player.now_playing?.cover?.filename && (
                 <img
                   src={`/api/v1/media/cover/${player.now_playing?._id}?size=256`}
                   loading="lazy"
