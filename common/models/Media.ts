@@ -32,6 +32,7 @@ export const base_projection: MongoProjection<Media> = {
   _id: 1,
   artist: 1,
   album: 1,
+  genre: 1,
   duration: 1,
   title: 1,
   cover: {

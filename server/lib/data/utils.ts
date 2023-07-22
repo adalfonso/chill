@@ -66,6 +66,6 @@ export const getAsGroup = async (
   return model
     .aggregate<GroupedMedia>(group)
     .sort({ _id: "asc" })
-    .skip(page > 0 ? (page + 1) * limit : 0)
+    .skip(page > 0 ? page * limit : 0)
     .limit(limit);
 };
