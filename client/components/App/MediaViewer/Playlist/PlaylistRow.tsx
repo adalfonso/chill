@@ -7,7 +7,11 @@ import { getState } from "@reducers/store";
 import { noPropagate, secondsToMinutes } from "@client/lib/util";
 import { useId } from "@hooks/useObjectId";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useBackNavigate } from "@client/hooks/useBackNavigate";
+import { setMenu } from "@client/state/reducers/mediaMenu";
+import { screen_breakpoint_px } from "@client/lib/constants";
+import { useViewport } from "@client/hooks/useViewport";
 
 export interface PlaylistRowProps {
   file: Media;
@@ -16,9 +20,20 @@ export interface PlaylistRowProps {
 }
 
 export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
-  const { player } = useSelector(getState);
+  const { player, mediaMenu } = useSelector(getState);
   const menu_id = useId();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { width } = useViewport();
+
+  const is_mobile = width < screen_breakpoint_px;
+  const menu_visible = mediaMenu.menu_id === menu_id;
+
+  // Minimize the context menu on back navigation
+  useBackNavigate(
+    () => is_mobile && menu_visible,
+    () => dispatch(setMenu(null)),
+  );
 
   const menuHandler: FileMenuHandler = {
     play: () => playAll(index)(),
