@@ -40,4 +40,6 @@ export const base_projection: MongoProjection<Media> = {
   },
   file_type: 1,
   path: 1,
+  track: 1,
+  year: 1,
 };

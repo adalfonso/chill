@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import jwt from "jsonwebtoken";
-import { AudioQuality as Quality, GroupedMedia } from "@common/types";
+import { AudioQuality as Quality } from "@common/types";
 import { AudioType } from "@server/lib/media/types";
 import { Media as MediaModel } from "@server/models/Media";
 import { MediaCrawler } from "@server/lib/media/MediaCrawler";
