@@ -3,13 +3,17 @@ import { FileInfo } from "../FileInfo";
 import { FileMenu, FileMenuHandler } from "../FileMenu";
 import { Media } from "@common/models/Media";
 import { artistUrl } from "@client/lib/url";
+import { getPlayPayload } from "@client/state/reducers/player";
 import { getState } from "@reducers/store";
 import { noPropagate, secondsToMinutes } from "@client/lib/util";
+import { screen_breakpoint_px } from "@client/lib/constants";
+import { setMenu } from "@client/state/reducers/mediaMenu";
+import { useBackNavigate } from "@client/hooks/useBackNavigate";
+import { useDispatch, useSelector } from "react-redux";
 import { useId } from "@hooks/useObjectId";
 import { useMenu } from "@hooks/useMenu";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { getPlayPayload } from "@client/state/reducers/player";
+import { useViewport } from "@client/hooks/useViewport";
 
 export interface AlbumViewRowProps {
   file: Media;
@@ -18,11 +22,22 @@ export interface AlbumViewRowProps {
 }
 
 export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
-  const { player } = useSelector(getState);
+  const { player, mediaMenu } = useSelector(getState);
   const file_menu_id = useId();
   const file_info_id = useId();
   const file_info_menu = useMenu(file_info_id);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { width } = useViewport();
+
+  const is_mobile = width < screen_breakpoint_px;
+  const menu_visible = mediaMenu.menu_id === file_menu_id;
+
+  // Minimize the context menu on back navigation
+  useBackNavigate(
+    () => is_mobile && menu_visible,
+    () => dispatch(setMenu(null)),
+  );
 
   const menuHandler: FileMenuHandler = {
     play: () => playAll(index)(),
