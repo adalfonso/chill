@@ -21,6 +21,7 @@ import { useMenu } from "@hooks/useMenu";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useViewport } from "@client/hooks/useViewport";
+import { usePrevious } from "@client/hooks/usePrevious";
 
 interface MediaTileProps {
   tile_type: MediaMatch;
@@ -30,6 +31,9 @@ interface MediaTileProps {
   file: GroupedMedia;
   url: (file: GroupedMedia) => string;
   displayAs: (file: GroupedMedia) => string;
+
+  // Prevents context menu from opening during scroll
+  parentScrollPosition?: number;
 }
 
 export const MediaTile = ({
@@ -37,6 +41,7 @@ export const MediaTile = ({
   file,
   url,
   displayAs,
+  parentScrollPosition,
 }: MediaTileProps) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -45,6 +50,7 @@ export const MediaTile = ({
   const menu = useMenu(menu_id);
   const { width } = useViewport();
   const [menu_visible, setMenuVisible] = useState(false);
+  const previousParentScrollPosition = usePrevious(parentScrollPosition);
 
   const is_mobile = width < screen_breakpoint_px;
 
@@ -64,7 +70,12 @@ export const MediaTile = ({
     },
     500,
     { mouse: false, touch: true },
+    true,
   );
+
+  if (parentScrollPosition !== previousParentScrollPosition) {
+    onPress.cancelPress();
+  }
 
   const optionsHandler: FileMenuHandler = {
     play: async () => {
@@ -106,7 +117,7 @@ export const MediaTile = ({
   };
 
   return (
-    <div className="media-tile-wrapper" {...onPress}>
+    <div className="media-tile-wrapper" {...onPress.events}>
       <div
         className={"media-tile" + (menu_visible ? " active" : "")}
         onClick={() => navigate(url(file))}

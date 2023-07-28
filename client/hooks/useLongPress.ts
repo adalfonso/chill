@@ -11,6 +11,7 @@ interface InputTypes {
  * @param callback - logic performed once held for a certain period
  * @param delay_ms - length of time the hold has to occur
  * @param input_types - mouse and touch flags
+ * @param disable_context_menu - force-disable browser context menu
  * @returns
  */
 export const useLongPress = (
@@ -33,20 +34,23 @@ export const useLongPress = (
   }, []);
 
   return {
-    ...((input_types.mouse && {
-      onMouseDown: startPress,
-      onMouseUp: cancelPress,
-      onMouseLeave: cancelPress,
-    }) ||
-      {}),
-    ...((input_types.touch && {
-      onTouchStart: startPress,
-      onTouchEnd: cancelPress,
-    }) ||
-      {}),
-    ...((disable_context_menu && {
-      onContextMenu: (e: UIEvent) => e.preventDefault(),
-    }) ||
-      {}),
+    events: {
+      ...((input_types.mouse && {
+        onMouseDown: startPress,
+        onMouseUp: cancelPress,
+        onMouseLeave: cancelPress,
+      }) ||
+        {}),
+      ...((input_types.touch && {
+        onTouchStart: startPress,
+        onTouchEnd: cancelPress,
+      }) ||
+        {}),
+      ...((disable_context_menu && {
+        onContextMenu: (e: UIEvent) => e.preventDefault(),
+      }) ||
+        {}),
+    },
+    cancelPress,
   };
 };

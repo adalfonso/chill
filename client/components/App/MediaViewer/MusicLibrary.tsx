@@ -7,13 +7,14 @@ import { MediaMatch } from "@common/media/types";
 import { MediaTile } from "./MusicLibrary/MediaTile";
 import { PageAction, pageReducer } from "@hooks/useInfiniteScroll";
 import { Select } from "../../ui/Select";
+import { addToQueue, play } from "@reducers/player";
 import { client } from "@client/client";
 import { getState } from "@client/state/reducers/store";
 import { matchUrl } from "@client/lib/url";
-import { addToQueue, play } from "@reducers/player";
 import { useDispatch, useSelector } from "react-redux";
 import { useInfiniteScroll } from "@hooks/useInfiniteScroll";
 import { useReducer, useRef, useState } from "react";
+import { useScroll } from "@client/hooks/useScroll";
 
 interface MusicLibraryProps {
   setLoading: (loading: boolean) => void;
@@ -24,13 +25,17 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
   const dispatch = useDispatch();
   const { player } = useSelector(getState);
   const bottomBoundaryRef = useRef<HTMLDivElement>(null);
+  const mediaViewer = useRef<HTMLDivElement>(null);
   const [match, setMatch] = useState<MediaMatch>(MediaMatch.Artist);
   const [busy, setBusy] = useState(false);
   const [pager, pagerDispatch] = useReducer(pageReducer, { page: 0 });
+  const [scrollPosition, setScrollPosition] = useState(0);
   const [mediaData, imgDispatch] = useReducer(fetchReducer<GroupedMedia>, {
     items: [],
     busy: true,
   });
+
+  useScroll(mediaViewer, (_, position) => setScrollPosition(position));
 
   useInfiniteScroll(bottomBoundaryRef, pagerDispatch);
 
@@ -112,7 +117,7 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
           </div>
         </div>
       </div>
-      <div id="media-viewer" className="main-viewer">
+      <div id="media-viewer" className="main-viewer" ref={mediaViewer}>
         <div className="media-tiles">
           {mediaData.items
             .sort((a, b) => (a[match] ?? "").localeCompare(b[match] ?? ""))
@@ -123,6 +128,7 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
                 file={file}
                 displayAs={displayAs}
                 url={matchUrl(match)}
+                parentScrollPosition={scrollPosition}
               />
             ))}
         </div>

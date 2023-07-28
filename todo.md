@@ -17,3 +17,4 @@
 - playNext, addToQueue, etc don't seem to account for playing on a chromecast
 - go to album/artist from now playing
 - shuffling large playlist downloads all images
+- genre (math rock) artists not CI sorted
