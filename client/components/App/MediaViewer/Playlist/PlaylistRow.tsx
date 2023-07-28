@@ -37,7 +37,6 @@ export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
 
   const menuHandler: FileMenuHandler = {
     play: () => playAll(index)(),
-
     getFiles: getPlayPayload(player.is_casting, [file]),
   };
 

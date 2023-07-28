@@ -142,6 +142,9 @@
   }
 
   .icons {
+    display: flex;
+    position: relative;
+
     > * {
       margin-left: 1em;
     }
@@ -217,6 +220,11 @@
       height: 3.5rem;
       width: 3.5rem;
       font-size: 1.75rem;
+    }
+
+    .file-menu {
+      top: auto;
+      bottom: 2.25rem;
     }
   }
 }

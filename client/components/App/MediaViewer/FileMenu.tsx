@@ -22,7 +22,7 @@ export interface FileMenuHandler {
 interface FileMenuProps {
   menu_id: string;
   title: string;
-  handler: FileMenuHandler;
+  handler?: FileMenuHandler;
   children?: JSX.Element | JSX.Element[];
 }
 
@@ -43,27 +43,30 @@ export const FileMenu = ({
       return;
     }
 
-    handler.toggle?.(false);
+    handler?.toggle?.(false);
   }, [mediaMenu.menu_id]);
 
   const onEntryClick = noPropagate(() => {
-    handler.toggle?.(!menu.is_active);
+    handler?.toggle?.(!menu.is_active);
     menu.toggle();
   });
 
   const onOptionClick = (fn: () => void) =>
     noPropagate(() => {
       fn();
-      handler.toggle?.(false);
+      handler?.toggle?.(false);
       menu.clear();
     });
 
   const local = {
     playNext: async () =>
+      handler &&
       dispatch(playNext((await handler.getFiles(player.is_casting)).files)),
     addToQueue: async () =>
+      handler &&
       dispatch(addToQueue((await handler.getFiles(player.is_casting)).files)),
     addToPlaylist: async () =>
+      handler &&
       dispatch(
         toggle({ items: (await handler.getFiles(player.is_casting)).files }),
       ),
@@ -80,12 +83,18 @@ export const FileMenu = ({
       {active && (
         <section className="file-menu">
           <div className="title">{title}</div>
-          <div onClick={onOptionClick(handler.play)}>Play</div>
-          <div onClick={onOptionClick(local.playNext)}>Play Next</div>
-          <div onClick={onOptionClick(local.addToQueue)}>Add to Queue</div>
-          <div onClick={onOptionClick(local.addToPlaylist)}>
-            Add to Playlist
-          </div>
+
+          {handler && (
+            <>
+              <div onClick={onOptionClick(handler.play)}>Play</div>
+              <div onClick={onOptionClick(local.playNext)}>Play Next</div>
+              <div onClick={onOptionClick(local.addToQueue)}>Add to Queue</div>
+              <div onClick={onOptionClick(local.addToPlaylist)}>
+                Add to Playlist
+              </div>
+            </>
+          )}
+
           {children}
         </section>
       )}
