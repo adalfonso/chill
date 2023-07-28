@@ -33,20 +33,23 @@ export const useLongPress = (
   }, []);
 
   return {
-    ...((input_types.mouse && {
-      onMouseDown: startPress,
-      onMouseUp: cancelPress,
-      onMouseLeave: cancelPress,
-    }) ||
-      {}),
-    ...((input_types.touch && {
-      onTouchStart: startPress,
-      onTouchEnd: cancelPress,
-    }) ||
-      {}),
-    ...((disable_context_menu && {
-      onContextMenu: (e: UIEvent) => e.preventDefault(),
-    }) ||
-      {}),
+    events: {
+      ...((input_types.mouse && {
+        onMouseDown: startPress,
+        onMouseUp: cancelPress,
+        onMouseLeave: cancelPress,
+      }) ||
+        {}),
+      ...((input_types.touch && {
+        onTouchStart: startPress,
+        onTouchEnd: cancelPress,
+      }) ||
+        {}),
+      ...((disable_context_menu && {
+        onContextMenu: (e: UIEvent) => e.preventDefault(),
+      }) ||
+        {}),
+    },
+    cancelPress,
   };
 };

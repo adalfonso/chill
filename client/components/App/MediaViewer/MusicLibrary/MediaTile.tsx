@@ -19,6 +19,7 @@ import { useId } from "@hooks/useObjectId";
 import { useLongPress } from "@hooks/useLongPress";
 import { useMenu } from "@hooks/useMenu";
 import { useNavigate } from "react-router-dom";
+import { useScroll } from "@client/hooks/useScroll";
 import { useState } from "react";
 import { useViewport } from "@client/hooks/useViewport";
 
@@ -66,6 +67,8 @@ export const MediaTile = ({
     { mouse: false, touch: true },
   );
 
+  useScroll(onPress.cancelPress);
+
   const optionsHandler: FileMenuHandler = {
     play: async () => {
       const { files, cast_info } = await getFiles(file)(player.is_casting);
@@ -106,7 +109,7 @@ export const MediaTile = ({
   };
 
   return (
-    <div className="media-tile-wrapper" {...onPress}>
+    <div className="media-tile-wrapper" {...onPress.events}>
       <div
         className={"media-tile" + (menu_visible ? " active" : "")}
         onClick={() => navigate(url(file))}
