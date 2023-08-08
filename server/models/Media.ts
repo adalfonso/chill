@@ -33,7 +33,6 @@ MediaSchema.index({
   artist: "text",
   album: "text",
   title: "text",
-  genre: "text",
 });
 
 export const Media = model<IMedia>("Media", MediaSchema);

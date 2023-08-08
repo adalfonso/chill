@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import mm from "music-metadata";
 import { Doc } from "@server/models/Base";
+import { Genre } from "@server/models/Genre";
 import { Media as MediaModel } from "@server/models/Media";
 import { Media } from "@common/models/Media";
 import { Nullable } from "@common/types";
@@ -236,6 +237,8 @@ export class MediaCrawler {
       throw new Error("Tried to complete scan but it was null");
     }
 
+    await writeGenres();
+
     this._scan.status = status;
     this._scan.updated_at = new Date();
 
@@ -249,3 +252,14 @@ export class MediaCrawler {
     console.info(`Crawling ${status.toLowerCase()}... 🐛`);
   }
 }
+
+/** Create genre documents from existing media files */
+const writeGenres = async () => {
+  const genres = await MediaModel.distinct("genre", {
+    genre: { $nin: [null, ""] },
+  });
+
+  await Genre.deleteMany();
+
+  await Genre.insertMany(genres.map((name) => ({ name })));
+};
