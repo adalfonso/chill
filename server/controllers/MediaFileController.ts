@@ -2,6 +2,8 @@ import fs from "fs/promises";
 import jwt from "jsonwebtoken";
 import { AudioQuality as Quality } from "@common/types";
 import { AudioType } from "@server/lib/media/types";
+import { Genre as GenreModel } from "@server/models/Genre";
+import { Genre } from "@common/models/Genre";
 import { Media as MediaModel } from "@server/models/Media";
 import { MediaCrawler } from "@server/lib/media/MediaCrawler";
 import { Request as Req, Response as Res } from "express";
@@ -226,13 +228,19 @@ export const MediaFileController = {
   },
 
   search: async ({ input }: Request<typeof schema.search>) => {
-    const query = input.toLowerCase();
+    const search_term = input.toLowerCase();
 
-    const results = await MediaModel.find<{ _doc: Media }>({
-      $text: { $search: query },
-    });
+    const query = {
+      $text: { $search: search_term },
+    };
 
-    return sortResults(results, query);
+    const media_results = await MediaModel.find<{ _doc: Media }>(query);
+    const genre_results = await GenreModel.find<{ _doc: Genre }>(query);
+
+    return sortResults(
+      { media: media_results, genre: genre_results },
+      search_term,
+    );
   },
 
   /** Get media files */
