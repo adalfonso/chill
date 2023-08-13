@@ -1,37 +1,48 @@
-import { useCallback, useEffect, useState } from "react";
+import { ObjectValues } from "@common/types";
+import { RefObject, useEffect, useState } from "react";
 
-type ScrollCallback = (y?: number) => void;
+export const ScrollDirection = {
+  None: "none",
+  Up: "up",
+  Down: "down",
+} as const;
+
+export type ScrollDirection = ObjectValues<typeof ScrollDirection>;
+
+export type ScrollCallback = (direction: ScrollDirection, y: number) => void;
 
 /**
  * React to scroll event
  *
  * @param callback
  */
-export const useScroll = (callback: ScrollCallback) => {
-  const [y, setY] = useState(window.scrollY);
+export const useScroll = (
+  ref: RefObject<HTMLDivElement>,
+  callback: ScrollCallback,
+) => {
+  const [previousPosition, setPreviousPosition] = useState(0);
 
-  const handleNavigation = useCallback(
-    (e) => {
-      console.log(e.currentTarget);
-      const window = e.currentTarget;
-
-      if (y === window.scrollY) {
+  useEffect(() => {
+    const onScroll = () => {
+      if (!ref.current) {
         return;
       }
 
-      callback(window.scrollY);
+      const newPosition = ref.current.scrollTop;
 
-      setY(window.scrollY);
-    },
-    [y],
-  );
+      if (newPosition > previousPosition) {
+        callback(ScrollDirection.Down, newPosition);
+      } else if (newPosition < previousPosition) {
+        callback(ScrollDirection.Up, newPosition);
+      } else {
+        callback(ScrollDirection.None, newPosition);
+      }
 
-  useEffect(() => {
-    setY(window.scrollY);
-    window.addEventListener("scroll", handleNavigation);
-
-    return () => {
-      window.removeEventListener("scroll", handleNavigation);
+      setPreviousPosition(newPosition <= 0 ? 0 : newPosition);
     };
-  }, [handleNavigation]);
+
+    ref.current?.addEventListener("scroll", onScroll);
+
+    return () => ref.current?.removeEventListener("scroll", onScroll);
+  }, [ref.current, callback, previousPosition]);
 };

@@ -11,6 +11,7 @@ interface InputTypes {
  * @param callback - logic performed once held for a certain period
  * @param delay_ms - length of time the hold has to occur
  * @param input_types - mouse and touch flags
+ * @param disable_context_menu - force-disable browser context menu
  * @returns
  */
 export const useLongPress = (
