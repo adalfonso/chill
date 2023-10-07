@@ -55,12 +55,12 @@ export const SmartScroller = <T,>({
   useInfiniteScroll(bottomBoundaryRef, pagerDispatch);
 
   // make API calls
-  useFetch<T>(
+  useFetch<T>({
     pager,
-    mediaDispatch,
-    () => onInfiniteScroll(pager.page),
-    onInfiniteScrollDone,
-  );
+    dispatch: mediaDispatch,
+    onFetch: () => onInfiniteScroll(pager.page),
+    onDone: onInfiniteScrollDone,
+  });
 
   useEffect(() => {
     pagerDispatch({ type: PageAction.Reset });

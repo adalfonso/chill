@@ -39,6 +39,20 @@ export const fetchReducer = <T>(
   }
 };
 
+type useFetchOptions<T> = {
+  // pagination data
+  pager: Pager;
+
+  // data dispatch
+  dispatch: Dispatch<FetchAction<T>>;
+
+  // API that returns data
+  onFetch: () => Promise<T[]>;
+
+  // Optional onDone callback
+  onDone?: () => void;
+};
+
 /**
  * Facilitates the fetching and updating of data
  *
@@ -47,16 +61,16 @@ export const fetchReducer = <T>(
  * @param api api that returns data
  * @param onDone optional callback
  */
-export const useFetch = <T>(
-  data: Pager,
-  dispatch: Dispatch<FetchAction<T>>,
-  api: () => Promise<T[]>,
-  onDone?: () => void,
-) => {
+export const useFetch = <T>({
+  pager,
+  dispatch,
+  onFetch,
+  onDone,
+}: useFetchOptions<T>) => {
   // make API calls
   useEffect(() => {
     dispatch({ type: Action.Fetch });
-    api()
+    onFetch()
       .then((items) => {
         dispatch({ type: Action.Stack, items });
       })
@@ -64,5 +78,5 @@ export const useFetch = <T>(
         dispatch({ type: Action.Release });
         onDone?.();
       });
-  }, [data.page]);
+  }, [pager.page]);
 };

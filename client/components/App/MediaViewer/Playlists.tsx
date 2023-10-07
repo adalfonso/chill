@@ -33,9 +33,12 @@ export const Playlists = ({ setLoading, per_page }: PlaylistsProps) => {
 
   useInfiniteScroll(bottomBoundaryRef, pagerDispatch);
 
-  useFetch<Playlist>(pager, playlistDispatch, loadPlaylists, () =>
-    setLoading(false),
-  );
+  useFetch<Playlist>({
+    pager,
+    dispatch: playlistDispatch,
+    onFetch: loadPlaylists,
+    onDone: () => setLoading(false),
+  });
 
   const playPlaylist = (playlist: Playlist) => async () => {
     try {

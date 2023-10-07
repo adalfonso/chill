@@ -19,4 +19,3 @@
 - genre (math rock) artists not CI sorted
 - made loading boolean a global affair
 - improve @hooks alias
-- refresh useFetch to take an object
