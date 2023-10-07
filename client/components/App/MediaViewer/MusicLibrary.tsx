@@ -116,7 +116,7 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
         </div>
       </div>
 
-      <SmartScroller>
+      <SmartScroller boundary={bottomBoundaryRef}>
         {mediaData.items
           .sort((a, b) => (a[match] ?? "").localeCompare(b[match] ?? ""))
           .map((file) => (
