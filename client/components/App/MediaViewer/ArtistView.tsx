@@ -2,7 +2,7 @@ import { GroupedMedia } from "@common/types";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch } from "@common/media/types";
 import { MediaTile } from "./MusicLibrary/MediaTile";
-import { MediaViewer } from "./MediaViewer";
+import { SmartScroller } from "./SmartScroller";
 import { albumUrl } from "@client/lib/url";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -42,7 +42,7 @@ export const ArtistView = ({ setLoading }: ArtistViewProps) => {
   };
 
   return (
-    <MediaViewer className="artist-view" header={artist}>
+    <SmartScroller className="artist-view" header={artist}>
       {albums.map((file) => (
         <MediaTile
           tile_type={MediaMatch.Album}
@@ -52,6 +52,6 @@ export const ArtistView = ({ setLoading }: ArtistViewProps) => {
           displayAs={displayAs}
         />
       ))}
-    </MediaViewer>
+    </SmartScroller>
   );
 };

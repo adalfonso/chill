@@ -2,12 +2,12 @@ import { useScroll } from "@hooks/useScroll";
 import { useState, useRef, cloneElement } from "react";
 
 interface MediaViewerViewerProps {
-  header: string;
-  className: string;
+  header?: string;
+  className?: string;
   children: JSX.Element[];
 }
 
-export const MediaViewer = ({
+export const SmartScroller = ({
   header,
   className,
   children,
@@ -19,10 +19,12 @@ export const MediaViewer = ({
 
   return (
     <div id="media-viewer" ref={mediaViewer}>
-      <div className={`${className} wide`}>
-        <div className="info">
-          <h2>{header}</h2>
-        </div>
+      <div className={`${className ?? ""} wide`.trim()}>
+        {header && (
+          <div className="info">
+            <h2>{header}</h2>
+          </div>
+        )}
 
         <div className="media-tiles">
           {children.map((tile) =>

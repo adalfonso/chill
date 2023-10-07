@@ -2,7 +2,7 @@ import { GroupedMedia } from "@common/types";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch } from "@common/media/types";
 import { MediaTile } from "./MusicLibrary/MediaTile";
-import { MediaViewer } from "./MediaViewer";
+import { SmartScroller } from "./SmartScroller";
 import { artistUrl } from "@client/lib/url";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -33,7 +33,7 @@ export const GenreView = ({ setLoading }: GenreViewProps) => {
   const displayAs = (file: GroupedMedia) => file.artist ?? "";
 
   return (
-    <MediaViewer className="genre-view" header={genre}>
+    <SmartScroller className="genre-view" header={genre}>
       {artists.map((file) => (
         <MediaTile
           tile_type={MediaMatch.Genre}
@@ -43,6 +43,6 @@ export const GenreView = ({ setLoading }: GenreViewProps) => {
           displayAs={displayAs}
         />
       ))}
-    </MediaViewer>
+    </SmartScroller>
   );
 };

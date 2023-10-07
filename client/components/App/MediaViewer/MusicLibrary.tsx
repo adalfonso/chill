@@ -14,7 +14,7 @@ import { matchUrl } from "@client/lib/url";
 import { useDispatch, useSelector } from "react-redux";
 import { useInfiniteScroll } from "@hooks/useInfiniteScroll";
 import { useReducer, useRef, useState } from "react";
-import { useScroll } from "@client/hooks/useScroll";
+import { SmartScroller } from "./SmartScroller";
 
 interface MusicLibraryProps {
   setLoading: (loading: boolean) => void;
@@ -25,17 +25,15 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
   const dispatch = useDispatch();
   const { player } = useSelector(getState);
   const bottomBoundaryRef = useRef<HTMLDivElement>(null);
-  const mediaViewer = useRef<HTMLDivElement>(null);
+
   const [match, setMatch] = useState<MediaMatch>(MediaMatch.Artist);
   const [busy, setBusy] = useState(false);
   const [pager, pagerDispatch] = useReducer(pageReducer, { page: 0 });
-  const [scrollPosition, setScrollPosition] = useState(0);
+
   const [mediaData, imgDispatch] = useReducer(fetchReducer<GroupedMedia>, {
     items: [],
     busy: true,
   });
-
-  useScroll(mediaViewer, (_, position) => setScrollPosition(position));
 
   useInfiniteScroll(bottomBoundaryRef, pagerDispatch);
 
@@ -117,23 +115,20 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
           </div>
         </div>
       </div>
-      <div id="media-viewer" className="main-viewer" ref={mediaViewer}>
-        <div className="media-tiles">
-          {mediaData.items
-            .sort((a, b) => (a[match] ?? "").localeCompare(b[match] ?? ""))
-            .map((file) => (
-              <MediaTile
-                tile_type={match}
-                key={JSON.stringify(file._id)}
-                file={file}
-                displayAs={displayAs}
-                url={matchUrl(match)}
-                parentScrollPosition={scrollPosition}
-              />
-            ))}
-        </div>
-        <div id="page-bottom-boundary" ref={bottomBoundaryRef}></div>
-      </div>
+
+      <SmartScroller>
+        {mediaData.items
+          .sort((a, b) => (a[match] ?? "").localeCompare(b[match] ?? ""))
+          .map((file) => (
+            <MediaTile
+              tile_type={match}
+              key={JSON.stringify(file._id)}
+              file={file}
+              displayAs={displayAs}
+              url={matchUrl(match)}
+            />
+          ))}
+      </SmartScroller>
     </>
   );
 };
