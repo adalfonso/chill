@@ -16,7 +16,7 @@ interface FetchState<T> {
   busy: boolean;
 }
 
-interface FetchAction<T> {
+export interface FetchAction<T> {
   type: Action;
   items?: T[];
 }

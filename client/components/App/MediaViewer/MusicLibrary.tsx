@@ -1,19 +1,17 @@
 import "./MusicLibrary.scss";
 import * as _ from "lodash-es";
-import { Action, fetchReducer, useFetch } from "@hooks/useFetch";
+import { Action, fetchReducer } from "@hooks/useFetch";
 import { ApiMap } from "@client/api/MediaApi";
 import { GroupedMedia } from "@common/types";
 import { MediaMatch } from "@common/media/types";
 import { MediaTile } from "./MusicLibrary/MediaTile";
-import { PageAction, pageReducer } from "@hooks/useInfiniteScroll";
 import { Select } from "../../ui/Select";
 import { addToQueue, play } from "@reducers/player";
 import { client } from "@client/client";
 import { getState } from "@client/state/reducers/store";
 import { matchUrl } from "@client/lib/url";
 import { useDispatch, useSelector } from "react-redux";
-import { useInfiniteScroll } from "@hooks/useInfiniteScroll";
-import { useReducer, useRef, useState } from "react";
+import { useReducer, useState } from "react";
 import { SmartScroller } from "./SmartScroller";
 
 interface MusicLibraryProps {
@@ -24,42 +22,29 @@ interface MusicLibraryProps {
 export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
   const dispatch = useDispatch();
   const { player } = useSelector(getState);
-  const bottomBoundaryRef = useRef<HTMLDivElement>(null);
 
   const [match, setMatch] = useState<MediaMatch>(MediaMatch.Artist);
   const [busy, setBusy] = useState(false);
-  const [pager, pagerDispatch] = useReducer(pageReducer, { page: 0 });
 
-  const [mediaData, imgDispatch] = useReducer(fetchReducer<GroupedMedia>, {
+  const [mediaData, mediaDispatch] = useReducer(fetchReducer<GroupedMedia>, {
     items: [],
     busy: true,
   });
 
-  useInfiniteScroll(bottomBoundaryRef, pagerDispatch);
-
   // Change the media match drop down
   const changeMediaMatch = (match: MediaMatch) => {
-    imgDispatch({ type: Action.Reset });
-    pagerDispatch({ type: PageAction.Reset });
+    mediaDispatch({ type: Action.Reset });
     setMatch(match);
   };
 
   // Cause media files to reload
-  const loadMediaFiles = (match: MediaMatch) => {
+  const loadMediaFiles = (match: MediaMatch) => (page: number) => {
     setLoading(true);
 
-    return ApiMap[match]({ page: pager.page, limit: per_page });
+    return ApiMap[match]({ page, limit: per_page });
   };
 
   const displayAs = (file: GroupedMedia) => file[match] ?? "";
-
-  // make API calls
-  useFetch<GroupedMedia>(
-    pager,
-    imgDispatch,
-    () => loadMediaFiles(match),
-    () => setLoading(false),
-  );
 
   const playRandomTracks = async () => {
     const { files, cast_info } = await getRandomFiles(player.is_casting);
@@ -116,7 +101,12 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
         </div>
       </div>
 
-      <SmartScroller boundary={bottomBoundaryRef}>
+      <SmartScroller
+        dispatcher={mediaDispatch}
+        resetPagerOn={[match]}
+        onInfiniteScroll={loadMediaFiles(match)}
+        onInfiniteScrollDone={() => setLoading(false)}
+      >
         {mediaData.items
           .sort((a, b) => (a[match] ?? "").localeCompare(b[match] ?? ""))
           .map((file) => (

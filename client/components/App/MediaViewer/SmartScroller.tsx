@@ -1,30 +1,70 @@
+import { FetchAction, useFetch } from "@client/hooks/useFetch";
+import {
+  PageAction,
+  pageReducer,
+  useInfiniteScroll,
+} from "@client/hooks/useInfiniteScroll";
 import { useScroll } from "@hooks/useScroll";
-import { useState, useRef, cloneElement, RefObject } from "react";
+import {
+  useState,
+  useRef,
+  cloneElement,
+  useReducer,
+  Dispatch,
+  useEffect,
+} from "react";
 
-interface MediaViewerViewerProps {
+interface SmartScrollProps<T> {
   // Header text
   header?: string;
 
   // CSS class name for container
   className?: string;
 
-  // MediaTiles
-  children: JSX.Element[];
+  // Values used to reset the page when the change
+  resetPagerOn?: Array<string>;
 
-  // Boundary for triggering infinite scroll
-  boundary?: RefObject<HTMLDivElement>;
+  // Controls dispatch of media fetching
+  dispatcher: Dispatch<FetchAction<T>>;
+
+  // Handles an infinite scrolling event
+  onInfiniteScroll: (page: number) => Promise<Array<T>>;
+
+  // Handles the aftermath of an infinite scroll event
+  onInfiniteScrollDone: () => void;
+
+  // MediaTiles to display
+  children: JSX.Element[];
 }
 
-export const SmartScroller = ({
+export const SmartScroller = <T,>({
   header,
   className,
   children,
-  boundary,
-}: MediaViewerViewerProps) => {
+  dispatcher,
+  resetPagerOn = [],
+  onInfiniteScroll,
+  onInfiniteScrollDone,
+}: SmartScrollProps<T>) => {
   const mediaViewer = useRef<HTMLDivElement>(null);
   const [scrollPosition, setScrollPosition] = useState(0);
+  const bottomBoundaryRef = useRef<HTMLDivElement>(null);
+  const [pager, pagerDispatch] = useReducer(pageReducer, { page: 0 });
 
   useScroll(mediaViewer, (_, position) => setScrollPosition(position));
+  useInfiniteScroll(bottomBoundaryRef, pagerDispatch);
+
+  // make API calls
+  useFetch<T>(
+    pager,
+    dispatcher,
+    () => onInfiniteScroll(pager.page),
+    onInfiniteScrollDone,
+  );
+
+  useEffect(() => {
+    pagerDispatch({ type: PageAction.Reset });
+  }, resetPagerOn);
 
   return (
     <div id="media-viewer" ref={mediaViewer}>
@@ -40,7 +80,7 @@ export const SmartScroller = ({
             cloneElement(tile, { parentScrollPosition: scrollPosition }),
           )}
         </div>
-        {boundary && <div id="page-bottom-boundary" ref={boundary}></div>}
+        <div id="page-bottom-boundary" ref={bottomBoundaryRef}></div>
       </div>
     </div>
   );
