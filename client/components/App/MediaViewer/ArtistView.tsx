@@ -4,8 +4,9 @@ import { MediaMatch } from "@common/media/types";
 import { MediaTile } from "./MusicLibrary/MediaTile";
 import { SmartScroller } from "./SmartScroller";
 import { albumUrl } from "@client/lib/url";
+import { fetchReducer } from "@client/hooks/useFetch";
 import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useReducer } from "react";
 
 interface ArtistViewProps {
   setLoading: (loading: boolean) => void;
@@ -17,33 +18,32 @@ type AlbumParams = {
 
 export const ArtistView = ({ setLoading }: ArtistViewProps) => {
   const artist = useParams<AlbumParams>().artist ?? "";
-  const [albums, setAlbums] = useState<GroupedMedia[]>([]);
 
-  useEffect(() => {
-    loadAlbums();
-  }, [artist]);
+  const [media_data, mediaDispatch] = useReducer(fetchReducer<GroupedMedia>, {
+    items: [],
+    busy: true,
+  });
 
-  const loadAlbums = async () => {
+  const loadAlbums = async (page: number) => {
     setLoading(true);
 
-    return MediaApi.getGroupedByAlbum(undefined, artist)
-      .then((data) =>
-        setAlbums(data.sort((a, b) => (b.year ?? 0) - (a.year ?? 0))),
-      )
-      .catch(({ message }) =>
-        console.error("Failed to load artist albums:", { message }),
-      )
-      .finally(() => setLoading(false));
+    return MediaApi.getGroupedByAlbum({ page, limit: 24 }, artist).then(
+      (data) => data.sort((a, b) => (b.year ?? 0) - (a.year ?? 0)),
+    );
   };
 
-  const displayAs = (file: GroupedMedia) => {
-    const { album, year } = file;
-    return `${album} (${year})`;
-  };
+  const displayAs = ({ album, year }: GroupedMedia) => `${album} (${year})`;
 
   return (
-    <SmartScroller className="artist-view" header={artist}>
-      {albums.map((file) => (
+    <SmartScroller
+      className="artist-view"
+      header={artist}
+      dispatcher={mediaDispatch}
+      resetPagerOn={[artist]}
+      onInfiniteScroll={loadAlbums}
+      onInfiniteScrollDone={() => setLoading(false)}
+    >
+      {media_data.items.map((file) => (
         <MediaTile
           tile_type={MediaMatch.Album}
           key={JSON.stringify(file._id)}

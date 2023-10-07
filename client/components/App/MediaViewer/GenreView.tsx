@@ -4,8 +4,9 @@ import { MediaMatch } from "@common/media/types";
 import { MediaTile } from "./MusicLibrary/MediaTile";
 import { SmartScroller } from "./SmartScroller";
 import { artistUrl } from "@client/lib/url";
+import { fetchReducer } from "@client/hooks/useFetch";
 import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useReducer } from "react";
 
 interface GenreViewProps {
   setLoading: (loading: boolean) => void;
@@ -17,24 +18,27 @@ type GenreParams = {
 
 export const GenreView = ({ setLoading }: GenreViewProps) => {
   const genre = decodeURIComponent(useParams<GenreParams>().genre ?? "");
-  const [artists, setArtists] = useState<GroupedMedia[]>([]);
 
-  useEffect(() => {
-    setLoading(true);
+  const [media_data, mediaDispatch] = useReducer(fetchReducer<GroupedMedia>, {
+    items: [],
+    busy: true,
+  });
 
-    MediaApi.getGroupedByArtist(undefined, genre)
-      .then(setArtists)
-      .catch(({ message }) =>
-        console.error("Failed to load artist albums:", message),
-      )
-      .finally(() => setLoading(false));
-  }, [genre]);
+  const loadGenres = (page: number) =>
+    MediaApi.getGroupedByArtist({ page, limit: 24 }, genre);
 
   const displayAs = (file: GroupedMedia) => file.artist ?? "";
 
   return (
-    <SmartScroller className="genre-view" header={genre}>
-      {artists.map((file) => (
+    <SmartScroller
+      className="genre-view"
+      header={genre}
+      dispatcher={mediaDispatch}
+      resetPagerOn={[genre]}
+      onInfiniteScroll={loadGenres}
+      onInfiniteScrollDone={() => setLoading(false)}
+    >
+      {media_data.items.map((file) => (
         <MediaTile
           tile_type={MediaMatch.Genre}
           key={JSON.stringify(file._id)}
