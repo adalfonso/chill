@@ -2,6 +2,7 @@ import { GroupedMedia } from "@common/types";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch } from "@common/media/types";
 import { MediaTile } from "./MusicLibrary/MediaTile";
+import { MediaViewer } from "./MediaViewer";
 import { artistUrl } from "@client/lib/url";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -32,24 +33,16 @@ export const GenreView = ({ setLoading }: GenreViewProps) => {
   const displayAs = (file: GroupedMedia) => file.artist ?? "";
 
   return (
-    <div id="media-viewer">
-      <div className="genre-view wide">
-        <div className="info">
-          <h2>{genre}</h2>
-        </div>
-
-        <div className="media-tiles">
-          {artists.map((file) => (
-            <MediaTile
-              tile_type={MediaMatch.Genre}
-              key={JSON.stringify(file._id)}
-              file={file}
-              url={artistUrl}
-              displayAs={displayAs}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
+    <MediaViewer className="genre-view" header={genre}>
+      {artists.map((file) => (
+        <MediaTile
+          tile_type={MediaMatch.Genre}
+          key={JSON.stringify(file._id)}
+          file={file}
+          url={artistUrl}
+          displayAs={displayAs}
+        />
+      ))}
+    </MediaViewer>
   );
 };
