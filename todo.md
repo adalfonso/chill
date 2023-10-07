@@ -17,7 +17,6 @@
 - playNext, addToQueue, etc don't seem to account for playing on a chromecast
 - shuffling large playlist downloads all images
 - genre (math rock) artists not CI sorted
-- add infinite scroll to artist and album view
 - made loading boolean a global affair
 - improve @hooks alias
 - refresh useFetch to take an object

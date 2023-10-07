@@ -102,7 +102,7 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
       </div>
 
       <SmartScroller
-        dispatcher={mediaDispatch}
+        mediaDispatch={mediaDispatch}
         resetPagerOn={[match]}
         onInfiniteScroll={loadMediaFiles(match)}
         onInfiniteScrollDone={() => setLoading(false)}

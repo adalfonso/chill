@@ -38,7 +38,7 @@ export const ArtistView = ({ setLoading }: ArtistViewProps) => {
     <SmartScroller
       className="artist-view"
       header={artist}
-      dispatcher={mediaDispatch}
+      mediaDispatch={mediaDispatch}
       resetPagerOn={[artist]}
       onInfiniteScroll={loadAlbums}
       onInfiniteScrollDone={() => setLoading(false)}

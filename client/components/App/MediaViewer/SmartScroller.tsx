@@ -25,7 +25,7 @@ interface SmartScrollProps<T> {
   resetPagerOn?: Array<string>;
 
   // Controls dispatch of media fetching
-  dispatcher: Dispatch<FetchAction<T>>;
+  mediaDispatch: Dispatch<FetchAction<T>>;
 
   // Handles an infinite scrolling event
   onInfiniteScroll: (page: number) => Promise<Array<T>>;
@@ -41,7 +41,7 @@ export const SmartScroller = <T,>({
   header,
   className,
   children,
-  dispatcher,
+  mediaDispatch,
   resetPagerOn = [],
   onInfiniteScroll,
   onInfiniteScrollDone,
@@ -57,13 +57,14 @@ export const SmartScroller = <T,>({
   // make API calls
   useFetch<T>(
     pager,
-    dispatcher,
+    mediaDispatch,
     () => onInfiniteScroll(pager.page),
     onInfiniteScrollDone,
   );
 
   useEffect(() => {
     pagerDispatch({ type: PageAction.Reset });
+    mediaDispatch({ type: PageAction.Reset });
   }, resetPagerOn);
 
   return (

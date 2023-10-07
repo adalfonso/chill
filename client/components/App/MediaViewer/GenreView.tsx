@@ -33,7 +33,7 @@ export const GenreView = ({ setLoading }: GenreViewProps) => {
     <SmartScroller
       className="genre-view"
       header={genre}
-      dispatcher={mediaDispatch}
+      mediaDispatch={mediaDispatch}
       resetPagerOn={[genre]}
       onInfiniteScroll={loadGenres}
       onInfiniteScrollDone={() => setLoading(false)}
