@@ -11,7 +11,7 @@ import { setUser } from "@reducers/user";
 import { useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 
-export const MediaViewer = () => {
+export const AppRouter = () => {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
 

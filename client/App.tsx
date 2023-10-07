@@ -1,5 +1,5 @@
 import "./App.scss";
-import { MediaViewer } from "./components/App/MediaViewer";
+import { AppRouter } from "./components/App/AppRouter";
 import { PlayControls } from "./components/App/PlayControls";
 import { PlaylistEditor } from "./components/App/PlaylistEditor";
 import { Toolbar } from "./components/App/Toolbar";
@@ -22,7 +22,7 @@ export const App = () => {
   return (
     <div className="app" onClick={clearActiveFileMenu}>
       <Toolbar />
-      <MediaViewer />
+      <AppRouter />
       {player.playlist?.length > 0 && <PlayControls />}
       {playlistEditor.active && <PlaylistEditor />}
     </div>
