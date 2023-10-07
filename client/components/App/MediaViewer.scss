@@ -122,6 +122,11 @@
 
 @media screen and (min-width: 512px) and (max-width: 843px) {
   #media-viewer {
+    &.main-viewer {
+      margin-top: 1.5rem;
+      padding-top: 0;
+    }
+
     .info {
       margin: 0.5rem 0.5rem 1.5rem 0.5rem;
     }
