@@ -42,25 +42,25 @@ export const PlaylistViewer = () => {
   return (
     <>
       {/* Wait until playlist loads */}
-      playlist && (
-      <SmartScroller
-        className="playlist-viewer"
-        header={playlist?.name}
-        mediaDispatch={mediaDispatch}
-        resetPagerOn={[playlist?.name ?? ""]}
-        onInfiniteScroll={loadPlaylistItems}
-        wrapperClassName="playlist-tracks panel-list"
-      >
-        {playlist_data.items?.map((file, index) => (
-          <PlaylistRow
-            index={index}
-            file={file}
-            playAll={playAll}
-            key={file._id.toString()}
-          ></PlaylistRow>
-        ))}
-      </SmartScroller>
-      )
+      {playlist && (
+        <SmartScroller
+          className="playlist-viewer"
+          header={playlist?.name}
+          mediaDispatch={mediaDispatch}
+          resetPagerOn={[playlist?.name ?? ""]}
+          onInfiniteScroll={loadPlaylistItems}
+          wrapperClassName="playlist-tracks panel-list"
+        >
+          {playlist_data.items?.map((file, index) => (
+            <PlaylistRow
+              index={index}
+              file={file}
+              playAll={playAll}
+              key={file._id.toString()}
+            ></PlaylistRow>
+          ))}
+        </SmartScroller>
+      )}
     </>
   );
 };
