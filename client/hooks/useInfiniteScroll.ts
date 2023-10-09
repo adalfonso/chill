@@ -1,4 +1,4 @@
-import { Dispatch, RefObject, useCallback, useEffect } from "react";
+import { Dispatch, RefObject, useCallback, useEffect, useState } from "react";
 import { ObjectValues } from "@common/types";
 
 export const PageAction = {
@@ -37,15 +37,25 @@ export const useInfiniteScroll = (
   scroll_ref: RefObject<HTMLElement>,
   dispatch: Dispatch<PageDispatchAction>,
 ) => {
+  const [is_ready, setIsReady] = useState(false);
+
+  useEffect(() => {
+    // Delay the infinite scroll to reduce the chance of a race condition
+    // between the first two page
+    setTimeout(() => setIsReady(true), 250);
+  }, []);
+
   const scrollObserver = useCallback(
     (node: Element) => {
       new IntersectionObserver((entries) => {
         entries.forEach((en) => {
-          en.intersectionRatio > 0 && dispatch({ type: PageAction.Advance });
+          is_ready &&
+            en.intersectionRatio > 0 &&
+            dispatch({ type: PageAction.Advance });
         });
       }).observe(node);
     },
-    [dispatch],
+    [dispatch, is_ready],
   );
 
   useEffect(() => {

@@ -35,9 +35,8 @@ export const PlaylistViewer = () => {
     busy: true,
   });
 
-  const loadPlaylistItems = (page: number) => {
-    return PlaylistApi.tracks(id, { page, limit: pagination_limit });
-  };
+  const loadPlaylistItems = (page: number) =>
+    PlaylistApi.tracks(id, { page, limit: pagination_limit });
 
   return (
     <>
