@@ -1,5 +1,6 @@
-import { Media } from "@server/models/Media";
-import { Playlist } from "@server/models/Playlist";
+import { base_projection } from "@common/models/Media";
+import { Media as MediaModel } from "@server/models/Media";
+import { Playlist as PlaylistModel } from "@server/models/Playlist";
 import { Request } from "@server/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -32,7 +33,7 @@ export const PlaylistController = {
     input: { name, items = [] },
   }: Request<typeof schema.create>) => {
     try {
-      const playlist = new Playlist({ name, items });
+      const playlist = new PlaylistModel({ name, items });
 
       await playlist.save();
     } catch (e) {
@@ -51,7 +52,7 @@ export const PlaylistController = {
 
   get: async ({ input: id }: Request<typeof schema.get>) => {
     try {
-      const playlist = await Playlist.findById(id);
+      const playlist = await PlaylistModel.findById(id);
 
       if (playlist === null) {
         throw new Error("Can't find playlist");
@@ -69,8 +70,9 @@ export const PlaylistController = {
     input: { limit = Infinity, page = 0 },
   }: Request<typeof schema.index>) => {
     try {
-      const results = await Playlist.find()
+      const results = await PlaylistModel.find()
         .sort({ created_at: "asc" })
+        // TODO: is page + 1 a bug??
         .skip(page > 0 ? (page + 1) * limit : 0)
         .limit(limit);
 
@@ -88,7 +90,7 @@ export const PlaylistController = {
 
   search: async ({ input: query }: Request<typeof schema.search>) => {
     // TODO: Add error handling
-    const results = await Playlist.find({
+    const results = await PlaylistModel.find({
       $text: { $search: query.toLowerCase() },
     });
 
@@ -97,13 +99,15 @@ export const PlaylistController = {
 
   tracks: async ({ input: id }: Request<typeof schema.tracks>) => {
     try {
-      const playlist = await Playlist.findById(id);
+      const playlist = await PlaylistModel.findById(id);
 
       if (playlist === null) {
         throw new TRPCError({ code: "NOT_FOUND" });
       }
 
-      const results = await Media.find({ _id: { $in: playlist.items } });
+      const results = await MediaModel.find({
+        _id: { $in: playlist.items },
+      }).select(base_projection);
 
       return results;
     } catch (e) {
@@ -117,7 +121,7 @@ export const PlaylistController = {
     input: { id, items = [] },
   }: Request<typeof schema.update>) => {
     try {
-      const playlist = await Playlist.findById(id);
+      const playlist = await PlaylistModel.findById(id);
 
       if (!playlist) {
         throw new TRPCError({ code: "NOT_FOUND" });

@@ -18,4 +18,3 @@
 - shuffling large playlist downloads all images
 - genre (math rock) artists not CI sorted
 - made loading boolean a global affair
-- loading playlist with a lot of items is slow
