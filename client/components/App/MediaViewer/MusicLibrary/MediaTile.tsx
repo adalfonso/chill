@@ -1,28 +1,29 @@
 import "./MediaTile.scss";
-import { albumUrl, artistUrl, matchUrl } from "@client/lib/url";
-import { client } from "@client/client";
-import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { FileMenu, FileMenuHandler } from "../FileMenu";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { getState } from "@client/state/reducers/store";
 import { GroupedMedia } from "@common/types";
 import { Media } from "@common/models/Media";
 import { MediaApi } from "@client/api/MediaApi";
 import { MediaMatch } from "@common/media/types";
+import { albumUrl, artistUrl, matchUrl } from "@client/lib/url";
+import { client } from "@client/client";
+import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
+import { getState } from "@client/state/reducers/store";
 import { noPropagate } from "@client/lib/util";
 import { play } from "@reducers/player";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import { setMenu } from "@client/state/reducers/mediaMenu";
-import { useBackNavigate } from "@client/hooks/useBackNavigate";
 import { useDispatch, useSelector } from "react-redux";
-import { useId } from "@hooks/useObjectId";
-import { useLongPress } from "@hooks/useLongPress";
-import { useMenu } from "@hooks/useMenu";
 import { useNavigate } from "react-router-dom";
-import { usePrevious } from "@client/hooks/usePrevious";
 import { useState } from "react";
-import { useViewport } from "@client/hooks/useViewport";
-
+import {
+  useBackNavigate,
+  useId,
+  useLongPress,
+  useMenu,
+  usePrevious,
+  useViewport,
+} from "@hooks/index";
 interface MediaTileProps {
   tile_type: MediaMatch;
   // Fix: This file is not really GroupedMedia. This is because the return

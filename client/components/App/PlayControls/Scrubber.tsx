@@ -6,7 +6,7 @@ import {
   startAnimationLoop,
 } from "@client/lib/util";
 import { useDispatch, useSelector } from "react-redux";
-import { useDrag } from "@hooks/useDrag";
+import { useDrag } from "@hooks/index";
 import { useState, useEffect, useRef } from "react";
 import {
   audio,

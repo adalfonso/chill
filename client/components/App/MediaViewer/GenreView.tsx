@@ -4,7 +4,7 @@ import { MediaMatch } from "@common/media/types";
 import { MediaTile } from "./MusicLibrary/MediaTile";
 import { SmartScroller } from "./SmartScroller";
 import { artistUrl } from "@client/lib/url";
-import { fetchReducer } from "@client/hooks/useFetch";
+import { fetchReducer } from "@hooks/index";
 import { useParams } from "react-router-dom";
 import { useReducer } from "react";
 

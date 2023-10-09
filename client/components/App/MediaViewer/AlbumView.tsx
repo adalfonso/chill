@@ -10,7 +10,7 @@ import { play } from "@reducers/player";
 import { truncate } from "lodash-es";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@hooks/useQuery";
+import { useQuery } from "@hooks/index";
 import { useState, useEffect } from "react";
 
 interface AlbumViewProps {

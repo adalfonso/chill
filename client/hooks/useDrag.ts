@@ -6,6 +6,12 @@ import {
 
 type DragEvent = ReactMouseEvent<HTMLElement> | ReactTouchEvent<HTMLElement>;
 
+/**
+ * Utilize dragging behavior
+ *
+ * @param onApply - fn to apply on drag
+ * @returns drag events
+ */
 export const useDrag = (onApply: (percent: number) => void) => {
   const [dragging, setDragging] = useState(false);
 

@@ -5,6 +5,11 @@ const getViewport = () => ({
   height: window.innerHeight,
 });
 
+/**
+ * Get the viewport dimensions
+ *
+ * @returns viewport dimensions
+ */
 export const useViewport = () => {
   const [viewport, setViewport] = useState(getViewport());
 

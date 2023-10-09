@@ -1,10 +1,11 @@
-import { FetchAction, useFetch } from "@client/hooks/useFetch";
 import {
+  useScroll,
   PageAction,
   pageReducer,
   useInfiniteScroll,
-} from "@client/hooks/useInfiniteScroll";
-import { useScroll } from "@hooks/useScroll";
+  FetchAction,
+  useFetch,
+} from "@hooks/index";
 import {
   useState,
   useRef,

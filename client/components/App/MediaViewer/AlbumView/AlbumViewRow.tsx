@@ -8,12 +8,9 @@ import { getState } from "@reducers/store";
 import { noPropagate, secondsToMinutes } from "@client/lib/util";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import { setMenu } from "@client/state/reducers/mediaMenu";
-import { useBackNavigate } from "@client/hooks/useBackNavigate";
+import { useBackNavigate, useId, useMenu, useViewport } from "@hooks/index";
 import { useDispatch, useSelector } from "react-redux";
-import { useId } from "@hooks/useObjectId";
-import { useMenu } from "@hooks/useMenu";
 import { useNavigate } from "react-router-dom";
-import { useViewport } from "@client/hooks/useViewport";
 
 export interface AlbumViewRowProps {
   file: Media;

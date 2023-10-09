@@ -9,7 +9,7 @@ import { noPropagate } from "@client/lib/util";
 import { toggle } from "@reducers/playlistEditor";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { useMenu } from "@hooks/useMenu";
+import { useMenu } from "@hooks/index";
 
 export interface FileMenuHandler {
   play: () => void;

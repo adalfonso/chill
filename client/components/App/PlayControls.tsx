@@ -1,20 +1,19 @@
 import "./PlayControls.scss";
+import { FileInfo } from "./MediaViewer/FileInfo";
+import { FileMenu } from "./MediaViewer/FileMenu";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Playlist } from "./PlayControls/Playlist";
 import { Scrubber } from "./PlayControls/Scrubber";
 import { Shuffle } from "./PlayControls/Shuffle";
 import { VolumeControl } from "./PlayControls/VolumeControl";
+import { albumUrl, artistUrl } from "@client/lib/url";
 import { getState } from "@reducers/store";
 import { noPropagate } from "@client/lib/util";
 import { screen_breakpoint_px } from "@client/lib/constants";
-import { useBackNavigate } from "@client/hooks/useBackNavigate";
+import { useBackNavigate, useId, useMenu, useViewport } from "@hooks/index";
 import { useDispatch, useSelector } from "react-redux";
-import { useViewport } from "@client/hooks/useViewport";
-import { useId } from "@client/hooks/useObjectId";
-import { FileMenu } from "./MediaViewer/FileMenu";
-import { albumUrl, artistUrl } from "@client/lib/url";
 import { useNavigate } from "react-router-dom";
-import { useMenu } from "@client/hooks/useMenu";
+
 import {
   clear,
   MobileDisplayMode,
@@ -32,7 +31,6 @@ import {
   faAngleDown,
   faClose,
 } from "@fortawesome/free-solid-svg-icons";
-import { FileInfo } from "./MediaViewer/FileInfo";
 
 const default_now_playing = "";
 

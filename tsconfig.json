@@ -18,9 +18,9 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "paths": {
-      "@client/*": ["./client/*"],
       "@reducers/*": ["./client/state/reducers/*"],
       "@hooks/*": ["./client/hooks/*"],
+      "@client/*": ["./client/*"],
 
       "@common/*": ["./common/*"],
 

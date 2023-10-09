@@ -3,7 +3,7 @@ import { Close } from "@client/components/ui/Close";
 import { MediaApi } from "@client/api/MediaApi";
 import { SearchResult as Result } from "@common/types";
 import { SearchResult } from "./Search/SearchResult";
-import { useDebounce } from "@hooks/useDebounce";
+import { useDebounce } from "@hooks/index";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 

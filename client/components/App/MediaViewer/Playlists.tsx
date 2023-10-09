@@ -3,12 +3,16 @@ import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { Playlist } from "@common/models/Playlist";
 import { PlaylistApi } from "@client/api/PlaylistApi";
 import { faPlayCircle, faPen } from "@fortawesome/free-solid-svg-icons";
-import { fetchReducer, useFetch } from "@hooks/useFetch";
-import { pageReducer, useInfiniteScroll } from "@hooks/useInfiniteScroll";
 import { play } from "@reducers/player";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useReducer, useRef } from "react";
+import {
+  pageReducer,
+  useInfiniteScroll,
+  fetchReducer,
+  useFetch,
+} from "@hooks/index";
 
 interface PlaylistsProps {
   setLoading: (loading: boolean) => void;

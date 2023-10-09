@@ -1,6 +1,6 @@
 import "./MusicLibrary.scss";
 import * as _ from "lodash-es";
-import { Action, fetchReducer } from "@hooks/useFetch";
+import { Action, fetchReducer } from "@hooks/index";
 import { ApiMap } from "@client/api/MediaApi";
 import { GroupedMedia } from "@common/types";
 import { MediaMatch } from "@common/media/types";

@@ -6,7 +6,7 @@ import { Search } from "./Toolbar/Search";
 import { UserSettings } from "./Toolbar/UserSettings";
 import { faGear, faUser } from "@fortawesome/free-solid-svg-icons";
 import { getState } from "@client/state/reducers/store";
-import { useBackNavigate } from "@hooks/useBackNavigate";
+import { useBackNavigate } from "@hooks/index";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useState } from "react";

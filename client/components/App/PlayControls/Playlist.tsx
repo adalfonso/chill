@@ -5,7 +5,7 @@ import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { changeTrack } from "@reducers/player";
 import { faListDots } from "@fortawesome/free-solid-svg-icons";
 import { getState } from "@reducers/store";
-import { useBackNavigate } from "@hooks/useBackNavigate";
+import { useBackNavigate } from "@hooks/index";
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
 
