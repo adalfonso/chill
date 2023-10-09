@@ -2,6 +2,7 @@ import "./PlayControls.scss";
 import { FileInfo } from "./MediaViewer/FileInfo";
 import { FileMenu } from "./MediaViewer/FileMenu";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
+import { MobileDisplayMode } from "@reducers/player.types";
 import { Playlist } from "./PlayControls/Playlist";
 import { Scrubber } from "./PlayControls/Scrubber";
 import { Shuffle } from "./PlayControls/Shuffle";
@@ -13,10 +14,8 @@ import { screen_breakpoint_px } from "@client/lib/constants";
 import { useBackNavigate, useId, useMenu, useViewport } from "@hooks/index";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-
 import {
   clear,
-  MobileDisplayMode,
   next,
   pause,
   play,

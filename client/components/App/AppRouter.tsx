@@ -12,7 +12,7 @@ import { useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 
 export const AppRouter = () => {
-  const [loading, setLoading] = useState(false);
+  const [busy, setBusy] = useState(false);
   const dispatch = useDispatch();
 
   // Let's load the user once and expect that any updates to the user through
@@ -23,34 +23,34 @@ export const AppRouter = () => {
 
   return (
     <>
-      {loading && <div className="loading"></div>}
+      {busy && <div className="loading"></div>}
 
       <Routes>
         <Route
           path="/artist/:artist"
-          element={<ArtistView setLoading={setLoading} />}
+          element={<ArtistView setLoading={setBusy} />}
         ></Route>
 
         <Route
           path="/album/:album"
-          element={<AlbumView setLoading={setLoading} />}
+          element={<AlbumView setLoading={setBusy} />}
         ></Route>
 
         <Route
           path="/genre/:genre"
-          element={<GenreView setLoading={setLoading} />}
+          element={<GenreView setLoading={setBusy} />}
         ></Route>
 
         <Route
           path="/playlists"
-          element={<Playlists setLoading={setLoading} per_page={24} />}
+          element={<Playlists setLoading={setBusy} per_page={24} />}
         ></Route>
 
         <Route path="/playlist/:id" element={<PlaylistViewer />}></Route>
 
         <Route
           path="/"
-          element={<MusicLibrary setLoading={setLoading} per_page={24} />}
+          element={<MusicLibrary setLoading={setBusy} per_page={24} />}
         >
           {/* 24 is the magic number to have good UI for 3,4,6-column layout */}
         </Route>

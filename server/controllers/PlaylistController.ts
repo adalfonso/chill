@@ -20,7 +20,7 @@ export const schema = {
 
   tracks: z.object({
     id: z.string(),
-    options: pagination_options,
+    options: pagination_options.optional(),
   }),
 
   update: z.object({
@@ -98,10 +98,7 @@ export const PlaylistController = {
   },
 
   tracks: async ({
-    input: {
-      id,
-      options: { limit = Infinity, page = 0 },
-    },
+    input: { id, options: { limit, page } = { limit: Infinity, page: 0 } },
   }: Request<typeof schema.tracks>) => {
     try {
       const playlist = await PlaylistModel.findById(id);

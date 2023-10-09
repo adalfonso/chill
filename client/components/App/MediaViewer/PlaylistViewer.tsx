@@ -40,8 +40,9 @@ export const PlaylistViewer = () => {
   };
 
   return (
-    // Wait until playlist loads
-    playlist && (
+    <>
+      {/* Wait until playlist loads */}
+      playlist && (
       <SmartScroller
         className="playlist-viewer"
         header={playlist?.name}
@@ -59,6 +60,7 @@ export const PlaylistViewer = () => {
           ></PlaylistRow>
         ))}
       </SmartScroller>
-    )
+      )
+    </>
   );
 };

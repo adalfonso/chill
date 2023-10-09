@@ -1,8 +1,10 @@
 import "./MusicLibrary.scss";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
+import { PlayMode } from "@reducers/player.types";
 import { Playlist } from "@common/models/Playlist";
 import { PlaylistApi } from "@client/api/PlaylistApi";
 import { faPlayCircle, faPen } from "@fortawesome/free-solid-svg-icons";
+import { pagination_limit } from "@client/lib/constants";
 import { play } from "@reducers/player";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -46,9 +48,18 @@ export const Playlists = ({ setLoading, per_page }: PlaylistsProps) => {
 
   const playPlaylist = (playlist: Playlist) => async () => {
     try {
-      const files = await PlaylistApi.tracks(playlist._id.toString());
+      const playlist_id = playlist._id.toString();
+      const pagination_options = { page: 0, limit: pagination_limit };
+      const files = await PlaylistApi.tracks(playlist_id, pagination_options);
 
-      dispatch(play({ files, index: 0 }));
+      const play_options = {
+        id: playlist_id,
+        mode: PlayMode.Playlist,
+        ...pagination_options,
+        complete: false,
+      };
+
+      dispatch(play({ files, play_options, index: 0 }));
     } catch ({ message }) {
       console.error("Failed to play playlist", message);
     }

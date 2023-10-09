@@ -6,13 +6,14 @@ import { GroupedMedia } from "@common/types";
 import { MediaMatch } from "@common/media/types";
 import { MediaTile } from "./MusicLibrary/MediaTile";
 import { Select } from "../../ui/Select";
-import { addToQueue, play } from "@reducers/player";
-import { client } from "@client/client";
+import { SmartScroller } from "./SmartScroller";
 import { getState } from "@client/state/reducers/store";
 import { matchUrl } from "@client/lib/url";
+import { play } from "@reducers/player";
 import { useDispatch, useSelector } from "react-redux";
 import { useReducer, useState } from "react";
-import { SmartScroller } from "./SmartScroller";
+import { getRandomFiles } from "@client/lib/PlayerTools";
+import { PlayMode } from "@reducers/player.types";
 
 interface MusicLibraryProps {
   setLoading: (loading: boolean) => void;
@@ -24,7 +25,6 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
   const { player } = useSelector(getState);
 
   const [match, setMatch] = useState<MediaMatch>(MediaMatch.Artist);
-  const [busy, setBusy] = useState(false);
 
   const [mediaData, mediaDispatch] = useReducer(fetchReducer<GroupedMedia>, {
     items: [],
@@ -49,31 +49,9 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
   const playRandomTracks = async () => {
     const { files, cast_info } = await getRandomFiles(player.is_casting);
 
-    dispatch(play({ files, is_random: true, cast_info, index: 0 }));
+    const play_options = { mode: PlayMode.Random, complete: false };
+    dispatch(play({ files, play_options, cast_info, index: 0 }));
   };
-
-  const queueMoreRandomTracks = async () => {
-    if (busy) {
-      return;
-    }
-
-    setBusy(true);
-
-    try {
-      const exclusions = player.playlist.map((file) => file._id);
-      const { files } = await getRandomFiles(player.is_casting, exclusions);
-
-      dispatch(addToQueue(files));
-    } catch (e) {
-      console.error(`Failed to add random files:`, e);
-    }
-
-    setBusy(false);
-  };
-
-  if (player.is_random && player.playlist.length - player.index < 6) {
-    queueMoreRandomTracks();
-  }
 
   return (
     <>
@@ -121,30 +99,4 @@ export const MusicLibrary = ({ setLoading, per_page }: MusicLibraryProps) => {
       </SmartScroller>
     </>
   );
-};
-
-/**
- * Get a bunch of random files and their respective cast info
- *
- * @param is_casting - if the player is casting
- * @returns files and cast info
- */
-const getRandomFiles = async (
-  is_casting = false,
-  exclusions: string[] = [],
-) => {
-  const files = await client.media.queryRandom.mutate({
-    options: { limit: 20, $nin: exclusions },
-  });
-
-  // Refactor: Here on out is duplicated in MediaTile
-  if (!is_casting) {
-    return { files, cast_info: null };
-  }
-
-  const cast_info = await client.media.castInfo.query({
-    media_ids: files.map((file) => file._id),
-  });
-
-  return { files, cast_info };
 };

@@ -1,6 +1,7 @@
 import "./App.scss";
 import { AppRouter } from "./components/App/AppRouter";
 import { PlayControls } from "./components/App/PlayControls";
+import { PlayModeIterceptor } from "./components/App/PlayModeIntercepter";
 import { PlaylistEditor } from "./components/App/PlaylistEditor";
 import { Toolbar } from "./components/App/Toolbar";
 import { client } from "./client";
@@ -22,7 +23,11 @@ export const App = () => {
   return (
     <div className="app" onClick={clearActiveFileMenu}>
       <Toolbar />
-      <AppRouter />
+
+      <PlayModeIterceptor>
+        <AppRouter />
+      </PlayModeIterceptor>
+
       {player.playlist?.length > 0 && <PlayControls />}
       {playlistEditor.active && <PlaylistEditor />}
     </div>

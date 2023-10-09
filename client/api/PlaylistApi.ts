@@ -11,7 +11,7 @@ export const PlaylistApi = {
 
   search: (query: string) => client.playlist.search.query(query),
 
-  tracks: (id: string, options: PaginationOptions) =>
+  tracks: (id: string, options?: PaginationOptions) =>
     client.playlist.tracks.query({ id, options }),
 
   update: (id: string, items: string[]) =>

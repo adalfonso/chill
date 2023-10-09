@@ -1,7 +1,8 @@
 import * as _ from "lodash-es";
 import { CastSdk } from "@client/lib/cast/CastSdk";
 import { Media } from "@common/models/Media";
-import { Nullable, ObjectValues } from "@common/types";
+import { MobileDisplayMode, PlayMode, PlayOptions } from "./player.types";
+import { Nullable } from "@common/types";
 import { PreCastPayload } from "@client/lib/cast/types";
 import { client } from "@client/client";
 import { createSlice, PayloadAction as Action } from "@reduxjs/toolkit";
@@ -10,19 +11,11 @@ import { play as castPlay } from "@client/lib/cast/Cast";
 export let audio = new Audio();
 export let crossover = new Audio();
 
-export const MobileDisplayMode = {
-  Fullscreen: "fullscreen",
-  Minimized: "minimized",
-  None: "none",
-} as const;
-
-export type MobileDisplayMode = ObjectValues<typeof MobileDisplayMode>;
-
 export interface PlayerState {
   is_casting: boolean;
   is_playing: boolean;
   is_shuffled: boolean;
-  is_random: boolean;
+
   progress: number;
   now_playing: Nullable<Media>;
   next_playing: Nullable<Media>;
@@ -32,13 +25,13 @@ export interface PlayerState {
   index: number;
   volume: number;
   mobile_display_mode: MobileDisplayMode;
+  play_options: PlayOptions;
 }
 
 const initialState: PlayerState = {
   is_casting: false,
   is_playing: false,
   is_shuffled: false,
-  is_random: false,
   progress: 0,
   now_playing: null,
   next_playing: null,
@@ -48,6 +41,10 @@ const initialState: PlayerState = {
   index: 0,
   volume: 1,
   mobile_display_mode: MobileDisplayMode.None,
+  play_options: {
+    mode: PlayMode.Static,
+    complete: true,
+  },
 };
 
 type PlayLoad = {
@@ -55,7 +52,7 @@ type PlayLoad = {
   cast_info?: Nullable<PreCastPayload>;
   index?: number;
   progress?: number;
-  is_random?: boolean;
+  play_options?: PlayOptions;
 };
 
 export const playerSlice = createSlice({
@@ -110,7 +107,7 @@ export const playerSlice = createSlice({
         cast_info = null,
         index = 0,
         progress = 0,
-        is_random = false,
+        play_options = { mode: PlayMode.Static, complete: true },
       } = action.payload;
 
       if (files) {
@@ -121,7 +118,7 @@ export const playerSlice = createSlice({
         state.next_playing = files[index + 1] ?? null;
         state.mobile_display_mode = MobileDisplayMode.Fullscreen;
         state.cast_info = cast_info;
-        state.is_random = is_random;
+        state.play_options = { ...play_options };
 
         if (state.is_casting) {
           if (state.cast_info === null || state.now_playing === null) {
@@ -290,6 +287,12 @@ export const playerSlice = createSlice({
       state.is_casting = active;
       state.is_playing = false;
     },
+
+    updatePlayOptions: (state, action: Action<PlayOptions>) => {
+      const options = action.payload;
+
+      state.play_options = { ...options };
+    },
   },
 });
 
@@ -308,6 +311,7 @@ export const {
   shuffle,
   setMobileDisplayMode,
   setPlayerIsCasting,
+  updatePlayOptions,
 } = playerSlice.actions;
 
 export default playerSlice.reducer;
