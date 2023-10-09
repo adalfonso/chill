@@ -5,6 +5,7 @@ import { MediaTile } from "./MusicLibrary/MediaTile";
 import { SmartScroller } from "./SmartScroller";
 import { artistUrl } from "@client/lib/url";
 import { fetchReducer } from "@hooks/index";
+import { pagination_limit } from "@client/lib/constants";
 import { useParams } from "react-router-dom";
 import { useReducer } from "react";
 
@@ -25,7 +26,7 @@ export const GenreView = ({ setLoading }: GenreViewProps) => {
   });
 
   const loadGenres = (page: number) =>
-    MediaApi.getGroupedByArtist({ page, limit: 24 }, genre);
+    MediaApi.getGroupedByArtist({ page, limit: pagination_limit }, genre);
 
   const displayAs = (file: GroupedMedia) => file.artist ?? "";
 

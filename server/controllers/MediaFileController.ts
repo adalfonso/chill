@@ -14,6 +14,7 @@ import { base_projection, Media, query_options } from "@common/models/Media";
 import { convert } from "@server/lib/conversion";
 import { env } from "@server/init";
 import { getAsGroup } from "@server/lib/data/utils";
+import { pagination_options } from "@common/schema";
 import { sortResults } from "@server/lib/search/ResultSorter";
 import { stream_file } from "@server/lib/stream";
 import { z } from "zod";
@@ -52,12 +53,7 @@ export const schema = {
     match: media_match,
     group: z.array(z.enum(["album", "artist", "genre", "year"])),
     sort: z.string().optional(),
-    options: z
-      .object({
-        limit: z.number(),
-        page: z.number(),
-      })
-      .optional(),
+    options: pagination_options.optional(),
   }),
 };
 

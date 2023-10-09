@@ -22,6 +22,9 @@ interface SmartScrollProps<T> {
   // CSS class name for container
   className?: string;
 
+  // CSS class name for tile wrapper
+  wrapperClassName?: string;
+
   // Values used to reset the page when the change
   resetPagerOn?: Array<string>;
 
@@ -32,7 +35,7 @@ interface SmartScrollProps<T> {
   onInfiniteScroll: (page: number) => Promise<Array<T>>;
 
   // Handles the aftermath of an infinite scroll event
-  onInfiniteScrollDone: () => void;
+  onInfiniteScrollDone?: () => void;
 
   // MediaTiles to display
   children: JSX.Element[];
@@ -41,6 +44,7 @@ interface SmartScrollProps<T> {
 export const SmartScroller = <T,>({
   header,
   className,
+  wrapperClassName,
   children,
   mediaDispatch,
   resetPagerOn = [],
@@ -77,7 +81,7 @@ export const SmartScroller = <T,>({
           </div>
         )}
 
-        <div className="media-tiles">
+        <div className={wrapperClassName ?? "media-tiles"}>
           {children.map((tile) =>
             cloneElement(tile, { parentScrollPosition: scrollPosition }),
           )}

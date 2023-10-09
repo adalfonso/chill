@@ -5,6 +5,7 @@ import { MediaTile } from "./MusicLibrary/MediaTile";
 import { SmartScroller } from "./SmartScroller";
 import { albumUrl } from "@client/lib/url";
 import { fetchReducer } from "@hooks/index";
+import { pagination_limit } from "@client/lib/constants";
 import { useParams } from "react-router-dom";
 import { useReducer } from "react";
 
@@ -27,9 +28,10 @@ export const ArtistView = ({ setLoading }: ArtistViewProps) => {
   const loadAlbums = async (page: number) => {
     setLoading(true);
 
-    return MediaApi.getGroupedByAlbum({ page, limit: 24 }, artist).then(
-      (data) => data.sort((a, b) => (b.year ?? 0) - (a.year ?? 0)),
-    );
+    return MediaApi.getGroupedByAlbum(
+      { page, limit: pagination_limit },
+      artist,
+    ).then((data) => data.sort((a, b) => (b.year ?? 0) - (a.year ?? 0)));
   };
 
   const displayAs = ({ album, year }: GroupedMedia) => `${album} (${year})`;

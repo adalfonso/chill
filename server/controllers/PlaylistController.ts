@@ -1,8 +1,9 @@
-import { base_projection } from "@common/models/Media";
 import { Media as MediaModel } from "@server/models/Media";
 import { Playlist as PlaylistModel } from "@server/models/Playlist";
 import { Request } from "@server/trpc";
 import { TRPCError } from "@trpc/server";
+import { base_projection } from "@common/models/Media";
+import { pagination_options } from "@common/schema";
 import { z } from "zod";
 
 export const schema = {
@@ -13,14 +14,14 @@ export const schema = {
 
   get: z.string(),
 
-  index: z.object({
-    limit: z.number(),
-    page: z.number(),
-  }),
+  index: pagination_options,
 
   search: z.string(),
 
-  tracks: z.string(),
+  tracks: z.object({
+    id: z.string(),
+    options: pagination_options,
+  }),
 
   update: z.object({
     id: z.string(),
@@ -72,8 +73,7 @@ export const PlaylistController = {
     try {
       const results = await PlaylistModel.find()
         .sort({ created_at: "asc" })
-        // TODO: is page + 1 a bug??
-        .skip(page > 0 ? (page + 1) * limit : 0)
+        .skip(page > 0 ? page * limit : 0)
         .limit(limit);
 
       if (results === null) {
@@ -97,7 +97,12 @@ export const PlaylistController = {
     return results;
   },
 
-  tracks: async ({ input: id }: Request<typeof schema.tracks>) => {
+  tracks: async ({
+    input: {
+      id,
+      options: { limit = Infinity, page = 0 },
+    },
+  }: Request<typeof schema.tracks>) => {
     try {
       const playlist = await PlaylistModel.findById(id);
 
@@ -105,11 +110,31 @@ export const PlaylistController = {
         throw new TRPCError({ code: "NOT_FOUND" });
       }
 
+      // Used to preserve playlist track order after query
+      const lookup = playlist.items.reduce<Record<string, number>>(
+        (carry, track, index) => {
+          carry[track] = index;
+          return carry;
+        },
+        {},
+      );
+
+      const items = playlist.items.slice(
+        page ? page * limit : 0,
+        (page + 1) * limit,
+      );
+
+      if (items.length === 0) {
+        return [];
+      }
+
       const results = await MediaModel.find({
-        _id: { $in: playlist.items },
+        _id: { $in: items },
       }).select(base_projection);
 
-      return results;
+      return results.sort(
+        (a, b) => lookup[a._id.toString()] - lookup[b._id.toString()],
+      );
     } catch (e) {
       console.error("Failed to get Playlist tracks: ", e);
 
