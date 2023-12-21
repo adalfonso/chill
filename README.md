@@ -39,6 +39,14 @@ npm run docker:dev
 
 - App served @ `http://localhost:3200`
 
+**Initial Startup**
+When setting up this repo for the first time, you will need to configure google oauth and seed the database with a user that has a gmail address.
+
+**Local Development with Chromecast**
+Configure your HOST env var to be your IP on the local network, not localhost.
+
+---
+
 **Running in Production**
 
 ```bash
