@@ -59,6 +59,7 @@ async function verifyGoogleAuth(
     const invitation = await Invitation.findOne({ email });
 
     if (invitation === null) {
+      console.error(`An unauthorized user tried to login: { email: ${email} }`);
       return done(null, false);
     }
 
