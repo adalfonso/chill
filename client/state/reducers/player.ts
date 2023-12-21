@@ -63,26 +63,6 @@ export const playerSlice = createSlice({
       state.playlist = [...state.playlist, ...action.payload];
     },
 
-    changeTrack: (state, action: Action<number>) => {
-      const index = action.payload;
-
-      if (index < 0 || index >= state.playlist.length) {
-        console.error(
-          `Cannot change track to index "${index}" as it is out of bounds`,
-        );
-
-        return;
-      }
-
-      state.index = index;
-      state.now_playing = state.playlist[state.index];
-      state.next_playing = state.playlist[state.index + 1] ?? null;
-
-      load(state);
-      audio.play();
-      state.is_playing = true;
-    },
-
     changeVolume: (state, action: Action<number>) => {
       state.volume = audio.volume = action.payload;
     },
@@ -298,7 +278,6 @@ export const playerSlice = createSlice({
 
 export const {
   addToQueue,
-  changeTrack,
   changeVolume,
   next,
   clear,

@@ -2,7 +2,7 @@ import "./Playlist.scss";
 import { Close } from "@client/components/ui/Close";
 import { Equalizer } from "../../ui/Equalizer";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { changeTrack } from "@reducers/player";
+import { play } from "@reducers/player";
 import { faListDots } from "@fortawesome/free-solid-svg-icons";
 import { getState } from "@reducers/store";
 import { useBackNavigate } from "@hooks/index";
@@ -36,7 +36,15 @@ export const Playlist = () => {
         {player.playlist.map((media, index) => (
           <div
             className="playlist-item"
-            onClick={() => dispatch(changeTrack(index))}
+            onClick={() =>
+              dispatch(
+                play({
+                  files: player.playlist,
+                  cast_info: player.cast_info,
+                  index,
+                }),
+              )
+            }
             key={media._id.toString() + index}
           >
             <div className="cover">

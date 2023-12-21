@@ -102,16 +102,18 @@ export class CastSdk {
     });
   }
 
+  // This does not work - it only loads two tracks at once
   static goToIndex(index: number) {
     return new Promise((resolve, reject) => {
       const session = cast.framework.CastContext.getInstance()
         .getCurrentSession()
         ?.getMediaSession();
 
-      return cast.framework.CastContext.getInstance()
-        .getCurrentSession()
-        ?.getMediaSession()
-        ?.queueJumpToItem(index, resolve, () => reject("Failed to goToIndex"));
+      return session?.queueJumpToItem(
+        session.items[index].itemId,
+        resolve,
+        () => reject("Failed to goToIndex"),
+      );
     });
   }
 
