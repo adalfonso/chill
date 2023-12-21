@@ -19,19 +19,22 @@ export class CastSdk {
     );
 
     media.duration = meta.duration;
+    media.metadata = new chrome.cast.media.MusicTrackMediaMetadata();
 
-    media.metadata = {
-      title: meta.title,
-      albumArtist: meta.artist,
-      artist: meta.artist,
-      albumName: meta.album,
-      releaseDate: meta.year?.toString(),
-      images: meta.cover && [
+    media.metadata.title = meta.title;
+    media.metadata.subtitle = meta.artist;
+    media.metadata.albumArtist = meta.artist;
+    media.metadata.artist = meta.artist;
+    media.metadata.albumName = meta.album;
+    media.metadata.releaseDate = meta.year?.toString();
+
+    if (meta.cover) {
+      media.metadata.images = [
         new chrome.cast.Image(
           `/cast/media/cover/${meta.cover.filename}?size=500&token=${token}`,
         ),
-      ],
-    };
+      ];
+    }
 
     return media;
   }
