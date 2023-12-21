@@ -42,7 +42,7 @@
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.9.0",
     "redis": "^4.6.5",
-    "sharp": "^0.30.7",
+    "sharp": "^0.33.1",
     "string-similarity": "^4.0.4",
     "superjson": "^1.12.2",
     "zod": "^3.21.4"
