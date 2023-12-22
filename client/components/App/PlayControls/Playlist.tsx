@@ -41,6 +41,7 @@ export const Playlist = () => {
                 play({
                   files: player.playlist,
                   cast_info: player.cast_info,
+                  play_options: { ...player.play_options },
                   index,
                 }),
               )
