@@ -31,11 +31,14 @@ export const CastPlayer = () => {
     const onSessionChanged = async (
       event: cast.framework.SessionStateEventData,
     ) => {
+      // Cast reconnects - happens on page refresh only?
+      if (event.sessionState === cast.framework.SessionState.SESSION_RESUMED) {
+        return;
+      }
       const { sessionState } = event;
-      const active_states = ["SESSION_STARTED", "SESSION_RESUMED"];
       const { progress, playlist, index } = player_ref.current;
 
-      if (active_states.includes(sessionState)) {
+      if (sessionState === cast.framework.SessionState.SESSION_STARTED) {
         const cast_info = playlist.length
           ? await client.media.castInfo.query({
               media_ids: playlist.map((file) => file._id),
@@ -45,7 +48,8 @@ export const CastPlayer = () => {
         // Pause currently playing HTML Audio
         dispatch(pause());
         dispatch(setPlayerIsCasting(true));
-        dispatch(play({ files: playlist, cast_info, index, progress }));
+        playlist.length &&
+          dispatch(play({ files: playlist, cast_info, index, progress }));
       } else if (sessionState === "SESSION_ENDED") {
         dispatch(setPlayerIsCasting(false));
         dispatch(seek(progress));
