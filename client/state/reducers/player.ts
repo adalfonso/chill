@@ -6,7 +6,6 @@ import { Nullable } from "@common/types";
 import { PreCastPayload } from "@client/lib/cast/types";
 import { client } from "@client/client";
 import { createSlice, PayloadAction as Action } from "@reduxjs/toolkit";
-import { play as castPlay } from "@client/lib/cast/Cast";
 
 export let audio = new Audio();
 export let crossover = new Audio();
@@ -111,7 +110,7 @@ export const playerSlice = createSlice({
           const current_time = state.progress
             ? state.progress * state.now_playing.duration
             : 0;
-          castPlay(payload, state.index, current_time);
+          CastSdk.Play(payload, state.index, current_time);
         } else {
           load(state);
         }
@@ -122,7 +121,15 @@ export const playerSlice = createSlice({
       }
 
       // TODO: Create a common interface and facade over the cast SDK and audio
-      state.is_casting ? CastSdk.Play() : audio.play();
+      if (state.is_casting) {
+        // Only resume if no files are provided, cast will autoplay otherwise
+        if (!files) {
+          CastSdk.ResumePlay();
+        }
+      } else {
+        audio.play();
+      }
+
       state.is_playing = true;
       state.is_shuffled = false;
     },
@@ -157,7 +164,7 @@ export const playerSlice = createSlice({
           );
         }
         const payload = getCastPayload(state.playlist, state.cast_info);
-        castPlay(payload, state.index);
+        CastSdk.Play(payload, state.index);
 
         CastSdk.Previous();
       } else {
@@ -200,7 +207,7 @@ export const playerSlice = createSlice({
           );
         } else {
           const payload = getCastPayload(state.playlist, state.cast_info);
-          castPlay(payload, state.index);
+          CastSdk.Play(payload, state.index);
         }
       } else {
         // Use the crossover (previously queued) after the first track

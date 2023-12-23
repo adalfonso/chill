@@ -58,8 +58,85 @@ export class CastSdk {
     return request;
   }
 
+  /**
+   * Play media files from a payload
+   *
+   * @param payload - playlist items
+   * @param index - track index to play first
+   * @param current_time - offset in seconds to begin playback from
+   */
+  static Play = async (payload: CastPayload, index = 0, current_time = 0) => {
+    const session =
+      cast.framework.CastContext.getInstance().getCurrentSession();
+
+    if (session === null) {
+      return console.warn("Can't play audio because there is no cast session.");
+    }
+
+    const tracks = payload.map(CastSdk.Media);
+    const track = tracks.splice(index, 1)[0];
+    const previous = tracks.splice(0, index);
+    const next = tracks;
+
+    // Load the first track, then queue any others
+    session.loadMedia(CastSdk.Request(track, current_time)).then(
+      () => {
+        console.info("Load media request succeeded");
+
+        if (previous.length + next.length === 0) {
+          return;
+        }
+
+        CastSdk.Queue(previous, next);
+      },
+      (errorCode) => console.error("Load media request failed: " + errorCode),
+    );
+  };
+
+  /**
+   * Queue tracks on the current media session
+   *
+   * @param next - tracks to queue
+   */
+  static Queue = (previous: CastMedia[], next: CastMedia[]) => {
+    const session =
+      cast.framework.CastContext.getInstance().getCurrentSession();
+
+    if (session === null) {
+      return console.warn(
+        "Can't queue tracks because there is no cast session.",
+      );
+    }
+
+    if (previous.length) {
+      const loadRequest = new chrome.cast.media.QueueInsertItemsRequest(
+        previous.map((track) => new chrome.cast.media.QueueItem(track)),
+      );
+
+      loadRequest.insertBefore = 0;
+
+      session.getMediaSession()?.queueInsertItems(
+        loadRequest,
+        () => console.info(`Successfully queued ${previous.length} tracks`),
+        (errorCode) => console.error("Queueing tracks failed: " + errorCode),
+      );
+    }
+
+    if (next.length) {
+      const loadRequest = new chrome.cast.media.QueueInsertItemsRequest(
+        next.map((track) => new chrome.cast.media.QueueItem(track)),
+      );
+
+      session.getMediaSession()?.queueInsertItems(
+        loadRequest,
+        () => console.info(`Successfully queued ${next.length} tracks`),
+        (errorCode) => console.error("Queueing tracks failed: " + errorCode),
+      );
+    }
+  };
+
   /** Play the currently paused track */
-  static Play() {
+  static ResumePlay() {
     return new Promise((resolve, reject) => {
       cast.framework.CastContext.getInstance()
         .getCurrentSession()
