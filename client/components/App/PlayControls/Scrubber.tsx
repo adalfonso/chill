@@ -10,13 +10,14 @@ import { useDrag } from "@hooks/index";
 import { useState, useEffect, useRef } from "react";
 import {
   audio,
+  crossover,
   getAudioProgress,
   next,
   seek,
   setAudioProgress,
 } from "@reducers/player";
 
-const gap_offset_s = 0.15;
+const gap_offset = 0.25;
 
 export const Scrubber = () => {
   const [progress, setProgress] = useState(0);
@@ -44,25 +45,38 @@ export const Scrubber = () => {
         return;
       }
 
-      const audio_duration = player.now_playing?.duration ?? 0;
-      const cutoff_point_percent =
-        (audio_duration - gap_offset_s) / audio_duration;
-
-      /**
-       * We will automatically dispatch the next track when the current track
-       * has [gap_offset_s] or less to go. This is a hack to simulate gapless
-       * playback.
-       */
-      if (audio_progress >= cutoff_point_percent) {
-        dispatch(next({ auto: true }));
-      }
-
       setProgress(audio_progress);
       dispatch(setAudioProgress(audio_progress));
     });
 
+    /**
+     * We will automatically dispatch the next track when the current track has
+     * 200ms or less to go. This is a hack to simulate gapless playback.
+     * Additionally both the audio and the crossover audio's closure will
+     * reference "audio". That's because either fixture may be playing at a
+     * given time, but the only the one currently playing will be referenced as
+     * "audio" due to the swapping nature of the crossover.
+     */
+
+    const onCrossover = () =>
+      audio.duration - audio.currentTime < gap_offset &&
+      dispatch(next({ auto: true }));
+
+    // Copy of this value in case it changes before this effect is cleaned up
+    const is_casting_local_var = is_casting.current;
+
+    if (!is_casting_local_var) {
+      audio.addEventListener("timeupdate", onCrossover);
+      crossover.addEventListener("timeupdate", onCrossover);
+    }
+
     return () => {
       cancelAllAnimationFrames();
+
+      if (!is_casting_local_var) {
+        audio.removeEventListener("timeupdate", onCrossover);
+        crossover.removeEventListener("timeupdate", onCrossover);
+      }
     };
   }, [is_casting.current, player.now_playing]);
 
