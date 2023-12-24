@@ -5,6 +5,7 @@ import { getState } from "@client/state/reducers/store";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef } from "react";
 import {
+  next,
   pause,
   play,
   seek,
@@ -20,6 +21,50 @@ export const CastPlayer = () => {
   player_ref.current = player;
 
   useEffect(() => {
+    if (!player.is_casting) {
+      return;
+    }
+
+    const remotePlayerController = new cast.framework.RemotePlayerController(
+      new cast.framework.RemotePlayer(),
+    );
+
+    const monitorTrackChange = (
+      event: cast.framework.RemotePlayerChangedEvent,
+    ) => {
+      // In case media info is not available
+      if (!event.value) {
+        return;
+      }
+
+      const media = event.value as chrome.cast.media.MediaInfo;
+      const { _id, _index } = media.metadata;
+
+      if ([_id, _index].includes(undefined)) {
+        return;
+      }
+
+      const track_has_changed = _index - 1 === player.index;
+
+      if (track_has_changed) {
+        dispatch(next({ auto: true }));
+      }
+    };
+
+    remotePlayerController.addEventListener(
+      cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED,
+      monitorTrackChange,
+    );
+
+    return () => {
+      remotePlayerController.removeEventListener(
+        cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED,
+        monitorTrackChange,
+      );
+    };
+  }, [player.index, player.is_casting]);
+
+  useEffect(() => {
     if (!caster.ready || caster.app_id === null) {
       return;
     }
@@ -31,28 +76,39 @@ export const CastPlayer = () => {
     const onSessionChanged = async (
       event: cast.framework.SessionStateEventData,
     ) => {
-      // Cast reconnects - happens on page refresh only?
-      if (event.sessionState === cast.framework.SessionState.SESSION_RESUMED) {
-        return;
-      }
-      const { sessionState } = event;
       const { progress, playlist, index } = player_ref.current;
 
-      if (sessionState === cast.framework.SessionState.SESSION_STARTED) {
-        const cast_info = playlist.length
-          ? await client.media.castInfo.query({
-              media_ids: playlist.map((file) => file._id),
-            })
-          : null;
+      switch (event.sessionState) {
+        case cast.framework.SessionState.SESSION_RESUMED:
+        case cast.framework.SessionState.SESSION_STARTED:
+          const cast_info = playlist.length
+            ? await client.media.castInfo.query({
+                media_ids: playlist.map((file) => file._id),
+              })
+            : null;
 
-        // Pause currently playing HTML Audio
-        dispatch(pause());
-        dispatch(setPlayerIsCasting(true));
-        playlist.length &&
-          dispatch(play({ files: playlist, cast_info, index, progress }));
-      } else if (sessionState === "SESSION_ENDED") {
-        dispatch(setPlayerIsCasting(false));
-        dispatch(seek(progress));
+          // Pause currently playing HTML Audio
+          dispatch(pause());
+          dispatch(setPlayerIsCasting(true));
+
+          if (
+            event.sessionState ===
+              cast.framework.SessionState.SESSION_STARTED &&
+            playlist.length
+          ) {
+            // Immediately play when starting a cast session
+            dispatch(play({ files: playlist, cast_info, index, progress }));
+          }
+
+          break;
+
+        case cast.framework.SessionState.SESSION_ENDED:
+          dispatch(setPlayerIsCasting(false));
+          dispatch(seek(progress));
+          break;
+
+        default:
+          break;
       }
     };
 

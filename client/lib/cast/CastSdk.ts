@@ -10,7 +10,7 @@ export class CastSdk {
    * Create a MediaInfo for to cast
    * @param item - media item
    */
-  static Media(item: ArrayElement<CastPayload>) {
+  static Media(item: ArrayElement<CastPayload>, index: number) {
     const { url, token, meta, content_type } = item;
 
     const media = new chrome.cast.media.MediaInfo(
@@ -27,6 +27,8 @@ export class CastSdk {
     media.metadata.artist = meta.artist;
     media.metadata.albumName = meta.album;
     media.metadata.releaseDate = meta.year?.toString();
+    media.metadata._id = meta._id;
+    media.metadata._index = index;
 
     if (meta.cover) {
       media.metadata.images = [
@@ -102,6 +104,8 @@ export class CastSdk {
     const session =
       cast.framework.CastContext.getInstance().getCurrentSession();
 
+    const media = session?.getMediaSession();
+
     if (session === null) {
       return console.warn(
         "Can't queue tracks because there is no cast session.",
@@ -113,7 +117,7 @@ export class CastSdk {
         previous.map((track) => new chrome.cast.media.QueueItem(track)),
       );
 
-      loadRequest.insertBefore = 0;
+      loadRequest.insertBefore = media?.currentItemId ?? 1;
 
       session.getMediaSession()?.queueInsertItems(
         loadRequest,

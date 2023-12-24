@@ -165,7 +165,6 @@ export const playerSlice = createSlice({
         }
         const payload = getCastPayload(state.playlist, state.cast_info);
         CastSdk.Play(payload, state.index);
-
         CastSdk.Previous();
       } else {
         load(state);
@@ -200,7 +199,8 @@ export const playerSlice = createSlice({
 
       if (state.is_casting) {
         if (auto) {
-          CastSdk.Next();
+          // Don't trigger here - chromecast has autoplayed and called "next"
+          return;
         } else if (state.cast_info === null) {
           return console.error(
             "Tried to play next items on cast but could not find their information",
