@@ -6,6 +6,7 @@ import { getRandomFiles } from "@client/lib/PlayerTools";
 import { getState } from "@reducers/store";
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
+import { client } from "@client/client";
 
 interface PlayModeIterceptorProps {
   children?: JSX.Element | JSX.Element[];
@@ -25,7 +26,14 @@ export const PlayModeIterceptor = ({ children }: PlayModeIterceptorProps) => {
 
     try {
       const files = await getTracks();
-      dispatch(addToQueue(files));
+
+      const cast_info = player.is_casting
+        ? await client.media.castInfo.query({
+            media_ids: files.map((file) => file._id),
+          })
+        : null;
+
+      dispatch(addToQueue({ files, cast_info }));
 
       if (player.play_options.mode === PlayMode.Playlist) {
         dispatch(
