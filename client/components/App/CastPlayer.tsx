@@ -54,7 +54,6 @@ export const CastPlayer = () => {
       }
 
       const current_index = now_playing._index;
-
       const track_has_changed = cast_index > current_index;
 
       if (track_has_changed) {
@@ -73,7 +72,13 @@ export const CastPlayer = () => {
         monitorTrackChange,
       );
     };
-  }, [player.now_playing, player.is_casting]);
+  }, [
+    player.now_playing,
+    player.is_casting,
+    player.playlist.length,
+    context.current, // is this needed
+    context.current?.getCurrentSession()?.getSessionId(),
+  ]);
 
   useEffect(() => {
     if (!caster.ready || caster.app_id === null) {

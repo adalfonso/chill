@@ -68,11 +68,38 @@ export const playerSlice = createSlice({
   name: "player",
   initialState,
   reducers: {
-    addToQueue: (state, action: Action<Media[]>) => {
-      state.playlist = [
-        ...state.playlist,
-        ...addSemanticIndex(action.payload, state.playlist.length.toString()),
-      ];
+    addToQueue: (
+      state,
+      action: Action<{ files: Media[]; cast_info: Nullable<PreCastPayload> }>,
+    ) => {
+      const { files, cast_info } = action.payload;
+
+      const tracks = addSemanticIndex(
+        files,
+        (state.playlist?.length ?? 0).toString(),
+      );
+
+      state.playlist = [...state.playlist, ...tracks];
+
+      if (state.is_casting) {
+        if (state.cast_info === null) {
+          return console.error(
+            "Tried to add track(s) to queue on cast but could not find their information",
+          );
+        }
+
+        if (cast_info === null) {
+          return console.error(
+            `Tried to add to "add to queue" while casting but did not receive cast_info.`,
+          );
+        }
+
+        const payload = getCastPayload(tracks, cast_info);
+
+        state.cast_info = [...state.cast_info, ...cast_info];
+
+        CastSdk.Queue([], payload.map(CastSdk.Media));
+      }
     },
 
     changeVolume: (state, action: Action<number>) => {

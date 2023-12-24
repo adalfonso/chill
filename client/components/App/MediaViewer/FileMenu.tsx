@@ -63,7 +63,7 @@ export const FileMenu = ({
       handler && dispatch(playNext(await handler.getFiles(player.is_casting))),
     addToQueue: async () =>
       handler &&
-      dispatch(addToQueue((await handler.getFiles(player.is_casting)).files)),
+      dispatch(addToQueue(await handler.getFiles(player.is_casting))),
     addToPlaylist: async () =>
       handler &&
       dispatch(
