@@ -38,13 +38,24 @@ export const CastPlayer = () => {
       }
 
       const media = event.value as chrome.cast.media.MediaInfo;
-      const { _id, _index } = media.metadata;
+      const { _index: cast_index } = media.metadata;
+      const { now_playing } = player;
 
-      if ([_id, _index].includes(undefined)) {
+      if (cast_index === undefined) {
         return;
       }
 
-      const track_has_changed = _index - 1 === player.index;
+      if (!now_playing) {
+        console.error(
+          `Media info changed but there is no now playing. Is this possible, not sure?`,
+        );
+
+        return;
+      }
+
+      const current_index = now_playing._index;
+
+      const track_has_changed = cast_index > current_index;
 
       if (track_has_changed) {
         dispatch(next({ auto: true }));
@@ -62,7 +73,7 @@ export const CastPlayer = () => {
         monitorTrackChange,
       );
     };
-  }, [player.index, player.is_casting]);
+  }, [player.now_playing, player.is_casting]);
 
   useEffect(() => {
     if (!caster.ready || caster.app_id === null) {

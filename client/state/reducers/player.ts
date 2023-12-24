@@ -1,6 +1,6 @@
 import * as _ from "lodash-es";
 import { CastSdk } from "@client/lib/cast/CastSdk";
-import { Media } from "@common/models/Media";
+import { IndexedMedia, Media } from "@common/models/Media";
 import { MobileDisplayMode, PlayMode, PlayOptions } from "./player.types";
 import { Nullable } from "@common/types";
 import { PreCastPayload } from "@client/lib/cast/types";
@@ -16,10 +16,10 @@ export interface PlayerState {
   is_shuffled: boolean;
 
   progress: number;
-  now_playing: Nullable<Media>;
-  next_playing: Nullable<Media>;
-  original_playlist: Media[];
-  playlist: Media[];
+  now_playing: Nullable<IndexedMedia>;
+  next_playing: Nullable<IndexedMedia>;
+  original_playlist: IndexedMedia[];
+  playlist: IndexedMedia[];
   cast_info: Nullable<PreCastPayload>;
   index: number;
   volume: number;
@@ -47,19 +47,32 @@ const initialState: PlayerState = {
 };
 
 type PlayLoad = {
-  files?: Media[];
+  files?: IndexedMedia[];
   cast_info?: Nullable<PreCastPayload>;
   index?: number;
   progress?: number;
   play_options?: PlayOptions;
 };
 
+const addSemanticIndex = (
+  tracks: Media[],
+  index?: string,
+): Array<IndexedMedia> =>
+  tracks.map((track, sub_index) => ({
+    ...track,
+    _index:
+      index === undefined ? sub_index.toString() : `${index}.${sub_index + 1}`,
+  }));
+
 export const playerSlice = createSlice({
   name: "player",
   initialState,
   reducers: {
     addToQueue: (state, action: Action<Media[]>) => {
-      state.playlist = [...state.playlist, ...action.payload];
+      state.playlist = [
+        ...state.playlist,
+        ...addSemanticIndex(action.payload, state.playlist.length.toString()),
+      ];
     },
 
     changeVolume: (state, action: Action<number>) => {
@@ -82,12 +95,15 @@ export const playerSlice = createSlice({
 
     play: (state, action: Action<PlayLoad>) => {
       const {
-        files,
         cast_info = null,
         index = 0,
         progress = 0,
         play_options = { mode: PlayMode.Static, complete: true },
       } = action.payload;
+
+      const files = action.payload.files
+        ? addSemanticIndex(action.payload.files)
+        : undefined;
 
       if (files) {
         state.playlist = files;
@@ -134,13 +150,45 @@ export const playerSlice = createSlice({
       state.is_shuffled = false;
     },
 
-    playNext: (state, action: Action<Media[]>) => {
+    playNext: (
+      state,
+      action: Action<{ files: Media[]; cast_info: Nullable<PreCastPayload> }>,
+    ) => {
+      const { files, cast_info } = action.payload;
+
+      const tracks = addSemanticIndex(
+        files,
+        (state.now_playing?._index ?? 0).toString(),
+      );
+
       const head = state.playlist.slice(0, state.index + 1);
       const tail = state.playlist.slice(state.index + 1);
 
-      state.playlist = [...head, ...action.payload, ...tail];
+      state.playlist = [...head, ...tracks, ...tail];
       state.next_playing = state.playlist[state.index + 1] ?? null;
       loadNext(state);
+
+      if (state.is_casting) {
+        if (state.cast_info === null) {
+          return console.error(
+            "Tried to add track(s) to play next on cast but could not find their information",
+          );
+        }
+
+        if (cast_info === null) {
+          return console.error(
+            `Tried to add to "play next" while casting but did not receive cast_info.`,
+          );
+        }
+
+        const cast_info_head = state.cast_info.slice(0, state.index + 1);
+        const cast_info_tail = state.cast_info.slice(state.index + 1);
+        const payload = getCastPayload(tracks, cast_info);
+
+        state.cast_info = [...cast_info_head, ...cast_info, ...cast_info_tail];
+
+        CastSdk.PlayNext(payload);
+      }
     },
 
     previous: (state) => {
@@ -310,7 +358,7 @@ export default playerSlice.reducer;
  * @returns progress percentage 0-1
  */
 export const getAudioProgress = (
-  media: Nullable<Media>,
+  media: Nullable<IndexedMedia>,
   is_casting = false,
 ) => {
   if (media === null || !media.duration) {
@@ -331,7 +379,7 @@ export const getAudioProgress = (
  * @param info - cast play info
  * @returns merged data
  */
-const getCastPayload = (files: Media[], info: PreCastPayload) => {
+const getCastPayload = (files: IndexedMedia[], info: PreCastPayload) => {
   return info.map((info, index) => ({ ...info, meta: files[index] }));
 };
 
@@ -373,7 +421,7 @@ const loadNext = (state: PlayerState) => {
 };
 
 export const getPlayPayload =
-  (is_casting: boolean, files: Media[]) => async () => {
+  (is_casting: boolean, files: IndexedMedia[]) => async () => {
     let cast_info: Nullable<PreCastPayload> = null;
 
     if (is_casting) {

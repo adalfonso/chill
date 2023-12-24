@@ -10,7 +10,7 @@ export class CastSdk {
    * Create a MediaInfo for to cast
    * @param item - media item
    */
-  static Media(item: ArrayElement<CastPayload>, index: number) {
+  static Media(item: ArrayElement<CastPayload>) {
     const { url, token, meta, content_type } = item;
 
     const media = new chrome.cast.media.MediaInfo(
@@ -28,7 +28,7 @@ export class CastSdk {
     media.metadata.albumName = meta.album;
     media.metadata.releaseDate = meta.year?.toString();
     media.metadata._id = meta._id;
-    media.metadata._index = index;
+    media.metadata._index = meta._index;
 
     if (meta.cover) {
       media.metadata.images = [
@@ -95,6 +95,39 @@ export class CastSdk {
     );
   };
 
+  static PlayNext = (payload: CastPayload) => {
+    const tracks = payload.map(CastSdk.Media);
+
+    const session =
+      cast.framework.CastContext.getInstance().getCurrentSession();
+
+    const loadRequest = new chrome.cast.media.QueueInsertItemsRequest(
+      tracks.map((track) => new chrome.cast.media.QueueItem(track)),
+    );
+
+    const media = session?.getMediaSession();
+
+    const [_previous, currentOrNext, next] = media?.items ?? [];
+
+    if (!next && !currentOrNext) {
+      return console.error(
+        `Tried to "play next" but couldn't determine cast item to insert before`,
+      );
+    }
+
+    loadRequest.insertBefore = next?.itemId ?? currentOrNext?.itemId ?? 1;
+
+    media?.queueInsertItems(
+      loadRequest,
+      () =>
+        console.info(
+          `Successfully queued ${tracks.length} tracks to play next`,
+        ),
+      (errorCode) =>
+        console.error("Queueing tracks to play next failed: " + errorCode),
+    );
+  };
+
   /**
    * Queue tracks on the current media session
    *
@@ -122,7 +155,10 @@ export class CastSdk {
       session.getMediaSession()?.queueInsertItems(
         loadRequest,
         () => console.info(`Successfully queued ${previous.length} tracks`),
-        (errorCode) => console.error("Queueing tracks failed: " + errorCode),
+        (errorCode) =>
+          console.error(
+            "Queueing tracks failed: " + JSON.stringify(errorCode, null, 2),
+          ),
       );
     }
 
@@ -134,7 +170,10 @@ export class CastSdk {
       session.getMediaSession()?.queueInsertItems(
         loadRequest,
         () => console.info(`Successfully queued ${next.length} tracks`),
-        (errorCode) => console.error("Queueing tracks failed: " + errorCode),
+        (errorCode) =>
+          console.error(
+            "Queueing tracks failed: " + JSON.stringify(errorCode, null, 2),
+          ),
       );
     }
   };

@@ -28,6 +28,8 @@ export interface Media extends Base {
   file_type: string;
 }
 
+export type IndexedMedia = Media & { _index: string };
+
 export const base_projection: MongoProjection<Media> = {
   _id: 1,
   artist: 1,

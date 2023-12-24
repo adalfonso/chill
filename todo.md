@@ -13,8 +13,11 @@
 - 1000 degress all listed as "piste"
 - dont make node serve static assets, make nginx do it
 - consider a monorepo structure
-- dragging scrubber while casting is choppy
-- playNext, addToQueue, etc don't seem to account for playing on a chromecast
+- dragging scrubber while casting is choppy - maybe debounce?
+- addToQueue, etc don't seem to account for playing on a chromecast
 - shuffling large playlist downloads all images
 - genre (math rock) artists not CI sorted
-- made loading boolean a global affair
+- make loading boolean a global affair
+- sometimes while casting the UI loses track of the audio progress. this happens after switching tracks quickly, potentially more propne on mobile
+- disconnecting from cast and continuing playback plays wrong track (probably issue with syncing crossover)
+- doing "play next", letting track finish, "play next"ing something else eventually causes queuing errors and chromecast doesnt play

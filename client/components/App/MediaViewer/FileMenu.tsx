@@ -60,8 +60,7 @@ export const FileMenu = ({
 
   const local = {
     playNext: async () =>
-      handler &&
-      dispatch(playNext((await handler.getFiles(player.is_casting)).files)),
+      handler && dispatch(playNext(await handler.getFiles(player.is_casting))),
     addToQueue: async () =>
       handler &&
       dispatch(addToQueue((await handler.getFiles(player.is_casting)).files)),
