@@ -1,53 +1,55 @@
-import { GroupedMedia } from "@common/types";
-import { MediaApi } from "@client/api/MediaApi";
-import { MediaMatch } from "@common/media/types";
+import { Genre } from "@prisma/client";
+import { useContext, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+
+import { AppContext } from "@client/state/AppState";
 import { MediaTile } from "./MusicLibrary/MediaTile";
+import { Maybe, MediaTileData, MediaTileType } from "@common/types";
 import { SmartScroller } from "./SmartScroller";
 import { artistUrl } from "@client/lib/url";
-import { fetchReducer } from "@hooks/index";
-import { pagination_limit } from "@client/lib/constants";
-import { useParams } from "react-router-dom";
-import { useReducer } from "react";
-
-interface GenreViewProps {
-  setLoading: (loading: boolean) => void;
-}
+import { api } from "@client/client";
+import { paginate } from "@common/pagination";
 
 type GenreParams = {
-  genre: string;
+  genre_id: string;
 };
 
-export const GenreView = ({ setLoading }: GenreViewProps) => {
-  const genre = decodeURIComponent(useParams<GenreParams>().genre ?? "");
+export const GenreView = () => {
+  const genre_id = parseInt(useParams<GenreParams>().genre_id ?? "");
+  const { is_busy } = useContext(AppContext);
+  const [genre, setGenre] = useState<Maybe<Genre>>(null);
 
-  const [media_data, mediaDispatch] = useReducer(fetchReducer<GroupedMedia>, {
-    items: [],
-    busy: true,
-  });
+  useEffect(() => {
+    api.genre.get.query({ id: genre_id }).then(setGenre);
+  }, []);
 
-  const loadGenres = (page: number) =>
-    MediaApi.getGroupedByArtist({ page, limit: pagination_limit }, genre);
+  const loadGenreArtists = async (page: number) => {
+    is_busy.value = true;
 
-  const displayAs = (file: GroupedMedia) => file.artist ?? "";
+    return api.artist.getArtistTilesByGenre.query({
+      options: paginate({ page }),
+      genre_id: genre_id,
+    });
+  };
 
   return (
     <SmartScroller
       className="genre-view"
-      header={genre}
-      mediaDispatch={mediaDispatch}
-      resetPagerOn={[genre]}
-      onInfiniteScroll={loadGenres}
-      onInfiniteScrollDone={() => setLoading(false)}
-    >
-      {media_data.items.map((file) => (
-        <MediaTile
-          tile_type={MediaMatch.Genre}
-          key={JSON.stringify(file._id)}
-          file={file}
-          url={artistUrl}
-          displayAs={displayAs}
-        />
-      ))}
-    </SmartScroller>
+      header={genre?.name ?? ""}
+      dependencies={[genre_id.toString()]}
+      onScroll={loadGenreArtists}
+      makeItems={makeArtistGenreTiles}
+    ></SmartScroller>
   );
 };
+
+const makeArtistGenreTiles = (tiles: Array<MediaTileData>) =>
+  tiles.map((tile) => (
+    <MediaTile
+      tile_type={MediaTileType.Artist}
+      key={tile.id}
+      tile_data={tile}
+      url={() => artistUrl(tile.id)}
+      displayAs={({ name }: MediaTileData) => `${name} `}
+    />
+  ));

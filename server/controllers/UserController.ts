@@ -1,9 +1,9 @@
-import * as _ from "lodash-es";
-import { AudioQuality } from "@common/types";
-import { Request } from "@server/trpc";
+import { AudioQuality } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
-import { User } from "@server/models/User";
 import { z } from "zod";
+
+import { Request } from "@server/trpc";
+import { db } from "@server/lib/data/db";
 
 export const schema = {
   update_settings: z.object({
@@ -12,7 +12,7 @@ export const schema = {
 };
 
 export const UserController = {
-  get: ({ ctx: { req } }: Request) => {
+  get: async ({ ctx: { req } }: Request) => {
     const { user } = req;
 
     if (!user) {
@@ -22,7 +22,15 @@ export const UserController = {
       });
     }
 
-    return _.pick(user, ["type", "settings"]);
+    const settings = await db.userSettings.findUnique({
+      where: { user_id: user.id },
+      select: { audio_quality: true },
+    });
+
+    return {
+      type: user.type,
+      settings,
+    };
   },
 
   updateSettings: async ({
@@ -40,31 +48,15 @@ export const UserController = {
     }
 
     try {
-      const update = await User.updateOne(
-        { _id: user._id },
-        { $set: { "settings.audio_quality": audio_quality } },
-      );
-
-      if (update.modifiedCount !== 1) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Unable to update settings.",
-        });
-      }
-
-      const updated_user = await User.findById(user._id);
-
-      if (updated_user === null) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message:
-            "Updated user settings successfully but failed to respond with refreshed settings.",
-        });
-      }
+      const updated_settings = await db.userSettings.update({
+        where: { user_id: user.id },
+        data: { audio_quality },
+        select: { audio_quality: true },
+      });
 
       console.info("User settings updated", { audio_quality });
 
-      return updated_user.settings;
+      return updated_settings;
     } catch (e) {
       console.error("Failed to update user settings: ", e);
 

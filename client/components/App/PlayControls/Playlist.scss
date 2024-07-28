@@ -58,6 +58,9 @@
     width: 36px;
     background-color: $dm-background;
     border-radius: 0.125rem;
+    > img {
+      border-radius: 0.125rem;
+    }
   }
 
   .content {

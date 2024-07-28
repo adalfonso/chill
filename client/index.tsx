@@ -1,8 +1,9 @@
-import store from "@reducers/store";
-import { App } from "./App";
 import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import { createRoot } from "react-dom/client";
+
+import store from "@reducers/store";
+import { App } from "./App";
 
 const element = document.getElementById("root");
 

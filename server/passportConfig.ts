@@ -1,10 +1,11 @@
-import { Invitation } from "./models/Invitation";
 import { PassportStatic } from "passport";
 import { Request } from "express";
 import { Strategy as GoogleStrategy } from "passport-google-oauth2";
 import { Strategy as JwtStrategy, VerifiedCallback } from "passport-jwt";
-import { User } from "./models/User";
+import { UserType } from "@prisma/client";
 import { VerifyCallback } from "passport-google-oauth2";
+
+import { db } from "./lib/data/db";
 import { env } from "./init";
 import { z } from "zod";
 
@@ -49,46 +50,44 @@ async function verifyGoogleAuth(
   done: VerifyCallback,
 ) {
   try {
-    const email = profile.emails[0].value;
-    const existing_user = await User.findOne({ email });
+    const email = profile.emails[0].value as string;
+
+    const existing_user = await db.user.findUnique({ where: { email } });
 
     if (existing_user) {
       return done(null, existing_user);
     }
 
-    const invitation = await Invitation.findOne({ email });
+    const invitation = await db.invitation.findUnique({ where: { email } });
 
     if (invitation === null) {
       console.error(`An unauthorized user tried to login: { email: ${email} }`);
       return done(null, false);
     }
 
-    await Invitation.deleteOne({ email });
+    await db.invitation.delete({ where: { id: invitation.id } });
 
     console.info("Creating new user...");
 
-    const new_user = new User({
-      email,
-      type: "user",
-      auth: {
-        id: profile.id,
-        name: profile.displayName,
-        email: email,
-        type: "google_oauth",
+    const new_user = await db.user.create({
+      data: {
+        email,
+        type: UserType.User,
+        settings: { create: {} },
       },
     });
 
-    await new_user.save();
     return done(null, new_user);
   } catch (error) {
-    return done(error, false);
+    console.error(error);
+    return done("Failed to verify google auth", false);
   }
 }
 
 // What we expect the JWT to contain
 const jwt_payload = z.object({
   user: z.object({
-    _id: z.string(),
+    id: z.number().int(),
   }),
 });
 
@@ -104,7 +103,7 @@ async function verifyJwtAuth(
 ) {
   try {
     const payload = jwt_payload.parse(unverified_payload);
-    const user = await User.findById(payload.user._id);
+    const user = await db.user.findUnique({ where: { id: payload.user.id } });
 
     if (user) {
       return done(null, user);
@@ -112,6 +111,7 @@ async function verifyJwtAuth(
 
     return done(null, false);
   } catch (error) {
-    done(error, false);
+    console.error(error);
+    done("Failed to verify token", false);
   }
 }

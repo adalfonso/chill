@@ -1,10 +1,10 @@
 import { spawn } from "node:child_process";
 
-interface ProcessResult {
+type ProcessResult = {
   data: string;
   error: string;
   code: number | null;
-}
+};
 
 /**
  * Make a spawned process async

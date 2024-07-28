@@ -1,11 +1,11 @@
 import { Response } from "express";
 import fs from "node:fs/promises";
 
-interface StreamFile {
+type StreamFile = {
   path: string;
   type: string;
   size: string;
-}
+};
 
 /**
  * Send a file stream

@@ -1,56 +1,54 @@
-import "./MusicLibrary.scss";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { PlayMode } from "@reducers/player.types";
-import { Playlist } from "@common/models/Playlist";
-import { PlaylistApi } from "@client/api/PlaylistApi";
 import { faPlayCircle, faPen } from "@fortawesome/free-solid-svg-icons";
-import { pagination_limit } from "@client/lib/constants";
-import { play } from "@reducers/player";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { useReducer, useRef } from "react";
-import {
-  pageReducer,
-  useInfiniteScroll,
-  fetchReducer,
-  useFetch,
-} from "@hooks/index";
+import { useContext, useRef } from "react";
 
-interface PlaylistsProps {
-  setLoading: (loading: boolean) => void;
+import "./MusicLibrary.scss";
+import { PlayMode } from "@reducers/player.types";
+import { PlaylistWithCount } from "@common/types";
+import { api } from "@client/client";
+import { paginate } from "@common/pagination";
+import { pagination_limit } from "@client/lib/constants";
+import { play } from "@reducers/player";
+import { useInfiniteScroll } from "@hooks/index";
+import { AppContext } from "@client/state/AppState";
+
+type PlaylistsProps = {
   per_page: number;
-}
+};
 
-export const Playlists = ({ setLoading, per_page }: PlaylistsProps) => {
-  const bottomBoundaryRef = useRef<HTMLDivElement>(null);
-  const [pager, pagerDispatch] = useReducer(pageReducer, { page: 0 });
-  const [playlistData, playlistDispatch] = useReducer(fetchReducer<Playlist>, {
-    items: [],
-    busy: true,
-  });
+export const Playlists = ({ per_page }: PlaylistsProps) => {
+  const observedElement = useRef<HTMLDivElement>(null);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const loadPlaylists = () => {
-    setLoading(true);
+  const { is_busy } = useContext(AppContext);
 
-    return PlaylistApi.index({ page: pager.page, limit: per_page });
+  const loadPlaylists = (page: number) => {
+    is_busy.value = true;
+
+    return api.playlist.index
+      .query({ options: paginate({ page, limit: per_page }) })
+      .finally(() => (is_busy.value = false));
   };
 
-  useInfiniteScroll(bottomBoundaryRef, pagerDispatch);
-
-  useFetch<Playlist>({
-    pager,
-    dispatch: playlistDispatch,
-    onFetch: loadPlaylists,
-    onDone: () => setLoading(false),
+  const { items: playlists } = useInfiniteScroll<PlaylistWithCount>({
+    onScroll: loadPlaylists,
+    observedElement,
+    options: { root: null, rootMargin: "0px", threshold: 1.0 },
+    dependencies: [],
   });
 
-  const playPlaylist = (playlist: Playlist) => async () => {
+  const playPlaylist = (playlist: PlaylistWithCount) => async () => {
     try {
-      const playlist_id = playlist._id.toString();
-      const pagination_options = { page: 0, limit: pagination_limit };
-      const files = await PlaylistApi.tracks(playlist_id, pagination_options);
+      const playlist_id = playlist.id;
+      const pagination_options = paginate({ page: 0, limit: pagination_limit });
+      const tracks = await api.playlist.tracks.query({
+        id: playlist_id,
+        options: pagination_options,
+      });
 
       const play_options = {
         id: playlist_id,
@@ -59,14 +57,14 @@ export const Playlists = ({ setLoading, per_page }: PlaylistsProps) => {
         complete: false,
       };
 
-      dispatch(play({ files, play_options, index: 0 }));
-    } catch ({ message }) {
-      console.error("Failed to play playlist", message);
+      dispatch(play({ tracks, play_options, index: 0 }));
+    } catch (e) {
+      console.error("Failed to play playlist", (e as Error)?.message);
     }
   };
 
-  const editPlaylist = (playlist: Playlist) => async () => {
-    navigate(`/playlist/${playlist._id}`);
+  const editPlaylist = (playlist: PlaylistWithCount) => async () => {
+    navigate(`/playlist/${playlist.id}`);
   };
 
   return (
@@ -87,10 +85,10 @@ export const Playlists = ({ setLoading, per_page }: PlaylistsProps) => {
             <div></div>
             <div></div>
           </div>
-          {playlistData.items.map((playlist) => (
-            <div className="row" key={playlist._id.toString()}>
-              <div>{playlist.name}</div>
-              <div>{playlist.items.length}</div>
+          {playlists.map((playlist) => (
+            <div className="row" key={playlist.id}>
+              <div>{playlist.title}</div>
+              <div>{playlist.track_count}</div>
               <div>
                 <div className="play-button" onClick={playPlaylist(playlist)}>
                   <Icon icon={faPlayCircle} size="sm" pull="right" />
@@ -106,7 +104,7 @@ export const Playlists = ({ setLoading, per_page }: PlaylistsProps) => {
           ))}
         </div>
 
-        <div id="page-bottom-boundary" ref={bottomBoundaryRef}></div>
+        <div id="page-bottom-boundary" ref={observedElement}></div>
       </div>
     </div>
   );

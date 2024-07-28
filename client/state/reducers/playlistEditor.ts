@@ -1,25 +1,26 @@
-import { Media } from "@common/models/Media";
 import { createSlice, PayloadAction as Action } from "@reduxjs/toolkit";
 
-export interface PlaylistEditorState {
+import { PlayableTrack } from "@common/types";
+
+type PlaylistEditorState = {
   active: boolean;
-  items: Media[];
-}
+  track_ids: Array<PlayableTrack>;
+};
 
 const initialState: PlaylistEditorState = {
   active: false,
-  items: [],
+  track_ids: [],
 };
 
 export const playlistEditorSlice = createSlice({
   name: "playlist_editor",
   initialState,
   reducers: {
-    toggle: (state, action: Action<{ items: Media[] }>) => {
-      const { items = [] } = action.payload ?? {};
+    toggle: (state, action: Action<{ track_ids: Array<PlayableTrack> }>) => {
+      const { track_ids: track_ids = [] } = action.payload ?? {};
 
       state.active = !state.active;
-      state.items = state.active ? items : [];
+      state.track_ids = state.active ? track_ids : [];
     },
   },
 });

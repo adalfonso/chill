@@ -1,22 +1,13 @@
-import { GroupedMedia } from "@common/types";
-import { Media } from "@common/models/Media";
-import { MediaMatch } from "@common/media/types";
+import { MediaTileType } from "@common/types";
 
-export const artistUrl = (file: GroupedMedia | Media) =>
-  `/artist/${encodeURIComponent(file.artist ?? "")}`;
-
-export const albumUrl = (file: GroupedMedia | Media) => {
-  const base = `/album/${encodeURIComponent(
-    file.album ?? "",
-  )}?artist=${encodeURIComponent(file.artist ?? "")}`;
-
-  // Regular media file, not aggregated
-  if (typeof file._id === "string") {
-    return base;
-  }
-
-  return base + (file._id?.album === null ? `&no_album=1` : ``);
+export const albumUrl = (artist_id?: number) => (album_id: number) => {
+  return `/album/${album_id}` + (artist_id ? `?artist=${artist_id}` : ``);
 };
 
-export const matchUrl = (match: MediaMatch) => (file: GroupedMedia | Media) =>
-  `/${match}/${encodeURIComponent(file[match] ?? "")}`;
+export const artistAlbumUrl = (artist_id: number, album_id: number) =>
+  `/artist/${artist_id}/album/${album_id}`;
+
+export const matchUrl = (match: MediaTileType) => (match_id: number) =>
+  `/${match}/${match_id}`;
+
+export const artistUrl = matchUrl(MediaTileType.Artist);

@@ -1,59 +1,48 @@
+import { Route, Routes } from "react-router-dom";
+import { useContext, useEffect } from "react";
+import { useDispatch } from "react-redux";
+
 import "./MediaViewer.scss";
 import { AlbumView } from "./MediaViewer/AlbumView";
+import { AppContext } from "@client/state/AppState";
 import { ArtistView } from "./MediaViewer/ArtistView";
 import { GenreView } from "./MediaViewer/GenreView";
 import { MusicLibrary } from "./MediaViewer/MusicLibrary";
 import { PlaylistViewer } from "./MediaViewer/PlaylistViewer";
 import { Playlists } from "./MediaViewer/Playlists";
-import { Route, Routes } from "react-router-dom";
-import { UserApi } from "@client/api/UserApi";
 import { setUser } from "@reducers/user";
-import { useDispatch } from "react-redux";
-import { useEffect, useState } from "react";
+import { api } from "@client/client";
 
 export const AppRouter = () => {
-  const [busy, setBusy] = useState(false);
+  const { is_busy } = useContext(AppContext);
   const dispatch = useDispatch();
 
   // Let's load the user once and expect that any updates to the user through
   // the UI will return updated user bits that we will merge into the state
   useEffect(() => {
-    UserApi.get().then((user) => dispatch(setUser(user)));
+    api.user.get.query().then((user) => dispatch(setUser(user)));
   }, []);
 
   return (
     <>
-      {busy && <div className="loading"></div>}
+      {is_busy.value === true && <div className="loading"></div>}
 
       <Routes>
-        <Route
-          path="/artist/:artist"
-          element={<ArtistView setLoading={setBusy} />}
-        ></Route>
+        <Route path="/artist/:artist_id" element={<ArtistView />}></Route>
 
         <Route
-          path="/album/:album"
-          element={<AlbumView setLoading={setBusy} />}
+          path="/artist/:artist_id/album/:album_id"
+          element={<AlbumView />}
         ></Route>
+        <Route path="/album/:album_id" element={<AlbumView />}></Route>
 
-        <Route
-          path="/genre/:genre"
-          element={<GenreView setLoading={setBusy} />}
-        ></Route>
+        <Route path="/genre/:genre_id" element={<GenreView />}></Route>
 
-        <Route
-          path="/playlists"
-          element={<Playlists setLoading={setBusy} per_page={24} />}
-        ></Route>
+        <Route path="/playlists" element={<Playlists per_page={24} />}></Route>
 
         <Route path="/playlist/:id" element={<PlaylistViewer />}></Route>
 
-        <Route
-          path="/"
-          element={<MusicLibrary setLoading={setBusy} per_page={24} />}
-        >
-          {/* 24 is the magic number to have good UI for 3,4,6-column layout */}
-        </Route>
+        <Route path="/" element={<MusicLibrary />}></Route>
       </Routes>
     </>
   );

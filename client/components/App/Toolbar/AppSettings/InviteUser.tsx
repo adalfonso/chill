@@ -1,5 +1,6 @@
-import { AdminApi } from "@client/api/AdminApi";
 import { SyntheticEvent, useState } from "react";
+
+import { api } from "@client/client";
 
 export const InviteUser = () => {
   const [email, setEmail] = useState("");
@@ -19,12 +20,12 @@ export const InviteUser = () => {
     setBusy(true);
 
     try {
-      const response = await AdminApi.inviteUser(email);
+      const response = await api.admin.invite_user.mutate(email);
       setEmail("");
 
       alert(response);
-    } catch ({ message }) {
-      alert(`Failed in invite user: ${message}`);
+    } catch (e) {
+      alert(`Failed in invite user: ${(e as Error)?.message}`);
     } finally {
       setBusy(false);
     }

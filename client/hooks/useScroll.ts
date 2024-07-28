@@ -1,15 +1,16 @@
-import { ObjectValues } from "@common/types";
 import { RefObject, useEffect, useState } from "react";
 
-export const ScrollDirection = {
+import { ObjectValues } from "@common/types";
+
+const ScrollDirection = {
   None: "none",
   Up: "up",
   Down: "down",
 } as const;
 
-export type ScrollDirection = ObjectValues<typeof ScrollDirection>;
+type ScrollDirection = ObjectValues<typeof ScrollDirection>;
 
-export type ScrollCallback = (direction: ScrollDirection, y: number) => void;
+type ScrollCallback = (direction: ScrollDirection, y: number) => void;
 
 /**
  * React to scroll event

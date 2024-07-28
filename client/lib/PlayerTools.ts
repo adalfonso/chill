@@ -1,4 +1,4 @@
-import { client } from "@client/client";
+import { api } from "@client/client";
 import { pagination_limit } from "./constants";
 
 /**
@@ -7,22 +7,23 @@ import { pagination_limit } from "./constants";
  * @param is_casting - if the player is casting
  * @returns files and cast info
  */
-export const getRandomFiles = async (
+export const getRandomTracks = async (
   is_casting = false,
-  exclusions: string[] = [],
+  exclusions: Array<number> = [],
 ) => {
-  const files = await client.media.queryRandom.mutate({
-    options: { limit: pagination_limit, $nin: exclusions },
+  const tracks = await api.track.getRandomTracks.query({
+    limit: pagination_limit,
+    exclusions,
   });
 
   // Refactor: Here on out is duplicated in MediaTile
   if (!is_casting) {
-    return { files, cast_info: null };
+    return { tracks, cast_info: null };
   }
 
-  const cast_info = await client.media.castInfo.query({
-    media_ids: files.map((file) => file._id),
+  const cast_info = await api.track.castInfo.query({
+    track_ids: tracks.map((file) => file.id),
   });
 
-  return { files, cast_info };
+  return { tracks, cast_info };
 };

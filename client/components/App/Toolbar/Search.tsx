@@ -1,15 +1,16 @@
-import "./Search.scss";
-import { Close } from "@client/components/ui/Close";
-import { MediaApi } from "@client/api/MediaApi";
-import { SearchResult as Result } from "@common/types";
-import { SearchResult } from "./Search/SearchResult";
-import { useDebounce } from "@hooks/index";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
+import "./Search.scss";
+import { Close } from "@client/components/ui/Close";
+import { SearchResult as SearchResultType } from "@common/types";
+import { SearchResult } from "./Search/SearchResult";
+import { api } from "@client/client";
+import { useDebounce } from "@hooks/index";
+
 export const Search = () => {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Result[]>([]);
+  const [results, setResults] = useState<SearchResultType[]>([]);
   const navigate = useNavigate();
 
   useDebounce(
@@ -19,10 +20,10 @@ export const Search = () => {
       }
 
       try {
-        const results = await MediaApi.search(query);
+        const results = await api.media.search.query({ query });
         setResults(results);
-      } catch ({ message }) {
-        console.error(`Search Failed:`, message);
+      } catch (err) {
+        console.error(`Search Failed:`, (err as Error).message);
       }
     },
     [query],
@@ -30,7 +31,7 @@ export const Search = () => {
   );
 
   // Visit page for search result
-  const visitMedia = async (file: Result) => {
+  const visitMedia = async (file: SearchResultType) => {
     const { path } = file;
 
     clear();

@@ -1,21 +1,22 @@
 import { useState, FormEvent } from "react";
-import { PlaylistApi } from "@client/api/PlaylistApi";
-import { getState } from "@reducers/store";
 import { useSelector } from "react-redux";
 
-interface PlaylistCreateProps {
+import { getState } from "@reducers/store";
+import { api } from "@client/client";
+
+type PlaylistCreateProps = {
   onDone: () => void;
-}
+};
 
 export const PlaylistCreate = ({ onDone }: PlaylistCreateProps) => {
-  const [input, setInput] = useState("");
+  const [playlist_title, setPlaylistTitle] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const { playlistEditor } = useSelector(getState);
 
   const onInputChange = (e: FormEvent<HTMLInputElement>) => {
     const { value } = e.currentTarget;
-    setInput(value);
+    setPlaylistTitle(value);
   };
 
   const submit = () => {
@@ -25,9 +26,11 @@ export const PlaylistCreate = ({ onDone }: PlaylistCreateProps) => {
 
     setBusy(true);
 
-    const items = playlistEditor.items.map((item) => item._id.toString());
-
-    PlaylistApi.create(input, items)
+    api.playlist.create
+      .mutate({
+        title: playlist_title,
+        track_ids: playlistEditor.track_ids.map((item) => item.id),
+      })
       .then(onDone)
       .catch(({ message }) => message && setError(message))
       .finally(() => setBusy(false));
@@ -37,7 +40,11 @@ export const PlaylistCreate = ({ onDone }: PlaylistCreateProps) => {
     <>
       {error && <div className="ui-error">{error}</div>}
 
-      <input type="text" placeholder="Playlist Name" onChange={onInputChange} />
+      <input
+        type="text"
+        placeholder="Playlist Title"
+        onChange={onInputChange}
+      />
       <button onClick={submit}>Create</button>
     </>
   );

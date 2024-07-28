@@ -15,14 +15,14 @@ export const useBackNavigate = (useWhen: () => boolean, onBack: () => void) => {
       return;
     }
 
-    window.history.pushState(route, document.title, window.location.href);
+    window.history.pushState({ route }, "", window.location.href);
 
     addEventListener("popstate", onBack);
 
     return () => {
       removeEventListener("popstate", onBack);
 
-      if (window.history.state === "__fullscreen__") {
+      if (window.history.state?.route === route) {
         window.history.back();
       }
     };

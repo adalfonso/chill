@@ -1,6 +1,7 @@
 import express from "express";
-import { MediaFileController } from "@server/controllers/MediaFileController";
+
 import { hasValidAudioToken } from "@server/middleware/hasValidAudioToken";
+import { TrackController } from "@server/controllers/TrackController";
 
 const router = express.Router();
 
@@ -10,7 +11,11 @@ const router = express.Router();
  * images. Since these routes are not secured by user authentication we need
  * to manually verify the access token
  */
-router.get("/:id", hasValidAudioToken, MediaFileController.load);
-router.get("/cover/:filename", hasValidAudioToken, MediaFileController.cover);
+router.get("/:id", hasValidAudioToken("track"), TrackController.load);
+router.get(
+  "/cover/:filename",
+  hasValidAudioToken("album_art"),
+  TrackController.cover,
+);
 
 export default router;

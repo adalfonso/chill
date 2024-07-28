@@ -1,46 +1,80 @@
-import { Media } from "./models/Media";
-import { MediaMatch } from "./media/types";
+import { Album, Playlist, Track } from "@prisma/client";
 
-export type Nullable<T> = T | null;
+export type Maybe<T> = T | null;
 export type ObjectValues<T> = T[keyof T];
 export type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 
-export type MongoProjection<T> = {
-  [P in keyof T]?: MongoProjection<T[P]> | 1 | 0;
-};
-
-export interface SearchResult {
-  type: MediaMatch;
-  displayAs: string[];
+export type SearchResult = {
+  type: MediaTileType | "track";
   value: string;
+  displayAs: string[];
   path: string;
-  score: number;
-  match: Record<string, string | number>;
-}
-
-export type Grouped<T> = Omit<T, "_id"> & {
-  _id: Record<string, string>;
-  _count: number;
 };
 
-export type GroupedMedia = Grouped<Media> & {
-  image?: string;
+export type MediaTileData<
+  T extends Record<string, unknown> = Record<string, never>,
+> = {
+  id: number;
+  name: string;
+  image?: Maybe<string>;
+  data?: T;
 };
 
-export interface PaginationOptions extends Record<string, string | number> {
+export const MediaTileType = {
+  Artist: "artist",
+  Album: "album",
+  Genre: "genre",
+} as const;
+
+export type MediaTileType = ObjectValues<typeof MediaTileType>;
+
+export type AlbumMetadata = {
+  year: Album["year"];
+};
+
+export type AlbumRelationalData = {
+  album_art: {
+    filename: string;
+  } | null;
+
+  artist: {
+    name: string;
+  } | null;
+};
+
+export type PlayableTrack = Pick<
+  Track,
+  "id" | "artist_id" | "album_id" | "title" | "path" | "number"
+> & {
+  artist: Maybe<string>;
+  album: Maybe<string>;
+  album_art_filename: Maybe<string>;
+  year: Maybe<number>;
+  genre: Maybe<string>;
+  duration: number;
+};
+
+export type PlayableTrackWithIndex = PlayableTrack & { _index: string };
+
+export type PlaylistWithCount = Playlist & { track_count: number };
+
+export const PaginationSort = {
+  asc: "asc",
+  desc: "desc",
+} as const;
+
+export type PaginationSort =
+  (typeof PaginationSort)[keyof typeof PaginationSort];
+
+export type PaginationOptions = {
   limit: number;
   page: number;
-}
-
-export const UserType = {
-  User: "user",
-  Admin: "admin",
+  sortBy?: string;
+  sort: PaginationSort;
 };
 
-export type UserType = ObjectValues<typeof UserType>;
-
-export const AudioQuality = {
+export const AudioQualityBitrate = {
   Original: "original",
   Trash: "85",
   Low: "115",
@@ -49,4 +83,24 @@ export const AudioQuality = {
   Extreme: "245",
 } as const;
 
+export type AudioQualityBitrate = ObjectValues<typeof AudioQualityBitrate>;
+
+// TODO: Importing prisma enum breaks prod bundle
+export const AudioQuality = {
+  Original: "Original",
+  Trash: "Trash",
+  Low: "Low",
+  Medium: "Medium",
+  Standard: "Standard",
+  Extreme: "Extreme",
+} as const;
+
 export type AudioQuality = ObjectValues<typeof AudioQuality>;
+
+// TODO: Importing prisma enum breaks prod bundle
+export const UserType = {
+  Admin: "Admin",
+  User: "User",
+} as const;
+
+export type UserType = ObjectValues<typeof UserType>;

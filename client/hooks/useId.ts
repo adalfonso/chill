@@ -1,4 +1,5 @@
-import * as _ from "lodash-es";
 import { useRef } from "react";
 
-export const useId = () => useRef(_.uniqueId()).current;
+import { uniqueId } from "@common/commonUtils";
+
+export const useId = () => useRef(uniqueId()).current;

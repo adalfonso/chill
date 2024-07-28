@@ -27,13 +27,13 @@ export class CastSdk {
     media.metadata.artist = meta.artist;
     media.metadata.albumName = meta.album;
     media.metadata.releaseDate = meta.year?.toString();
-    media.metadata._id = meta._id;
+    media.metadata._id = meta.id;
     media.metadata._index = meta._index;
 
-    if (meta.cover) {
+    if (meta.album_art_filename) {
       media.metadata.images = [
         new chrome.cast.Image(
-          `/cast/media/cover/${meta.cover.filename}?size=500&token=${token}`,
+          `/cast/media/cover/${meta.album_art_filename}?size=500&token=${token}`,
         ),
       ];
     }

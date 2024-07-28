@@ -1,9 +1,11 @@
-import "./Toolbar.scss";
-import { Nullable } from "@common/types";
-import { client } from "@client/client";
-import { getState } from "@client/state/reducers/store";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef } from "react";
+
+import "./Toolbar.scss";
+import { Maybe } from "@common/types";
+import { api } from "@client/client";
+import { getState } from "@client/state/reducers/store";
+
 import {
   next,
   pause,
@@ -14,7 +16,7 @@ import {
 
 export const CastPlayer = () => {
   const { caster, player } = useSelector(getState);
-  const context = useRef<Nullable<cast.framework.CastContext>>(null);
+  const context = useRef<Maybe<cast.framework.CastContext>>(null);
   const player_ref = useRef(player);
 
   const dispatch = useDispatch();
@@ -98,8 +100,8 @@ export const CastPlayer = () => {
         case cast.framework.SessionState.SESSION_RESUMED:
         case cast.framework.SessionState.SESSION_STARTED:
           const cast_info = playlist.length
-            ? await client.media.castInfo.query({
-                media_ids: playlist.map((file) => file._id),
+            ? await api.track.castInfo.query({
+                track_ids: playlist.map((track) => track.id),
               })
             : null;
 
@@ -113,7 +115,7 @@ export const CastPlayer = () => {
             playlist.length
           ) {
             // Immediately play when starting a cast session
-            dispatch(play({ files: playlist, cast_info, index, progress }));
+            dispatch(play({ tracks: playlist, cast_info, index, progress }));
           }
 
           break;

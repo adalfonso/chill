@@ -1,23 +1,24 @@
-import { Media } from "@common/models/Media";
-import { PlayMode } from "@reducers/player.types";
-import { PlaylistApi } from "@client/api/PlaylistApi";
-import { addToQueue, PlayerState, updatePlayOptions } from "@reducers/player";
-import { getRandomFiles } from "@client/lib/PlayerTools";
-import { getState } from "@reducers/store";
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
-import { client } from "@client/client";
 
-interface PlayModeIterceptorProps {
+import { PlayMode } from "@reducers/player.types";
+import { PlayableTrack } from "@common/types";
+import { addToQueue, PlayerState, updatePlayOptions } from "@reducers/player";
+import { api } from "@client/client";
+import { getRandomTracks } from "@client/lib/PlayerTools";
+import { getState } from "@reducers/store";
+import { paginate } from "@common/pagination";
+
+type PlayModeIterceptorProps = {
   children?: JSX.Element | JSX.Element[];
-}
+};
 
 export const PlayModeIterceptor = ({ children }: PlayModeIterceptorProps) => {
   const [busy, setBusy] = useState(false);
   const { player } = useSelector(getState);
   const dispatch = useDispatch();
 
-  const queueMoreTracks = async (getTracks: () => Promise<Media[]>) => {
+  const queueMoreTracks = async (getTracks: () => Promise<PlayableTrack[]>) => {
     if (busy) {
       return;
     }
@@ -25,34 +26,37 @@ export const PlayModeIterceptor = ({ children }: PlayModeIterceptorProps) => {
     setBusy(true);
 
     try {
-      const files = await getTracks();
+      const tracks = await getTracks();
 
       const cast_info = player.is_casting
-        ? await client.media.castInfo.query({
-            media_ids: files.map((file) => file._id),
+        ? await api.track.castInfo.query({
+            track_ids: tracks.map((track) => track.id),
           })
         : null;
 
-      dispatch(addToQueue({ files, cast_info }));
+      dispatch(addToQueue({ tracks, cast_info }));
 
       if (player.play_options.mode === PlayMode.Playlist) {
         dispatch(
           updatePlayOptions({
             ...player.play_options,
             page: player.play_options.page + 1,
-            complete: files.length === 0,
+            complete: tracks.length === 0,
           }),
         );
       } else if (player.play_options.mode === PlayMode.Random) {
         dispatch(
           updatePlayOptions({
             ...player.play_options,
-            complete: files.length === 0,
+            complete: tracks.length === 0,
           }),
         );
       }
     } catch (e) {
-      console.error(`Failed to add more ${player.play_options.mode} files:`, e);
+      console.error(
+        `Failed to add more ${player.play_options.mode} tracks:`,
+        e,
+      );
     }
 
     setBusy(false);
@@ -83,10 +87,10 @@ const getMoreRandomTracks = (player: PlayerState) => async () => {
     return [];
   }
 
-  const exclusions = player.playlist.map((file) => file._id);
-  const { files } = await getRandomFiles(player.is_casting, exclusions);
+  const exclusions = player.playlist.map((file) => file.id);
+  const { tracks } = await getRandomTracks(player.is_casting, exclusions);
 
-  return files;
+  return tracks;
 };
 
 const getMorePlaylistTracks = (player: PlayerState) => async () => {
@@ -99,5 +103,8 @@ const getMorePlaylistTracks = (player: PlayerState) => async () => {
 
   const { id, page, limit } = play_options;
 
-  return PlaylistApi.tracks(id, { page: page + 1, limit });
+  return api.playlist.tracks.query({
+    id,
+    options: paginate({ page: page + 1, limit }),
+  });
 };

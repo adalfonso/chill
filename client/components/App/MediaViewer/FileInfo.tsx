@@ -1,13 +1,14 @@
 import "./FileInfo.scss";
 import { Close } from "@client/components/ui/Close";
-import { Media } from "@common/models/Media";
+import { PlayableTrack } from "@common/types";
+import { getFileTypeFromPath } from "@common/commonUtils";
 import { noPropagate, secondsToMinutes } from "@client/lib/util";
 import { useMenu } from "@hooks/index";
 
-interface FileInfoProps {
+type FileInfoProps = {
   menu_id: string;
-  file: Media;
-}
+  file: PlayableTrack;
+};
 
 export const FileInfo = ({ file, menu_id }: FileInfoProps) => {
   const menu = useMenu(menu_id);
@@ -31,7 +32,7 @@ export const FileInfo = ({ file, menu_id }: FileInfoProps) => {
             </tr>
             <tr>
               <td>Track #</td>
-              <td>{file.track}</td>
+              <td>{file.number}</td>
             </tr>
             <tr>
               <td>Album</td>
@@ -56,7 +57,7 @@ export const FileInfo = ({ file, menu_id }: FileInfoProps) => {
 
             <tr>
               <td>File Type</td>
-              <td>{file.file_type.toUpperCase()}</td>
+              <td>{getFileTypeFromPath(file.path)}</td>
             </tr>
           </tbody>
         </table>

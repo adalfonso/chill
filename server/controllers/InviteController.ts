@@ -1,8 +1,8 @@
-import { Invitation } from "@server/models/Invitation";
-import { Request } from "@server/trpc";
 import { TRPCError } from "@trpc/server";
-import { User } from "@server/models/User";
 import { z } from "zod";
+
+import { Request } from "@server/trpc";
+import { db } from "@server/lib/data/db";
 
 export const schema = {
   invite: z.string().email(),
@@ -17,7 +17,7 @@ export const InviteController = {
       });
     }
 
-    const existing_user = await User.findOne({ email });
+    const existing_user = await db.user.findUnique({ where: { email } });
 
     if (existing_user) {
       throw new TRPCError({
@@ -26,7 +26,9 @@ export const InviteController = {
       });
     }
 
-    const previous_invitation = await Invitation.findOne({ email });
+    const previous_invitation = await db.invitation.findUnique({
+      where: { email },
+    });
 
     if (previous_invitation) {
       // TODO: resend email
@@ -34,7 +36,7 @@ export const InviteController = {
       return `Success: ${email} was previously invited.`;
     }
 
-    await Invitation.create({ email });
+    await db.invitation.create({ data: { email } });
 
     // TODO: send email invite to user
 

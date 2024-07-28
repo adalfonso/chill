@@ -1,8 +1,8 @@
-import { Nullable } from "@common/types";
+import { Maybe } from "@common/types";
 import { createSlice, PayloadAction as Action } from "@reduxjs/toolkit";
 
-export type CastState = {
-  app_id: Nullable<string>;
+type CastState = {
+  app_id: Maybe<string>;
   current_track_progress: number;
   ready: boolean;
 };
@@ -17,7 +17,7 @@ export const casterSlice = createSlice({
   name: "caster",
   initialState,
   reducers: {
-    setCastAppId: (state, action: Action<Nullable<string>>) => {
+    setCastAppId: (state, action: Action<Maybe<string>>) => {
       const id = action.payload;
 
       if (!id || id === state.app_id) {

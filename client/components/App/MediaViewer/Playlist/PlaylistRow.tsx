@@ -1,24 +1,25 @@
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+
 import { Equalizer } from "@client/components/ui/Equalizer";
 import { FileMenu, FileMenuHandler } from "../FileMenu";
-import { Media } from "@common/models/Media";
-import { albumUrl, artistUrl } from "@client/lib/url";
+import { PlayableTrack } from "@common/types";
+import { artistAlbumUrl, artistUrl } from "@client/lib/url";
 import { getPlayPayload } from "@client/state/reducers/player";
 import { getState } from "@reducers/store";
 import { noPropagate, secondsToMinutes } from "@client/lib/util";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import { setMenu } from "@client/state/reducers/mediaMenu";
 import { useBackNavigate } from "@hooks/index";
-import { useDispatch, useSelector } from "react-redux";
 import { useId, useViewport } from "@hooks/index";
-import { useNavigate } from "react-router-dom";
 
-export interface PlaylistRowProps {
-  file: Media;
+type PlaylistRowProps = {
+  track: PlayableTrack;
   index: number;
   playAll: (index: number) => () => void;
-}
+};
 
-export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
+export const PlaylistRow = ({ track, index, playAll }: PlaylistRowProps) => {
   const { player, mediaMenu } = useSelector(getState);
   const menu_id = useId();
   const navigate = useNavigate();
@@ -28,6 +29,8 @@ export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
   const is_mobile = width < screen_breakpoint_px;
   const menu_visible = mediaMenu.menu_id === menu_id;
 
+  const { artist_id, album_id, album_art_filename } = track;
+
   // Minimize the context menu on back navigation
   useBackNavigate(
     () => is_mobile && menu_visible,
@@ -36,43 +39,55 @@ export const PlaylistRow = ({ file, index, playAll }: PlaylistRowProps) => {
 
   const menuHandler: FileMenuHandler = {
     play: () => playAll(index)(),
-    getFiles: getPlayPayload(player.is_casting, [file]),
+    getTracks: getPlayPayload(player.is_casting, [track]),
   };
 
   return (
     <div className="row" onClick={playAll(index)}>
       <div className="track">
         {index + 1}
-        {player.now_playing?.path === file.path && player.is_playing && (
+        {player.now_playing?.path === track.path && player.is_playing && (
           <Equalizer />
         )}
       </div>
       <div>
-        {file.cover?.filename && (
+        {album_art_filename && (
           <img
-            src={`/api/v1/media/cover/${file.cover.filename}?size=36`}
+            src={`/api/v1/media/cover/${album_art_filename}?size=36`}
             loading="lazy"
           />
         )}
       </div>
-      <div>{file.title}</div>
-      <div>{file.artist}</div>
+      <div>{track.title}</div>
+      <div>{track.artist}</div>
       <div>
-        <div className="duration mono">{secondsToMinutes(file.duration)}</div>
+        <div className="duration mono">{secondsToMinutes(track.duration)}</div>
       </div>
       <div className="tail">
         <FileMenu
           menu_id={menu_id}
-          title={`${file.artist} - ${file.title}`}
+          title={`${track.artist} - ${track.title}`}
           handler={menuHandler}
         >
-          <div onClick={noPropagate(() => navigate(artistUrl(file)))}>
-            Go to Artist
-          </div>
+          <>
+            {artist_id && (
+              <div onClick={noPropagate(() => navigate(artistUrl(artist_id)))}>
+                Go to Artist
+              </div>
+            )}
+          </>
 
-          <div onClick={noPropagate(() => navigate(albumUrl(file)))}>
-            Go to Album
-          </div>
+          <>
+            {album_id && artist_id && (
+              <div
+                onClick={noPropagate(() =>
+                  navigate(artistAlbumUrl(album_id, artist_id)),
+                )}
+              >
+                Go to Album
+              </div>
+            )}
+          </>
         </FileMenu>
       </div>
     </div>

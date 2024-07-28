@@ -1,49 +1,57 @@
-import { Media as MediaModel } from "@server/models/Media";
-import { Playlist as PlaylistModel } from "@server/models/Playlist";
+import { Playlist } from "@prisma/client";
 import { Request } from "@server/trpc";
 import { TRPCError } from "@trpc/server";
-import { base_projection } from "@common/models/Media";
-import { pagination_options } from "@common/schema";
 import { z } from "zod";
+
+import { PlaylistWithCount } from "@common/types";
+import { db } from "@server/lib/data/db";
+import { pagination_schema } from "@common/schema";
+import { playable_track_selection } from "./TrackController";
 
 export const schema = {
   create: z.object({
-    name: z.string(),
-    items: z.array(z.string()).optional(),
+    title: z.string(),
+    track_ids: z.array(z.number().int()).optional(),
   }),
 
-  get: z.string(),
+  get: z.object({ id: z.number().int() }),
 
-  index: pagination_options,
+  index: z.object({ options: pagination_schema }),
 
-  search: z.string(),
+  search: z.object({ query: z.string() }),
 
   tracks: z.object({
-    id: z.string(),
-    options: pagination_options.optional(),
+    id: z.number().int(),
+    options: pagination_schema,
   }),
 
   update: z.object({
-    id: z.string(),
-    items: z.array(z.string()),
+    id: z.number().int(),
+    track_ids: z.array(z.number().int()),
   }),
 };
 
 export const PlaylistController = {
   create: async ({
-    input: { name, items = [] },
+    input: { title, track_ids = [] },
   }: Request<typeof schema.create>) => {
     try {
-      const playlist = new PlaylistModel({ name, items });
+      const playlist = await db.playlist.create({ data: { title } });
 
-      await playlist.save();
+      await db.playlistTrack.createMany({
+        data: track_ids.map((track_id, index) => ({
+          playlist_id: playlist.id,
+          index,
+          track_id,
+        })),
+      });
     } catch (e) {
       console.error(e);
 
-      if ((e as Error).message.match(/duplicate key/)) {
+      if ((e as Error).message.match(/Unique constraint failed/)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Playlist name is already taken.",
+          message: "Playlist title is already taken.",
         });
       }
 
@@ -51,87 +59,86 @@ export const PlaylistController = {
     }
   },
 
-  get: async ({ input: id }: Request<typeof schema.get>) => {
-    try {
-      const playlist = await PlaylistModel.findById(id);
+  get: async ({
+    input: { id },
+  }: Request<typeof schema.get>): Promise<Playlist> => {
+    const playlist = await db.playlist.findUnique({
+      where: { id },
+    });
 
-      if (playlist === null) {
-        throw new Error("Can't find playlist");
-      }
-
-      return playlist;
-    } catch (e) {
-      console.error("Failed to get Playlist: ", e);
-
-      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+    if (playlist === null) {
+      throw new TRPCError({ code: "NOT_FOUND" });
     }
+
+    return playlist;
   },
 
   index: async ({
-    input: { limit = Infinity, page = 0 },
-  }: Request<typeof schema.index>) => {
-    try {
-      const results = await PlaylistModel.find()
-        .sort({ created_at: "asc" })
-        .skip(page > 0 ? page * limit : 0)
-        .limit(limit);
-
-      if (results === null) {
-        throw new Error("Can't find playlists");
-      }
-
-      return results;
-    } catch (e) {
-      console.error("Failed to GET playlist/index: ", e);
-
-      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-    }
-  },
-
-  search: async ({ input: query }: Request<typeof schema.search>) => {
-    // TODO: Add error handling
-    const results = await PlaylistModel.find({
-      $text: { $search: query.toLowerCase() },
+    input: {
+      options: { limit = Infinity, page = 0, sort },
+    },
+  }: Request<typeof schema.index>): Promise<Array<PlaylistWithCount>> => {
+    const playlists = await db.playlist.findMany({
+      orderBy: {
+        created_at: sort,
+      },
+      skip: page > 0 ? page * limit : 0,
+      take: limit,
     });
 
-    return results;
+    return await addTrackCounts(playlists);
+  },
+
+  search: async ({ input: { query } }: Request<typeof schema.search>) => {
+    // TODO: Use search engine for this at some point
+    const playlists = await db.playlist.findMany({
+      where: {
+        title: {
+          contains: query,
+          mode: "insensitive",
+        },
+      },
+    });
+
+    return await addTrackCounts(playlists);
   },
 
   tracks: async ({
-    input: { id, options: { limit, page } = { limit: Infinity, page: 0 } },
+    input: {
+      id,
+      options: { limit, page, sort },
+    },
   }: Request<typeof schema.tracks>) => {
     try {
-      const playlist = await PlaylistModel.findById(id);
+      const playlist = db.playlist.findUnique({ where: { id } });
 
       if (playlist === null) {
         throw new TRPCError({ code: "NOT_FOUND" });
       }
 
-      // Used to preserve playlist track order after query
-      const lookup = playlist.items.reduce<Record<string, number>>(
-        (carry, track, index) => {
-          carry[track] = index;
-          return carry;
+      const playlist_items = await db.playlistTrack.findMany({
+        where: { playlist_id: id },
+        orderBy: {
+          index: sort,
         },
-        {},
-      );
+        skip: page > 0 ? page * limit : 0,
+        take: limit,
+        select: {
+          track: {
+            select: playable_track_selection,
+          },
+        },
+      });
 
-      const items = playlist.items.slice(
-        page ? page * limit : 0,
-        (page + 1) * limit,
-      );
-
-      if (items.length === 0) {
-        return [];
-      }
-
-      const results = await MediaModel.find({
-        _id: { $in: items },
-      }).select(base_projection);
-
-      return results.sort(
-        (a, b) => lookup[a._id.toString()] - lookup[b._id.toString()],
-      );
+      return playlist_items.map(({ track }) => ({
+        ...track,
+        artist: track?.artist?.name ?? null,
+        album: track.album?.title ?? null,
+        album_art_filename: track.album?.album_art?.filename ?? null,
+        year: track?.album?.year ?? null,
+        genre: track.genre?.name ?? null,
+        duration: track.duration.toNumber(),
+      }));
     } catch (e) {
       console.error("Failed to get Playlist tracks: ", e);
 
@@ -140,22 +147,52 @@ export const PlaylistController = {
   },
 
   update: async ({
-    input: { id, items = [] },
+    input: { id, track_ids = [] },
   }: Request<typeof schema.update>) => {
-    try {
-      const playlist = await PlaylistModel.findById(id);
+    const playlist = await db.playlist.findUnique({ where: { id } });
 
-      if (!playlist) {
-        throw new TRPCError({ code: "NOT_FOUND" });
-      }
-
-      playlist.items = [...playlist.items, ...items];
-
-      await playlist.save();
-    } catch (e) {
-      console.error(e);
-
-      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+    if (!playlist) {
+      throw new TRPCError({ code: "NOT_FOUND" });
     }
+
+    const playlist_tail = await db.playlistTrack.findFirst({
+      where: { playlist_id: id },
+      orderBy: { index: "desc" },
+    });
+
+    await db.playlistTrack.createMany({
+      data: track_ids.map((track_id, index) => ({
+        playlist_id: playlist.id,
+        index: index + (playlist_tail?.index ?? 0),
+        track_id,
+      })),
+    });
   },
+};
+
+/**
+ * Add the track count to an array of playlists
+ *
+ * @param playlists array of playlists
+ * @returns updated playlists with counts
+ */
+const addTrackCounts = async (playlists: Array<Playlist>) => {
+  const playlist_counts = await db.playlistTrack.groupBy({
+    by: ["playlist_id"],
+    where: {
+      playlist_id: { in: playlists.map(({ id }) => id) },
+    },
+    _count: {
+      id: true,
+    },
+  });
+
+  const playlist_count_map = Object.fromEntries(
+    playlist_counts.map(({ playlist_id, _count }) => [playlist_id, _count.id]),
+  );
+
+  return playlists.map((playlist) => ({
+    ...playlist,
+    track_count: playlist_count_map[playlist.id] ?? 0,
+  }));
 };

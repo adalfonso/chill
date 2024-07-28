@@ -1,12 +1,18 @@
 import * as trpcExpress from "@trpc/server/adapters/express";
 import superjson from "superjson";
-import { admin } from "@routes/api/v1/trpc/adminRouter";
-import { app } from "@routes/api/v1/trpc/appRouter";
 import { inferAsyncReturnType, initTRPC, TRPCError } from "@trpc/server";
-import { media } from "@routes/api/v1/trpc/mediaRouter";
-import { playlist } from "@routes/api/v1/trpc/playlistRouter";
-import { user } from "@routes/api/v1/trpc/userRouter";
 import { z, ZodType } from "zod";
+
+import { AdminRouter } from "@routes/api/v1/trpc/AdminRouter";
+import { AlbumRouter } from "@routes/api/v1/trpc/AlbumRouter";
+import { AppRouter } from "@routes/api/v1/trpc/AppRouter";
+import { ArtistRouter } from "@routes/api/v1/trpc/ArtistRouter";
+import { GenreRouter } from "@routes/api/v1/trpc/GenreRouter";
+import { MediaRouter } from "@routes/api/v1/trpc/MediaRouter";
+import { PlaylistRouter } from "@routes/api/v1/trpc/PlaylistRouter";
+import { TrackRouter } from "./routes/api/v1/trpc/TrackRouter";
+import { UserRouter } from "@routes/api/v1/trpc/UserRouter";
+import { UserType } from "@prisma/client";
 
 export const createContext = ({
   req,
@@ -20,9 +26,7 @@ const t = initTRPC.context<Context>().create({ transformer: superjson });
 export const { router, middleware, procedure } = t;
 
 const isAdmin = middleware(async ({ ctx: { req }, next }) => {
-  const { user } = req;
-
-  if (!user || user.type !== "admin") {
+  if (req?.user?.type !== UserType.Admin) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
@@ -33,11 +37,15 @@ export const admin_procedure = procedure.use(isAdmin);
 
 // Initialize the tRPC router
 export const api_router = t.router({
-  admin: admin(router),
-  app: app(router),
-  media: media(router),
-  playlist: playlist(router),
-  user: user(router),
+  admin: AdminRouter(router),
+  album: AlbumRouter(router),
+  app: AppRouter(router),
+  artist: ArtistRouter(router),
+  genre: GenreRouter(router),
+  media: MediaRouter(router),
+  playlist: PlaylistRouter(router),
+  track: TrackRouter(router),
+  user: UserRouter(router),
 });
 
 export type ApiRouter = typeof api_router;

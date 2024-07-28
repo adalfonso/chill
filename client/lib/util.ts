@@ -19,7 +19,7 @@ export const startAnimationLoop = (callback: (dt: number) => unknown) => {
 };
 
 /** Haphazardly clear all animation frames */
-export const cancelAllAnimationFrames = () => {
+export const cancelAnimationFrames = () => {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   let id = requestAnimationFrame(() => {});
   while (id--) {

@@ -1,13 +1,14 @@
+import { useState } from "react";
+import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
+import { faListDots } from "@fortawesome/free-solid-svg-icons";
+import { useDispatch, useSelector } from "react-redux";
+
 import "./Playlist.scss";
 import { Close } from "@client/components/ui/Close";
 import { Equalizer } from "../../ui/Equalizer";
-import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { play } from "@reducers/player";
-import { faListDots } from "@fortawesome/free-solid-svg-icons";
 import { getState } from "@reducers/store";
+import { play } from "@reducers/player";
 import { useBackNavigate } from "@hooks/index";
-import { useDispatch, useSelector } from "react-redux";
-import { useState } from "react";
 
 export const Playlist = () => {
   const { player } = useSelector(getState);
@@ -33,38 +34,38 @@ export const Playlist = () => {
       <div className={playlistClassName}>
         <Close onClose={togglePlaylist}></Close>
 
-        {player.playlist.map((media, index) => (
+        {player.playlist.map((track, index) => (
           <div
             className="playlist-item"
             onClick={() =>
               dispatch(
                 play({
-                  files: player.playlist,
+                  tracks: player.playlist,
                   cast_info: player.cast_info,
                   play_options: { ...player.play_options },
                   index,
                 }),
               )
             }
-            key={media._id.toString() + index}
+            key={track.id.toString() + index}
           >
             <div className="cover">
-              {media.cover?.filename && (
+              {track.album_art_filename && (
                 <img
-                  src={`/api/v1/media/cover/${media.cover.filename}?size=36`}
+                  src={`/api/v1/media/cover/${track.album_art_filename}?size=36`}
                   loading="lazy"
                 />
               )}
             </div>
 
             <div className="content">
-              <div className="title">{media.title}</div>
+              <div className="title">{track.title}</div>
               <div className="artist">
-                {media.artist} {media.album ? ` -  ${media.album}` : ""}
+                {track.artist} {track.album ? ` -  ${track.album}` : ""}
               </div>
             </div>
 
-            {player.now_playing === media && player.is_playing && <Equalizer />}
+            {player.now_playing === track && player.is_playing && <Equalizer />}
           </div>
         ))}
       </div>

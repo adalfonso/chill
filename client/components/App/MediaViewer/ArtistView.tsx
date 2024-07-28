@@ -1,59 +1,60 @@
-import { GroupedMedia } from "@common/types";
-import { MediaApi } from "@client/api/MediaApi";
-import { MediaMatch } from "@common/media/types";
+import { Artist } from "@prisma/client";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+
+import {
+  AlbumMetadata,
+  Maybe,
+  MediaTileData,
+  MediaTileType,
+  PaginationSort,
+} from "@common/types";
+import { artistAlbumUrl } from "@client/lib/url";
 import { MediaTile } from "./MusicLibrary/MediaTile";
 import { SmartScroller } from "./SmartScroller";
-import { albumUrl } from "@client/lib/url";
-import { fetchReducer } from "@hooks/index";
-import { pagination_limit } from "@client/lib/constants";
-import { useParams } from "react-router-dom";
-import { useReducer } from "react";
-
-interface ArtistViewProps {
-  setLoading: (loading: boolean) => void;
-}
+import { api } from "@client/client";
+import { paginate } from "@common/pagination";
 
 type AlbumParams = {
-  artist: string;
+  artist_id: string;
 };
 
-export const ArtistView = ({ setLoading }: ArtistViewProps) => {
-  const artist = useParams<AlbumParams>().artist ?? "";
+export const ArtistView = () => {
+  const artist_id = parseInt(useParams<AlbumParams>().artist_id ?? "");
+  const [artist, setArtist] = useState<Maybe<Artist>>(null);
 
-  const [media_data, mediaDispatch] = useReducer(fetchReducer<GroupedMedia>, {
-    items: [],
-    busy: true,
-  });
+  useEffect(() => {
+    api.artist.get.query({ id: artist_id }).then(setArtist);
+  }, []);
 
-  const loadAlbums = async (page: number) => {
-    setLoading(true);
-
-    return MediaApi.getGroupedByAlbum(
-      { page, limit: pagination_limit },
-      artist,
-    ).then((data) => data.sort((a, b) => (b.year ?? 0) - (a.year ?? 0)));
-  };
-
-  const displayAs = ({ album, year }: GroupedMedia) => `${album} (${year})`;
+  const loadAlbums = async (page: number) =>
+    api.album.getTiles.query({
+      options: paginate({ page, sortBy: "year", sort: PaginationSort.desc }),
+      getMetadata: true,
+      filter: { artist_id },
+    });
 
   return (
     <SmartScroller
       className="artist-view"
-      header={artist}
-      mediaDispatch={mediaDispatch}
-      resetPagerOn={[artist]}
-      onInfiniteScroll={loadAlbums}
-      onInfiniteScrollDone={() => setLoading(false)}
-    >
-      {media_data.items.map((file) => (
-        <MediaTile
-          tile_type={MediaMatch.Album}
-          key={JSON.stringify(file._id)}
-          file={{ ...file, artist }}
-          url={albumUrl}
-          displayAs={displayAs}
-        />
-      ))}
-    </SmartScroller>
+      header={artist?.name}
+      dependencies={[artist_id.toString()]}
+      onScroll={loadAlbums}
+      makeItems={makeAlbumTiles(artist_id)}
+    ></SmartScroller>
   );
 };
+
+const makeAlbumTiles =
+  (artist_id: number) => (tiles: Array<MediaTileData<AlbumMetadata>>) =>
+    tiles.map((tile) => (
+      <MediaTile
+        tile_type={MediaTileType.Album}
+        key={tile.id}
+        tile_data={tile}
+        url={() => artistAlbumUrl(artist_id, tile.id)}
+        displayAs={({ name, data }: MediaTileData<AlbumMetadata>) =>
+          `${name} (${data?.year})`
+        }
+      />
+    ));

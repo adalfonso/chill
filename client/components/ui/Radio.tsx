@@ -1,15 +1,15 @@
 import { useState } from "react";
 
-interface RadioOption {
+type RadioOption = {
   name: string;
   value: string;
-}
+};
 
-interface RadioProps {
+type RadioProps = {
   default_value: string;
   options: RadioOption[];
   onChange: (value: string) => void;
-}
+};
 
 export const Radio = ({ default_value, options, onChange }: RadioProps) => {
   const [selected_option, setSelectedOption] = useState(default_value);

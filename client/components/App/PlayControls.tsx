@@ -1,27 +1,6 @@
-import "./PlayControls.scss";
-import { FileInfo } from "./MediaViewer/FileInfo";
-import { FileMenu } from "./MediaViewer/FileMenu";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { MobileDisplayMode } from "@reducers/player.types";
-import { Playlist } from "./PlayControls/Playlist";
-import { Scrubber } from "./PlayControls/Scrubber";
-import { Shuffle } from "./PlayControls/Shuffle";
-import { VolumeControl } from "./PlayControls/VolumeControl";
-import { albumUrl, artistUrl } from "@client/lib/url";
-import { getState } from "@reducers/store";
-import { noPropagate } from "@client/lib/util";
-import { screen_breakpoint_px } from "@client/lib/constants";
-import { useBackNavigate, useId, useMenu, useViewport } from "@hooks/index";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import {
-  clear,
-  next,
-  pause,
-  play,
-  previous,
-  setMobileDisplayMode,
-} from "@reducers/player";
 import {
   faPlay,
   faPause,
@@ -30,6 +9,28 @@ import {
   faAngleDown,
   faClose,
 } from "@fortawesome/free-solid-svg-icons";
+
+import "./PlayControls.scss";
+import { FileInfo } from "./MediaViewer/FileInfo";
+import { FileMenu } from "./MediaViewer/FileMenu";
+import { MobileDisplayMode } from "@reducers/player.types";
+import { Playlist } from "./PlayControls/Playlist";
+import { Scrubber } from "./PlayControls/Scrubber";
+import { Shuffle } from "./PlayControls/Shuffle";
+import { VolumeControl } from "./PlayControls/VolumeControl";
+import { artistAlbumUrl, artistUrl } from "@client/lib/url";
+import { getState } from "@reducers/store";
+import { noPropagate } from "@client/lib/util";
+import { screen_breakpoint_px } from "@client/lib/constants";
+import { useBackNavigate, useId, useMenu, useViewport } from "@hooks/index";
+import {
+  clear,
+  next,
+  pause,
+  play,
+  previous,
+  setMobileDisplayMode,
+} from "@reducers/player";
 
 const default_now_playing = "";
 
@@ -80,6 +81,7 @@ export const PlayControls = () => {
   };
 
   const now_playing = player.now_playing;
+  const { artist_id, album_id } = player.now_playing ?? {};
 
   // Minimize the player on back navigation when fullscreen
   useBackNavigate(() => is_fullscreen, minimize);
@@ -93,9 +95,9 @@ export const PlayControls = () => {
           </div>
           <div className="cover-wrapper">
             <div className="cover">
-              {player.now_playing?.cover?.filename && (
+              {player.now_playing?.album_art_filename && (
                 <img
-                  src={`/api/v1/media/cover/${player.now_playing?._id}?size=256`}
+                  src={`/api/v1/media/cover/${player.now_playing?.album_art_filename}?size=256`}
                   loading="lazy"
                 />
               )}
@@ -135,23 +137,33 @@ export const PlayControls = () => {
                       menu_id={file_menu_id}
                       title={`${now_playing.artist} - ${now_playing.title}`}
                     >
-                      <div
-                        key="artist"
-                        onClick={() =>
-                          minimize() && navigate(artistUrl(now_playing))
-                        }
-                      >
-                        Go to Artist
-                      </div>
+                      {artist_id ? (
+                        <div
+                          key="artist"
+                          onClick={() =>
+                            minimize() && navigate(artistUrl(artist_id))
+                          }
+                        >
+                          Go to Artist
+                        </div>
+                      ) : (
+                        <></>
+                      )}
 
-                      <div
-                        key="album"
-                        onClick={() =>
-                          minimize() && navigate(albumUrl(now_playing))
-                        }
-                      >
-                        Go to Album
-                      </div>
+                      {artist_id && album_id ? (
+                        <div
+                          key="album"
+                          onClick={() =>
+                            minimize() &&
+                            navigate(artistAlbumUrl(artist_id, album_id))
+                          }
+                        >
+                          Go to Album
+                        </div>
+                      ) : (
+                        <></>
+                      )}
+
                       <div key="" onClick={noPropagate(file_info_menu.toggle)}>
                         File Information
                       </div>

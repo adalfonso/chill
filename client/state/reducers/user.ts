@@ -1,10 +1,11 @@
-import { Nullable, UserType } from "@common/types";
+import { UserSettings } from "@prisma/client";
 import { createSlice, PayloadAction as Action } from "@reduxjs/toolkit";
-import { UserSettings } from "@common/models/User";
+
+import { Maybe, UserType } from "@common/types";
 
 export type UserState = {
   type: UserType;
-  settings: Nullable<UserSettings>;
+  settings: Maybe<Pick<UserSettings, "audio_quality">>;
 };
 
 const initialState: UserState = { type: UserType.User, settings: null };

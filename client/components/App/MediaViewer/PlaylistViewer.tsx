@@ -1,65 +1,72 @@
+import { Playlist } from "@prisma/client";
+import { useDispatch } from "react-redux";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+
 import "./MusicLibrary.scss";
-import { Media } from "@common/models/Media";
-import { Playlist } from "@common/models/Playlist";
-import { PlaylistApi } from "@client/api/PlaylistApi";
+import { PlayableTrack } from "@common/types";
 import { PlaylistRow } from "./Playlist/PlaylistRow";
 import { SmartScroller } from "./SmartScroller";
-import { fetchReducer } from "@hooks/index";
+import { api } from "@client/client";
+import { paginate } from "@common/pagination";
 import { pagination_limit } from "@client/lib/constants";
 import { play } from "@reducers/player";
-import { useDispatch } from "react-redux";
-import { useEffect, useReducer, useState } from "react";
-import { useParams } from "react-router-dom";
 
 type PlaylistParams = {
   id: string;
 };
 
 export const PlaylistViewer = () => {
-  const id = decodeURIComponent(useParams<PlaylistParams>().id ?? "");
+  const id = parseInt(useParams<PlaylistParams>().id ?? "");
+
   const [playlist, setPlaylist] = useState<Playlist>();
   const dispatch = useDispatch();
 
   const playAll =
     (index = 0) =>
-    () => {
-      dispatch(play({ files: [...playlist_data.items], index }));
+    async () => {
+      // XXX: make this paginated
+      const tracks = await api.playlist.tracks.query({
+        id,
+        options: paginate({ page: 0, limit: 9999 }),
+      });
+
+      dispatch(play({ tracks, index }));
     };
 
   useEffect(() => {
-    PlaylistApi.get(id).then(setPlaylist);
+    api.playlist.get.query({ id }).then(setPlaylist);
   }, [id]);
 
-  const [playlist_data, mediaDispatch] = useReducer(fetchReducer<Media>, {
-    items: [],
-    busy: true,
-  });
-
-  const loadPlaylistItems = (page: number) =>
-    PlaylistApi.tracks(id, { page, limit: pagination_limit });
+  const loadPlaylistTracks = (page: number) =>
+    api.playlist.tracks.query({
+      id,
+      options: paginate({ page, limit: pagination_limit }),
+    });
 
   return (
     <>
-      {/* Wait until playlist loads */}
       {playlist && (
         <SmartScroller
           className="playlist-viewer"
-          header={playlist?.name}
-          mediaDispatch={mediaDispatch}
-          resetPagerOn={[playlist?.name ?? ""]}
-          onInfiniteScroll={loadPlaylistItems}
+          header={playlist?.title}
+          dependencies={[playlist?.title ?? ""]}
+          onScroll={loadPlaylistTracks}
           wrapperClassName="playlist-tracks panel-list"
-        >
-          {playlist_data.items?.map((file, index) => (
-            <PlaylistRow
-              index={index}
-              file={file}
-              playAll={playAll}
-              key={file._id.toString()}
-            ></PlaylistRow>
-          ))}
-        </SmartScroller>
+          makeItems={makePlaylistRows(playAll)}
+        ></SmartScroller>
       )}
     </>
   );
 };
+
+const makePlaylistRows =
+  (playAll: (index?: number) => () => void) => (tracks: Array<PlayableTrack>) =>
+    tracks.map((track, index) => (
+      <PlaylistRow
+        index={index}
+        track={track}
+        playAll={playAll}
+        key={track.id}
+      ></PlaylistRow>
+    ));

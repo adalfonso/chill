@@ -1,9 +1,9 @@
 import sharp from "sharp";
 
-interface ImageOptions {
+type ImageOptions = {
   size: number;
   quality: number;
-}
+};
 
 /**
  * Adjust the size/quality of an image

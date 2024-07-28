@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import path from "node:path";
 import { Request, Response } from "express";
-import { User } from "@server/models/User";
+
 import { blacklistToken } from "@server/lib/data/Cache";
 import { env } from "@server/init";
 
@@ -36,12 +36,6 @@ export const AuthController = {
       if (err || token === undefined) {
         console.error(`Failed to create JWT: ${err}`);
         return res.redirect("/");
-      }
-
-      try {
-        await User.findByIdAndUpdate(req.user?._id, { access_token: token });
-      } catch (e) {
-        console.error("Failed to store access_token", e);
       }
 
       res

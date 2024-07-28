@@ -1,66 +1,86 @@
-import { Dispatch, RefObject, useCallback, useEffect, useState } from "react";
-import { ObjectValues } from "@common/types";
+import { useContext, useState, useEffect, useCallback } from "react";
 
-export const PageAction = {
-  Advance: "advance",
-  Reset: "reset",
-} as const;
+import { AppContext } from "@client/state/AppState";
 
-export type PageAction = ObjectValues<typeof PageAction>;
-
-export interface Pager {
-  page: number;
-}
-
-export interface PageDispatchAction {
-  type: PageAction;
-}
-
-export const pageReducer = (state: Pager, action: PageDispatchAction) => {
-  switch (action.type) {
-    case PageAction.Advance:
-      return { ...state, page: state.page + 1 };
-    case PageAction.Reset:
-      return { ...state, page: 0 };
-    default:
-      return state;
-  }
+type UseInfiniteScrollOptions<T> = {
+  onScroll: (page: number) => Promise<T[]>;
+  observedElement: React.RefObject<Element>;
+  dependencies?: unknown[];
+  options: ScrollOptions;
 };
 
-/**
- * Facilitate infinite scroll
- *
- * @param scroll_ref reference to scroll tracking element
- * @param dispatch page dispatcher
- */
-export const useInfiniteScroll = (
-  scroll_ref: RefObject<HTMLElement>,
-  dispatch: Dispatch<PageDispatchAction>,
-) => {
-  const [is_ready, setIsReady] = useState(false);
+type ScrollOptions = {
+  root?: Element | null;
+  rootMargin?: string;
+  threshold?: number | number[];
+};
 
-  useEffect(() => {
-    // Delay the infinite scroll to reduce the chance of a race condition
-    // between the first two page
-    setTimeout(() => setIsReady(true), 250);
-  }, []);
+type UseInfiniteScrollResult<T> = {
+  has_more: boolean;
+  page: number;
+  items: Array<T>;
+};
 
-  const scrollObserver = useCallback(
-    (node: Element) => {
-      new IntersectionObserver((entries) => {
-        entries.forEach((en) => {
-          is_ready &&
-            en.intersectionRatio > 0 &&
-            dispatch({ type: PageAction.Advance });
-        });
-      }).observe(node);
+export const useInfiniteScroll = <T>(
+  args: UseInfiniteScrollOptions<T>,
+): UseInfiniteScrollResult<T> => {
+  const { onScroll, observedElement, dependencies = [], options } = args;
+  const { is_busy } = useContext(AppContext);
+
+  const [has_more, setHasMore] = useState(true);
+  const [items, setItems] = useState<Array<T>>([]);
+  const [page, setPage] = useState(0);
+
+  const fetchMoreData = useCallback(
+    async (page: number) => {
+      is_busy.value = true;
+
+      try {
+        const items = await onScroll(page);
+
+        if (items.length === 0) {
+          setHasMore(false);
+        } else {
+          setItems((prev) => (page === 0 ? items : [...prev, ...items]));
+          setPage((prev) => prev + 1);
+        }
+      } catch (error) {
+        setHasMore(false);
+        console.error("Error fetching data:", error);
+      } finally {
+        is_busy.value = false;
+      }
     },
-    [dispatch, is_ready],
+    [onScroll, page],
   );
 
   useEffect(() => {
-    if (scroll_ref?.current) {
-      scrollObserver(scroll_ref.current);
+    setPage(0);
+    setItems([]);
+    setHasMore(true);
+    is_busy.value = false;
+    fetchMoreData(0);
+  }, [...dependencies]);
+
+  useEffect(() => {
+    if (is_busy.value || !has_more) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        fetchMoreData(page);
+      }
+    }, options);
+
+    if (observedElement.current) {
+      observer.observe(observedElement.current);
     }
-  }, [scrollObserver, scroll_ref]);
+
+    return () => {
+      if (observedElement.current) {
+        observer.unobserve(observedElement.current);
+      }
+    };
+  }, [observedElement, fetchMoreData, has_more, is_busy.value, options]);
+
+  return { has_more, page, items };
 };

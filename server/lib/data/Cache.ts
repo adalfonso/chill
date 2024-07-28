@@ -4,7 +4,7 @@ import { jwt_expiration_seconds } from "@server/controllers/AuthController";
 
 /** Singleton cache connection instance */
 export class Cache {
-  /** Database Connection */
+  /** Cache Connection */
   static _instance: ReturnType<typeof createClient>;
 
   /**
@@ -14,7 +14,7 @@ export class Cache {
    */
   static async connect(host: string) {
     if (Cache._instance) {
-      throw new Error("Database is already connected");
+      throw new Error("Cache is already connected");
     }
 
     try {

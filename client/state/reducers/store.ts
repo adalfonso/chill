@@ -1,9 +1,10 @@
+import { configureStore } from "@reduxjs/toolkit";
+
 import caster from "./caster";
 import mediaMenu from "./mediaMenu";
 import player from "./player";
 import playlistEditor from "./playlistEditor";
 import user from "./user";
-import { configureStore } from "@reduxjs/toolkit";
 
 const store = configureStore({
   reducer: {
@@ -15,7 +16,7 @@ const store = configureStore({
   },
 });
 
-export type RootState = ReturnType<typeof store.getState>;
+type RootState = ReturnType<typeof store.getState>;
 
 export const getState = (state: RootState) => state;
 

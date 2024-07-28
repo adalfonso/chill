@@ -1,21 +1,22 @@
-import "./ui.scss";
 import { useState } from "react";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
-interface SelectProps<T> {
+import "./ui.scss";
+
+type SelectProps<T> = {
   onChange: (match: T) => void;
   children: JSX.Element[];
   value: T;
   displayAs: string;
-}
+};
 
-export function Select<T>({
+export const Select = <T,>({
   onChange,
   children,
   value,
   displayAs,
-}: SelectProps<T>) {
+}: SelectProps<T>) => {
   const [expanded, setExpanded] = useState(false);
 
   const select = (value: T) => () => {
@@ -46,4 +47,4 @@ export function Select<T>({
       </div>
     </div>
   );
-}
+};

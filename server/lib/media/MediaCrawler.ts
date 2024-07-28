@@ -1,23 +1,45 @@
 import fs from "node:fs/promises";
 import mm from "music-metadata";
-import { Doc } from "@server/models/Base";
-import { Genre } from "@server/models/Genre";
-import { Media as MediaModel } from "@server/models/Media";
-import { Media } from "@common/models/Media";
-import { Nullable } from "@common/types";
-import { ObjectId } from "mongodb";
-import { Scan as ScanModel } from "@server/models/Scan";
-import { Scan, ScanStatus } from "@common/models/Scan";
-import { Unsaved } from "@common/models/Base";
-import { adjustImage } from "./image/ImageAdjust";
 import { extname, join } from "node:path";
+import { Scan, ScanStatus } from "@prisma/client";
+
+import { Maybe } from "@common/types";
+import { adjustImage } from "./image/ImageAdjust";
+import { db } from "../data/db";
+import {
+  upsertAlbums,
+  upsertGenres,
+  upsertArtists,
+  insertTracks,
+} from "./mappers";
+import { rebuildMusicSearchIndex } from "./MusicSearch";
 
 /** Config options used by the crawler */
-interface MediaCrawlerConfig {
+type MediaCrawlerConfig = {
   workers: number;
   chunk: number;
   file_types: string[];
-}
+};
+
+export type RawMediaPayload = {
+  path: string;
+  duration: number;
+  artist: Maybe<string>;
+  album: Maybe<string>;
+  title: Maybe<string>;
+  track: Maybe<number>;
+  genre: Maybe<string>;
+  year: Maybe<number>;
+  cover?: Maybe<AlbumCover>;
+  file_modified: Date;
+  file_type: string;
+};
+
+export type AlbumCover = {
+  format: string;
+  data: string;
+  type: string;
+};
 
 /** Traverse a directory and extract all media information */
 export class MediaCrawler {
@@ -25,16 +47,19 @@ export class MediaCrawler {
   private _queue: string[] = [];
 
   /** Fully processed file data */
-  private _processed: Unsaved<Media>[] = [];
+  private _processed: Array<RawMediaPayload> = [];
 
   /** Number of available workers */
   private _available_workers = 10;
 
   /** If the DB is currently being written to */
-  private _writing = false;
+  private _write_lock: Maybe<Promise<void>> = null;
 
   /** Currently running scan document */
-  private _scan: Nullable<Doc<Scan>> = null;
+  private _scan: Maybe<Scan> = null;
+
+  /** Time/data the scan started */
+  private _start_time: Maybe<Date> = null;
 
   /**
    * @param _config crawler config
@@ -47,18 +72,21 @@ export class MediaCrawler {
    * @param dir directory to start from
    * @returns crawler results
    */
-  public async crawl(dir: string): Promise<Doc<Scan>> {
+  public async crawl(dir: string): Promise<Scan> {
     if (this._scan !== null) {
       return this._scan;
     }
 
     console.info("Crawling starting... 🐛");
 
-    // TODO: remove this is temp
-    await MediaModel.deleteMany();
-    this._scan = await new ScanModel().save();
-    this._available_workers = this._config.workers;
+    this._start_time = new Date();
 
+    await db.playlistTrack.deleteMany();
+    await db.playlist.deleteMany();
+    await db.track.deleteMany();
+
+    this._scan = await db.scan.create({ data: {} });
+    this._available_workers = this._config.workers;
     this._crawl(dir);
     return this._scan;
   }
@@ -77,7 +105,7 @@ export class MediaCrawler {
     }
 
     this._available_workers++;
-    this._process();
+    this._tick();
   }
 
   /**
@@ -86,7 +114,7 @@ export class MediaCrawler {
    * This will get called periodically whenver it is time to further process the
    * crawl. This typically happens after a dir is read or metadata areprocessed.
    */
-  private async _process() {
+  private async _tick() {
     if (this._scan?.status !== ScanStatus.Active) {
       return;
     }
@@ -129,7 +157,7 @@ export class MediaCrawler {
     // Not a valid file
     if (!this._config.file_types.includes(file_type)) {
       this._available_workers++;
-      return this._process();
+      return this._tick();
     }
 
     try {
@@ -145,7 +173,7 @@ export class MediaCrawler {
     }
 
     this._available_workers++;
-    this._process();
+    this._tick();
   }
 
   /**
@@ -154,8 +182,7 @@ export class MediaCrawler {
    * @param file_path file path
    * @returns meta data
    */
-  private async _getMetadata(file_path: string): Promise<Unsaved<Media>> {
-    const id = new ObjectId().toString();
+  private async _getMetadata(file_path: string): Promise<RawMediaPayload> {
     const result = await mm.parseFile(file_path, { duration: true });
     const { common, format } = result;
     const cover = mm.selectCover(common.picture);
@@ -173,7 +200,6 @@ export class MediaCrawler {
     }
 
     return {
-      _id: id,
       path: file_path,
       file_type: extname(file_path).replace(".", "").toLowerCase(),
       duration: format.duration ?? 0,
@@ -186,12 +212,11 @@ export class MediaCrawler {
       cover:
         cover && cover_data
           ? {
-              filename: id + "." + cover.format.replace("image/", ""),
               format: cover.format,
               type: cover.type ?? "",
               data: cover_data,
             }
-          : undefined,
+          : null,
 
       file_modified: (await fs.stat(file_path)).ctime,
     };
@@ -203,27 +228,49 @@ export class MediaCrawler {
    * @param count number of records to write
    */
   private async _write(count = Infinity) {
-    if (this._writing || this._scan?.status !== ScanStatus.Active) {
-      return;
+    if (this._write_lock) {
+      await this._write_lock;
     }
 
-    try {
-      this._writing = true;
-      const records = this._processed.splice(0, count);
-      await MediaModel.insertMany(records);
-      this._scan.records_written += records.length;
-      this._scan.updated_at = new Date();
+    this._write_lock = new Promise(async (resolve, reject) => {
+      if (this._scan?.status !== ScanStatus.Active) {
+        return resolve();
+      }
 
-      await this._scan.save();
+      try {
+        const records = this._processed.splice(0, count);
 
-      console.info(
-        `Crawler stored ${this._scan.records_written} records... 🐛`,
-      );
-    } catch (e) {
-      console.error(e);
-    } finally {
-      this._writing = false;
-    }
+        const [genre_map, artist_map] = await Promise.all([
+          upsertGenres(records),
+          upsertArtists(records),
+        ]);
+
+        const album_map = await upsertAlbums(records, artist_map);
+
+        await insertTracks(records, {
+          genre: genre_map,
+          album: album_map,
+          artist: artist_map,
+        });
+
+        this._scan.records_written += records.length;
+        this._scan.updated_at = new Date();
+
+        await this._saveScan(this._scan);
+
+        console.info(
+          `Crawler stored ${this._scan.records_written} records... 🐛`,
+        );
+        resolve();
+      } catch (e) {
+        console.error(e);
+        reject(e);
+      } finally {
+        this._write_lock = null;
+      }
+    });
+
+    return this._write_lock;
   }
 
   /** Complete crawling */
@@ -237,8 +284,6 @@ export class MediaCrawler {
       throw new Error("Tried to complete scan but it was null");
     }
 
-    await writeGenres();
-
     this._scan.status = status;
     this._scan.updated_at = new Date();
 
@@ -246,20 +291,29 @@ export class MediaCrawler {
       this._scan.completed_at = this._scan.updated_at;
     }
 
-    await this._scan.save();
+    await this._saveScan(this._scan);
+
     this._scan = null;
 
+    const start = this._start_time ?? new Date();
+
     console.info(`Crawling ${status.toLowerCase()}... 🐛`);
+    console.info(
+      `Took ${(new Date().valueOf() - start?.valueOf()) / 1000} seconds`,
+    );
+
+    await rebuildMusicSearchIndex();
+  }
+
+  /**
+   * Update scan document after a change has been made
+   *
+   * @param scan - current scan object
+   */
+  private async _saveScan(scan: Scan) {
+    this._scan = await db.scan.update({
+      where: { id: scan.id },
+      data: { ...scan },
+    });
   }
 }
-
-/** Create genre documents from existing media files */
-const writeGenres = async () => {
-  const genres = await MediaModel.distinct("genre", {
-    genre: { $nin: [null, ""] },
-  });
-
-  await Genre.deleteMany();
-
-  await Genre.insertMany(genres.map((name) => ({ name })));
-};

@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   app:
     container_name: chill-app
@@ -17,18 +15,21 @@ services:
       - public_html:/usr/src/app/dist/client
       - nginx_config:/usr/src/app/nginx
     depends_on:
-      - mongo
+      - postgres
       - redis
+      - elasticsearch
 
-  mongo:
+  postgres:
     container_name: chill-database
-    image: mongo:5.0
-    restart: unless-stopped
+    image: postgres:16-alpine
     ports:
-      - 27017:27017
+      - 5432:5432
     volumes:
-      - mongodb:/data/db
-      - mongodb_config:/data/configdb
+      - postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
 
   redis:
     container_name: chill-cache
@@ -41,6 +42,18 @@ services:
       - 6379:6379
     volumes:
       - redis:/data/cache
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: elasticsearch
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      ELASTIC_PASSWORD: ${SEARCH_ENGINE_PASSWORD}
+    volumes:
+      - elastic-search:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
 
   nginx:
     container_name: chill-gateway
@@ -59,8 +72,8 @@ services:
       - app
 
 volumes:
-  mongodb:
-  mongodb_config:
+  postgres:
   redis:
+  elastic-search:
   public_html:
   nginx_config:

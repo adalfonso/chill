@@ -1,9 +1,9 @@
 import { SearchResult as Result } from "@common/types";
 
-interface SearchResultProps {
+type SearchResultProps = {
   result: Result;
   onVisit: (file: Result) => void;
-}
+};
 
 export const SearchResult = ({ result, onVisit }: SearchResultProps) => {
   const handleClick = () => onVisit(result);

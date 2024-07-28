@@ -1,5 +1,6 @@
 import express from "express";
 import passport from "passport";
+
 import { AuthController } from "@controllers/AuthController";
 import { isAuthenticated } from "@server/middleware/isAuthenticated";
 

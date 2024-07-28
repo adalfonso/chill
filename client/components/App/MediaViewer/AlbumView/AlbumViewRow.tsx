@@ -1,7 +1,10 @@
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+
 import { Equalizer } from "@client/components/ui/Equalizer";
 import { FileInfo } from "../FileInfo";
 import { FileMenu, FileMenuHandler } from "../FileMenu";
-import { Media } from "@common/models/Media";
+import { PlayableTrack } from "@common/types";
 import { artistUrl } from "@client/lib/url";
 import { getPlayPayload } from "@client/state/reducers/player";
 import { getState } from "@reducers/store";
@@ -9,16 +12,14 @@ import { noPropagate, secondsToMinutes } from "@client/lib/util";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import { setMenu } from "@client/state/reducers/mediaMenu";
 import { useBackNavigate, useId, useMenu, useViewport } from "@hooks/index";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 
-export interface AlbumViewRowProps {
-  file: Media;
+type AlbumViewRowProps = {
+  track: PlayableTrack;
   index: number;
   playAll: (index: number) => () => void;
-}
+};
 
-export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
+export const AlbumViewRow = ({ track, index, playAll }: AlbumViewRowProps) => {
   const { player, mediaMenu } = useSelector(getState);
   const file_menu_id = useId();
   const file_info_id = useId();
@@ -26,6 +27,8 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { width } = useViewport();
+
+  const { artist_id } = track;
 
   const is_mobile = width < screen_breakpoint_px;
   const menu_visible = mediaMenu.menu_id === file_menu_id;
@@ -37,37 +40,46 @@ export const AlbumViewRow = ({ file, index, playAll }: AlbumViewRowProps) => {
   );
 
   const menuHandler: FileMenuHandler = {
-    play: () => playAll(index)(),
-    getFiles: getPlayPayload(player.is_casting, [file]),
+    play: () => {
+      dispatch(setMenu(null));
+
+      // Fixes race condition where the player opens before this menu closes
+      setTimeout(() => playAll(index)(), 20);
+    },
+    getTracks: getPlayPayload(player.is_casting, [track]),
   };
 
   return (
-    <div className="row" onClick={playAll(index)} key={file.path}>
+    <div className="row" onClick={playAll(index)} key={track.path}>
       <div className="track">
-        {file.track}
-        {player.now_playing?.path === file.path && player.is_playing && (
+        {track.number}
+        {player.now_playing?.path === track.path && player.is_playing && (
           <Equalizer />
         )}
       </div>
-      <div>{file.title}</div>
+      <div>{track.title}</div>
       <div>
-        <div className="duration mono">{secondsToMinutes(file.duration)}</div>
+        <div className="duration mono">{secondsToMinutes(track.duration)}</div>
       </div>
       <div className="tail">
         <FileMenu
           menu_id={file_menu_id}
-          title={`${file.artist} - ${file.title}`}
+          title={`${track?.artist} - ${track.title}`}
           handler={menuHandler}
         >
-          <div onClick={noPropagate(() => navigate(artistUrl(file)))}>
-            Go to Artist
-          </div>
+          <>
+            {artist_id && (
+              <div onClick={noPropagate(() => navigate(artistUrl(artist_id)))}>
+                Go to Artist
+              </div>
+            )}
+          </>
           <div onClick={noPropagate(file_info_menu.toggle)}>
             File Information
           </div>
         </FileMenu>
         {file_info_menu.is_active && (
-          <FileInfo menu_id={file_info_id} file={file}></FileInfo>
+          <FileInfo menu_id={file_info_id} file={track}></FileInfo>
         )}
       </div>
     </div>

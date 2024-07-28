@@ -1,13 +1,14 @@
+import { useState, useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
 import "./Scrubber.scss";
 import { getState } from "@reducers/store";
 import {
-  cancelAllAnimationFrames,
+  cancelAnimationFrames,
   getTimeTracking,
   startAnimationLoop,
 } from "@client/lib/util";
-import { useDispatch, useSelector } from "react-redux";
 import { useDrag } from "@hooks/index";
-import { useState, useEffect, useRef } from "react";
 import {
   audio,
   crossover,
@@ -71,7 +72,7 @@ export const Scrubber = () => {
     }
 
     return () => {
-      cancelAllAnimationFrames();
+      cancelAnimationFrames();
 
       if (!is_casting_local_var) {
         audio.removeEventListener("timeupdate", onCrossover);

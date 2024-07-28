@@ -28,7 +28,7 @@ type RandomPlayOptions = {
 
 type PlaylistPlayOptions = {
   mode: typeof PlayMode.Playlist;
-  id: string;
+  id: number;
   page: number;
   limit: number;
   complete: boolean;

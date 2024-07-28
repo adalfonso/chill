@@ -1,21 +1,8 @@
-import {
-  useScroll,
-  PageAction,
-  pageReducer,
-  useInfiniteScroll,
-  FetchAction,
-  useFetch,
-} from "@hooks/index";
-import {
-  useState,
-  useRef,
-  cloneElement,
-  useReducer,
-  Dispatch,
-  useEffect,
-} from "react";
+import { useState, useRef, cloneElement } from "react";
 
-interface SmartScrollProps<T> {
+import { useScroll, useInfiniteScroll } from "@hooks/index";
+
+type SmartScrollProps<T> = {
   // Header text
   header?: string;
 
@@ -26,51 +13,35 @@ interface SmartScrollProps<T> {
   wrapperClassName?: string;
 
   // Values used to reset the page when the change
-  resetPagerOn?: Array<string>;
-
-  // Controls dispatch of media fetching
-  mediaDispatch: Dispatch<FetchAction<T>>;
+  dependencies?: Array<string>;
 
   // Handles an infinite scrolling event
-  onInfiniteScroll: (page: number) => Promise<Array<T>>;
+  onScroll: (page: number) => Promise<Array<T>>;
 
-  // Handles the aftermath of an infinite scroll event
-  onInfiniteScrollDone?: () => void;
-
-  // MediaTiles to display
-  children: JSX.Element[];
-}
+  // Function that generates displayable items
+  makeItems: (items: Array<T>) => Array<JSX.Element>;
+};
 
 export const SmartScroller = <T,>({
   header,
   className,
   wrapperClassName,
-  children,
-  mediaDispatch,
-  resetPagerOn = [],
-  onInfiniteScroll,
-  onInfiniteScrollDone,
+  dependencies = [],
+  onScroll,
+  makeItems,
 }: SmartScrollProps<T>) => {
   const mediaViewer = useRef<HTMLDivElement>(null);
   const [scrollPosition, setScrollPosition] = useState(0);
-  const bottomBoundaryRef = useRef<HTMLDivElement>(null);
-  const [pager, pagerDispatch] = useReducer(pageReducer, { page: 0 });
+  const observedElement = useRef<HTMLDivElement>(null);
 
   useScroll(mediaViewer, (_, position) => setScrollPosition(position));
-  useInfiniteScroll(bottomBoundaryRef, pagerDispatch);
 
-  // make API calls
-  useFetch<T>({
-    pager,
-    dispatch: mediaDispatch,
-    onFetch: () => onInfiniteScroll(pager.page),
-    onDone: onInfiniteScrollDone,
+  const { items } = useInfiniteScroll<T>({
+    onScroll,
+    observedElement,
+    options: { root: null, rootMargin: "0px", threshold: 1.0 },
+    dependencies,
   });
-
-  useEffect(() => {
-    pagerDispatch({ type: PageAction.Reset });
-    mediaDispatch({ type: PageAction.Reset });
-  }, resetPagerOn);
 
   return (
     <div id="media-viewer" ref={mediaViewer}>
@@ -82,11 +53,11 @@ export const SmartScroller = <T,>({
         )}
 
         <div className={wrapperClassName ?? "media-tiles"}>
-          {children.map((tile) =>
+          {makeItems(items).map((tile) =>
             cloneElement(tile, { parentScrollPosition: scrollPosition }),
           )}
         </div>
-        <div id="page-bottom-boundary" ref={bottomBoundaryRef}></div>
+        <div id="page-bottom-boundary" ref={observedElement}></div>
       </div>
     </div>
   );

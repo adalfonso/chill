@@ -12,4 +12,5 @@ tests/**/*.jsx
 .env
 coverage
 .vscode
+todo.md
 

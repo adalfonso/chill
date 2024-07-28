@@ -1,10 +1,11 @@
-import "./UserSettings.scss";
 import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 
-interface UserSettingsProps {
+import "./UserSettings.scss";
+
+type UserSettingsProps = {
   setVis: () => void;
-}
+};
 
 export const UserSettings = ({ setVis: onClose }: UserSettingsProps) => {
   return (

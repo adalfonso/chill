@@ -1,11 +1,10 @@
-import { ArrayElement } from "@common/types";
-import { client } from "@client/client";
-import { IndexedMedia } from "@common/models/Media";
+import { ArrayElement, PlayableTrackWithIndex } from "@common/types";
+import { api } from "@client/client";
 
 export type PreCastPayload = Awaited<
-  ReturnType<typeof client.media.castInfo.query>
+  ReturnType<typeof api.track.castInfo.query>
 >;
 
 export type CastPayload = (ArrayElement<PreCastPayload> & {
-  meta: IndexedMedia;
+  meta: PlayableTrackWithIndex;
 })[];

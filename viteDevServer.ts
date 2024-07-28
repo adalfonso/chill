@@ -6,10 +6,10 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-interface ConfigOptions {
+type ConfigOptions = {
   port?: number;
   initializer?: (app: Express) => Promise<unknown>;
-}
+};
 
 /**
  * Start a Vite dev server

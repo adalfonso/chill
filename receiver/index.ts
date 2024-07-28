@@ -1,5 +1,5 @@
 import "./app.scss";
-import { castDebugLogger, debug, log_tag } from "./debug";
+import { castDebugLogger, log_tag } from "./debug";
 import type { ErrorReason } from "chromecast-caf-receiver/cast.framework.messages";
 
 const context = cast.framework.CastReceiverContext.getInstance();

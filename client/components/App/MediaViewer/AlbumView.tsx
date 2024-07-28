@@ -1,92 +1,104 @@
-import "./AlbumView.scss";
-import { AlbumViewRow } from "./AlbumView/AlbumViewRow";
-import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { Media } from "@common/models/Media";
-import { MediaApi } from "@client/api/MediaApi";
-import { client } from "@client/client";
+import { Album, Artist } from "@prisma/client";
 import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
-import { getState } from "@client/state/reducers/store";
-import { play } from "@reducers/player";
-import { truncate } from "lodash-es";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@hooks/index";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext, useCallback } from "react";
 
-interface AlbumViewProps {
-  setLoading: (loading: boolean) => void;
-}
+import "./AlbumView.scss";
+import { AlbumRelationalData, Maybe, PlayableTrack } from "@common/types";
+import { AlbumViewRow } from "./AlbumView/AlbumViewRow";
+import { AppContext } from "@client/state/AppState";
+import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
+import { api } from "@client/client";
+import { getState } from "@client/state/reducers/store";
+import { play } from "@reducers/player";
+import { truncate } from "@common/commonUtils";
 
 type AlbumParams = {
-  album: string;
+  artist_id?: string;
+  album_id: string;
 };
 
-export const AlbumView = ({ setLoading }: AlbumViewProps) => {
-  const album = decodeURIComponent(useParams<AlbumParams>().album ?? "");
+export const AlbumView = () => {
+  const { is_busy } = useContext(AppContext);
+  const album_id = parseInt(useParams<AlbumParams>().album_id ?? "");
+  const artist_id = useParams<AlbumParams>().artist_id
+    ? parseInt(useParams<AlbumParams>().artist_id ?? "")
+    : undefined;
   const { player } = useSelector(getState);
-  const artist = useQuery().get("artist");
-  const no_album = useQuery().get("no_album") === "1";
-  const [files, setFiles] = useState<Media[]>([]);
+  const [artist, setArtist] = useState<Maybe<Artist>>(null);
+  const [album, setAlbum] = useState<Maybe<Album & AlbumRelationalData>>(null);
+  const [tracks, setTracks] = useState<Maybe<Array<PlayableTrack>>>(null);
   const dispatch = useDispatch();
+
+  const loadInfo = useCallback(() => {
+    Promise.all(
+      [
+        artist_id && api.artist.get.query({ id: artist_id }).then(setArtist),
+        api.album.get.query({ id: album_id }).then(setAlbum),
+        api.track.getByAlbumAndOrArtist
+          .query({ artist_id, album_id })
+          .then(setTracks),
+      ].filter(Boolean),
+    ).finally(() => (is_busy.value = false));
+  }, [album_id]);
+
+  useEffect(loadInfo, [loadInfo]);
 
   const playAll =
     (index = 0) =>
     async () => {
+      if (!tracks) {
+        return;
+      }
+
       const is_casting = player.is_casting;
       const cast_info = is_casting
-        ? await client.media.castInfo.query({
-            media_ids: files.map((file) => file._id),
+        ? await api.track.castInfo.query({
+            track_ids: tracks.map((track) => track.id) ?? [],
           })
         : null;
 
-      dispatch(play({ files: [...files], cast_info, index }));
+      dispatch(play({ tracks: [...(tracks ?? [])], cast_info, index }));
     };
 
-  useEffect(() => {
-    setLoading(true);
+  const artist_ids = () =>
+    new Set(tracks?.map((track) => track.artist_id).filter(Boolean));
 
-    const match = {
-      album: no_album ? null : album,
-      artist: artist ?? undefined,
-    };
-
-    if (match.artist === undefined) {
-      delete match.artist;
-    }
-
-    MediaApi.query(match)
-      .then(setFiles)
-      .catch(({ message }) =>
-        console.error("Failed to load album tracks data:", message),
-      )
-      .finally(() => setLoading(false));
-  }, [album]);
-
-  const artists = () => [...new Set(files.map((file) => file.artist))];
-  const getYear = () => [...new Set(files.map((file) => file.year))].join(",");
-
+  const getArtistName = () => {
+    return (
+      // Explicitly loaded album for artist from music library/artist
+      artist?.name ||
+      // Loaded album and there are multiple artists
+      (artist_ids().size > 1 && "Various Artists") ||
+      // Loaded album but there is a single artist
+      album?.artist?.name ||
+      // Fallback
+      "Unknown Artist"
+    );
+  };
   return (
     <div id="media-viewer">
       <div className="album-view wide">
         <div className="details">
           <div className="album-art">
-            {files?.[0]?.cover?.filename && (
+            {album?.album_art?.filename && (
               <img
-                src={`/api/v1/media/cover/${files[0].cover.filename}?size=160`}
+                src={`/api/v1/media/cover/${album?.album_art?.filename}?size=160`}
                 loading="lazy"
               />
             )}
           </div>
 
           <div className="info">
-            <h2>{artists().length > 1 ? "Various Artists" : artists()[0]}</h2>
-            {artists().length > 1 && (
-              <h4 title={artists().join(",  ")}>
-                {truncate(artists().join(",  "), { length: 72 })}
+            <h2>{getArtistName()}</h2>
+            {artist_ids().size > 1 && (
+              <h4 title={[...artist_ids()].join(",  ")}>
+                {truncate([...artist_ids()].join(",  "), { length: 72 })}
               </h4>
             )}
-            <h4>{truncate(album, { length: 50 })}</h4>
-            <h4>{getYear()}</h4>
+            <h4>{truncate(album?.title ?? "", { length: 50 })}</h4>
+            <h4>{album?.year}</h4>
             <div className="play-button" onClick={() => playAll()()}>
               <Icon icon={faPlayCircle} size="sm" pull="right" />
               Play
@@ -100,16 +112,17 @@ export const AlbumView = ({ setLoading }: AlbumViewProps) => {
           <div className="header"></div>
           <div className="header align-right"></div>
 
-          {files
-            .sort((a, b) => (a.track ?? 0) - (b.track ?? 0))
-            .map((file, index) => (
-              <AlbumViewRow
-                index={index}
-                file={file}
-                playAll={playAll}
-                key={file._id.toString()}
-              ></AlbumViewRow>
-            ))}
+          {tracks &&
+            tracks
+              .sort((a, b) => (a.number ?? 0) - (b.number ?? 0))
+              .map((track, index) => (
+                <AlbumViewRow
+                  index={index}
+                  track={track}
+                  playAll={playAll}
+                  key={track.id.toString()}
+                ></AlbumViewRow>
+              ))}
         </div>
       </div>
     </div>

@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Genre {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique
+  tracks     Track[]
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
+model Album {
+  id         Int       @id @default(autoincrement())
+  title      String
+  year       Int?
+  album_art  AlbumArt?
+  tracks     Track[]
+  artist_id  Int?
+  artist     Artist?   @relation(fields: [artist_id], references: [id])
+  created_at DateTime  @default(now())
+  updated_at DateTime  @default(now()) @updatedAt
+
+  @@unique([title, year])
+}
+
+model AlbumArt {
+  id         Int      @id @default(autoincrement())
+  filename   String   @unique
+  format     String
+  data       String
+  type       String
+  album      Album    @relation(fields: [album_id], references: [id])
+  album_id   Int      @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  @@index([album_id])
+}
+
+model Artist {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique
+  tracks     Track[]
+  albums     Album[]
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
+model Track {
+  id             Int             @id @default(autoincrement())
+  title          String
+  path           String          @unique
+  number         Int?
+  duration       Decimal
+  file_type      String
+  file_modified  DateTime
+  genre          Genre?          @relation(fields: [genre_id], references: [id])
+  genre_id       Int?
+  artist         Artist?         @relation(fields: [artist_id], references: [id])
+  artist_id      Int?
+  album          Album?          @relation(fields: [album_id], references: [id])
+  album_id       Int?
+  playlist_items PlaylistTrack[]
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @default(now()) @updatedAt
+
+  @@index([album_id])
+  @@index([artist_id])
+  @@index([genre_id])
+}
+
+model Playlist {
+  id         Int             @id @default(autoincrement())
+  title      String          @unique
+  tracks     PlaylistTrack[]
+  created_at DateTime        @default(now())
+  updated_at DateTime        @default(now()) @updatedAt
+}
+
+model PlaylistTrack {
+  id          Int      @id @default(autoincrement())
+  index       Int
+  track       Track    @relation(fields: [track_id], references: [id])
+  track_id    Int
+  playlist    Playlist @relation(fields: [playlist_id], references: [id])
+  playlist_id Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now()) @updatedAt
+
+  @@index([track_id])
+  @@index([playlist_id])
+  @@map("PlaylistTrack")
+}
+
+model Scan {
+  id              Int        @id @default(autoincrement())
+  completed_at    DateTime?
+  status          ScanStatus @default(Active)
+  records_written Int        @default(0)
+  created_at      DateTime   @default(now())
+  updated_at      DateTime   @default(now()) @updatedAt
+}
+
+enum ScanStatus {
+  Active
+  Failed
+  Completed
+}
+
+model Invitation {
+  id         Int      @id @default(autoincrement())
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+  email      String   @unique
+}
+
+model User {
+  id         Int           @id @default(autoincrement())
+  created_at DateTime      @default(now())
+  updated_at DateTime      @default(now()) @updatedAt
+  email      String        @unique
+  type       UserType
+  settings   UserSettings?
+}
+
+enum UserType {
+  User
+  Admin
+}
+
+model UserSettings {
+  id            Int          @id @default(autoincrement())
+  created_at    DateTime     @default(now())
+  updated_at    DateTime     @default(now()) @updatedAt
+  audio_quality AudioQuality @default(Original)
+  user          User         @relation(fields: [user_id], references: [id])
+  user_id       Int          @unique
+
+  @@index([user_id])
+}
+
+enum AudioQuality {
+  Original
+  Trash
+  Low
+  Medium
+  Standard
+  Extreme
+}

@@ -3,10 +3,10 @@ import { MouseEvent } from "react";
 import { SizeProp } from "@fortawesome/fontawesome-svg-core";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 
-interface CloseProps {
+type CloseProps = {
   onClose: (e: MouseEvent<HTMLElement>) => void;
   size?: SizeProp;
-}
+};
 
 export const Close = ({ onClose, size = "lg" }: CloseProps) => {
   return (

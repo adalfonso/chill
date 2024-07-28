@@ -1,16 +1,17 @@
-import "./AppSettings.scss";
-import { AudioQuality } from "./AppSettings/AudioQuality";
-import { Close } from "@client/components/ui/Close";
-import { InviteUser } from "./AppSettings/InviteUser";
-import { MediaApi } from "@client/api/MediaApi";
-import { UserType } from "@common/types";
-import { getState } from "@reducers/store";
 import { useSelector } from "react-redux";
 import { useState } from "react";
 
-interface AppSettingsProps {
+import "./AppSettings.scss";
+import { AudioQualitySetting } from "./AppSettings/AudioQualitySetting";
+import { Close } from "@client/components/ui/Close";
+import { InviteUser } from "./AppSettings/InviteUser";
+import { UserType } from "@common/types";
+import { api } from "@client/client";
+import { getState } from "@reducers/store";
+
+type AppSettingsProps = {
   onClose: () => void;
-}
+};
 
 export const AppSettings = ({ onClose }: AppSettingsProps) => {
   const [busy, setBusy] = useState(false);
@@ -28,7 +29,7 @@ export const AppSettings = ({ onClose }: AppSettingsProps) => {
     }
 
     setBusy(true);
-    await MediaApi.scan();
+    await api.media.scan.mutate();
     setBusy(false);
   };
 
@@ -38,7 +39,7 @@ export const AppSettings = ({ onClose }: AppSettingsProps) => {
         <Close onClose={onClose}></Close>
 
         <div className="settings">
-          <AudioQuality user={user} />
+          <AudioQualitySetting user={user} />
 
           {user.type === UserType.Admin && <InviteUser />}
 

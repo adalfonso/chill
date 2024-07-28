@@ -1,30 +1,32 @@
-import { Playlist } from "@common/models/Playlist";
-import { PlaylistApi } from "@client/api/PlaylistApi";
-import { getState } from "@reducers/store";
 import { useSelector } from "react-redux";
 import { useState, FormEvent } from "react";
 
-interface PlaylistUpdateProps {
+import { api } from "@client/client";
+import { getState } from "@reducers/store";
+import { PlaylistWithCount } from "@common/types";
+
+type PlaylistUpdateProps = {
   onDone: () => void;
-}
+};
 
 export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
   const [_input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
-  const [results, setResults] = useState<Playlist[]>([]);
-  const [selected, setSelected] = useState<Playlist>();
+  const [results, setResults] = useState<Array<PlaylistWithCount>>([]);
+  const [selected, setSelected] = useState<PlaylistWithCount>();
   const { playlistEditor } = useSelector(getState);
 
-  const submit = (selected: Playlist) => () => {
+  const submit = (selected: PlaylistWithCount) => () => {
     if (busy) {
       return;
     }
 
     setBusy(true);
 
-    const items = playlistEditor.items.map((item) => item._id.toString());
+    const track_ids = playlistEditor.track_ids.map((item) => item.id);
 
-    PlaylistApi.update(selected._id.toString(), items)
+    api.playlist.update
+      .mutate({ id: selected.id, track_ids: track_ids })
       .then(onDone)
       .catch()
       .finally(() => setBusy(false));
@@ -40,7 +42,8 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
 
     setBusy(true);
 
-    PlaylistApi.search(value)
+    api.playlist.search
+      .query({ query: value })
       .then(setResults)
       .catch(({ message }) =>
         console.error("Failed to search playlist:", message),
@@ -48,7 +51,7 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
       .finally(() => setBusy(false));
   };
 
-  const choosePlaylist = (playlist: Playlist) => () => {
+  const choosePlaylist = (playlist: PlaylistWithCount) => () => {
     setSelected(playlist);
     setResults([]);
   };
@@ -61,10 +64,10 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
         {results.map((result) => (
           <div
             className="result"
-            key={result._id.toString()}
+            key={result.id}
             onClick={choosePlaylist(result)}
           >
-            {result.name}
+            {result.title}
           </div>
         ))}
       </div>
@@ -72,8 +75,8 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
       {selected && (
         <>
           <div className="selected-playlist">
-            {selected.name} - {selected.items.length} items (+
-            {playlistEditor.items.length} new)
+            {selected.title} - {selected.track_count} items (+
+            {playlistEditor.track_ids.length} new)
           </div>
           <button onClick={submit(selected)}>Update</button>
         </>

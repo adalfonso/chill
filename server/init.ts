@@ -2,10 +2,14 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import express, { Express } from "express";
 import passport from "passport";
+import { UserType } from "@prisma/client";
+
 import { Cache } from "./lib/data/Cache";
-import { Database } from "./lib/data/Database";
 import { configurePassport } from "./passportConfig";
 import { initRouter } from "@routes/router";
+import { Search } from "./lib/data/Search";
+import { db } from "./lib/data/db";
+
 /**
  * Initialize the express app
  *
@@ -24,26 +28,34 @@ export const init = async (app: Express) => {
   initRouter(app);
 
   await Promise.all([
-    Database.connect(env.MONGO_HOST, env.MONGO_PORT),
     Cache.connect(env.REDIS_HOST),
+    Search.connect({
+      node: env.SEARCH_ENGINE_URL,
+      username: env.SEARCH_ENGINE_USERNAME,
+      password: env.SEARCH_ENGINE_PASSWORD,
+    }),
   ]);
+
+  await createInitialAdminUser();
 
   return env;
 };
 
 // List of required env vars
 const required_vars = [
+  "ADMIN_EMAIL",
   "APP_PORT",
   "CAST_APP_ID",
   "GOOGLE_OAUTH_ID",
   "GOOGLE_OAUTH_SECRET",
   "HOST",
-  "MONGO_HOST",
-  "MONGO_PORT",
   "NODE_ENV",
   "NODE_PORT",
   "RECEIVER_SOURCE_DIR",
   "REDIS_HOST",
+  "SEARCH_ENGINE_PASSWORD",
+  "SEARCH_ENGINE_URL",
+  "SEARCH_ENGINE_USERNAME",
   "SIGNING_KEY",
   "SOURCE_DIR",
 ] as const;
@@ -52,8 +64,6 @@ const defaults: Record<string, string> = {
   APP_PORT: "3200",
   // Default receiver
   CAST_APP_ID: "CC1AD845",
-  MONGO_HOST: "mongo",
-  MONGO_PORT: "27017",
   NODE_ENV: "development",
   NODE_PORT: "3201",
   REDIS_HOST: "redis",
@@ -61,7 +71,7 @@ const defaults: Record<string, string> = {
   RECEIVER_SOURCE_DIR: "dist/receiver",
 } as const;
 
-export type EnvStore = {
+type EnvStore = {
   [K in (typeof required_vars)[number]]: string;
 };
 
@@ -87,4 +97,19 @@ const initEnvVars = () => {
   });
 
   return env;
+};
+
+// Seed the database with an initial admin
+const createInitialAdminUser = async () => {
+  if (!env.ADMIN_EMAIL || (await db.user.count())) {
+    return;
+  }
+
+  await db.user.create({
+    data: {
+      email: env.ADMIN_EMAIL,
+      type: UserType.Admin,
+      settings: { create: {} },
+    },
+  });
 };

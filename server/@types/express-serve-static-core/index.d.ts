@@ -1,9 +1,9 @@
-import { User as UserModel } from "@common/models/User";
+import { User as UserType, UserSettings } from "@prisma/client";
 
 declare global {
   namespace Express {
     interface Request {
-      user?: UserModel;
+      user?: UserType & { settings: Partial<UserSettings> | null };
     }
   }
 }

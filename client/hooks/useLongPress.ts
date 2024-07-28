@@ -1,9 +1,11 @@
-import { Nullable } from "@common/types";
 import { UIEvent, useCallback, useRef } from "react";
-interface InputTypes {
+
+import { Maybe } from "@common/types";
+
+type InputTypes = {
   mouse: boolean;
   touch: true;
-}
+};
 
 /**
  * React to a mouse down or touch for some period of time
@@ -20,7 +22,7 @@ export const useLongPress = (
   input_types: InputTypes = { mouse: true, touch: true },
   disable_context_menu = true,
 ) => {
-  const timeout = useRef<Nullable<NodeJS.Timeout>>(null);
+  const timeout = useRef<Maybe<NodeJS.Timeout>>(null);
 
   const startPress = useCallback(() => {
     timeout.current = setTimeout(() => {

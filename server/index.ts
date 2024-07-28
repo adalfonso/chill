@@ -1,5 +1,6 @@
 import express from "express";
 import compression from "compression";
+
 import { init } from "./init";
 
 const app = express();

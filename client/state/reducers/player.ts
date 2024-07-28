@@ -1,31 +1,30 @@
-import * as _ from "lodash-es";
-import { CastSdk } from "@client/lib/cast/CastSdk";
-import { IndexedMedia, Media } from "@common/models/Media";
-import { MobileDisplayMode, PlayMode, PlayOptions } from "./player.types";
-import { Nullable } from "@common/types";
-import { PreCastPayload } from "@client/lib/cast/types";
-import { client } from "@client/client";
 import { createSlice, PayloadAction as Action } from "@reduxjs/toolkit";
+
+import { CastSdk } from "@client/lib/cast/CastSdk";
+import { Maybe, PlayableTrack, PlayableTrackWithIndex } from "@common/types";
+import { MobileDisplayMode, PlayMode, PlayOptions } from "./player.types";
+import { PreCastPayload } from "@client/lib/cast/types";
+import { api } from "@client/client";
+import { shuffle as _shuffle, findIndex } from "@common/commonUtils";
 
 export let audio = new Audio();
 export let crossover = new Audio();
 
-export interface PlayerState {
+export type PlayerState = {
   is_casting: boolean;
   is_playing: boolean;
   is_shuffled: boolean;
-
   progress: number;
-  now_playing: Nullable<IndexedMedia>;
-  next_playing: Nullable<IndexedMedia>;
-  original_playlist: IndexedMedia[];
-  playlist: IndexedMedia[];
-  cast_info: Nullable<PreCastPayload>;
+  now_playing: Maybe<PlayableTrackWithIndex>;
+  next_playing: Maybe<PlayableTrackWithIndex>;
+  original_playlist: Array<PlayableTrackWithIndex>;
+  playlist: Array<PlayableTrackWithIndex>;
+  cast_info: Maybe<PreCastPayload>;
   index: number;
   volume: number;
   mobile_display_mode: MobileDisplayMode;
   play_options: PlayOptions;
-}
+};
 
 const initialState: PlayerState = {
   is_casting: false,
@@ -47,17 +46,17 @@ const initialState: PlayerState = {
 };
 
 type PlayLoad = {
-  files?: IndexedMedia[];
-  cast_info?: Nullable<PreCastPayload>;
+  tracks?: Array<PlayableTrack>;
+  cast_info?: Maybe<PreCastPayload>;
   index?: number;
   progress?: number;
   play_options?: PlayOptions;
 };
 
 const addSemanticIndex = (
-  tracks: Media[],
+  tracks: Array<PlayableTrack>,
   index?: string,
-): Array<IndexedMedia> =>
+): Array<PlayableTrackWithIndex> =>
   tracks.map((track, sub_index) => ({
     ...track,
     _index:
@@ -70,16 +69,19 @@ export const playerSlice = createSlice({
   reducers: {
     addToQueue: (
       state,
-      action: Action<{ files: Media[]; cast_info: Nullable<PreCastPayload> }>,
+      action: Action<{
+        tracks: Array<PlayableTrack>;
+        cast_info: Maybe<PreCastPayload>;
+      }>,
     ) => {
-      const { files, cast_info } = action.payload;
+      const { tracks, cast_info } = action.payload;
 
-      const tracks = addSemanticIndex(
-        files,
+      const tracks_with_index = addSemanticIndex(
+        tracks,
         (state.playlist?.length ?? 0).toString(),
       );
 
-      state.playlist = [...state.playlist, ...tracks];
+      state.playlist = [...state.playlist, ...tracks_with_index];
 
       if (state.is_casting) {
         if (state.cast_info === null) {
@@ -94,7 +96,7 @@ export const playerSlice = createSlice({
           );
         }
 
-        const payload = getCastPayload(tracks, cast_info);
+        const payload = getCastPayload(tracks_with_index, cast_info);
 
         state.cast_info = [...state.cast_info, ...cast_info];
 
@@ -122,22 +124,23 @@ export const playerSlice = createSlice({
 
     play: (state, action: Action<PlayLoad>) => {
       const {
+        tracks,
         cast_info = null,
         index = 0,
         progress = 0,
         play_options = { mode: PlayMode.Static, complete: true },
       } = action.payload;
 
-      const files = action.payload.files
-        ? addSemanticIndex(action.payload.files)
-        : undefined;
+      const tracks_with_index = action.payload.tracks
+        ? addSemanticIndex(action.payload.tracks)
+        : [];
 
-      if (files) {
-        state.playlist = files;
+      if (tracks) {
+        state.playlist = tracks_with_index;
         state.index = index;
         state.progress = progress;
-        state.now_playing = files[index];
-        state.next_playing = files[index + 1] ?? null;
+        state.now_playing = tracks_with_index[index];
+        state.next_playing = tracks_with_index[index + 1] ?? null;
         state.mobile_display_mode = MobileDisplayMode.Fullscreen;
         state.cast_info = cast_info;
         state.play_options = { ...play_options };
@@ -166,7 +169,7 @@ export const playerSlice = createSlice({
       // TODO: Create a common interface and facade over the cast SDK and audio
       if (state.is_casting) {
         // Only resume if no files are provided, cast will autoplay otherwise
-        if (!files) {
+        if (!tracks_with_index) {
           CastSdk.ResumePlay();
         }
       } else {
@@ -179,19 +182,22 @@ export const playerSlice = createSlice({
 
     playNext: (
       state,
-      action: Action<{ files: Media[]; cast_info: Nullable<PreCastPayload> }>,
+      action: Action<{
+        tracks: Array<PlayableTrack>;
+        cast_info: Maybe<PreCastPayload>;
+      }>,
     ) => {
-      const { files, cast_info } = action.payload;
+      const { tracks, cast_info } = action.payload;
 
-      const tracks = addSemanticIndex(
-        files,
+      const tracks_with_index = addSemanticIndex(
+        tracks,
         (state.now_playing?._index ?? 0).toString(),
       );
 
       const head = state.playlist.slice(0, state.index + 1);
       const tail = state.playlist.slice(state.index + 1);
 
-      state.playlist = [...head, ...tracks, ...tail];
+      state.playlist = [...head, ...tracks_with_index, ...tail];
       state.next_playing = state.playlist[state.index + 1] ?? null;
       loadNext(state);
 
@@ -210,7 +216,7 @@ export const playerSlice = createSlice({
 
         const cast_info_head = state.cast_info.slice(0, state.index + 1);
         const cast_info_tail = state.cast_info.slice(state.index + 1);
-        const payload = getCastPayload(tracks, cast_info);
+        const payload = getCastPayload(tracks_with_index, cast_info);
 
         state.cast_info = [...cast_info_head, ...cast_info, ...cast_info_tail];
 
@@ -320,11 +326,11 @@ export const playerSlice = createSlice({
         state.playlist = [...state.original_playlist];
       } else {
         state.original_playlist = [...state.playlist];
-        state.playlist = _.shuffle(state.playlist);
+        state.playlist = _shuffle(state.playlist);
       }
 
       state.is_shuffled = !state.is_shuffled;
-      state.index = _.findIndex(
+      state.index = findIndex(
         state.playlist,
         (file) => file.path === state.now_playing?.path,
       );
@@ -385,7 +391,7 @@ export default playerSlice.reducer;
  * @returns progress percentage 0-1
  */
 export const getAudioProgress = (
-  media: Nullable<IndexedMedia>,
+  media: Maybe<PlayableTrackWithIndex>,
   is_casting = false,
 ) => {
   if (media === null || !media.duration) {
@@ -402,12 +408,15 @@ export const getAudioProgress = (
 /**
  * Merge media and their cast information into a single cast payload
  *
- * @param files - media files
+ * @param tracks - media files
  * @param info - cast play info
  * @returns merged data
  */
-const getCastPayload = (files: IndexedMedia[], info: PreCastPayload) => {
-  return info.map((info, index) => ({ ...info, meta: files[index] }));
+const getCastPayload = (
+  tracks: Array<PlayableTrackWithIndex>,
+  info: PreCastPayload,
+) => {
+  return info.map((info, index) => ({ ...info, meta: tracks[index] }));
 };
 
 /**
@@ -423,11 +432,11 @@ const load = (state: PlayerState, use_crossover = false) => {
    * already been set as the current audio.
    */
   if (!use_crossover) {
-    audio.src = `/api/v1/media/${state.now_playing?._id}/load`;
+    audio.src = `/api/v1/media/${state.now_playing?.id}/load`;
   }
 
   if (state.next_playing) {
-    crossover.src = `/api/v1/media/${state.next_playing?._id}/load`;
+    crossover.src = `/api/v1/media/${state.next_playing?.id}/load`;
   }
 };
 
@@ -443,19 +452,19 @@ const loadNext = (state: PlayerState) => {
   state.next_playing = state.playlist[state.index + 1] ?? null;
 
   crossover.src = state.next_playing
-    ? `/api/v1/media/${state.next_playing?._id}/load`
+    ? `/api/v1/media/${state.next_playing?.id}/load`
     : "";
 };
 
 export const getPlayPayload =
-  (is_casting: boolean, files: IndexedMedia[]) => async () => {
-    let cast_info: Nullable<PreCastPayload> = null;
+  (is_casting: boolean, tracks: Array<PlayableTrack>) => async () => {
+    let cast_info: Maybe<PreCastPayload> = null;
 
     if (is_casting) {
-      cast_info = await client.media.castInfo.query({
-        media_ids: files.map((file) => file._id),
+      cast_info = await api.track.castInfo.query({
+        track_ids: tracks.map((track) => track.id),
       });
     }
 
-    return { files, cast_info };
+    return { tracks, cast_info };
   };
