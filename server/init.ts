@@ -105,6 +105,8 @@ const createInitialAdminUser = async () => {
     return;
   }
 
+  console.info("Creating initial admin...");
+
   await db.user.create({
     data: {
       email: env.ADMIN_EMAIL,

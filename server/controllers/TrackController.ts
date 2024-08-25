@@ -101,17 +101,19 @@ export const TrackController = {
     }
 
     try {
-      const cached_album_art = await getAlbumFromFs(filename, size);
+      // For common file sizes this is only hit during development. In prod,
+      // nginx will serve these
+      const [data, stats] = await getAlbumFromFs(filename, size);
 
-      if (cached_album_art) {
+      if (data && stats) {
         res.writeHead(200, {
           "Content-Type": `image/${filename.split(".").at(1)}`,
-          "Content-Length": cached_album_art.stats.size,
+          "Content-Length": stats.size,
         });
 
-        return res.end(cached_album_art.data);
+        return res.end(data);
       }
-    } catch (_e) {
+    } catch (e) {
       return res.status(404).send(`Invalid album`);
     }
 

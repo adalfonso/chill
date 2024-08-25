@@ -1,7 +1,7 @@
 services:
   app:
-    container_name: chill-app
     image: adalfonso/chill
+    container_name: chill-app
     restart: unless-stopped
     ports:
       - 3201:3201
@@ -20,8 +20,8 @@ services:
       - elasticsearch
 
   postgres:
-    container_name: chill-database
     image: postgres:16-alpine
+    container_name: chill-database
     ports:
       - 5432:5432
     volumes:
@@ -32,8 +32,8 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
 
   redis:
-    container_name: chill-cache
     image: redis:7.0-alpine
+    container_name: chill-cache
     restart: unless-stopped
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
@@ -45,7 +45,7 @@ services:
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
-    container_name: elasticsearch
+    container_name: chill-search
     environment:
       discovery.type: single-node
       ES_JAVA_OPTS: -Xms512m -Xmx512m
@@ -56,8 +56,8 @@ services:
       - 9200:9200
 
   nginx:
-    container_name: chill-gateway
     image: nginx:mainline-alpine
+    container_name: chill-gateway
     restart: unless-stopped
     ports:
       - 3200:3200
