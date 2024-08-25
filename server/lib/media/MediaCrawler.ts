@@ -3,16 +3,12 @@ import mm from "music-metadata";
 import { extname, join } from "node:path";
 import { Scan, ScanStatus } from "@prisma/client";
 
+import * as mappers from "./mappers";
 import { Maybe } from "@common/types";
 import { adjustImage } from "./image/ImageAdjust";
 import { db } from "../data/db";
-import {
-  upsertAlbums,
-  upsertGenres,
-  upsertArtists,
-  insertTracks,
-} from "./mappers";
 import { rebuildMusicSearchIndex } from "./MusicSearch";
+import { cacheAlbumArt } from "./image/ImageCache";
 
 /** Config options used by the crawler */
 type MediaCrawlerConfig = {
@@ -241,13 +237,13 @@ export class MediaCrawler {
         const records = this._processed.splice(0, count);
 
         const [genre_map, artist_map] = await Promise.all([
-          upsertGenres(records),
-          upsertArtists(records),
+          mappers.upsertGenres(records),
+          mappers.upsertArtists(records),
         ]);
 
-        const album_map = await upsertAlbums(records, artist_map);
+        const album_map = await mappers.upsertAlbums(records, artist_map);
 
-        await insertTracks(records, {
+        await mappers.insertTracks(records, {
           genre: genre_map,
           album: album_map,
           artist: artist_map,
@@ -303,6 +299,7 @@ export class MediaCrawler {
     );
 
     await rebuildMusicSearchIndex();
+    await cacheAlbumArt();
   }
 
   /**

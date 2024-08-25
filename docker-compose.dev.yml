@@ -17,8 +17,11 @@ services:
       - ./common:/usr/src/app/common
       - ./views:/usr/src/app/views
       - type: bind
-        source: /srv/media
+        source: /srv/chill/media
         target: /opt/app/media
+      - type: bind
+        source: /srv/chill/data
+        target: /opt/app/data
     command: pnpm dev
     depends_on:
       - postgres

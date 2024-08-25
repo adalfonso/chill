@@ -13,6 +13,10 @@ import { stream_file as streamAudioTrack } from "@server/lib/stream";
 import { adjustImage } from "@server/lib/media/image/ImageAdjust";
 import { getFileTypeFromPath } from "@common/commonUtils";
 import { env } from "@server/init";
+import {
+  common_album_art_sizes,
+  getAlbumFromFs,
+} from "@server/lib/media/image/ImageCache";
 
 export const schema = {
   cast_info: z.object({
@@ -94,6 +98,21 @@ export const TrackController = {
       return res
         .status(400)
         .send(`Invalid size provided. "${req.query.size}" must be an integer.`);
+    }
+
+    try {
+      const cached_album_art = await getAlbumFromFs(filename, size);
+
+      if (cached_album_art) {
+        res.writeHead(200, {
+          "Content-Type": `image/${filename.split(".").at(1)}`,
+          "Content-Length": cached_album_art.stats.size,
+        });
+
+        return res.end(cached_album_art.data);
+      }
+    } catch (_e) {
+      return res.status(404).send(`Invalid album`);
     }
 
     const result = await db.albumArt.findUnique({ where: { filename } });
