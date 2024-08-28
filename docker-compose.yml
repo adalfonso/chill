@@ -13,7 +13,7 @@ services:
 
       # Map work dir paths to (shared) named volumes
       - public_html:/usr/src/app/dist/client
-      - nginx_config:/usr/src/app/nginx
+      - app_data:/opt/app/data
     depends_on:
       - postgres
       - redis
@@ -62,18 +62,19 @@ services:
     ports:
       - 3200:3200
     volumes:
-      - nginx_config:/etc/nginx/conf.d
       - public_html:/var/www/html:ro
+      - app_data:/etc/nginx/html/images
 
       # TODO: Provide paths to SSL cert and key
       - /path/to/chill/certs/chill.crt:/etc/ssl/chill.crt
       - /path/to/chill/certs/chill.key:/etc/ssl/chill.key
+      - /path/to/nginx/config:/etc/nginx/conf.d
     depends_on:
       - app
 
 volumes:
+  app_data:
   postgres:
   redis:
-  elastic-search:
+  elastic_search:
   public_html:
-  nginx_config:
