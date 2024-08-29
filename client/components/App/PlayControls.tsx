@@ -1,14 +1,5 @@
-import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import {
-  faPlay,
-  faPause,
-  faFastForward,
-  faFastBackward,
-  faAngleDown,
-  faClose,
-} from "@fortawesome/free-solid-svg-icons";
 
 import "./PlayControls.scss";
 import { FileInfo } from "./MediaViewer/FileInfo";
@@ -31,6 +22,12 @@ import {
   previous,
   setMobileDisplayMode,
 } from "@reducers/player";
+import { PlayIcon } from "../ui/icons/PlayIcon";
+import { PauseIcon } from "../ui/icons/PauseIcon";
+import { Close } from "../ui/Close";
+import { ChevronDownIcon } from "../ui/icons/ChevronDownIcon";
+import { BackwardIcon } from "../ui/icons/BackwardIcon";
+import { ForwardIcon } from "../ui/icons/ForwardIcon";
 
 const default_now_playing = "";
 
@@ -91,7 +88,7 @@ export const PlayControls = () => {
       <div id="play-controls" className={player.mobile_display_mode}>
         <div className="content">
           <div className="controls">
-            <Icon icon={faAngleDown} size="xl" onClick={minimize} />
+            <ChevronDownIcon onClick={minimize} className="icon-sm" />
           </div>
           <div className="cover-wrapper">
             <div className="cover">
@@ -115,16 +112,20 @@ export const PlayControls = () => {
                 className="circle-button"
                 onClick={() => dispatch(previous())}
               >
-                <Icon icon={faFastBackward} />
+                <BackwardIcon className="icon-md" />
               </div>
               <div className="circle-button play" onClick={togglePlayer}>
-                <Icon icon={player.is_playing ? faPause : faPlay} />
+                {player.is_playing ? (
+                  <PlayIcon className="icon-lg" />
+                ) : (
+                  <PauseIcon className="icon-lg" />
+                )}
               </div>
               <div
                 className="circle-button"
                 onClick={() => dispatch(next({ auto: false }))}
               >
-                <Icon icon={faFastForward} />
+                <ForwardIcon className="icon-md" />
               </div>
             </div>
           </div>
@@ -191,11 +192,15 @@ export const PlayControls = () => {
         <div id="play-controls-minimized" onClick={noPropagate(goFullscreen)}>
           {player?.now_playing?.artist} - {player?.now_playing?.title}
           <div className="controls">
-            <Icon
-              icon={player.is_playing ? faPause : faPlay}
-              onClick={noPropagate(togglePlayer)}
-            />
-            <Icon icon={faClose} onClick={noPropagate(stop)} />
+            <div onClick={noPropagate(togglePlayer)}>
+              {player.is_playing ? (
+                <PlayIcon className="icon-sm" />
+              ) : (
+                <PauseIcon className="icon-sm" />
+              )}
+            </div>
+
+            <Close onClose={noPropagate(stop)} size="sm" />
           </div>
         </div>
       )}

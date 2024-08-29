@@ -2,11 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import "./Search.scss";
-import { Close } from "@client/components/ui/Close";
 import { SearchResult as SearchResultType } from "@common/types";
 import { SearchResult } from "./Search/SearchResult";
 import { api } from "@client/client";
 import { useDebounce } from "@hooks/index";
+import { Close } from "@client/components/ui/Close";
 
 export const Search = () => {
   const [query, setQuery] = useState("");
@@ -51,7 +51,7 @@ export const Search = () => {
         value={query}
         onChange={(e) => setQuery(e.target.value.replace(/\s+/g, " "))}
       />
-      {query.length > 0 && <Close size="1x" onClose={clear}></Close>}
+      {query.length > 0 && <Close onClose={clear} size="xxs" />}
       {results.length > 0 && (
         <div className="search-results">
           {results.map((result) => {

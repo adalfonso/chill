@@ -36,7 +36,7 @@ export const AppSettings = ({ onClose }: AppSettingsProps) => {
   return (
     <div className="fullscreen">
       <div id="app-settings">
-        <Close onClose={onClose}></Close>
+        <Close onClose={onClose} />
 
         <div className="settings">
           <AudioQualitySetting user={user} />

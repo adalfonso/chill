@@ -1,12 +1,11 @@
-import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import "./MediaTile.scss";
 import { FileMenu, FileMenuHandler } from "../FileMenu";
-import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { MediaTileData, MediaTileType, PlayableTrack } from "@common/types";
+import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
 import { albumUrl, artistUrl, matchUrl } from "@client/lib/url";
 import { api } from "@client/client";
 import { getState } from "@client/state/reducers/store";
@@ -154,12 +153,7 @@ export const MediaTile = <T extends Record<string, unknown>>({
 
         <div className={"more" + (menu_visible ? " active" : "")}>
           <div className="play" onClick={noPropagate(optionsHandler.play)}>
-            <Icon
-              className="play-icon"
-              icon={faPlayCircle}
-              size="sm"
-              pull="right"
-            />
+            <PlayCircleIcon className="play-icon icon-lg" />
           </div>
 
           <FileMenu

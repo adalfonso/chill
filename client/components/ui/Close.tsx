@@ -1,17 +1,16 @@
-import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
 import { MouseEvent } from "react";
-import { SizeProp } from "@fortawesome/fontawesome-svg-core";
-import { faClose } from "@fortawesome/free-solid-svg-icons";
+
+import { XIcon } from "./icons/XIcon";
 
 type CloseProps = {
   onClose: (e: MouseEvent<HTMLElement>) => void;
-  size?: SizeProp;
+  size?: "xxs" | "xs" | "sm";
 };
 
-export const Close = ({ onClose, size = "lg" }: CloseProps) => {
+export const Close = ({ onClose, size = "sm" }: CloseProps) => {
   return (
     <div className="close" onClick={onClose}>
-      <Icon icon={faClose} size={size} />
+      <XIcon className={`icon-${size}`} />
     </div>
   );
 };

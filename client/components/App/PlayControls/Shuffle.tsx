@@ -1,9 +1,8 @@
-import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { faShuffle } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch, useSelector } from "react-redux";
 
 import { getState } from "@reducers/store";
 import { shuffle } from "@reducers/player";
+import { ShuffleIcon } from "@client/components/ui/icons/ShuffleIcon";
 
 export const Shuffle = () => {
   const { player } = useSelector(getState);
@@ -12,10 +11,9 @@ export const Shuffle = () => {
   const toggleShuffle = () => dispatch(shuffle());
 
   return (
-    <Icon
-      icon={faShuffle}
+    <ShuffleIcon
       onClick={toggleShuffle}
-      className={player.is_shuffled ? "active" : ""}
+      className={player.is_shuffled ? "active icon-xs" : "icon-xs"}
     />
   );
 };

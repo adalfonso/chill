@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { faListDots } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch, useSelector } from "react-redux";
 
 import "./Playlist.scss";
@@ -9,6 +7,7 @@ import { Equalizer } from "../../ui/Equalizer";
 import { getState } from "@reducers/store";
 import { play } from "@reducers/player";
 import { useBackNavigate } from "@hooks/index";
+import { DottedListIcon } from "@client/components/ui/icons/DottedListIcon";
 
 export const Playlist = () => {
   const { player } = useSelector(getState);
@@ -32,7 +31,7 @@ export const Playlist = () => {
   return (
     <>
       <div className={playlistClassName}>
-        <Close onClose={togglePlaylist}></Close>
+        <Close onClose={togglePlaylist} />
 
         {player.playlist.map((track, index) => (
           <div
@@ -69,7 +68,8 @@ export const Playlist = () => {
           </div>
         ))}
       </div>
-      <Icon className="playlist" icon={faListDots} onClick={togglePlaylist} />
+
+      <DottedListIcon className="playlist icon-xs" onClick={togglePlaylist} />
     </>
   );
 };

@@ -15,7 +15,7 @@ export const FileInfo = ({ file, menu_id }: FileInfoProps) => {
 
   return (
     <div className="fullscreen center-content" onClick={noPropagate()}>
-      <Close onClose={noPropagate(menu.clear)}></Close>
+      <Close onClose={noPropagate(menu.clear)} />
       <div id="file-info">
         <table>
           <thead>

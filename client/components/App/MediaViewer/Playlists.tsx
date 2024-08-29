@@ -1,10 +1,11 @@
-import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { faPlayCircle, faPen } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useContext, useRef } from "react";
 
 import "./MusicLibrary.scss";
+import { AppContext } from "@client/state/AppState";
+import { PenIcon } from "@client/components/ui/icons/PenIcon";
+import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
 import { PlayMode } from "@reducers/player.types";
 import { PlaylistWithCount } from "@common/types";
 import { api } from "@client/client";
@@ -12,7 +13,6 @@ import { paginate } from "@common/pagination";
 import { pagination_limit } from "@client/lib/constants";
 import { play } from "@reducers/player";
 import { useInfiniteScroll } from "@hooks/index";
-import { AppContext } from "@client/state/AppState";
 
 type PlaylistsProps = {
   per_page: number;
@@ -91,13 +91,13 @@ export const Playlists = ({ per_page }: PlaylistsProps) => {
               <div>{playlist.track_count}</div>
               <div>
                 <div className="play-button" onClick={playPlaylist(playlist)}>
-                  <Icon icon={faPlayCircle} size="sm" pull="right" />
+                  <PlayCircleIcon />
                   Play
                 </div>
               </div>
               <div>
                 <div className="edit" onClick={editPlaylist(playlist)}>
-                  <Icon icon={faPen} size="sm" pull="right" />
+                  <PenIcon className="icon-xs" />
                 </div>
               </div>
             </div>

@@ -13,10 +13,7 @@ import { stream_file as streamAudioTrack } from "@server/lib/stream";
 import { adjustImage } from "@server/lib/media/image/ImageAdjust";
 import { getFileTypeFromPath } from "@common/commonUtils";
 import { env } from "@server/init";
-import {
-  common_album_art_sizes,
-  getAlbumFromFs,
-} from "@server/lib/media/image/ImageCache";
+import { getAlbumFromFs } from "@server/lib/media/image/ImageCache";
 
 export const schema = {
   cast_info: z.object({

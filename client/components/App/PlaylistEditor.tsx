@@ -25,7 +25,7 @@ export const PlaylistEditor = () => {
     <div className="playlist-editor">
       <div className="ui-modal">
         <div className="toolbar">
-          <Close onClose={onClose}></Close>
+          <Close onClose={onClose} />
         </div>
         <h1>Add to playlist</h1>
         <Radio

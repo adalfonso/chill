@@ -1,5 +1,4 @@
 import { Album, Artist } from "@prisma/client";
-import { faPlayCircle } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useState, useEffect, useContext, useCallback } from "react";
@@ -8,7 +7,7 @@ import "./AlbumView.scss";
 import { AlbumRelationalData, Maybe, PlayableTrack } from "@common/types";
 import { AlbumViewRow } from "./AlbumView/AlbumViewRow";
 import { AppContext } from "@client/state/AppState";
-import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
+import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
 import { api } from "@client/client";
 import { getState } from "@client/state/reducers/store";
 import { play } from "@reducers/player";
@@ -100,7 +99,7 @@ export const AlbumView = () => {
             <h4>{truncate(album?.title ?? "", { length: 50 })}</h4>
             <h4>{album?.year}</h4>
             <div className="play-button" onClick={() => playAll()()}>
-              <Icon icon={faPlayCircle} size="sm" pull="right" />
+              <PlayCircleIcon className="icon-xxs" />
               Play
             </div>
           </div>

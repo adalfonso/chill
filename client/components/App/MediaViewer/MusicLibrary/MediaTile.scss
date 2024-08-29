@@ -146,8 +146,8 @@
           border: 1px solid $primary-dark;
 
           .play {
-            height: 1.8rem;
-            width: 1.8rem;
+            height: 2rem;
+            width: 2rem;
             border-radius: 50%;
             background-color: $dm-font;
             box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px,
@@ -159,12 +159,12 @@
             margin: 1rem;
 
             &:hover {
-              .fa-circle-play {
+              svg path {
                 color: $primary;
               }
             }
 
-            .fa-circle-play {
+            svg path {
               margin: 0;
               font-size: 2rem;
               color: $primary-dark;
@@ -175,8 +175,8 @@
           .file-menu-entry {
             position: absolute;
             display: flex;
-            padding: 0.25rem 0.5rem;
-            bottom: calc(5% - 0.25rem);
+
+            bottom: calc(5%);
             right: calc(5% - 0.25rem);
           }
         }

@@ -1,10 +1,9 @@
-import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 
 import { Maybe, PlayableTrack } from "@common/types";
 import { PreCastPayload } from "@client/lib/cast/types";
+import { VerticalEllipsisIcon } from "@client/components/ui/icons/VerticalEllipsisIcon";
 import { addToQueue, playNext } from "@reducers/player";
 import { getState } from "@reducers/store";
 import { noPropagate } from "@client/lib/util";
@@ -80,7 +79,7 @@ export const FileMenu = ({
         className={"file-menu-entry" + (active ? " active" : "")}
         onClick={onEntryClick}
       >
-        <Icon icon={faEllipsisV} />
+        <VerticalEllipsisIcon className="icon-xs" />
       </div>
       {active && (
         <section className="file-menu">

@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { FontAwesomeIcon as Icon } from "@fortawesome/react-fontawesome";
-import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 
 import "./ui.scss";
+import { ChevronDownIcon } from "./icons/ChevronDownIcon";
 
 type SelectProps<T> = {
   onChange: (match: T) => void;
@@ -28,7 +27,7 @@ export const Select = <T,>({
     <div className="ui-select">
       <div className="selection" onClick={() => setExpanded(!expanded)}>
         <>
-          {displayAs ?? value} <Icon icon={faAngleDown} size="sm" />
+          {displayAs ?? value} <ChevronDownIcon />
         </>
       </div>
 
