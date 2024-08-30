@@ -28,7 +28,10 @@
       "@server/*": ["./server/*"],
       "@controllers/*": ["./server/controllers/*"],
       "@middleware/*": ["./server/middleware/*"],
-      "@routes/*": ["./server/routes/*"]
+      "@routes/*": ["./server/routes/*"],
+
+      "react": ["./node_modules/preact/compat"],
+      "react-dom": ["./node_modules/preact/compat"]
     },
     "typeRoots": ["./server/@types", "./node_modules/@types"]
   },

@@ -8,8 +8,6 @@ export default defineConfig({
   plugins: [preact()],
   resolve: {
     alias: {
-      react: "preact/compat",
-      "react-dom": "preactcompat",
       "@reducers": path.resolve(__dirname, "./client/state/reducers/"),
       "@hooks": path.resolve(__dirname, "./client/hooks"),
       "@server": path.resolve(__dirname, "./server"),
