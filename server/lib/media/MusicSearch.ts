@@ -117,8 +117,8 @@ const getTrackIndex = async () => {
         album?.id && artist?.id
           ? `/artist/${artist.id}/album/${album.id}`
           : album?.id
-          ? `/album/${album.id}`
-          : "",
+            ? `/album/${album.id}`
+            : "",
       displayAs: [title, `Track - ${artist?.name ?? "Unknown Artist"}`],
     },
   ]);

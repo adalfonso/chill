@@ -32,7 +32,9 @@ export const useLongPress = (
   }, [callback, delay_ms]);
 
   const cancelPress = useCallback(() => {
-    timeout.current && clearTimeout(timeout.current);
+    if (timeout.current) {
+      clearTimeout(timeout.current);
+    }
   }, []);
 
   return {

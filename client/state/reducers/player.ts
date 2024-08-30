@@ -118,7 +118,12 @@ export const playerSlice = createSlice({
     },
 
     pause: (state) => {
-      state.is_casting ? CastSdk.Pause() : audio.pause();
+      if (state.is_casting) {
+        CastSdk.Pause();
+      } else {
+        audio.pause();
+      }
+
       state.is_playing = false;
     },
 

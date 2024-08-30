@@ -110,6 +110,6 @@ export type Raw<T> = {
   [K in keyof T]: T[K] extends Date
     ? string
     : T[K] extends object
-    ? Raw<T[K]>
-    : T[K];
+      ? Raw<T[K]>
+      : T[K];
 };

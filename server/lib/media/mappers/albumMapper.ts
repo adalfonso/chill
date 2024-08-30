@@ -28,7 +28,7 @@ export const upsertAlbums = async (
       return {
         title,
         year,
-        artist_id: set.size === 1 ? [...set].at(0) ?? null : null,
+        artist_id: set.size === 1 ? ([...set].at(0) ?? null) : null,
       };
     },
   );
@@ -80,7 +80,7 @@ const toGroupedAlbumInput = (
     .map(({ album, year, artist, cover }) => ({
       title: album ?? "Unknown Album",
       year: year ?? 0,
-      artist_id: artist ? artist_map[artist] ?? null : null,
+      artist_id: artist ? (artist_map[artist] ?? null) : null,
       cover,
     }))
     .reduce<Record<string, AlbumUpsertInput>>((carry, album) => {

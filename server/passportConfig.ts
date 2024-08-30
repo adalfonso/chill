@@ -46,7 +46,7 @@ async function verifyGoogleAuth(
   _request: Request,
   _access_token: string,
   _refresh_token: string,
-  profile: any,
+  profile: { emails: Array<{ value: string }> },
   done: VerifyCallback,
 ) {
   try {

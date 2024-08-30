@@ -98,7 +98,7 @@ export const CastPlayer = () => {
 
       switch (event.sessionState) {
         case cast.framework.SessionState.SESSION_RESUMED:
-        case cast.framework.SessionState.SESSION_STARTED:
+        case cast.framework.SessionState.SESSION_STARTED: {
           const cast_info = playlist.length
             ? await api.track.castInfo.query({
                 track_ids: playlist.map((track) => track.id),
@@ -119,7 +119,7 @@ export const CastPlayer = () => {
           }
 
           break;
-
+        }
         case cast.framework.SessionState.SESSION_ENDED:
           dispatch(setPlayerIsCasting(false));
           dispatch(seek(progress));
