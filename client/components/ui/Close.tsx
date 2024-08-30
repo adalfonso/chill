@@ -1,9 +1,7 @@
-import { MouseEvent } from "react";
-
 import { XIcon } from "./icons/XIcon";
 
 type CloseProps = {
-  onClose: (e: MouseEvent<HTMLElement>) => void;
+  onClose: (e: MouseEvent) => void;
   size?: "xxs" | "xs" | "sm";
 };
 

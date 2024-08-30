@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from "preact/hooks";
 import { useDispatch, useSelector } from "react-redux";
 
 import "./Playlist.scss";

@@ -1,4 +1,5 @@
-import { useState, useRef, cloneElement } from "react";
+import { cloneElement } from "preact";
+import { useState, useRef } from "preact/hooks";
 
 import { useScroll, useInfiniteScroll } from "@hooks/index";
 

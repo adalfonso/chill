@@ -1,6 +1,5 @@
-import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
-import { createRoot } from "react-dom/client";
+import { render } from "preact";
 
 import store from "@reducers/store";
 import { App } from "./App";
@@ -11,18 +10,15 @@ if (element === null) {
   throw new Error('Could not locate "root" element');
 }
 
-const root = createRoot(element);
-
 window.__chill_app = {
   cast_ready: false,
 };
 
-root.render(
-  <BrowserRouter>
-    <Provider store={store}>
-      <App />
-    </Provider>
-  </BrowserRouter>,
+render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  element,
 );
 
 window["__onGCastApiAvailable"] = (isAvailable) => {

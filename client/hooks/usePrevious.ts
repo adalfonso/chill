@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from "preact/hooks";
 
 /**
  * Retain the previous value of some state

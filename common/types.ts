@@ -104,3 +104,12 @@ export const UserType = {
 } as const;
 
 export type UserType = ObjectValues<typeof UserType>;
+
+// Converts Date to string
+export type Raw<T> = {
+  [K in keyof T]: T[K] extends Date
+    ? string
+    : T[K] extends object
+    ? Raw<T[K]>
+    : T[K];
+};

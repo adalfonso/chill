@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useLocation } from "wouter-preact";
+import { useState } from "preact/hooks";
 
 import "./MediaTile.scss";
 import { FileMenu, FileMenuHandler } from "../FileMenu";
@@ -40,7 +40,7 @@ export const MediaTile = <T extends Record<string, unknown>>({
   displayAs,
   parentScrollPosition,
 }: MediaTileProps<T>) => {
-  const navigate = useNavigate();
+  const [, navigate] = useLocation();
   const dispatch = useDispatch();
   const { player } = useSelector(getState);
   const menu_id = useId();

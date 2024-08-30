@@ -1,4 +1,3 @@
-import { UIEvent } from "react";
 /**
  * Create an animation frame loop
  *

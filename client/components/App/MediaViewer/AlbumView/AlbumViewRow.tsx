@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "wouter-preact";
 
 import { Equalizer } from "@client/components/ui/Equalizer";
 import { FileInfo } from "../FileInfo";
@@ -24,7 +24,7 @@ export const AlbumViewRow = ({ track, index, playAll }: AlbumViewRowProps) => {
   const file_menu_id = useId();
   const file_info_id = useId();
   const file_info_menu = useMenu(file_info_id);
-  const navigate = useNavigate();
+  const [, navigate] = useLocation();
   const dispatch = useDispatch();
   const { width } = useViewport();
 

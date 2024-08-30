@@ -1,4 +1,4 @@
-import { SVGProps } from "react";
+import { SVGProps } from "preact/compat";
 
 export const PauseIcon = (props: SVGProps<SVGSVGElement>) => {
   return (

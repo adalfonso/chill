@@ -1,4 +1,4 @@
-import { useState, FormEvent } from "react";
+import { useState } from "preact/hooks";
 import { useSelector } from "react-redux";
 
 import { getState } from "@reducers/store";
@@ -13,11 +13,6 @@ export const PlaylistCreate = ({ onDone }: PlaylistCreateProps) => {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const { playlistEditor } = useSelector(getState);
-
-  const onInputChange = (e: FormEvent<HTMLInputElement>) => {
-    const { value } = e.currentTarget;
-    setPlaylistTitle(value);
-  };
 
   const submit = () => {
     if (busy) {
@@ -43,7 +38,10 @@ export const PlaylistCreate = ({ onDone }: PlaylistCreateProps) => {
       <input
         type="text"
         placeholder="Playlist Title"
-        onChange={onInputChange}
+        onChange={(e) => {
+          const { value } = e.currentTarget;
+          setPlaylistTitle(value);
+        }}
       />
       <button onClick={submit}>Create</button>
     </>

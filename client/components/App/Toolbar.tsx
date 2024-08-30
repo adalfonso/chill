@@ -1,6 +1,6 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "wouter-preact";
 import { useSelector } from "react-redux";
-import { useState } from "react";
+import { useState } from "preact/hooks";
 
 import "./Toolbar.scss";
 import { AppSettings as AppSettings } from "./Toolbar/AppSettings";
@@ -17,6 +17,7 @@ type SettingsMenu = "user" | "app";
 export const Toolbar = () => {
   const [settings_vis, setSettingsVis] = useState({ user: false, app: false });
   const { caster } = useSelector(getState);
+  const [, navigate] = useLocation();
 
   /**
    * Toggle the visibility of a menu
@@ -38,8 +39,6 @@ export const Toolbar = () => {
     // Hide the playlist instead of changing location
     () => setSettingsVis({ app: false, user: false }),
   );
-
-  const navigate = useNavigate();
 
   return (
     <div id="toolbar">

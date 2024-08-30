@@ -1,6 +1,5 @@
 import { Artist } from "@prisma/client";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState } from "preact/hooks";
 
 import {
   AlbumMetadata,
@@ -8,6 +7,7 @@ import {
   MediaTileData,
   MediaTileType,
   PaginationSort,
+  Raw,
 } from "@common/types";
 import { artistAlbumUrl } from "@client/lib/url";
 import { MediaTile } from "./MusicLibrary/MediaTile";
@@ -15,13 +15,12 @@ import { SmartScroller } from "./SmartScroller";
 import { api } from "@client/client";
 import { paginate } from "@common/pagination";
 
-type AlbumParams = {
-  artist_id: string;
+type ArtistViewProps = {
+  artist_id: number;
 };
 
-export const ArtistView = () => {
-  const artist_id = parseInt(useParams<AlbumParams>().artist_id ?? "");
-  const [artist, setArtist] = useState<Maybe<Artist>>(null);
+export const ArtistView = ({ artist_id }: ArtistViewProps) => {
+  const [artist, setArtist] = useState<Maybe<Raw<Artist>>>(null);
 
   useEffect(() => {
     api.artist.get.query({ id: artist_id }).then(setArtist);

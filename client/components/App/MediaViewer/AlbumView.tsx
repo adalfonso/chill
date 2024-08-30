@@ -1,10 +1,9 @@
 import { Album, Artist } from "@prisma/client";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
-import { useState, useEffect, useContext, useCallback } from "react";
+import { useState, useEffect, useContext, useCallback } from "preact/hooks";
 
 import "./AlbumView.scss";
-import { AlbumRelationalData, Maybe, PlayableTrack } from "@common/types";
+import { AlbumRelationalData, Maybe, PlayableTrack, Raw } from "@common/types";
 import { AlbumViewRow } from "./AlbumView/AlbumViewRow";
 import { AppContext } from "@client/state/AppState";
 import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
@@ -13,20 +12,18 @@ import { getState } from "@client/state/reducers/store";
 import { play } from "@reducers/player";
 import { truncate } from "@common/commonUtils";
 
-type AlbumParams = {
-  artist_id?: string;
-  album_id: string;
+type AlbumViewProps = {
+  artist_id?: number;
+  album_id: number;
 };
 
-export const AlbumView = () => {
+export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
   const { is_busy } = useContext(AppContext);
-  const album_id = parseInt(useParams<AlbumParams>().album_id ?? "");
-  const artist_id = useParams<AlbumParams>().artist_id
-    ? parseInt(useParams<AlbumParams>().artist_id ?? "")
-    : undefined;
+
   const { player } = useSelector(getState);
-  const [artist, setArtist] = useState<Maybe<Artist>>(null);
-  const [album, setAlbum] = useState<Maybe<Album & AlbumRelationalData>>(null);
+  const [artist, setArtist] = useState<Maybe<Raw<Artist>>>(null);
+  const [album, setAlbum] =
+    useState<Maybe<Raw<Album & AlbumRelationalData>>>(null);
   const [tracks, setTracks] = useState<Maybe<Array<PlayableTrack>>>(null);
   const dispatch = useDispatch();
 

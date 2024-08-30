@@ -1,5 +1,5 @@
-import { signal } from "@preact/signals-react";
-import { createContext } from "react";
+import { createContext } from "preact";
+import { signal } from "@preact/signals";
 
 const is_busy = signal(false);
 const app_state = { is_busy };

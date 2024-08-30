@@ -1,9 +1,9 @@
 import { useSelector } from "react-redux";
-import { useState, FormEvent } from "react";
+import { useState } from "preact/hooks";
 
 import { api } from "@client/client";
 import { getState } from "@reducers/store";
-import { PlaylistWithCount } from "@common/types";
+import { PlaylistWithCount, Raw } from "@common/types";
 
 type PlaylistUpdateProps = {
   onDone: () => void;
@@ -12,11 +12,11 @@ type PlaylistUpdateProps = {
 export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
   const [_input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
-  const [results, setResults] = useState<Array<PlaylistWithCount>>([]);
-  const [selected, setSelected] = useState<PlaylistWithCount>();
+  const [results, setResults] = useState<Array<Raw<PlaylistWithCount>>>([]);
+  const [selected, setSelected] = useState<Raw<PlaylistWithCount>>();
   const { playlistEditor } = useSelector(getState);
 
-  const submit = (selected: PlaylistWithCount) => () => {
+  const submit = (selected: Raw<PlaylistWithCount>) => () => {
     if (busy) {
       return;
     }
@@ -32,8 +32,7 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
       .finally(() => setBusy(false));
   };
 
-  const search = (e: FormEvent<HTMLInputElement>) => {
-    const { value } = e.currentTarget;
+  const search = (value: string) => {
     setInput(value);
 
     if (busy) {
@@ -51,14 +50,18 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
       .finally(() => setBusy(false));
   };
 
-  const choosePlaylist = (playlist: PlaylistWithCount) => () => {
+  const choosePlaylist = (playlist: Raw<PlaylistWithCount>) => () => {
     setSelected(playlist);
     setResults([]);
   };
 
   return (
     <div className="search">
-      <input type="text" placeholder="Search" onChange={search} />
+      <input
+        type="text"
+        placeholder="Search"
+        onChange={(e) => search(e.currentTarget.value)}
+      />
 
       <div className="search-results">
         {results.map((result) => (

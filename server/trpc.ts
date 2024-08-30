@@ -1,5 +1,4 @@
 import * as trpcExpress from "@trpc/server/adapters/express";
-import superjson from "superjson";
 import { inferAsyncReturnType, initTRPC, TRPCError } from "@trpc/server";
 import { z, ZodType } from "zod";
 
@@ -21,7 +20,7 @@ export const createContext = ({
 
 type Context = inferAsyncReturnType<typeof createContext>;
 
-const t = initTRPC.context<Context>().create({ transformer: superjson });
+const t = initTRPC.context<Context>().create({});
 
 export const { router, middleware, procedure } = t;
 

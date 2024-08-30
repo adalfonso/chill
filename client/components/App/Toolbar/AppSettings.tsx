@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import { useState } from "react";
+import { useState } from "preact/hooks";
 
 import "./AppSettings.scss";
 import { AudioQualitySetting } from "./AppSettings/AudioQualitySetting";

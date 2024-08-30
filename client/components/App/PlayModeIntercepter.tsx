@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useState } from "react";
+import { useState } from "preact/hooks";
 
 import { PlayMode } from "@reducers/player.types";
 import { PlayableTrack } from "@common/types";

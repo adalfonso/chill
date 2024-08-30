@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
+import { useEffect } from "preact/hooks";
 
 import "./App.scss";
 import { AppRouter } from "./components/App/AppRouter";

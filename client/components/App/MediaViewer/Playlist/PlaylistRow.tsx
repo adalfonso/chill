@@ -1,5 +1,5 @@
-import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "wouter-preact";
 
 import { Equalizer } from "@client/components/ui/Equalizer";
 import { FileMenu, FileMenuHandler } from "../FileMenu";
@@ -22,7 +22,7 @@ type PlaylistRowProps = {
 export const PlaylistRow = ({ track, index, playAll }: PlaylistRowProps) => {
   const { player, mediaMenu } = useSelector(getState);
   const menu_id = useId();
-  const navigate = useNavigate();
+  const [, navigate] = useLocation();
   const dispatch = useDispatch();
   const { width } = useViewport();
 

@@ -1,4 +1,4 @@
-import { useEffect, useId } from "react";
+import { useEffect, useId } from "preact/hooks";
 
 /**
  * Hook the back navigation

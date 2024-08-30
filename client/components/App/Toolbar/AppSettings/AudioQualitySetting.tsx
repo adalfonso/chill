@@ -1,5 +1,5 @@
 import { useDispatch } from "react-redux";
-import { useState } from "react";
+import { useState } from "preact/hooks";
 
 import { Select } from "@client/components/ui/Select";
 import { UserState } from "@reducers/user";

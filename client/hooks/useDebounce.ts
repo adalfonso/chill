@@ -1,4 +1,4 @@
-import { useEffect, useCallback, DependencyList } from "react";
+import { useEffect, useCallback } from "preact/hooks";
 
 /**
  * Debounces a function
@@ -9,7 +9,7 @@ import { useEffect, useCallback, DependencyList } from "react";
  */
 export const useDebounce = (
   effect: () => void,
-  dependencies: DependencyList,
+  dependencies: unknown[],
   delay: number,
 ) => {
   const callback = useCallback(effect, dependencies);

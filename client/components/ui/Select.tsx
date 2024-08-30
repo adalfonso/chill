@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from "preact/hooks";
 
 import "./ui.scss";
 import { ChevronDownIcon } from "./icons/ChevronDownIcon";

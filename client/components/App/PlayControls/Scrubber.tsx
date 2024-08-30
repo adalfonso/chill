@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "preact/hooks";
 import { useDispatch, useSelector } from "react-redux";
 
 import "./Scrubber.scss";

@@ -1,10 +1,9 @@
 import { Playlist } from "@prisma/client";
 import { useDispatch } from "react-redux";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState } from "preact/hooks";
 
 import "./MusicLibrary.scss";
-import { PlayableTrack } from "@common/types";
+import { PlayableTrack, Raw } from "@common/types";
 import { PlaylistRow } from "./Playlist/PlaylistRow";
 import { SmartScroller } from "./SmartScroller";
 import { api } from "@client/client";
@@ -12,14 +11,12 @@ import { paginate } from "@common/pagination";
 import { pagination_limit } from "@client/lib/constants";
 import { play } from "@reducers/player";
 
-type PlaylistParams = {
-  id: string;
+type PlaylistViewerProps = {
+  playlist_id: number;
 };
 
-export const PlaylistViewer = () => {
-  const id = parseInt(useParams<PlaylistParams>().id ?? "");
-
-  const [playlist, setPlaylist] = useState<Playlist>();
+export const PlaylistViewer = ({ playlist_id }: PlaylistViewerProps) => {
+  const [playlist, setPlaylist] = useState<Raw<Playlist>>();
   const dispatch = useDispatch();
 
   const playAll =
@@ -27,7 +24,7 @@ export const PlaylistViewer = () => {
     async () => {
       // XXX: make this paginated
       const tracks = await api.playlist.tracks.query({
-        id,
+        id: playlist_id,
         options: paginate({ page: 0, limit: 9999 }),
       });
 
@@ -35,12 +32,12 @@ export const PlaylistViewer = () => {
     };
 
   useEffect(() => {
-    api.playlist.get.query({ id }).then(setPlaylist);
-  }, [id]);
+    api.playlist.get.query({ id: playlist_id }).then(setPlaylist);
+  }, [playlist_id]);
 
   const loadPlaylistTracks = (page: number) =>
     api.playlist.tracks.query({
-      id,
+      id: playlist_id,
       options: paginate({ page, limit: pagination_limit }),
     });
 

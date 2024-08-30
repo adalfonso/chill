@@ -1,28 +1,24 @@
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { useContext, useRef } from "react";
+import { useLocation } from "wouter-preact";
+import { useContext, useRef } from "preact/hooks";
 
 import "./MusicLibrary.scss";
 import { AppContext } from "@client/state/AppState";
 import { PenIcon } from "@client/components/ui/icons/PenIcon";
 import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
 import { PlayMode } from "@reducers/player.types";
-import { PlaylistWithCount } from "@common/types";
+import { PlaylistWithCount, Raw } from "@common/types";
 import { api } from "@client/client";
 import { paginate } from "@common/pagination";
 import { pagination_limit } from "@client/lib/constants";
 import { play } from "@reducers/player";
 import { useInfiniteScroll } from "@hooks/index";
 
-type PlaylistsProps = {
-  per_page: number;
-};
-
-export const Playlists = ({ per_page }: PlaylistsProps) => {
+export const Playlists = () => {
   const observedElement = useRef<HTMLDivElement>(null);
 
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const [, navigate] = useLocation();
 
   const { is_busy } = useContext(AppContext);
 
@@ -30,21 +26,24 @@ export const Playlists = ({ per_page }: PlaylistsProps) => {
     is_busy.value = true;
 
     return api.playlist.index
-      .query({ options: paginate({ page, limit: per_page }) })
+      .query({ options: paginate({ page }) })
       .finally(() => (is_busy.value = false));
   };
 
-  const { items: playlists } = useInfiniteScroll<PlaylistWithCount>({
+  const { items: playlists } = useInfiniteScroll<Raw<PlaylistWithCount>>({
     onScroll: loadPlaylists,
     observedElement,
     options: { root: null, rootMargin: "0px", threshold: 1.0 },
     dependencies: [],
   });
 
-  const playPlaylist = (playlist: PlaylistWithCount) => async () => {
+  const playPlaylist = (playlist: Raw<PlaylistWithCount>) => async () => {
     try {
       const playlist_id = playlist.id;
-      const pagination_options = paginate({ page: 0, limit: pagination_limit });
+      const pagination_options = paginate({
+        page: 0,
+        limit: pagination_limit,
+      });
       const tracks = await api.playlist.tracks.query({
         id: playlist_id,
         options: pagination_options,
@@ -63,7 +62,7 @@ export const Playlists = ({ per_page }: PlaylistsProps) => {
     }
   };
 
-  const editPlaylist = (playlist: PlaylistWithCount) => async () => {
+  const editPlaylist = (playlist: Raw<PlaylistWithCount>) => async () => {
     navigate(`/playlist/${playlist.id}`);
   };
 

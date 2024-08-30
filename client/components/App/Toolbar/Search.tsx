@@ -1,5 +1,5 @@
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useLocation } from "wouter-preact";
+import { useState } from "preact/hooks";
 
 import "./Search.scss";
 import { SearchResult as SearchResultType } from "@common/types";
@@ -11,7 +11,7 @@ import { Close } from "@client/components/ui/Close";
 export const Search = () => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResultType[]>([]);
-  const navigate = useNavigate();
+  const [, navigate] = useLocation();
 
   useDebounce(
     async () => {
@@ -49,7 +49,9 @@ export const Search = () => {
       <input
         placeholder="search"
         value={query}
-        onChange={(e) => setQuery(e.target.value.replace(/\s+/g, " "))}
+        onChange={(e) =>
+          setQuery((e.target as HTMLInputElement).value.replace(/\s+/g, " "))
+        }
       />
       {query.length > 0 && <Close onClose={clear} size="xxs" />}
       {results.length > 0 && (

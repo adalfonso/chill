@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect, useCallback } from "react";
+import { useContext, useState, useEffect, useCallback } from "preact/hooks";
 
 import { AppContext } from "@client/state/AppState";
 

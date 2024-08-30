@@ -1,23 +1,21 @@
 import { Genre } from "@prisma/client";
-import { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useContext, useEffect, useState } from "preact/hooks";
 
 import { AppContext } from "@client/state/AppState";
 import { MediaTile } from "./MusicLibrary/MediaTile";
-import { Maybe, MediaTileData, MediaTileType } from "@common/types";
+import { Maybe, MediaTileData, MediaTileType, Raw } from "@common/types";
 import { SmartScroller } from "./SmartScroller";
 import { artistUrl } from "@client/lib/url";
 import { api } from "@client/client";
 import { paginate } from "@common/pagination";
 
-type GenreParams = {
-  genre_id: string;
+type GenreViewProps = {
+  genre_id: number;
 };
 
-export const GenreView = () => {
-  const genre_id = parseInt(useParams<GenreParams>().genre_id ?? "");
+export const GenreView = ({ genre_id }: GenreViewProps) => {
   const { is_busy } = useContext(AppContext);
-  const [genre, setGenre] = useState<Maybe<Genre>>(null);
+  const [genre, setGenre] = useState<Maybe<Raw<Genre>>>(null);
 
   useEffect(() => {
     api.genre.get.query({ id: genre_id }).then(setGenre);

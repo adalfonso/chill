@@ -1,13 +1,15 @@
 import path from "path";
-import react from "@vitejs/plugin-react-swc";
+import preact from "@preact/preset-vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
   root: "./client",
   build: { outDir: "../dist/client" },
-  plugins: [react()],
+  plugins: [preact()],
   resolve: {
     alias: {
+      react: "preact/compat",
+      "react-dom": "preactcompat",
       "@reducers": path.resolve(__dirname, "./client/state/reducers/"),
       "@hooks": path.resolve(__dirname, "./client/hooks"),
       "@server": path.resolve(__dirname, "./server"),

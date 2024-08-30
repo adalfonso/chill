@@ -1,4 +1,4 @@
-import { UIEvent, useCallback, useRef } from "react";
+import { useCallback, useRef } from "preact/hooks";
 
 import { Maybe } from "@common/types";
 

@@ -1,4 +1,4 @@
-import { SVGProps } from "react";
+import { SVGProps } from "preact/compat";
 
 export const ShuffleIcon = (props: SVGProps<SVGSVGElement>) => {
   return (

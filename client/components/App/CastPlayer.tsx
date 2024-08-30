@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from "preact/hooks";
 
 import "./Toolbar.scss";
 import { Maybe } from "@common/types";
