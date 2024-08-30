@@ -116,9 +116,9 @@ export const PlayControls = () => {
               </div>
               <div className="circle-button play" onClick={togglePlayer}>
                 {player.is_playing ? (
-                  <PlayIcon className="icon-lg" />
-                ) : (
                   <PauseIcon className="icon-lg" />
+                ) : (
+                  <PlayIcon className="icon-lg" />
                 )}
               </div>
               <div
@@ -194,9 +194,9 @@ export const PlayControls = () => {
           <div className="controls">
             <div onClick={noPropagate(togglePlayer)}>
               {player.is_playing ? (
-                <PlayIcon className="icon-sm" />
-              ) : (
                 <PauseIcon className="icon-sm" />
+              ) : (
+                <PlayIcon className="icon-sm" />
               )}
             </div>
 
