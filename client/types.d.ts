@@ -5,3 +5,11 @@ export declare global {
     };
   }
 }
+
+declare module "preact" {
+  namespace JSX {
+    interface IntrinsicElements {
+      "google-cast-launcher": unknown;
+    }
+  }
+}
