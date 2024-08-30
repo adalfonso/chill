@@ -341,6 +341,7 @@ export const playerSlice = createSlice({
           state.playlist.splice(state.index, 1)[0],
           ...state.playlist,
         ];
+        state.index = 0;
       }
 
       loadNext(state);
