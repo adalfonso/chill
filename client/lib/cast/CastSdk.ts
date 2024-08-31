@@ -229,10 +229,14 @@ export class CastSdk {
         .getCurrentSession()
         ?.getMediaSession();
 
-      return session?.queueJumpToItem(
-        session.items[index].itemId,
-        resolve,
-        () => reject("Failed to goToIndex"),
+      const item_id = session?.items?.[index]?.itemId;
+
+      if (!item_id) {
+        return;
+      }
+
+      return session?.queueJumpToItem(item_id, resolve, () =>
+        reject("Failed to goToIndex"),
       );
     });
   }

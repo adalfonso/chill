@@ -47,7 +47,7 @@
     "@eslint/js": "^9.9.1",
     "@preact/preset-vite": "^2.9.0",
     "@redux-devtools/core": "^3.14.0",
-    "@types/chrome": "^0.0.217",
+    "@types/chrome": "^0.0.270",
     "@types/chromecast-caf-receiver": "^6.0.17",
     "@types/chromecast-caf-sender": "^1.0.10",
     "@types/compression": "^1.7.5",
