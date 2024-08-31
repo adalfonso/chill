@@ -1,5 +1,5 @@
 import fs from "node:fs/promises";
-import mm from "music-metadata";
+import * as mm from "music-metadata";
 import { extname, join } from "node:path";
 import { Scan, ScanStatus } from "@prisma/client";
 
@@ -181,9 +181,10 @@ export class MediaCrawler {
   private async _getMetadata(file_path: string): Promise<RawMediaPayload> {
     const result = await mm.parseFile(file_path, { duration: true });
     const { common, format } = result;
+
     const cover = mm.selectCover(common.picture);
 
-    let cover_data = cover ? cover.data.toString("base64") : null;
+    let cover_data = cover ? Buffer.from(cover.data).toString("base64") : null;
 
     if (cover_data !== null) {
       try {
