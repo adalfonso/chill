@@ -2,7 +2,8 @@ import "./FileInfo.scss";
 import { Close } from "@client/components/ui/Close";
 import { PlayableTrack } from "@common/types";
 import { getFileTypeFromPath } from "@common/commonUtils";
-import { noPropagate, secondsToMinutes } from "@client/lib/util";
+import { noPropagate } from "@client/lib/Event";
+import { secondsToMinutes } from "@client/lib/AudioProgress";
 import { useMenu } from "@hooks/index";
 
 type FileInfoProps = {

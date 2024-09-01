@@ -5,11 +5,12 @@ import { Equalizer } from "@client/components/ui/Equalizer";
 import { FileInfo } from "../FileInfo";
 import { FileMenu, FileMenuHandler } from "../FileMenu";
 import { PlayableTrack } from "@common/types";
-import { artistUrl } from "@client/lib/url";
+import { artistUrl } from "@client/lib/Url";
 import { getMediaMenuState, getPlayerState } from "@reducers/store";
 import { getPlayPayload } from "@client/state/reducers/player";
-import { noPropagate, secondsToMinutes } from "@client/lib/util";
+import { noPropagate } from "@client/lib/Event";
 import { screen_breakpoint_px } from "@client/lib/constants";
+import { secondsToMinutes } from "@client/lib/AudioProgress";
 import { setMenu } from "@client/state/reducers/mediaMenu";
 import { useBackNavigate, useId, useMenu, useViewport } from "@hooks/index";
 

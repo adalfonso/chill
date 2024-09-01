@@ -6,7 +6,7 @@ import { PreCastPayload } from "@client/lib/cast/types";
 import { VerticalEllipsisIcon } from "@client/components/ui/icons/VerticalEllipsisIcon";
 import { addToQueue, playNext } from "@reducers/player";
 import { getMediaMenuState, getPlayerState } from "@reducers/store";
-import { noPropagate } from "@client/lib/util";
+import { noPropagate } from "@client/lib/Event";
 import { toggle } from "@reducers/playlistEditor";
 import { useMenu } from "@hooks/index";
 

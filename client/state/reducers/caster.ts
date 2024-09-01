@@ -3,13 +3,11 @@ import { createSlice, PayloadAction as Action } from "@reduxjs/toolkit";
 
 type CastState = {
   app_id: Maybe<string>;
-  current_track_progress: number;
   ready: boolean;
 };
 
 const initialState: CastState = {
   app_id: null,
-  current_track_progress: 0,
   ready: false,
 };
 

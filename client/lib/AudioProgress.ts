@@ -3,14 +3,21 @@
  *
  * @param callback - callback to perform on each frame render
  */
-export const startAnimationLoop = (callback: (dt: number) => unknown) => {
+export const startAnimationLoop = (
+  callback: (dt: number) => unknown,
+  fps = 60,
+) => {
   let lastTime = 0;
+  const interval = 1000 / fps;
 
   const frame: FrameRequestCallback = (time: number) => {
     const dt = time - lastTime;
-    lastTime = time;
 
-    callback(dt);
+    if (dt >= interval) {
+      lastTime = time;
+      callback(dt);
+    }
+
     requestAnimationFrame(frame);
   };
 
@@ -19,7 +26,6 @@ export const startAnimationLoop = (callback: (dt: number) => unknown) => {
 
 /** Haphazardly clear all animation frames */
 export const cancelAnimationFrames = () => {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   let id = requestAnimationFrame(() => {});
   while (id--) {
     cancelAnimationFrame(id);
@@ -47,16 +53,3 @@ export const secondsToMinutes = (duration: number) => {
 
   return `${minutes}:${pad(seconds)}`;
 };
-
-/**
- * Disables event propagation
- *
- * @param fn - callback fn
- * @returns event handler fn
- */
-export const noPropagate =
-  <Event extends UIEvent>(fn?: () => void) =>
-  (e: Event) => {
-    e.stopPropagation();
-    fn?.();
-  };

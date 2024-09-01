@@ -1,23 +1,18 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useRef } from "preact/hooks";
+import { useContext, useEffect, useRef } from "preact/hooks";
 
 import "./Toolbar.scss";
 import { Maybe } from "@common/types";
 import { api } from "@client/client";
 import { getCasterState, getPlayerState } from "@client/state/reducers/store";
-
-import {
-  next,
-  pause,
-  play,
-  seek,
-  setPlayerIsCasting,
-} from "@client/state/reducers/player";
+import { AppContext } from "@client/state/AppState";
+import * as Player from "@client/state/reducers/player";
 
 export const CastPlayer = () => {
   const caster = useSelector(getCasterState);
   const player = useSelector(getPlayerState);
-  const context = useRef<Maybe<cast.framework.CastContext>>(null);
+  const { progress } = useContext(AppContext);
+  const cast_context = useRef<Maybe<cast.framework.CastContext>>(null);
   const player_ref = useRef(player);
 
   const dispatch = useDispatch();
@@ -60,7 +55,7 @@ export const CastPlayer = () => {
       const track_has_changed = cast_index > current_index;
 
       if (track_has_changed) {
-        dispatch(next({ auto: true }));
+        dispatch(Player.next({ auto: true }));
       }
     };
 
@@ -79,8 +74,8 @@ export const CastPlayer = () => {
     player.now_playing,
     player.is_casting,
     player.playlist.length,
-    context.current, // is this needed
-    context.current?.getCurrentSession()?.getSessionId(),
+    cast_context.current, // is this needed
+    cast_context.current?.getCurrentSession()?.getSessionId(),
   ]);
 
   useEffect(() => {
@@ -95,7 +90,7 @@ export const CastPlayer = () => {
     const onSessionChanged = async (
       event: cast.framework.SessionStateEventData,
     ) => {
-      const { progress, playlist, index } = player_ref.current;
+      const { playlist, index } = player_ref.current;
 
       switch (event.sessionState) {
         case cast.framework.SessionState.SESSION_RESUMED:
@@ -107,8 +102,8 @@ export const CastPlayer = () => {
             : null;
 
           // Pause currently playing HTML Audio
-          dispatch(pause());
-          dispatch(setPlayerIsCasting(true));
+          dispatch(Player.pause());
+          dispatch(Player.setPlayerIsCasting(true));
 
           if (
             event.sessionState ===
@@ -116,14 +111,21 @@ export const CastPlayer = () => {
             playlist.length
           ) {
             // Immediately play when starting a cast session
-            dispatch(play({ tracks: playlist, cast_info, index, progress }));
+            dispatch(
+              Player.play({
+                tracks: playlist,
+                cast_info,
+                index,
+                progress: progress.value,
+              }),
+            );
           }
 
           break;
         }
         case cast.framework.SessionState.SESSION_ENDED:
-          dispatch(setPlayerIsCasting(false));
-          dispatch(seek(progress));
+          dispatch(Player.setPlayerIsCasting(false));
+          dispatch(Player.seek(progress.value));
           break;
 
         default:
@@ -138,7 +140,7 @@ export const CastPlayer = () => {
 
     ctx.addEventListener(SESSION_CHANGED, onSessionChanged);
 
-    context.current = ctx;
+    cast_context.current = ctx;
 
     return () => ctx.removeEventListener(SESSION_CHANGED, onSessionChanged);
   }, [caster.ready]);

@@ -3,6 +3,7 @@ import { render } from "preact";
 
 import store from "@reducers/store";
 import { App } from "./App";
+import { AppContext, createAppState } from "./state/AppState";
 
 const element = document.getElementById("root");
 
@@ -15,9 +16,11 @@ window.__chill_app = {
 };
 
 render(
-  <Provider store={store}>
-    <App />
-  </Provider>,
+  <AppContext.Provider value={createAppState()}>
+    <Provider store={store}>
+      <App />
+    </Provider>
+  </AppContext.Provider>,
   element,
 );
 

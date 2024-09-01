@@ -10,8 +10,8 @@ import { SmartScroller } from "./SmartScroller";
 import { api } from "@client/client";
 import { capitalize } from "@common/commonUtils";
 import { getPlayerState } from "@client/state/reducers/store";
-import { getRandomTracks } from "@client/lib/PlayerTools";
-import { matchUrl } from "@client/lib/url";
+import { getRandomTracks } from "@client/lib/TrackLoaders";
+import { matchUrl } from "@client/lib/Url";
 import { paginate } from "@common/pagination";
 import { play } from "@reducers/player";
 

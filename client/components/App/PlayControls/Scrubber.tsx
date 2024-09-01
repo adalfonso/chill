@@ -1,27 +1,19 @@
-import { useState, useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef, useContext } from "preact/hooks";
 import { useDispatch, useSelector } from "react-redux";
 
 import "./Scrubber.scss";
+import * as AudioProgress from "@client/lib/AudioProgress";
+import { AppContext } from "@client/state/AppState";
+import { CastSdk } from "@client/lib/cast/CastSdk";
+import { Maybe, PlayableTrackWithIndex } from "@common/types";
+import { audio, crossover, next, seek } from "@reducers/player";
 import { getPlayerState } from "@reducers/store";
-import {
-  cancelAnimationFrames,
-  getTimeTracking,
-  startAnimationLoop,
-} from "@client/lib/util";
 import { useDrag } from "@hooks/index";
-import {
-  audio,
-  crossover,
-  getAudioProgress,
-  next,
-  seek,
-  setAudioProgress,
-} from "@reducers/player";
 
 const gap_offset = 0.25;
 
 export const Scrubber = () => {
-  const [progress, setProgress] = useState(0);
+  const { progress } = useContext(AppContext);
   const player = useSelector(getPlayerState);
   const dispatch = useDispatch();
   const { startDrag, cancelDrag, updateDrag, dragging } = useDrag(
@@ -36,19 +28,18 @@ export const Scrubber = () => {
   }, [player.is_casting]);
 
   useEffect(() => {
-    startAnimationLoop(() => {
+    AudioProgress.startAnimationLoop(() => {
       const audio_progress = getAudioProgress(
         player.now_playing,
         is_casting.current,
       );
 
-      if (audio_progress === progress) {
+      if (audio_progress === progress.value) {
         return;
       }
 
-      setProgress(audio_progress);
-      dispatch(setAudioProgress(audio_progress));
-    });
+      progress.value = audio_progress;
+    }, 20);
 
     /**
      * We will automatically dispatch the next track when the current track has
@@ -72,7 +63,7 @@ export const Scrubber = () => {
     }
 
     return () => {
-      cancelAnimationFrames();
+      AudioProgress.cancelAnimationFrames();
 
       if (!is_casting_local_var) {
         audio.removeEventListener("timeupdate", onCrossover);
@@ -94,26 +85,52 @@ export const Scrubber = () => {
         onTouchCancel={cancelDrag}
         onTouchMove={updateDrag}
       >
-        <div className="scrubber" style={{ width: `${progress * 100}%` }}></div>
+        <div
+          className="scrubber"
+          style={{ width: `${progress.value * 100}%` }}
+        ></div>
         <div
           className={"slider" + (dragging ? " visible" : "")}
-          style={{ left: `${progress * 100}%` }}
+          style={{ left: `${progress.value * 100}%` }}
         ></div>
       </div>
 
       <div className="time-tracking">
         <div className="current-time">
           {player.now_playing &&
-            getTimeTracking(
+            AudioProgress.getTimeTracking(
               player.is_casting
-                ? progress * player.now_playing.duration
+                ? progress.value * player.now_playing.duration
                 : audio.currentTime,
             )}
         </div>
         <div className="end-time">
-          {player.now_playing && getTimeTracking(player.now_playing.duration)}
+          {player.now_playing &&
+            AudioProgress.getTimeTracking(player.now_playing.duration)}
         </div>
       </div>
     </>
   );
+};
+
+/**
+ * Get the audio progress for a playing track
+ *
+ * @param media - media that is playing
+ * @param is_casting - if the media is playing on chromecast
+ * @returns progress percentage 0-1
+ */
+const getAudioProgress = (
+  media: Maybe<PlayableTrackWithIndex>,
+  is_casting = false,
+) => {
+  if (media === null || !media.duration) {
+    return 0;
+  }
+
+  if (is_casting) {
+    return CastSdk.currentTime() / media.duration;
+  }
+
+  return audio.currentTime ? audio.currentTime / media.duration : 0;
 };

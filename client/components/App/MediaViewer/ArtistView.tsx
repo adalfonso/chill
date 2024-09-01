@@ -9,7 +9,7 @@ import {
   SortOrder,
   Raw,
 } from "@common/types";
-import { artistAlbumUrl } from "@client/lib/url";
+import { artistAlbumUrl } from "@client/lib/Url";
 import { MediaTile } from "./MusicLibrary/MediaTile";
 import { SmartScroller } from "./SmartScroller";
 import { api } from "@client/client";

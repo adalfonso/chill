@@ -1,7 +1,11 @@
 import { createContext } from "preact";
 import { signal } from "@preact/signals";
 
-const is_busy = signal(false);
-const app_state = { is_busy };
+export const createAppState = () => {
+  const is_busy = signal(false);
+  const progress = signal<number>(0);
 
-export const AppContext = createContext(app_state);
+  return { is_busy, progress };
+};
+
+export const AppContext = createContext(createAppState());

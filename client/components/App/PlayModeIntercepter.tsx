@@ -5,7 +5,7 @@ import { PlayMode } from "@reducers/player.types";
 import { PlayableTrack } from "@common/types";
 import { addToQueue, updatePlayOptions } from "@reducers/player";
 import { api } from "@client/client";
-import { getMoreTracks } from "@client/lib/PlayerTools";
+import { getMoreTracks } from "@client/lib/TrackLoaders";
 import { getPlayerState } from "@reducers/store";
 
 type PlayModeIterceptorProps = {

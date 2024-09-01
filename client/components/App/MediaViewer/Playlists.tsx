@@ -12,7 +12,7 @@ import { api } from "@client/client";
 import { DEFAULT_LIMIT, DEFAULT_PAGE, paginate } from "@common/pagination";
 import { play } from "@reducers/player";
 import { useInfiniteScroll } from "@hooks/index";
-import { getPlaylistTracks } from "@client/lib/PlayerTools";
+import { getPlaylistTracks } from "@client/lib/TrackLoaders";
 
 export const Playlists = () => {
   const observedElement = useRef<HTMLDivElement>(null);

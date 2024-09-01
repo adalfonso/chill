@@ -5,7 +5,7 @@ import { AppContext } from "@client/state/AppState";
 import { MediaTile } from "./MusicLibrary/MediaTile";
 import { Maybe, MediaTileData, MediaTileType, Raw } from "@common/types";
 import { SmartScroller } from "./SmartScroller";
-import { artistUrl } from "@client/lib/url";
+import { artistUrl } from "@client/lib/Url";
 import { api } from "@client/client";
 import { paginate } from "@common/pagination";
 

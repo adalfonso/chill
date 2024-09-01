@@ -11,7 +11,7 @@ import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
 import { PlayMode } from "@reducers/player.types";
 import { api } from "@client/client";
 import { getPlayerState } from "@client/state/reducers/store";
-import { getTracks, sort_clauses } from "@client/lib/PlayerTools";
+import { getTracks, sort_clauses } from "@client/lib/TrackLoaders";
 import { play } from "@reducers/player";
 import { truncate } from "@common/commonUtils";
 

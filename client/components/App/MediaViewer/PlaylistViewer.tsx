@@ -10,7 +10,7 @@ import { api } from "@client/client";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@common/pagination";
 import { play } from "@reducers/player";
 import { PlayMode } from "@reducers/player.types";
-import { getPlaylistTracks } from "@client/lib/PlayerTools";
+import { getPlaylistTracks } from "@client/lib/TrackLoaders";
 
 type PlaylistViewerProps = {
   playlist_id: number;

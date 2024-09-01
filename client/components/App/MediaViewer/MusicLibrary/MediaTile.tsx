@@ -6,10 +6,10 @@ import "./MediaTile.scss";
 import { FileMenu, FileMenuHandler } from "../FileMenu";
 import { MediaTileData, MediaTileType, PlayableTrack } from "@common/types";
 import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
-import { albumUrl, artistUrl, matchUrl } from "@client/lib/url";
+import { albumUrl, artistUrl, matchUrl } from "@client/lib/Url";
 import { api } from "@client/client";
 import { getPlayerState } from "@client/state/reducers/store";
-import { noPropagate } from "@client/lib/util";
+import { noPropagate } from "@client/lib/Event";
 import { play } from "@reducers/player";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import { setMenu } from "@client/state/reducers/mediaMenu";
@@ -22,7 +22,10 @@ import {
   useViewport,
 } from "@hooks/index";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@common/pagination";
-import { getTracks as loadTracks, sort_clauses } from "@client/lib/PlayerTools";
+import {
+  getTracks as loadTracks,
+  sort_clauses,
+} from "@client/lib/TrackLoaders";
 
 type MediaTileProps<T extends Record<string, unknown>> = {
   tile_type: MediaTileType;

@@ -15,9 +15,9 @@ import { Playlist } from "./PlayControls/Playlist";
 import { Scrubber } from "./PlayControls/Scrubber";
 import { Shuffle } from "./PlayControls/Shuffle";
 import { VolumeControl } from "./PlayControls/VolumeControl";
-import { artistAlbumUrl, artistUrl } from "@client/lib/url";
+import { artistAlbumUrl, artistUrl } from "@client/lib/Url";
 import { getPlayerState } from "@reducers/store";
-import { noPropagate } from "@client/lib/util";
+import { noPropagate } from "@client/lib/Event";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import { useBackNavigate, useId, useMenu, useViewport } from "@hooks/index";
 import {

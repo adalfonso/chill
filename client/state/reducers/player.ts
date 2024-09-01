@@ -14,7 +14,6 @@ export type PlayerState = {
   is_casting: boolean;
   is_playing: boolean;
   is_shuffled: boolean;
-  progress: number;
   now_playing: Maybe<PlayableTrackWithIndex>;
   next_playing: Maybe<PlayableTrackWithIndex>;
   original_playlist: Array<PlayableTrackWithIndex>;
@@ -30,7 +29,6 @@ const initialState: PlayerState = {
   is_casting: false,
   is_playing: false,
   is_shuffled: false,
-  progress: 0,
   now_playing: null,
   next_playing: null,
   original_playlist: [],
@@ -147,7 +145,6 @@ export const playerSlice = createSlice({
       if (tracks) {
         state.playlist = tracks_with_index;
         state.index = index;
-        state.progress = progress;
         state.now_playing = tracks_with_index[index];
         state.next_playing = tracks_with_index[index + 1] ?? null;
         state.mobile_display_mode = MobileDisplayMode.Fullscreen;
@@ -162,8 +159,8 @@ export const playerSlice = createSlice({
           }
 
           const payload = getCastPayload(state.playlist, state.cast_info);
-          const current_time = state.progress
-            ? state.progress * state.now_playing.duration
+          const current_time = progress
+            ? progress * state.now_playing.duration
             : 0;
           CastSdk.Play(payload, state.index, current_time);
         } else {
@@ -326,10 +323,6 @@ export const playerSlice = createSlice({
       audio.currentTime = time;
     },
 
-    setAudioProgress: (state, action: Action<number>) => {
-      state.progress = action.payload;
-    },
-
     shuffle: (state) => {
       if (state.is_shuffled) {
         state.playlist = [...state.original_playlist];
@@ -384,7 +377,6 @@ export const {
   playNext,
   previous,
   seek,
-  setAudioProgress,
   shuffle,
   setMobileDisplayMode,
   setPlayerIsCasting,
@@ -392,28 +384,6 @@ export const {
 } = playerSlice.actions;
 
 export default playerSlice.reducer;
-
-/**
- * Get the audio progress for a playing track
- *
- * @param media - media that is playing
- * @param is_casting - if the media is playing on chromecast
- * @returns progress percentage 0-1
- */
-export const getAudioProgress = (
-  media: Maybe<PlayableTrackWithIndex>,
-  is_casting = false,
-) => {
-  if (media === null || !media.duration) {
-    return 0;
-  }
-
-  if (is_casting) {
-    return CastSdk.currentTime() / media.duration;
-  }
-
-  return audio.currentTime ? audio.currentTime / media.duration : 0;
-};
 
 /**
  * Merge media and their cast information into a single cast payload
