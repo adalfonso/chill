@@ -9,10 +9,10 @@ import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
 import { PlayMode } from "@reducers/player.types";
 import { PlaylistWithCount, Raw } from "@common/types";
 import { api } from "@client/client";
-import { paginate } from "@common/pagination";
-import { pagination_limit } from "@client/lib/constants";
+import { DEFAULT_LIMIT, DEFAULT_PAGE, paginate } from "@common/pagination";
 import { play } from "@reducers/player";
 import { useInfiniteScroll } from "@hooks/index";
+import { getPlaylistTracks } from "@client/lib/PlayerTools";
 
 export const Playlists = () => {
   const observedElement = useRef<HTMLDivElement>(null);
@@ -40,20 +40,16 @@ export const Playlists = () => {
   const playPlaylist = (playlist: Raw<PlaylistWithCount>) => async () => {
     try {
       const playlist_id = playlist.id;
-      const pagination_options = paginate({
-        page: 0,
-        limit: pagination_limit,
-      });
-      const tracks = await api.playlist.tracks.query({
-        id: playlist_id,
-        options: pagination_options,
-      });
+      const tracks = await getPlaylistTracks({ playlist_id });
+
+      // TODO: cast info?
 
       const play_options = {
         id: playlist_id,
-        mode: PlayMode.Playlist,
-        ...pagination_options,
-        complete: false,
+        mode: PlayMode.UserPlaylist,
+        page: DEFAULT_PAGE,
+        limit: DEFAULT_LIMIT,
+        more: true,
       };
 
       dispatch(play({ tracks, play_options, index: 0 }));

@@ -21,6 +21,8 @@ import {
   usePrevious,
   useViewport,
 } from "@hooks/index";
+import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@common/pagination";
+import { getTracks as loadTracks, sort_clauses } from "@client/lib/PlayerTools";
 
 type MediaTileProps<T extends Record<string, unknown>> = {
   tile_type: MediaTileType;
@@ -80,14 +82,27 @@ export const MediaTile = <T extends Record<string, unknown>>({
 
   const optionsHandler: FileMenuHandler = {
     play: async () => {
-      const { tracks, cast_info } = await getTracks(
+      const { tracks, cast_info } = await getTracksForMediaTile(
         tile_type,
         tile_data,
       )(player.is_casting);
 
-      dispatch(play({ tracks, cast_info, index: 0 }));
+      const play_options = {
+        mode: tile_type,
+        id: tile_data.id,
+        limit: DEFAULT_LIMIT,
+        page: DEFAULT_PAGE,
+        more: true,
+      };
+
+      dispatch(play({ tracks, cast_info, index: 0, play_options }));
     },
-    getTracks: getTracks(tile_type, tile_data),
+    getTracks: getTracksForMediaTile(
+      tile_type,
+      tile_data,
+      // Used for "Add to playlist"
+      Number.MAX_SAFE_INTEGER,
+    ),
     toggle: setMenuVisible,
   };
 
@@ -175,16 +190,17 @@ const getSortString = (track: PlayableTrack) =>
   (track.album ?? "") +
   (track.number ?? "").toString().padStart(3, "0");
 
-export const getTracks =
+const getTracksForMediaTile =
   <T extends Record<string, unknown>>(
     tile_tile: MediaTileType,
     tile: MediaTileData<T>,
+    limit?: number,
   ) =>
   async (is_casting = false) => {
     // TODO: The controller used here has an issue with the type
     // e.g. duration is not available but the type thinks it's valid
 
-    const tracks = (await fileApi(tile_tile, tile)).sort((a, b) =>
+    const tracks = (await fileApi(tile_tile, tile, limit)).sort((a, b) =>
       getSortString(a).localeCompare(getSortString(b)),
     );
 
@@ -202,13 +218,25 @@ export const getTracks =
 const fileApi = async <T extends Record<string, unknown>>(
   tile_type: MediaTileType,
   tile: MediaTileData<T>,
+  limit?: number,
 ) => {
   switch (tile_type) {
     case MediaTileType.Artist:
-      return api.track.getByAlbumAndOrArtist.query({ artist_id: tile.id });
+      return loadTracks(
+        { artist_id: tile.id },
+        { limit, sort: sort_clauses.artist },
+      );
+
     case MediaTileType.Album:
-      return api.track.getByAlbumAndOrArtist.query({ album_id: tile.id });
+      return loadTracks(
+        { album_id: tile.id },
+        { limit, sort: sort_clauses.album },
+      );
+
     case MediaTileType.Genre:
-      return api.track.getByGenre.query({ genre_id: tile.id });
+      return loadTracks(
+        { genre_id: tile.id },
+        { limit, sort: sort_clauses.genre },
+      );
   }
 };

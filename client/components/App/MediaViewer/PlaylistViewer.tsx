@@ -7,9 +7,10 @@ import { PlayableTrack, Raw } from "@common/types";
 import { PlaylistRow } from "./Playlist/PlaylistRow";
 import { SmartScroller } from "./SmartScroller";
 import { api } from "@client/client";
-import { paginate } from "@common/pagination";
-import { pagination_limit } from "@client/lib/constants";
+import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@common/pagination";
 import { play } from "@reducers/player";
+import { PlayMode } from "@reducers/player.types";
+import { getPlaylistTracks } from "@client/lib/PlayerTools";
 
 type PlaylistViewerProps = {
   playlist_id: number;
@@ -22,13 +23,23 @@ export const PlaylistViewer = ({ playlist_id }: PlaylistViewerProps) => {
   const playAll =
     (index = 0) =>
     async () => {
-      // XXX: make this paginated
-      const tracks = await api.playlist.tracks.query({
-        id: playlist_id,
-        options: paginate({ page: 0, limit: 9999 }),
-      });
+      const tracks = await getPlaylistTracks({ playlist_id });
 
-      dispatch(play({ tracks, index }));
+      // todo cast info?
+
+      dispatch(
+        play({
+          tracks,
+          index,
+          play_options: {
+            mode: PlayMode.UserPlaylist,
+            id: playlist_id,
+            limit: DEFAULT_LIMIT,
+            page: DEFAULT_PAGE,
+            more: true,
+          },
+        }),
+      );
     };
 
   useEffect(() => {
@@ -36,10 +47,7 @@ export const PlaylistViewer = ({ playlist_id }: PlaylistViewerProps) => {
   }, [playlist_id]);
 
   const loadPlaylistTracks = (page: number) =>
-    api.playlist.tracks.query({
-      id: playlist_id,
-      options: paginate({ page, limit: pagination_limit }),
-    });
+    getPlaylistTracks({ playlist_id }, { page });
 
   return (
     <>

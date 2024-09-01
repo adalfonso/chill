@@ -4,7 +4,7 @@ import { z } from "zod";
 import { pagination_schema } from "@common/schema";
 import { db } from "@server/lib/data/db";
 import { Prisma } from "@prisma/client";
-import { MediaTileData } from "@common/types";
+import { MediaTileData, SortOrder } from "@common/types";
 
 export const schema = {
   get: z.object({ id: z.number().int() }),
@@ -26,8 +26,14 @@ export const ArtistController = {
   }: Request<typeof schema.getArtistTiles>) => {
     const { limit, page, sort } = options;
 
+    const default_artist_sort = { name: SortOrder.asc };
+
+    if (sort.length === 0) {
+      sort.push(default_artist_sort);
+    }
+
     const artists = await db.artist.findMany({
-      orderBy: { name: sort },
+      orderBy: sort,
       skip: page * limit,
       take: limit,
 
@@ -54,9 +60,9 @@ export const ArtistController = {
   getArtistTilesByGenre: async ({
     input: { options, genre_id },
   }: Request<typeof schema.getArtistTilesByGenre>) => {
-    const { limit, page, sort } = options;
+    const { limit, page } = options;
 
-    const sort_order = Prisma.sql([sort]);
+    const sort_order = Prisma.sql([SortOrder.asc]);
 
     return (await db.$queryRaw`
       WITH random_album_art AS (

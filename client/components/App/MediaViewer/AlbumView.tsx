@@ -6,9 +6,12 @@ import "./AlbumView.scss";
 import { AlbumRelationalData, Maybe, PlayableTrack, Raw } from "@common/types";
 import { AlbumViewRow } from "./AlbumView/AlbumViewRow";
 import { AppContext } from "@client/state/AppState";
+import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@common/pagination";
 import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
+import { PlayMode } from "@reducers/player.types";
 import { api } from "@client/client";
 import { getState } from "@client/state/reducers/store";
+import { getTracks, sort_clauses } from "@client/lib/PlayerTools";
 import { play } from "@reducers/player";
 import { truncate } from "@common/commonUtils";
 
@@ -32,9 +35,9 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
       [
         artist_id && api.artist.get.query({ id: artist_id }).then(setArtist),
         api.album.get.query({ id: album_id }).then(setAlbum),
-        api.track.getByAlbumAndOrArtist
-          .query({ artist_id, album_id })
-          .then(setTracks),
+        getTracks({ artist_id, album_id }, { sort: sort_clauses.album }).then(
+          setTracks,
+        ),
       ].filter(Boolean),
     ).finally(() => (is_busy.value = false));
   }, [album_id]);
@@ -55,7 +58,18 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
           })
         : null;
 
-      dispatch(play({ tracks: [...(tracks ?? [])], cast_info, index }));
+      // TODO: incorporate artist_id in here when necessary
+      const play_options = {
+        mode: PlayMode.Album,
+        id: album_id,
+        limit: DEFAULT_LIMIT,
+        page: DEFAULT_PAGE,
+        more: true,
+      };
+
+      dispatch(
+        play({ tracks: [...(tracks ?? [])], cast_info, index, play_options }),
+      );
     };
 
   const artist_ids = () =>

@@ -35,9 +35,15 @@ export const MusicLibrary = () => {
       });
 
   const playRandomTracks = async () => {
-    const { tracks, cast_info } = await getRandomTracks(player.is_casting);
+    const tracks = await getRandomTracks();
 
-    const play_options = { mode: PlayMode.Random, complete: false };
+    const cast_info = player.is_casting
+      ? await api.track.castInfo.query({
+          track_ids: tracks.map((file) => file.id),
+        })
+      : null;
+
+    const play_options = { mode: PlayMode.Random, more: true };
     dispatch(play({ tracks: tracks, play_options, cast_info, index: 0 }));
   };
 

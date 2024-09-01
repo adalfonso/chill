@@ -49,9 +49,7 @@ export const api_router = t.router({
 
 export type ApiRouter = typeof api_router;
 
-const empty = z.undefined();
-
-export type Request<T extends ZodType = typeof empty> = {
+export type Request<T extends ZodType = z.ZodUndefined> = {
   input: z.infer<T>;
   ctx: Context;
 };

@@ -9,32 +9,33 @@ export const MobileDisplayMode = {
 export type MobileDisplayMode = ObjectValues<typeof MobileDisplayMode>;
 
 export const PlayMode = {
-  Static: "static",
+  None: "none",
   Random: "random",
-  Playlist: "playlist",
+  UserPlaylist: "user-playlist",
+  Artist: "artist",
+  Album: "album",
+  Genre: "genre",
 } as const;
 
 export type PlayMode = ObjectValues<typeof PlayMode>;
 
-type StaticPlayOptions = {
-  mode: typeof PlayMode.Static;
-  complete: true;
-};
-
 type RandomPlayOptions = {
   mode: typeof PlayMode.Random;
-  complete: boolean;
+  more: boolean;
 };
 
-type PlaylistPlayOptions = {
-  mode: typeof PlayMode.Playlist;
-  id: number;
-  page: number;
-  limit: number;
-  complete: boolean;
+type NonePlayOptions = {
+  mode: typeof PlayMode.None;
+  more: false;
 };
 
 export type PlayOptions =
-  | StaticPlayOptions
   | RandomPlayOptions
-  | PlaylistPlayOptions;
+  | NonePlayOptions
+  | {
+      mode: Exclude<PlayMode, typeof PlayMode.Random & typeof PlayMode.None>;
+      id: number;
+      page: number;
+      limit: number;
+      more: boolean;
+    };

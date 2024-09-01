@@ -4,17 +4,18 @@ import { z } from "zod";
 
 import { pagination_schema } from "@common/schema";
 import { db } from "@server/lib/data/db";
+import { SortOrder } from "@common/types";
 
 export const schema = {
   get: z.object({ id: z.number().int() }),
   getAlbumTiles: z.object({
-    options: pagination_schema,
     getMetadata: z.boolean().default(false),
     filter: z
       .object({
         artist_id: z.number().int().optional(),
       })
       .optional(),
+    options: pagination_schema,
   }),
 };
 
@@ -42,10 +43,16 @@ export const AlbumController = {
   getAlbumTiles: async ({
     input: { options, filter, getMetadata },
   }: Request<typeof schema.getAlbumTiles>) => {
-    const { limit, page, sort, sortBy } = options;
+    const { limit, page, sort } = options;
+
+    const default_album_sort = { title: SortOrder.asc };
+
+    if (sort.length === 0) {
+      sort.push(default_album_sort);
+    }
 
     const albums = await db.album.findMany({
-      orderBy: { [sortBy ?? "title"]: sort },
+      orderBy: sort,
       skip: page * limit,
       take: limit,
 

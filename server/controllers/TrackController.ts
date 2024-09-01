@@ -14,17 +14,17 @@ import { adjustImage } from "@server/lib/media/image/ImageAdjust";
 import { getFileTypeFromPath } from "@common/commonUtils";
 import { env } from "@server/init";
 import { getAlbumFromFs } from "@server/lib/media/image/ImageCache";
+import { pagination_schema } from "@common/schema";
 
 export const schema = {
   cast_info: z.object({
     track_ids: z.array(z.number().int()),
   }),
-  getByAlbumAndOrArtist: z.object({
+  get: z.object({
     album_id: z.number().int().optional(),
     artist_id: z.number().int().optional(),
-  }),
-  getByGenre: z.object({
-    genre_id: z.number().int(),
+    genre_id: z.number().int().optional(),
+    options: pagination_schema,
   }),
   getRandomTracks: z.object({
     limit: z.number().int(),
@@ -111,6 +111,7 @@ export const TrackController = {
         return res.end(data);
       }
     } catch (e) {
+      console.error("Failed to get track's cover:", e);
       return res.status(404).send(`Invalid album`);
     }
 
@@ -136,41 +137,18 @@ export const TrackController = {
     }
   },
 
-  getByAlbumAndOrArtist: async ({
-    input: { album_id, artist_id },
-  }: Request<typeof schema.getByAlbumAndOrArtist>): Promise<
-    Array<PlayableTrack>
-  > => {
-    if (!album_id && !artist_id) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Must provide album_id and/or artist_id",
-      });
-    }
+  get: async ({
+    input: { album_id, artist_id, genre_id, options },
+  }: Request<typeof schema.get>): Promise<Array<PlayableTrack>> => {
+    const { limit, page, sort } = options;
 
     return (
       await db.track.findMany({
-        where: { album_id, artist_id },
+        where: { album_id, artist_id, genre_id },
         select: playable_track_selection,
-      })
-    ).map((track) => ({
-      ...track,
-      artist: track?.artist?.name ?? null,
-      album: track.album?.title ?? null,
-      album_art_filename: track.album?.album_art?.filename ?? null,
-      year: track?.album?.year ?? null,
-      genre: track.genre?.name ?? null,
-      duration: track.duration.toNumber(),
-    }));
-  },
-
-  getByGenre: async ({
-    input: { genre_id },
-  }: Request<typeof schema.getByGenre>): Promise<Array<PlayableTrack>> => {
-    return (
-      await db.track.findMany({
-        where: { genre_id },
-        select: playable_track_selection,
+        take: limit,
+        skip: page * limit,
+        orderBy: sort,
       })
     ).map((track) => ({
       ...track,
@@ -254,10 +232,11 @@ export const TrackController = {
             type: "mp3",
             size: stats.size.toString(),
           });
-        } catch (e) {
+        } catch (error) {
           console.error(`Failed to convert audio file.`, {
             id: req.params.id,
             quality_preference_kbps: mp3_quality_preference_kbps,
+            error,
           });
         }
       } else {

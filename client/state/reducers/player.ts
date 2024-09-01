@@ -40,8 +40,8 @@ const initialState: PlayerState = {
   volume: 1,
   mobile_display_mode: MobileDisplayMode.None,
   play_options: {
-    mode: PlayMode.Static,
-    complete: true,
+    mode: PlayMode.None,
+    more: false,
   },
 };
 
@@ -133,12 +133,16 @@ export const playerSlice = createSlice({
         cast_info = null,
         index = 0,
         progress = 0,
-        play_options = { mode: PlayMode.Static, complete: true },
+        play_options = { mode: PlayMode.None, more: false },
       } = action.payload;
 
       const tracks_with_index = action.payload.tracks
         ? addSemanticIndex(action.payload.tracks)
         : [];
+
+      if (state.is_casting && cast_info === null) {
+        alert("Missing cast info");
+      }
 
       if (tracks) {
         state.playlist = tracks_with_index;

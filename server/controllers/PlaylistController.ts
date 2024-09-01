@@ -3,7 +3,7 @@ import { Request } from "@server/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { PlaylistWithCount } from "@common/types";
+import { PlaylistWithCount, SortOrder } from "@common/types";
 import { db } from "@server/lib/data/db";
 import { pagination_schema } from "@common/schema";
 import { playable_track_selection } from "./TrackController";
@@ -78,10 +78,14 @@ export const PlaylistController = {
       options: { limit = Infinity, page = 0, sort },
     },
   }: Request<typeof schema.index>): Promise<Array<PlaylistWithCount>> => {
+    const default_playlist_sort = { created_at: SortOrder.asc };
+
+    if (sort.length === 0) {
+      sort.push(default_playlist_sort);
+    }
+
     const playlists = await db.playlist.findMany({
-      orderBy: {
-        created_at: sort,
-      },
+      orderBy: sort,
       skip: page > 0 ? page * limit : 0,
       take: limit,
     });
@@ -116,11 +120,15 @@ export const PlaylistController = {
         throw new TRPCError({ code: "NOT_FOUND" });
       }
 
+      const default_playlist_track_sort = { index: SortOrder.asc };
+
+      if (sort.length === 0) {
+        sort.push(default_playlist_track_sort);
+      }
+
       const playlist_items = await db.playlistTrack.findMany({
         where: { playlist_id: id },
-        orderBy: {
-          index: sort,
-        },
+        orderBy: sort,
         skip: page > 0 ? page * limit : 0,
         take: limit,
         select: {

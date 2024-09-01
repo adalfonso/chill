@@ -1,4 +1,5 @@
 import { Album, Playlist, Track } from "@prisma/client";
+import { SortClause } from "./schema";
 
 export type Maybe<T> = T | null;
 export type ObjectValues<T> = T[keyof T];
@@ -59,19 +60,17 @@ export type PlayableTrackWithIndex = PlayableTrack & { _index: string };
 
 export type PlaylistWithCount = Playlist & { track_count: number };
 
-export const PaginationSort = {
+export const SortOrder = {
   asc: "asc",
   desc: "desc",
 } as const;
 
-export type PaginationSort =
-  (typeof PaginationSort)[keyof typeof PaginationSort];
+export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder];
 
 export type PaginationOptions = {
   limit: number;
   page: number;
-  sortBy?: string;
-  sort: PaginationSort;
+  sort: Array<SortClause>;
 };
 
 export const AudioQualityBitrate = {

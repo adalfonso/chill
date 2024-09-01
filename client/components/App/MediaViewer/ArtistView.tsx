@@ -6,7 +6,7 @@ import {
   Maybe,
   MediaTileData,
   MediaTileType,
-  PaginationSort,
+  SortOrder,
   Raw,
 } from "@common/types";
 import { artistAlbumUrl } from "@client/lib/url";
@@ -28,7 +28,10 @@ export const ArtistView = ({ artist_id }: ArtistViewProps) => {
 
   const loadAlbums = async (page: number) =>
     api.album.getTiles.query({
-      options: paginate({ page, sortBy: "year", sort: PaginationSort.desc }),
+      options: paginate({
+        page,
+        sort: [{ year: SortOrder.desc }],
+      }),
       getMetadata: true,
       filter: { artist_id },
     });
