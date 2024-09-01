@@ -3,14 +3,14 @@ import { useDispatch, useSelector } from "react-redux";
 
 import "./Playlist.scss";
 import { Close } from "@client/components/ui/Close";
+import { DottedListIcon } from "@client/components/ui/icons/DottedListIcon";
 import { Equalizer } from "../../ui/Equalizer";
-import { getState } from "@reducers/store";
+import { getPlayerState } from "@reducers/store";
 import { play } from "@reducers/player";
 import { useBackNavigate } from "@hooks/index";
-import { DottedListIcon } from "@client/components/ui/icons/DottedListIcon";
 
 export const Playlist = () => {
-  const { player } = useSelector(getState);
+  const player = useSelector(getPlayerState);
   const dispatch = useDispatch();
   const [playlist_visible, setPlaylistVisible] = useState(false);
 

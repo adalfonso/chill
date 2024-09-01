@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 
+import { getMediaMenuState } from "@reducers/store";
 import { setMenu as setMediaMenu } from "@reducers/mediaMenu";
-import { getState } from "@reducers/store";
 
 /**
  * Handles menu control
@@ -11,7 +11,7 @@ import { getState } from "@reducers/store";
  */
 export const useMenu = (menu_id: string) => {
   const dispatch = useDispatch();
-  const { mediaMenu } = useSelector(getState);
+  const mediaMenu = useSelector(getMediaMenuState);
 
   const is_active = mediaMenu.menu_id === menu_id;
   const set = () => dispatch(setMediaMenu(menu_id));

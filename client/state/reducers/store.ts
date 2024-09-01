@@ -18,6 +18,11 @@ const store = configureStore({
 
 type RootState = ReturnType<typeof store.getState>;
 
-export const getState = (state: RootState) => state;
+export const getCasterState = (state: RootState) => state.caster;
+export const getMediaMenuState = (state: RootState) => state.mediaMenu;
+export const getPlayerState = (state: RootState) => state.player;
+export const getPlaylistEditorState = (state: RootState) =>
+  state.playlistEditor;
+export const getUserState = (state: RootState) => state.user;
 
 export default store;

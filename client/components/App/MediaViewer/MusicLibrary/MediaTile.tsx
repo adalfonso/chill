@@ -8,7 +8,7 @@ import { MediaTileData, MediaTileType, PlayableTrack } from "@common/types";
 import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
 import { albumUrl, artistUrl, matchUrl } from "@client/lib/url";
 import { api } from "@client/client";
-import { getState } from "@client/state/reducers/store";
+import { getPlayerState } from "@client/state/reducers/store";
 import { noPropagate } from "@client/lib/util";
 import { play } from "@reducers/player";
 import { screen_breakpoint_px } from "@client/lib/constants";
@@ -44,7 +44,7 @@ export const MediaTile = <T extends Record<string, unknown>>({
 }: MediaTileProps<T>) => {
   const [, navigate] = useLocation();
   const dispatch = useDispatch();
-  const { player } = useSelector(getState);
+  const player = useSelector(getPlayerState);
   const menu_id = useId();
 
   const menu = useMenu(menu_id);

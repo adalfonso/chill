@@ -5,7 +5,7 @@ import { Maybe, PlayableTrack } from "@common/types";
 import { PreCastPayload } from "@client/lib/cast/types";
 import { VerticalEllipsisIcon } from "@client/components/ui/icons/VerticalEllipsisIcon";
 import { addToQueue, playNext } from "@reducers/player";
-import { getState } from "@reducers/store";
+import { getMediaMenuState, getPlayerState } from "@reducers/store";
 import { noPropagate } from "@client/lib/util";
 import { toggle } from "@reducers/playlistEditor";
 import { useMenu } from "@hooks/index";
@@ -32,11 +32,11 @@ export const FileMenu = ({
   handler,
   children,
 }: FileMenuProps) => {
-  const { mediaMenu } = useSelector(getState);
+  const player = useSelector(getPlayerState);
+  const mediaMenu = useSelector(getMediaMenuState);
   const active = menu_id === mediaMenu.menu_id;
   const dispatch = useDispatch();
   const menu = useMenu(menu_id);
-  const { player } = useSelector(getState);
 
   useEffect(() => {
     if (active) {

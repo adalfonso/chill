@@ -4,7 +4,7 @@ import { useEffect, useRef } from "preact/hooks";
 import "./Toolbar.scss";
 import { Maybe } from "@common/types";
 import { api } from "@client/client";
-import { getState } from "@client/state/reducers/store";
+import { getCasterState, getPlayerState } from "@client/state/reducers/store";
 
 import {
   next,
@@ -15,7 +15,8 @@ import {
 } from "@client/state/reducers/player";
 
 export const CastPlayer = () => {
-  const { caster, player } = useSelector(getState);
+  const caster = useSelector(getCasterState);
+  const player = useSelector(getPlayerState);
   const context = useRef<Maybe<cast.framework.CastContext>>(null);
   const player_ref = useRef(player);
 

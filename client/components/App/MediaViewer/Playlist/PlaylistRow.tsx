@@ -6,7 +6,7 @@ import { FileMenu, FileMenuHandler } from "../FileMenu";
 import { PlayableTrack } from "@common/types";
 import { artistAlbumUrl, artistUrl } from "@client/lib/url";
 import { getPlayPayload } from "@client/state/reducers/player";
-import { getState } from "@reducers/store";
+import { getMediaMenuState, getPlayerState } from "@reducers/store";
 import { noPropagate, secondsToMinutes } from "@client/lib/util";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import { setMenu } from "@client/state/reducers/mediaMenu";
@@ -20,7 +20,8 @@ type PlaylistRowProps = {
 };
 
 export const PlaylistRow = ({ track, index, playAll }: PlaylistRowProps) => {
-  const { player, mediaMenu } = useSelector(getState);
+  const player = useSelector(getPlayerState);
+  const mediaMenu = useSelector(getMediaMenuState);
   const menu_id = useId();
   const [, navigate] = useLocation();
   const dispatch = useDispatch();

@@ -2,15 +2,21 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "wouter-preact";
 
 import "./PlayControls.scss";
+import { BackwardIcon } from "../ui/icons/BackwardIcon";
+import { ChevronDownIcon } from "../ui/icons/ChevronDownIcon";
+import { Close } from "../ui/Close";
 import { FileInfo } from "./MediaViewer/FileInfo";
 import { FileMenu } from "./MediaViewer/FileMenu";
+import { ForwardIcon } from "../ui/icons/ForwardIcon";
 import { MobileDisplayMode } from "@reducers/player.types";
+import { PauseIcon } from "../ui/icons/PauseIcon";
+import { PlayIcon } from "../ui/icons/PlayIcon";
 import { Playlist } from "./PlayControls/Playlist";
 import { Scrubber } from "./PlayControls/Scrubber";
 import { Shuffle } from "./PlayControls/Shuffle";
 import { VolumeControl } from "./PlayControls/VolumeControl";
 import { artistAlbumUrl, artistUrl } from "@client/lib/url";
-import { getState } from "@reducers/store";
+import { getPlayerState } from "@reducers/store";
 import { noPropagate } from "@client/lib/util";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import { useBackNavigate, useId, useMenu, useViewport } from "@hooks/index";
@@ -22,12 +28,6 @@ import {
   previous,
   setMobileDisplayMode,
 } from "@reducers/player";
-import { PlayIcon } from "../ui/icons/PlayIcon";
-import { PauseIcon } from "../ui/icons/PauseIcon";
-import { Close } from "../ui/Close";
-import { ChevronDownIcon } from "../ui/icons/ChevronDownIcon";
-import { BackwardIcon } from "../ui/icons/BackwardIcon";
-import { ForwardIcon } from "../ui/icons/ForwardIcon";
 
 const default_now_playing = "";
 
@@ -37,8 +37,7 @@ export const PlayControls = () => {
   const file_menu_id = useId();
   const file_info_id = useId();
   const file_info_menu = useMenu(file_info_id);
-  const { player } = useSelector(getState);
-
+  const player = useSelector(getPlayerState);
   const { width } = useViewport();
   const is_mobile = width < screen_breakpoint_px;
   const is_fullscreen =

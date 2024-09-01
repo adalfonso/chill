@@ -6,8 +6,8 @@ import { FileInfo } from "../FileInfo";
 import { FileMenu, FileMenuHandler } from "../FileMenu";
 import { PlayableTrack } from "@common/types";
 import { artistUrl } from "@client/lib/url";
+import { getMediaMenuState, getPlayerState } from "@reducers/store";
 import { getPlayPayload } from "@client/state/reducers/player";
-import { getState } from "@reducers/store";
 import { noPropagate, secondsToMinutes } from "@client/lib/util";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import { setMenu } from "@client/state/reducers/mediaMenu";
@@ -20,7 +20,8 @@ type AlbumViewRowProps = {
 };
 
 export const AlbumViewRow = ({ track, index, playAll }: AlbumViewRowProps) => {
-  const { player, mediaMenu } = useSelector(getState);
+  const player = useSelector(getPlayerState);
+  const mediaMenu = useSelector(getMediaMenuState);
   const file_menu_id = useId();
   const file_info_id = useId();
   const file_info_menu = useMenu(file_info_id);

@@ -8,16 +8,16 @@ import { PlayMode } from "@reducers/player.types";
 import { Select } from "../../ui/Select";
 import { SmartScroller } from "./SmartScroller";
 import { api } from "@client/client";
+import { capitalize } from "@common/commonUtils";
+import { getPlayerState } from "@client/state/reducers/store";
 import { getRandomTracks } from "@client/lib/PlayerTools";
-import { getState } from "@client/state/reducers/store";
 import { matchUrl } from "@client/lib/url";
 import { paginate } from "@common/pagination";
 import { play } from "@reducers/player";
-import { capitalize } from "@common/commonUtils";
 
 export const MusicLibrary = () => {
   const dispatch = useDispatch();
-  const { player } = useSelector(getState);
+  const player = useSelector(getPlayerState);
 
   const [match, setMatch] = useState<MediaTileType>(MediaTileType.Artist);
 

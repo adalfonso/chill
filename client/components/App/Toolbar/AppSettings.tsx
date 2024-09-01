@@ -7,7 +7,7 @@ import { Close } from "@client/components/ui/Close";
 import { InviteUser } from "./AppSettings/InviteUser";
 import { UserType } from "@common/types";
 import { api } from "@client/client";
-import { getState } from "@reducers/store";
+import { getUserState } from "@reducers/store";
 
 type AppSettingsProps = {
   onClose: () => void;
@@ -15,7 +15,7 @@ type AppSettingsProps = {
 
 export const AppSettings = ({ onClose }: AppSettingsProps) => {
   const [busy, setBusy] = useState(false);
-  const { user } = useSelector(getState);
+  const user = useSelector(getUserState);
 
   // Cause file scanner to run
   // TODO: can this be refactored to use useFetch?

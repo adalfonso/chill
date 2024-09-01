@@ -6,7 +6,7 @@ import { PlayableTrack } from "@common/types";
 import { addToQueue, updatePlayOptions } from "@reducers/player";
 import { api } from "@client/client";
 import { getMoreTracks } from "@client/lib/PlayerTools";
-import { getState } from "@reducers/store";
+import { getPlayerState } from "@reducers/store";
 
 type PlayModeIterceptorProps = {
   children?: JSX.Element | JSX.Element[];
@@ -14,7 +14,7 @@ type PlayModeIterceptorProps = {
 
 export const PlayModeIterceptor = ({ children }: PlayModeIterceptorProps) => {
   const [busy, setBusy] = useState(false);
-  const { player } = useSelector(getState);
+  const player = useSelector(getPlayerState);
   const dispatch = useDispatch();
 
   const queueMoreTracks = async (

@@ -8,15 +8,15 @@ import { PlayModeIterceptor } from "./components/App/PlayModeIntercepter";
 import { PlaylistEditor } from "./components/App/PlaylistEditor";
 import { Toolbar } from "./components/App/Toolbar";
 import { api } from "./client";
-import { getState } from "@reducers/store";
+import { getPlayerState, getPlaylistEditorState } from "@reducers/store";
 import { setCastAppId } from "./state/reducers/caster";
 import { setMenu } from "@reducers/mediaMenu";
 
 export const App = () => {
   const dispatch = useDispatch();
   const clearActiveFileMenu = () => dispatch(setMenu(null));
-  const { playlistEditor, player } = useSelector(getState);
-
+  const player = useSelector(getPlayerState);
+  const playlistEditor = useSelector(getPlaylistEditorState);
   useEffect(() => {
     api.app.getCastId.query().then((id) => dispatch(setCastAppId(id)));
   }, []);

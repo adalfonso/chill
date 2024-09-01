@@ -1,9 +1,9 @@
 import { useSelector } from "react-redux";
 import { useState } from "preact/hooks";
 
-import { api } from "@client/client";
-import { getState } from "@reducers/store";
 import { PlaylistWithCount, Raw } from "@common/types";
+import { api } from "@client/client";
+import { getPlaylistEditorState } from "@reducers/store";
 
 type PlaylistUpdateProps = {
   onDone: () => void;
@@ -14,7 +14,7 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
   const [busy, setBusy] = useState(false);
   const [results, setResults] = useState<Array<Raw<PlaylistWithCount>>>([]);
   const [selected, setSelected] = useState<Raw<PlaylistWithCount>>();
-  const { playlistEditor } = useSelector(getState);
+  const playlistEditor = useSelector(getPlaylistEditorState);
 
   const submit = (selected: Raw<PlaylistWithCount>) => () => {
     if (busy) {

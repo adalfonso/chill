@@ -1,8 +1,8 @@
 import { useState } from "preact/hooks";
 import { useSelector } from "react-redux";
 
-import { getState } from "@reducers/store";
 import { api } from "@client/client";
+import { getPlaylistEditorState } from "@reducers/store";
 
 type PlaylistCreateProps = {
   onDone: () => void;
@@ -12,7 +12,7 @@ export const PlaylistCreate = ({ onDone }: PlaylistCreateProps) => {
   const [playlist_title, setPlaylistTitle] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const { playlistEditor } = useSelector(getState);
+  const playlistEditor = useSelector(getPlaylistEditorState);
 
   const submit = () => {
     if (busy) {

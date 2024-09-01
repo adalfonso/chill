@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "preact/hooks";
 import { useDispatch, useSelector } from "react-redux";
 
 import "./Scrubber.scss";
-import { getState } from "@reducers/store";
+import { getPlayerState } from "@reducers/store";
 import {
   cancelAnimationFrames,
   getTimeTracking,
@@ -22,7 +22,7 @@ const gap_offset = 0.25;
 
 export const Scrubber = () => {
   const [progress, setProgress] = useState(0);
-  const { player } = useSelector(getState);
+  const player = useSelector(getPlayerState);
   const dispatch = useDispatch();
   const { startDrag, cancelDrag, updateDrag, dragging } = useDrag(
     (percent: number) => dispatch(seek(percent)),

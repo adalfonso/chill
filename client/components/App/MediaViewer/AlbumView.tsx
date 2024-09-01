@@ -10,7 +10,7 @@ import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@common/pagination";
 import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
 import { PlayMode } from "@reducers/player.types";
 import { api } from "@client/client";
-import { getState } from "@client/state/reducers/store";
+import { getPlayerState } from "@client/state/reducers/store";
 import { getTracks, sort_clauses } from "@client/lib/PlayerTools";
 import { play } from "@reducers/player";
 import { truncate } from "@common/commonUtils";
@@ -22,8 +22,7 @@ type AlbumViewProps = {
 
 export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
   const { is_busy } = useContext(AppContext);
-
-  const { player } = useSelector(getState);
+  const player = useSelector(getPlayerState);
   const [artist, setArtist] = useState<Maybe<Raw<Artist>>>(null);
   const [album, setAlbum] =
     useState<Maybe<Raw<Album & AlbumRelationalData>>>(null);

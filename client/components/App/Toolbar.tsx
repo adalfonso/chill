@@ -9,14 +9,14 @@ import { GearIcon } from "../ui/icons/GearIcon";
 import { Search } from "./Toolbar/Search";
 import { UserIcon } from "../ui/icons/UserIcon";
 import { UserSettings } from "./Toolbar/UserSettings";
-import { getState } from "@client/state/reducers/store";
+import { getCasterState } from "@client/state/reducers/store";
 import { useBackNavigate } from "@hooks/index";
 
 type SettingsMenu = "user" | "app";
 
 export const Toolbar = () => {
   const [settings_vis, setSettingsVis] = useState({ user: false, app: false });
-  const { caster } = useSelector(getState);
+  const caster = useSelector(getCasterState);
   const [, navigate] = useLocation();
 
   /**
