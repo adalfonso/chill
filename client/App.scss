@@ -1,5 +1,6 @@
 @import "./variables.scss";
 @import "./mixins.scss";
+@import "./font.scss";
 
 * {
   box-sizing: border-box;
@@ -46,7 +47,7 @@ h6,
 input,
 button {
   color: $dm-font;
-  font-family: "Rubik", sans-serif;
+  font-family: "Main-Font", sans-serif;
 }
 
 html {
@@ -78,7 +79,8 @@ h2 {
 }
 
 .mono {
-  font-family: "Cousine", monospace;
+  font-family: "Monospaced-Font", monospace;
+  font-weight: 200;
 }
 
 .wide {
