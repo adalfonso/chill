@@ -9,9 +9,9 @@ const ScrollDirection = {
   Down: "down",
 } as const;
 
-type ScrollDirection = ObjectValues<typeof ScrollDirection>;
+export type ScrollDirection = ObjectValues<typeof ScrollDirection>;
 
-type ScrollCallback = (direction: ScrollDirection, y: number) => void;
+type ScrollCallback = (y: number, direction: ScrollDirection) => void;
 
 /**
  * React to scroll event
@@ -21,8 +21,10 @@ type ScrollCallback = (direction: ScrollDirection, y: number) => void;
 export const useScroll = (
   ref: RefObject<HTMLDivElement>,
   callback: ScrollCallback,
+  throttle_delay_ms = 1000 / 60,
 ) => {
-  const [previousPosition, setPreviousPosition] = useState(0);
+  const [previous_position, setPreviousPosition] = useState(0);
+  const [last_update, setLastUpdate] = useState(Date.now());
 
   useEffect(() => {
     const onScroll = () => {
@@ -30,21 +32,27 @@ export const useScroll = (
         return;
       }
 
-      const newPosition = ref.current.scrollTop;
+      const new_position = ref.current.scrollTop;
+      const now = Date.now();
 
-      if (newPosition > previousPosition) {
-        callback(ScrollDirection.Down, newPosition);
-      } else if (newPosition < previousPosition) {
-        callback(ScrollDirection.Up, newPosition);
-      } else {
-        callback(ScrollDirection.None, newPosition);
+      if (now - last_update < throttle_delay_ms) {
+        return;
       }
 
-      setPreviousPosition(newPosition <= 0 ? 0 : newPosition);
+      if (new_position > previous_position) {
+        callback(new_position, ScrollDirection.Down);
+      } else if (new_position < previous_position) {
+        callback(new_position, ScrollDirection.Up);
+      } else {
+        callback(new_position, ScrollDirection.None);
+      }
+
+      setPreviousPosition(new_position <= 0 ? 0 : new_position);
+      setLastUpdate(now);
     };
 
     ref.current?.addEventListener("scroll", onScroll);
 
     return () => ref.current?.removeEventListener("scroll", onScroll);
-  }, [ref.current, callback, previousPosition]);
+  }, [ref.current, callback, previous_position]);
 };

@@ -34,7 +34,7 @@ type MediaTileProps<T extends Record<string, unknown>> = {
   displayAs: (file: MediaTileData<T>) => string;
 
   // This gets attached automatically by SmartScroller
-  parentScrollPosition?: Signal<number>;
+  parent_scroll_position?: Signal<number>;
 };
 
 export const MediaTile = <T extends Record<string, unknown>>({
@@ -42,13 +42,13 @@ export const MediaTile = <T extends Record<string, unknown>>({
   tile_data,
   url,
   displayAs,
-  parentScrollPosition,
+  parent_scroll_position,
 }: MediaTileProps<T>) => {
   const [, navigate] = useLocation();
   const dispatch = useDispatch();
   const player = useSelector(getPlayerState);
   const menu_id = useId();
-  const previous_position = useRef(parentScrollPosition?.peek());
+  const previous_position = useRef(parent_scroll_position?.peek());
 
   const menu = useMenu(menu_id);
   const { width } = useViewport();
@@ -79,17 +79,19 @@ export const MediaTile = <T extends Record<string, unknown>>({
   );
 
   useEffect(() => {
-    previous_position.current = parentScrollPosition?.value;
+    previous_position.current = parent_scroll_position?.value;
 
-    const unsubscribe = parentScrollPosition?.subscribe((current_position) => {
-      if (
-        onPress.is_pressing &&
-        current_position !== previous_position.current
-      ) {
-        previous_position.current = parentScrollPosition.value;
-        onPress.cancelPress();
-      }
-    });
+    const unsubscribe = parent_scroll_position?.subscribe(
+      (current_position) => {
+        if (
+          onPress.is_pressing &&
+          current_position !== previous_position.current
+        ) {
+          previous_position.current = parent_scroll_position.value;
+          onPress.cancelPress();
+        }
+      },
+    );
 
     return unsubscribe;
   }, [onPress.is_pressing, onPress.last_cancelled]);

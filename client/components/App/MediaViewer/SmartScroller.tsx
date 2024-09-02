@@ -1,5 +1,5 @@
 import { cloneElement } from "preact";
-import { useRef, useMemo } from "preact/hooks";
+import { useRef, useMemo, useCallback } from "preact/hooks";
 
 import { useScroll, useInfiniteScroll } from "@hooks/index";
 import { signal } from "@preact/signals";
@@ -35,12 +35,16 @@ export const SmartScroller = <T,>({
   const mediaViewer = useRef<HTMLDivElement>(null);
   const observedElement = useRef<HTMLDivElement>(null);
 
-  const scrollPositionRef = useRef(signal(0));
+  const scroll_position = useRef(signal(0));
+  const scroll_throttle_ms = 500;
 
-  useScroll(
-    mediaViewer,
-    (_, position) => (scrollPositionRef.current.value = position),
+  // Used to track scroll event so children can cancel menu press
+  const onScrollLocal = useCallback(
+    (position: number) => (scroll_position.current.value = position),
+    [scroll_position.current],
   );
+
+  useScroll(mediaViewer, onScrollLocal, scroll_throttle_ms);
 
   const { items } = useInfiniteScroll<T>({
     onScroll,
@@ -53,7 +57,7 @@ export const SmartScroller = <T,>({
     () =>
       makeItems(items).map((tile) =>
         cloneElement(tile, {
-          parentScrollPosition: scrollPositionRef.current,
+          parent_scroll_position: scroll_position.current,
         }),
       ),
     [items],
