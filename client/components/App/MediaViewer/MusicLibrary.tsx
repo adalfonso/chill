@@ -88,7 +88,7 @@ const makeItems = (match: MediaTileType) => (tiles: Array<MediaTileData>) =>
     .map((tile) => (
       <MediaTile
         tile_type={match}
-        key={JSON.stringify(tile.id)}
+        key={tile.id}
         tile_data={tile}
         displayAs={(item: MediaTileData) => item.name ?? ""}
         url={(item: MediaTileData) => matchUrl(match)(item.id)}

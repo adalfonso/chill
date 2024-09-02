@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "preact/hooks";
+import { useCallback, useRef, useState } from "preact/hooks";
 
 import { Maybe } from "@common/types";
 
@@ -23,8 +23,11 @@ export const useLongPress = (
   disable_context_menu = true,
 ) => {
   const timeout = useRef<Maybe<NodeJS.Timeout>>(null);
+  const [is_pressing, setIsPressing] = useState(false);
+  const [last_cancelled, setLastCancelled] = useState(0);
 
   const startPress = useCallback(() => {
+    setIsPressing(true);
     timeout.current = setTimeout(() => {
       cancelPress();
       callback();
@@ -32,6 +35,8 @@ export const useLongPress = (
   }, [callback, delay_ms]);
 
   const cancelPress = useCallback(() => {
+    setIsPressing(false);
+    setLastCancelled(new Date().valueOf());
     if (timeout.current) {
       clearTimeout(timeout.current);
     }
@@ -56,5 +61,7 @@ export const useLongPress = (
         {}),
     },
     cancelPress,
+    is_pressing,
+    last_cancelled,
   };
 };

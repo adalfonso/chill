@@ -1,7 +1,8 @@
 import { cloneElement } from "preact";
-import { useState, useRef } from "preact/hooks";
+import { useRef, useMemo } from "preact/hooks";
 
 import { useScroll, useInfiniteScroll } from "@hooks/index";
+import { signal } from "@preact/signals";
 
 type SmartScrollProps<T> = {
   // Header text
@@ -32,10 +33,14 @@ export const SmartScroller = <T,>({
   makeItems,
 }: SmartScrollProps<T>) => {
   const mediaViewer = useRef<HTMLDivElement>(null);
-  const [scrollPosition, setScrollPosition] = useState(0);
   const observedElement = useRef<HTMLDivElement>(null);
 
-  useScroll(mediaViewer, (_, position) => setScrollPosition(position));
+  const scrollPositionRef = useRef(signal(0));
+
+  useScroll(
+    mediaViewer,
+    (_, position) => (scrollPositionRef.current.value = position),
+  );
 
   const { items } = useInfiniteScroll<T>({
     onScroll,
@@ -43,6 +48,16 @@ export const SmartScroller = <T,>({
     options: { root: null, rootMargin: "0px", threshold: 1.0 },
     dependencies,
   });
+
+  const children = useMemo(
+    () =>
+      makeItems(items).map((tile) =>
+        cloneElement(tile, {
+          parentScrollPosition: scrollPositionRef.current,
+        }),
+      ),
+    [items],
+  );
 
   return (
     <div id="media-viewer" ref={mediaViewer}>
@@ -53,11 +68,7 @@ export const SmartScroller = <T,>({
           </div>
         )}
 
-        <div className={wrapperClassName ?? "media-tiles"}>
-          {makeItems(items).map((tile) =>
-            cloneElement(tile, { parentScrollPosition: scrollPosition }),
-          )}
-        </div>
+        <div className={wrapperClassName ?? "media-tiles"}>{children}</div>
         <div id="page-bottom-boundary" ref={observedElement}></div>
       </div>
     </div>

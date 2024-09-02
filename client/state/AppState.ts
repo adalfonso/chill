@@ -3,7 +3,7 @@ import { signal } from "@preact/signals";
 
 export const createAppState = () => {
   const is_busy = signal(false);
-  const progress = signal<number>(0);
+  const progress = signal(0);
 
   return { is_busy, progress };
 };

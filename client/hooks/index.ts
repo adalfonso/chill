@@ -5,6 +5,5 @@ export * from "./useInfiniteScroll";
 export * from "./useLongPress";
 export * from "./useMenu";
 export * from "./useId";
-export * from "./usePrevious";
 export * from "./useScroll";
 export * from "./useViewport";

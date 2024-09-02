@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "wouter-preact";
-import { useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 
 import "./MediaTile.scss";
 import { FileMenu, FileMenuHandler } from "../FileMenu";
@@ -18,7 +18,6 @@ import {
   useId,
   useLongPress,
   useMenu,
-  usePrevious,
   useViewport,
 } from "@hooks/index";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@common/pagination";
@@ -26,6 +25,7 @@ import {
   getTracks as loadTracks,
   sort_clauses,
 } from "@client/lib/TrackLoaders";
+import { Signal } from "@preact/signals";
 
 type MediaTileProps<T extends Record<string, unknown>> = {
   tile_type: MediaTileType;
@@ -33,9 +33,8 @@ type MediaTileProps<T extends Record<string, unknown>> = {
   url: (file: MediaTileData<T>) => string;
   displayAs: (file: MediaTileData<T>) => string;
 
-  // xxx: did I break this? doesnt appear to be passed in anymore
-  /// Prevents context menu from opening during scroll
-  parentScrollPosition?: number;
+  // This gets attached automatically by SmartScroller
+  parentScrollPosition?: Signal<number>;
 };
 
 export const MediaTile = <T extends Record<string, unknown>>({
@@ -49,11 +48,11 @@ export const MediaTile = <T extends Record<string, unknown>>({
   const dispatch = useDispatch();
   const player = useSelector(getPlayerState);
   const menu_id = useId();
+  const previous_position = useRef(parentScrollPosition?.peek());
 
   const menu = useMenu(menu_id);
   const { width } = useViewport();
   const [menu_visible, setMenuVisible] = useState(false);
-  const previousParentScrollPosition = usePrevious(parentScrollPosition);
 
   const closeMenu = () => {
     setMenuVisible(false);
@@ -79,9 +78,21 @@ export const MediaTile = <T extends Record<string, unknown>>({
     true,
   );
 
-  if (parentScrollPosition !== previousParentScrollPosition) {
-    onPress.cancelPress();
-  }
+  useEffect(() => {
+    previous_position.current = parentScrollPosition?.value;
+
+    const unsubscribe = parentScrollPosition?.subscribe((current_position) => {
+      if (
+        onPress.is_pressing &&
+        current_position !== previous_position.current
+      ) {
+        previous_position.current = parentScrollPosition.value;
+        onPress.cancelPress();
+      }
+    });
+
+    return unsubscribe;
+  }, [onPress.is_pressing, onPress.last_cancelled]);
 
   const optionsHandler: FileMenuHandler = {
     play: async () => {
