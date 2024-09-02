@@ -1,0 +1,17 @@
+{
+  "name": "Chill",
+  "short_name": "Chill",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#484545",
+  "theme_color": "#ccc",
+  "description": "Chill Music Player",
+  "icons": [
+    {
+      "src": "chill-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

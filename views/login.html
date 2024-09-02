@@ -8,6 +8,8 @@
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
 
+    <link rel="manifest" href="/manifest.json" />
+
     <style>
       @font-face {
         font-family: "Main-Font";
@@ -116,4 +118,10 @@
       </div>
     </div>
   </body>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/service-worker.js");
+    }
+  </script>
 </html>

@@ -5,6 +5,10 @@ import store from "@reducers/store";
 import { App } from "./App";
 import { AppContext, createAppState } from "./state/AppState";
 
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/service-worker.js");
+}
+
 const element = document.getElementById("root");
 
 if (element === null) {
