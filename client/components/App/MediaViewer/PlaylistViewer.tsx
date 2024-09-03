@@ -23,7 +23,15 @@ export const PlaylistViewer = ({ playlist_id }: PlaylistViewerProps) => {
   const playAll =
     (index = 0) =>
     async () => {
-      const tracks = await getPlaylistTracks({ playlist_id });
+      const nominal_index = index + 1;
+      const remainder = nominal_index % DEFAULT_LIMIT;
+      const page = (nominal_index - remainder) / DEFAULT_LIMIT;
+      const initial_limit = (page + 1) * DEFAULT_LIMIT;
+
+      const tracks = await getPlaylistTracks(
+        { playlist_id },
+        { limit: initial_limit },
+      );
 
       // todo cast info?
 
@@ -35,7 +43,7 @@ export const PlaylistViewer = ({ playlist_id }: PlaylistViewerProps) => {
             mode: PlayMode.UserPlaylist,
             id: playlist_id,
             limit: DEFAULT_LIMIT,
-            page: DEFAULT_PAGE,
+            page,
             more: true,
           },
         }),
