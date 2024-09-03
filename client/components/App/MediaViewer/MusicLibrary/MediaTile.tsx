@@ -22,6 +22,7 @@ import {
 } from "@hooks/index";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@common/pagination";
 import {
+  getTrackIds,
   getTracks as loadTracks,
   sort_clauses,
 } from "@client/lib/TrackLoaders";
@@ -113,12 +114,14 @@ export const MediaTile = <T extends Record<string, unknown>>({
 
       dispatch(play({ tracks, cast_info, index: 0, play_options }));
     },
-    getTracks: getTracksForMediaTile(
-      tile_type,
-      tile_data,
-      // Used for "Add to playlist"
-      Number.MAX_SAFE_INTEGER,
-    ),
+    getTracks: getTracksForMediaTile(tile_type, tile_data),
+    getTrackIds: () =>
+      TrackIdApi(
+        tile_type,
+        tile_data,
+        // Used for "Add to playlist"
+        Number.MAX_SAFE_INTEGER,
+      ),
     toggle: setMenuVisible,
   };
 
@@ -216,7 +219,7 @@ const getTracksForMediaTile =
     // TODO: The controller used here has an issue with the type
     // e.g. duration is not available but the type thinks it's valid
 
-    const tracks = (await fileApi(tile_tile, tile, limit)).sort((a, b) =>
+    const tracks = (await TrackApi(tile_tile, tile, limit)).sort((a, b) =>
       getSortString(a).localeCompare(getSortString(b)),
     );
 
@@ -231,7 +234,7 @@ const getTracksForMediaTile =
     return { tracks, cast_info };
   };
 
-const fileApi = async <T extends Record<string, unknown>>(
+const TrackApi = async <T extends Record<string, unknown>>(
   tile_type: MediaTileType,
   tile: MediaTileData<T>,
   limit?: number,
@@ -251,6 +254,32 @@ const fileApi = async <T extends Record<string, unknown>>(
 
     case MediaTileType.Genre:
       return loadTracks(
+        { genre_id: tile.id },
+        { limit, sort: sort_clauses.genre },
+      );
+  }
+};
+
+const TrackIdApi = async <T extends Record<string, unknown>>(
+  tile_type: MediaTileType,
+  tile: MediaTileData<T>,
+  limit?: number,
+) => {
+  switch (tile_type) {
+    case MediaTileType.Artist:
+      return getTrackIds(
+        { artist_id: tile.id },
+        { limit, sort: sort_clauses.artist },
+      );
+
+    case MediaTileType.Album:
+      return getTrackIds(
+        { album_id: tile.id },
+        { limit, sort: sort_clauses.album },
+      );
+
+    case MediaTileType.Genre:
+      return getTrackIds(
         { genre_id: tile.id },
         { limit, sort: sort_clauses.genre },
       );

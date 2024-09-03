@@ -42,6 +42,7 @@ export const PlaylistRow = ({ track, index, playAll }: PlaylistRowProps) => {
   const menuHandler: FileMenuHandler = {
     play: () => playAll(index)(),
     getTracks: getPlayPayload(player.is_casting, [track]),
+    getTrackIds: async () => [track.id],
   };
 
   return (

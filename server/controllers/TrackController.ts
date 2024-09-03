@@ -161,6 +161,22 @@ export const TrackController = {
     }));
   },
 
+  getIds: async ({
+    input: { album_id, artist_id, genre_id, options },
+  }: Request<typeof schema.get>): Promise<Array<number>> => {
+    const { limit, page, sort } = options;
+
+    return (
+      await db.track.findMany({
+        where: { album_id, artist_id, genre_id },
+        select: { id: true },
+        take: limit,
+        skip: page * limit,
+        orderBy: sort,
+      })
+    ).map(({ id }) => id);
+  },
+
   getRandomTracks: async ({
     input: { limit, exclusions },
   }: Request<typeof schema.getRandomTracks>): Promise<Array<PlayableTrack>> => {

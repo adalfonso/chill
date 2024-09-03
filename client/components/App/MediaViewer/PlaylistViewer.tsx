@@ -72,6 +72,6 @@ const makePlaylistRows =
         index={index}
         track={track}
         playAll={playAll}
-        key={track.id}
+        key={`${index} - ${track.id}`}
       ></PlaylistRow>
     ));

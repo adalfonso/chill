@@ -23,7 +23,7 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
 
     setBusy(true);
 
-    const track_ids = playlistEditor.track_ids.map((item) => item.id);
+    const track_ids = playlistEditor.track_ids;
 
     api.playlist.update
       .mutate({ id: selected.id, track_ids: track_ids })

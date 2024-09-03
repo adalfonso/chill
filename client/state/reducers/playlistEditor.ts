@@ -1,10 +1,8 @@
 import { createSlice, PayloadAction as Action } from "@reduxjs/toolkit";
 
-import { PlayableTrack } from "@common/types";
-
 type PlaylistEditorState = {
   active: boolean;
-  track_ids: Array<PlayableTrack>;
+  track_ids: Array<number>;
 };
 
 const initialState: PlaylistEditorState = {
@@ -16,7 +14,7 @@ export const playlistEditorSlice = createSlice({
   name: "playlist_editor",
   initialState,
   reducers: {
-    toggle: (state, action: Action<{ track_ids: Array<PlayableTrack> }>) => {
+    toggle: (state, action: Action<{ track_ids: Array<number> }>) => {
       const { track_ids: track_ids = [] } = action.payload ?? {};
 
       state.active = !state.active;

@@ -131,3 +131,27 @@ export const sort_clauses: Record<string, Array<SortClause>> = {
     { number: SortOrder.asc },
   ],
 };
+
+/**
+ * General purpose function to get tracks
+ *
+ * Can filter by artist, album, and/o genre
+ *
+ * @param filter.artist_id - artist's ID
+ * @param filter.album_id - album's ID
+ * @param filter.genre_id - genre's ID
+ * @param options.page - pagination page
+ * @param options.limit - pagination limit
+ * @returns tracks
+ */
+export const getTrackIds = (
+  filter: { artist_id?: number; album_id?: number; genre_id?: number } = {},
+  options: { page?: number; limit?: number; sort?: Array<SortClause> } = {},
+) => {
+  const { page = DEFAULT_PAGE, limit = DEFAULT_LIMIT, sort = [] } = options;
+
+  return api.track.getIds.query({
+    ...filter,
+    options: paginate({ page, limit, sort }),
+  });
+};

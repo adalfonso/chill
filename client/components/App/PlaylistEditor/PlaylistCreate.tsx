@@ -24,7 +24,7 @@ export const PlaylistCreate = ({ onDone }: PlaylistCreateProps) => {
     api.playlist.create
       .mutate({
         title: playlist_title,
-        track_ids: playlistEditor.track_ids.map((item) => item.id),
+        track_ids: playlistEditor.track_ids,
       })
       .then(onDone)
       .catch(({ message }) => message && setError(message))

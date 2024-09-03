@@ -49,6 +49,7 @@ export const AlbumViewRow = ({ track, index, playAll }: AlbumViewRowProps) => {
       setTimeout(() => playAll(index)(), 20);
     },
     getTracks: getPlayPayload(player.is_casting, [track]),
+    getTrackIds: async () => [track.id],
   };
 
   return (

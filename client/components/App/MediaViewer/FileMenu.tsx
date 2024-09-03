@@ -16,6 +16,7 @@ export type FileMenuHandler = {
     tracks: Array<PlayableTrack>;
     cast_info: Maybe<PreCastPayload>;
   }>;
+  getTrackIds: () => Promise<Array<number>>;
   toggle?: (visible: boolean) => void;
 };
 
@@ -68,7 +69,7 @@ export const FileMenu = ({
       handler &&
       dispatch(
         toggle({
-          track_ids: (await handler.getTracks(player.is_casting)).tracks,
+          track_ids: await handler.getTrackIds(),
         }),
       ),
   };
