@@ -61,8 +61,10 @@ export const PlaylistRow = ({ track, index, playAll }: PlaylistRowProps) => {
           />
         )}
       </div>
-      <div>{track.title}</div>
-      <div>{track.artist}</div>
+      <div className="artist-track">
+        <div>{track.artist}</div>
+        <div className="playlist-item-title">{track.title}</div>
+      </div>
       <div>
         <div className="duration mono">{secondsToMinutes(track.duration)}</div>
       </div>
