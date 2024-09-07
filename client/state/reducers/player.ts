@@ -138,10 +138,6 @@ export const playerSlice = createSlice({
         ? addSemanticIndex(action.payload.tracks)
         : [];
 
-      if (state.is_casting && tracks?.length && cast_info === null) {
-        alert("Missing cast info");
-      }
-
       if (tracks) {
         state.playlist = tracks_with_index;
         state.index = index;
@@ -153,6 +149,7 @@ export const playerSlice = createSlice({
 
         if (state.is_casting) {
           if (state.cast_info === null || state.now_playing === null) {
+            alert("missing cast info");
             return console.error(
               "Tried to play items on cast but could not find their information",
             );
