@@ -22,6 +22,7 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: chill-database
+    restart: unless-stopped
     ports:
       - 5432:5432
     volumes:
@@ -46,6 +47,7 @@ services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
     container_name: chill-search
+    restart: unless-stopped
     environment:
       discovery.type: single-node
       ES_JAVA_OPTS: -Xms512m -Xmx512m

@@ -2,6 +2,7 @@ services:
   app:
     build:
       context: .
+    restart: unless-stopped
     ports:
       # node server port
       - 3200:3200
@@ -31,6 +32,7 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: chill-database
+    restart: unless-stopped
     ports:
       - 5432:5432
     volumes:
@@ -43,7 +45,7 @@ services:
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: chill-database-2-gui
-    restart: always
+    restart: unless-stopped
     ports:
       - "8888:80"
     environment:
@@ -55,6 +57,7 @@ services:
   redis:
     image: redis:7.0-alpine
     container_name: chill-cache
+    restart: unless-stopped
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
       - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL,CONFIG
@@ -66,6 +69,7 @@ services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
     container_name: chill-search
+    restart: unless-stopped
     environment:
       discovery.type: single-node
       ES_JAVA_OPTS: -Xms512m -Xmx512m
