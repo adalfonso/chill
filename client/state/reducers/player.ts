@@ -138,7 +138,7 @@ export const playerSlice = createSlice({
         ? addSemanticIndex(action.payload.tracks)
         : [];
 
-      if (state.is_casting && cast_info === null) {
+      if (state.is_casting && tracks?.length && cast_info === null) {
         alert("Missing cast info");
       }
 
