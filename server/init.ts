@@ -45,6 +45,7 @@ export const init = async (app: Express) => {
 const required_vars = [
   "ADMIN_EMAIL",
   "APP_PORT",
+  "DATABASE_URL",
   "CAST_APP_ID",
   "GOOGLE_OAUTH_ID",
   "GOOGLE_OAUTH_SECRET",
