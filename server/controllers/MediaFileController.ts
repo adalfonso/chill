@@ -6,12 +6,28 @@ import { MediaCrawler } from "@server/lib/media/MediaCrawler";
 import { Request } from "@server/trpc";
 import { Search } from "@server/lib/data/Search";
 import { SearchResult } from "@common/types";
+import { db } from "@server/lib/data/db";
 
 export const schema = {
   search: z.object({ query: z.string() }),
 };
 
 export const MediaFileController = {
+  byFileType: async (): Promise<Record<string, number>> => {
+    const fileTypeCounts = await db.track.groupBy({
+      by: ["file_type"],
+      _count: {
+        file_type: true,
+      },
+    });
+
+    return Object.fromEntries(
+      fileTypeCounts.map((result) => [
+        result.file_type,
+        result._count.file_type,
+      ]),
+    );
+  },
   /** Cause media file scanner to run */
   scan: async () => {
     const crawler = new MediaCrawler({
