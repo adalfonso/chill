@@ -158,6 +158,10 @@ export const TrackController = {
       year: track?.album?.year ?? null,
       genre: track.genre?.name ?? null,
       duration: track.duration.toNumber(),
+      file_type: track.file_type,
+      bitrate: track.bitrate,
+      sample_rate: track.sample_rate,
+      bits_per_sample: track.bits_per_sample,
     }));
   },
 
@@ -294,6 +298,10 @@ export const playable_track_selection = {
   duration: true,
   artist_id: true,
   album_id: true,
+  file_type: true,
+  bitrate: true,
+  sample_rate: true,
+  bits_per_sample: true,
   artist: {
     select: { name: true },
   },

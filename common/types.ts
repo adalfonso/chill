@@ -54,6 +54,10 @@ export type PlayableTrack = Pick<
   year: Maybe<number>;
   genre: Maybe<string>;
   duration: number;
+  file_type: Maybe<string>;
+  bitrate: number;
+  sample_rate: number;
+  bits_per_sample: number;
 };
 
 export type PlayableTrackWithIndex = PlayableTrack & { _index: string };

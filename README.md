@@ -55,6 +55,25 @@ npm run docker
 
 ---
 
+## Development
+
+#### Prisma
+
+**Changing the schema**
+After making changes run this command to rebuild the schema:
+
+```bash
+npx prisma:build
+```
+
+Then create a migration. You will have to update the host in `DATABASE_URL` from `postgres` to `localhost` (and change it back afterwards).
+
+```bash
+npx prisma migrate dev --name name_for_migration
+```
+
+---
+
 ## All commands
 
 | Command              | Description                                                    |

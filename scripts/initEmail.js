@@ -31,7 +31,7 @@ const prisma = new PrismaClient();
       data: { email: emailArg, type: UserType.Admin },
     });
 
-    console.log(`✅ Added email: ${result.email}`);
+    console.info(`✅ Added email: ${result.email}`);
   } catch (err) {
     console.error("❌ Error inserting email:", err?.message);
   } finally {
