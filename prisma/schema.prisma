@@ -53,22 +53,25 @@ model Artist {
 }
 
 model Track {
-  id             Int             @id @default(autoincrement())
-  title          String
-  path           String          @unique
-  number         Int?
-  duration       Decimal
-  file_type      String
-  file_modified  DateTime
-  genre          Genre?          @relation(fields: [genre_id], references: [id])
-  genre_id       Int?
-  artist         Artist?         @relation(fields: [artist_id], references: [id])
-  artist_id      Int?
-  album          Album?          @relation(fields: [album_id], references: [id])
-  album_id       Int?
-  playlist_items PlaylistTrack[]
-  created_at     DateTime        @default(now())
-  updated_at     DateTime        @default(now()) @updatedAt
+  id              Int             @id @default(autoincrement())
+  title           String
+  path            String          @unique
+  number          Int?
+  duration        Decimal
+  file_type       String
+  file_modified   DateTime
+  bitrate         Int
+  sample_rate     Int
+  bits_per_sample Int
+  genre           Genre?          @relation(fields: [genre_id], references: [id])
+  genre_id        Int?
+  artist          Artist?         @relation(fields: [artist_id], references: [id])
+  artist_id       Int?
+  album           Album?          @relation(fields: [album_id], references: [id])
+  album_id        Int?
+  playlist_items  PlaylistTrack[]
+  created_at      DateTime        @default(now())
+  updated_at      DateTime        @default(now()) @updatedAt
 
   @@index([album_id])
   @@index([artist_id])

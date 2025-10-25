@@ -29,6 +29,9 @@ export type RawMediaPayload = {
   cover?: Maybe<AlbumCover>;
   file_modified: Date;
   file_type: string;
+  bitrate: number;
+  sample_rate: number;
+  bits_per_sample: number;
 };
 
 export type AlbumCover = {
@@ -94,13 +97,17 @@ export class MediaCrawler {
    */
   private async _crawl(dir: string) {
     const contents = await fs.readdir(dir);
+
     const paths = contents.map((c) => join(dir, c));
 
     for (const p of paths) {
       this._queue.push(p);
     }
 
-    this._available_workers++;
+    this._available_workers = Math.min(
+      this._available_workers + 1,
+      this._config.workers,
+    );
     this._tick();
   }
 
@@ -206,6 +213,9 @@ export class MediaCrawler {
       album: common.album ?? null,
       genre: common.genre?.[0] ?? null,
       year: common.year ?? null,
+      bitrate: Math.floor(format.bitrate ?? 0 / 1000) || 0,
+      sample_rate: Math.floor(format.sampleRate ?? 0 / 1000) || 0,
+      bits_per_sample: await getBitsPerSample(file_path, format),
       cover:
         cover && cover_data
           ? {
@@ -315,3 +325,20 @@ export class MediaCrawler {
     });
   }
 }
+
+const getBitsPerSample = async (file_path: string, format: mm.IFormat) => {
+  if (format.bitsPerSample) {
+    return format.bitsPerSample;
+  }
+
+  if (format.numberOfSamples) {
+    const stats = await fs.stat(file_path);
+
+    return (
+      (8 * stats.size) /
+      (format.numberOfSamples * (format.numberOfChannels ?? 2))
+    );
+  }
+
+  return 0;
+};

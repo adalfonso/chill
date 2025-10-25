@@ -28,8 +28,29 @@ import {
   previous,
   setMobileDisplayMode,
 } from "@reducers/player";
+import { AudioType } from "@server/lib/media/types";
+import { PlayableTrack } from "@common/types";
 
 const default_now_playing = "";
+
+const getBitsDisplay = (track: PlayableTrack) => {
+  const bitrate = Math.floor((track.bitrate ?? 0) / 1000);
+
+  const is_lossless =
+    track.file_type === AudioType.flac || track.file_type === AudioType.alac;
+
+  if (!is_lossless) {
+    return bitrate;
+  }
+
+  const sample_rate = (track.sample_rate ?? 0) / 1000;
+
+  if (track.bits_per_sample && sample_rate) {
+    return `${track.bits_per_sample} / ${sample_rate}`;
+  }
+
+  return `${track.bits_per_sample} ${sample_rate}`.trim();
+};
 
 export const PlayControls = () => {
   const dispatch = useDispatch();
@@ -44,15 +65,28 @@ export const PlayControls = () => {
     is_mobile && player.mobile_display_mode === MobileDisplayMode.Fullscreen;
 
   // Helper that gets the "now playing" section
-  const getNowPlaying = () =>
-    player.now_playing ? (
+  const getNowPlaying = () => {
+    const track = player.now_playing;
+    if (!track) {
+      return default_now_playing;
+    }
+
+    return (
       <>
-        <div>{player.now_playing.title}</div>
-        <div className="artist">{player.now_playing.artist}</div>
+        <div className="artist">{track.artist}</div>
+
+        <div className="sub-title">
+          <div className="file-type">
+            <span>{track.file_type?.toUpperCase()}</span>
+          </div>
+
+          <div className="track-title">{track.title}</div>
+
+          <div className="quality">{getBitsDisplay(track)}</div>
+        </div>
       </>
-    ) : (
-      default_now_playing
     );
+  };
 
   // Toggle audio play / pause
   const togglePlayer = async () => {

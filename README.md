@@ -8,6 +8,9 @@ DIY media platform
 pnpm i
 ```
 
+**Initial Setup**
+When setting up this repo for the first time, you will need to configure google oauth and seed the database with a user that has a gmail address. The easiest way to insert the admin email is by running `pnpm init:email <email_address>`
+
 ## Environment
 
 Copy sample env and configure values accordingly.
@@ -39,9 +42,6 @@ npm run docker:dev
 
 - App served @ `http://localhost:3200`
 
-**Initial Startup**
-When setting up this repo for the first time, you will need to configure google oauth and seed the database with a user that has a gmail address.
-
 **Local Development with Chromecast**
 Configure your HOST env var to be your IP on the local network, not localhost.
 
@@ -51,6 +51,25 @@ Configure your HOST env var to be your IP on the local network, not localhost.
 
 ```bash
 npm run docker
+```
+
+---
+
+## Development
+
+#### Prisma
+
+**Changing the schema**
+After making changes run this command to rebuild the schema:
+
+```bash
+npx prisma:build
+```
+
+Then create a migration. You will have to update the host in `DATABASE_URL` from `postgres` to `localhost` (and change it back afterwards).
+
+```bash
+npx prisma migrate dev --name name_for_migration
 ```
 
 ---
