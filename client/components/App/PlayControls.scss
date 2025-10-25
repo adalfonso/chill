@@ -96,7 +96,7 @@
     }
 
     .now-playing {
-      font-size: 1.5rem;
+      font-size: 1.25rem;
       user-select: none;
       min-width: 64%;
       margin: 1rem 0;
@@ -111,10 +111,9 @@
 
       .title {
         margin: 0 0 0.5rem 0;
-        font-size: 1rem;
 
         .artist {
-          margin: 0.75rem 0 1rem 0;
+          margin: 0.5rem 0;
         }
 
         .track-title {
@@ -130,7 +129,7 @@
 
           .file-type,
           .quality {
-            font-size: 0.75rem;
+            font-size: 1rem;
           }
         }
       }
@@ -220,7 +219,6 @@
       }
 
       .now-playing {
-        font-size: 1.75rem;
         margin: 0 0 0.5rem 0;
 
         .title {
@@ -260,6 +258,7 @@
   #play-controls {
     .panel {
       .now-playing {
+        font-size: 1rem;
         .title {
           .track-title {
             margin: 0 0.5rem;
@@ -270,6 +269,7 @@
 
             .file-type,
             .quality {
+              font-size: 0.75rem;
               min-width: 3.5rem;
             }
           }
