@@ -94,13 +94,17 @@ export class MediaCrawler {
    */
   private async _crawl(dir: string) {
     const contents = await fs.readdir(dir);
+
     const paths = contents.map((c) => join(dir, c));
 
     for (const p of paths) {
       this._queue.push(p);
     }
 
-    this._available_workers++;
+    this._available_workers = Math.min(
+      this._available_workers + 1,
+      this._config.workers,
+    );
     this._tick();
   }
 

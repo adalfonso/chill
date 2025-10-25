@@ -29,13 +29,16 @@ export const rebuildMusicSearchIndex = async () => {
   });
 
   const body = await getFullMusicIndex();
-  const response = await Search.instance().bulk({ refresh: true, body });
 
-  console.info(
-    `Search engine rebuilt. Took ${
-      (new Date().valueOf() - start?.valueOf()) / 1000
-    } seconds for ${response.items.length} records`,
-  );
+  if (body.length) {
+    const response = await Search.instance().bulk({ refresh: true, body });
+
+    console.info(
+      `Search engine rebuilt. Took ${
+        (new Date().valueOf() - start?.valueOf()) / 1000
+      } seconds for ${response.items.length} records`,
+    );
+  }
 };
 
 const music_index = { index: { _index: "music" } };
