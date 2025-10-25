@@ -8,6 +8,9 @@ DIY media platform
 pnpm i
 ```
 
+**Initial Setup**
+When setting up this repo for the first time, you will need to configure google oauth and seed the database with a user that has a gmail address. The easiest way to insert the admin email is by running `pnpm init:email <email_address>`
+
 ## Environment
 
 Copy sample env and configure values accordingly.
@@ -38,9 +41,6 @@ npm run docker:dev
 ```
 
 - App served @ `http://localhost:3200`
-
-**Initial Startup**
-When setting up this repo for the first time, you will need to configure google oauth and seed the database with a user that has a gmail address.
 
 **Local Development with Chromecast**
 Configure your HOST env var to be your IP on the local network, not localhost.
