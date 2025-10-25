@@ -1,11 +1,10 @@
-import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import z from "zod";
 
 import { AudioType, ImageType } from "@server/lib/media/types";
-import { env } from "@server/init";
 
 import { db } from "@server/lib/data/db";
+import { verifyAndDecodeJwt } from "@server/lib/Token";
 
 const audioOrImageExtension = new RegExp(
   `\\.(${[...Object.values(AudioType), ...Object.values(ImageType)].join(
@@ -44,7 +43,7 @@ export const hasValidAudioToken =
     }
 
     try {
-      const decoded = jwt.verify(token, env.SIGNING_KEY);
+      const decoded = await verifyAndDecodeJwt(token);
 
       if (typeof decoded === "string") {
         console.warn(
@@ -70,6 +69,7 @@ export const hasValidAudioToken =
         include: { settings: true },
       });
 
+      // Is this even possible?
       if (user === null) {
         console.warn(
           "User tried to access token-secured media but could not find user from JWT",

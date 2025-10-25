@@ -7,7 +7,7 @@ import { VerifyCallback } from "passport-google-oauth2";
 
 import { db } from "./lib/data/db";
 import { env } from "./init";
-import { z } from "zod";
+import { access_token_payload_schema } from "./lib/Token";
 
 export const configurePassport = (passport: PassportStatic) => {
   passport.use(
@@ -28,7 +28,7 @@ export const configurePassport = (passport: PassportStatic) => {
         jwtFromRequest: (req: Request) => req?.cookies?.access_token ?? null,
         secretOrKey: env.SIGNING_KEY,
       },
-      verifyJwtAuth,
+      verifyJwtUser,
     ),
   );
 };
@@ -84,25 +84,18 @@ async function verifyGoogleAuth(
   }
 }
 
-// What we expect the JWT to contain
-const jwt_payload = z.object({
-  user: z.object({
-    id: z.number().int(),
-  }),
-});
-
 /**
  * Verify the user from a JWT
  *
  * @param unverified_payload - JWT payload
  * @param done - verification callback
  */
-async function verifyJwtAuth(
+async function verifyJwtUser(
   unverified_payload: unknown,
   done: VerifiedCallback,
 ) {
   try {
-    const payload = jwt_payload.parse(unverified_payload);
+    const payload = access_token_payload_schema.parse(unverified_payload);
     const user = await db.user.findUnique({ where: { id: payload.user.id } });
 
     if (user) {

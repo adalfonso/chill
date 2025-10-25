@@ -61,7 +61,7 @@ export const blacklistToken = async (token: string) => {
       EX: expires_in_seconds,
     });
   } catch (err) {
-    console.warn("Failed to blacklist a JWT");
+    console.error("Failed to blacklist a JWT", { err });
   }
 };
 

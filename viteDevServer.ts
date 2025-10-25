@@ -1,14 +1,19 @@
 import express, { Express } from "express";
 import fs from "fs";
 import path from "path";
+import { EnvStore } from "@server/init";
+import { Server as WebSocketServer } from "ws";
 import { createServer as createViteServer } from "vite";
 import { fileURLToPath } from "url";
+import { upgradeServer } from "@server/lib/io/upgradeServer";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 type ConfigOptions = {
   port?: number;
-  initializer?: (app: Express) => Promise<unknown>;
+  initializer: (
+    app: Express,
+  ) => Promise<{ env: EnvStore; wss: WebSocketServer }>;
 };
 
 /**
@@ -32,9 +37,7 @@ export async function createServer(options: ConfigOptions) {
 
   app.use(vite.middlewares);
 
-  if (initializer) {
-    initializer(app);
-  }
+  const { wss } = await initializer(app);
 
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
@@ -54,7 +57,10 @@ export async function createServer(options: ConfigOptions) {
     }
   });
 
-  app.listen(port);
+  const server = app.listen(port, () =>
+    console.info(`Dev server listening on http://localhost:${port}`),
+  );
 
-  console.info(`App listening on http://localhost:${port}`);
+  // Upgrade for websockets
+  upgradeServer(server, wss);
 }

@@ -5,10 +5,13 @@ import passport from "passport";
 import { UserType } from "@prisma/client";
 
 import { Cache } from "./lib/data/Cache";
-import { configurePassport } from "./passportConfig";
-import { initRouter } from "@routes/router";
+import { ClientSocketData, ClientSocketEvent } from "@common/SocketClientEvent";
 import { Search } from "./lib/data/Search";
+import { ServerSocketEvent, ServerSocketData } from "@common/SocketServerEvent";
+import { SocketServer } from "./lib/io/SocketServer";
+import { configurePassport } from "./passportConfig";
 import { db } from "./lib/data/db";
+import { initRouter } from "@routes/router";
 
 /**
  * Initialize the express app
@@ -27,6 +30,18 @@ export const init = async (app: Express) => {
 
   initRouter(app);
 
+  const wss = new SocketServer<
+    ClientSocketEvent,
+    ClientSocketData,
+    ServerSocketEvent,
+    ServerSocketData
+  >();
+
+  // TODO: Move registration of these handlers somewhere
+  wss.on(ClientSocketEvent.Ping, (ws) =>
+    wss.emit(ServerSocketEvent.Pong, ws, undefined),
+  );
+
   await Promise.all([
     Cache.connect(env.REDIS_HOST),
     Search.connect({
@@ -38,7 +53,7 @@ export const init = async (app: Express) => {
 
   await createInitialAdminUser();
 
-  return env;
+  return { env, wss };
 };
 
 // List of required env vars
@@ -59,6 +74,7 @@ const required_vars = [
   "SEARCH_ENGINE_USERNAME",
   "SIGNING_KEY",
   "SOURCE_DIR",
+  "SSL_PATH",
 ] as const;
 
 const defaults: Record<string, string> = {
@@ -72,7 +88,7 @@ const defaults: Record<string, string> = {
   RECEIVER_SOURCE_DIR: "dist/receiver",
 } as const;
 
-type EnvStore = {
+export type EnvStore = {
   [K in (typeof required_vars)[number]]: string;
 };
 

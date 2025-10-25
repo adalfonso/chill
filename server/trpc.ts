@@ -12,11 +12,15 @@ import { PlaylistRouter } from "@routes/api/v1/trpc/PlaylistRouter";
 import { TrackRouter } from "./routes/api/v1/trpc/TrackRouter";
 import { UserRouter } from "@routes/api/v1/trpc/UserRouter";
 import { UserType } from "@prisma/client";
+import { TypedRequest } from "./lib/io/Request";
 
 export const createContext = ({
   req,
   res,
-}: trpcExpress.CreateExpressContextOptions) => ({ req, res });
+}: trpcExpress.CreateExpressContextOptions) => ({
+  req: req as TypedRequest,
+  res,
+});
 
 type Context = inferAsyncReturnType<typeof createContext>;
 
