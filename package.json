@@ -6,7 +6,7 @@
   "author": "Anthony Dalfonso <anthonyjdalfonso@gmail.com>",
   "scripts": {
     "dev": "pnpm prisma:build && nodemon --watch './server' -e ts --exec 'node --loader @esbuild-kit/esm-loader ./server/index.dev.ts'",
-    "build": "pnpm prisma:build && pnpm prisma migrate dev && vite build && pnpm build-receiver",
+    "build": "pnpm prisma:build && pnpm prisma migrate deploy && vite build && pnpm build-receiver",
     "build-receiver": "vite build --config receiver.vite.config.js",
     "start": "pnpm build && node --loader @esbuild-kit/esm-loader ./server/index.ts",
     "docker": "docker-compose up --build",
