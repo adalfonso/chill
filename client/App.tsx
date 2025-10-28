@@ -18,7 +18,7 @@ export const App = () => {
   const player = useSelector(getPlayerState);
   const playlistEditor = useSelector(getPlaylistEditorState);
   useEffect(() => {
-    api.app.getCastId.query().then((id) => dispatch(setCastAppId(id)));
+    api.cast.getCastId.query().then((id) => dispatch(setCastAppId(id)));
   }, []);
 
   return (

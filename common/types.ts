@@ -116,3 +116,9 @@ export type Raw<T> = {
       ? Raw<T[K]>
       : T[K];
 };
+
+export type DeviceClient = {
+  user_id: number;
+  session_id: string;
+  displayAs: string;
+};

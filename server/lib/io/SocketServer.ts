@@ -1,5 +1,6 @@
 import { RawData, WebSocket, WebSocketServer } from "ws";
 import { TypedRequest } from "./Request";
+import { DeviceClient } from "@common/types";
 
 /**
  * Websocket server for BE
@@ -39,6 +40,21 @@ export class SocketServer<
   ) {
     this.#handlers[event] = handler;
   }
+
+  public getClients = (
+    user_id: number,
+    session_id: string,
+  ): Array<DeviceClient> => {
+    const clients = Array.from(
+      this.#clients.by_user_id.get(user_id)?.entries() ?? [],
+    );
+
+    return clients?.map(([key, _value]) => ({
+      user_id,
+      session_id: key,
+      displayAs: session_id === key ? `${key} (this device)` : key,
+    }));
+  };
 
   #onConnection(ws: WebSocket, req: TypedRequest) {
     const { user, session_id } = req._user;

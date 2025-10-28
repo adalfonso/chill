@@ -11,11 +11,17 @@ import { UserIcon } from "../ui/icons/UserIcon";
 import { UserSettings } from "./Toolbar/UserSettings";
 import { getCasterState } from "@client/state/reducers/store";
 import { useBackNavigate } from "@hooks/index";
+import { DeviceIcon } from "../ui/icons/DeviceIcon";
+import { Devices } from "./Toolbar/Devices";
 
-type SettingsMenu = "user" | "app";
+type SettingsMenu = "user" | "app" | "devices";
 
 export const Toolbar = () => {
-  const [settings_vis, setSettingsVis] = useState({ user: false, app: false });
+  const [settings_vis, setSettingsVis] = useState({
+    user: false,
+    app: false,
+    devices: false,
+  });
   const caster = useSelector(getCasterState);
   const [, navigate] = useLocation();
 
@@ -28,6 +34,7 @@ export const Toolbar = () => {
     setSettingsVis({
       user: false,
       app: false,
+      devices: false,
       [type]: !settings_vis[type],
     });
   };
@@ -37,7 +44,7 @@ export const Toolbar = () => {
     // Override location change when either settings menu is open
     () => settings_vis.app || settings_vis.user,
     // Hide the playlist instead of changing location
-    () => setSettingsVis({ app: false, user: false }),
+    () => setSettingsVis({ app: false, user: false, devices: false }),
   );
 
   return (
@@ -51,6 +58,12 @@ export const Toolbar = () => {
         {caster.ready && <google-cast-launcher></google-cast-launcher>}
         {/* Invisible, just used to mediate between redux stores */}
         <CastPlayer></CastPlayer>
+
+        <DeviceIcon className="icon-sm" onClick={toggleVis("devices")} />
+
+        {settings_vis.devices && (
+          <Devices onClose={toggleVis("devices")}></Devices>
+        )}
 
         <GearIcon className="icon-sm" onClick={toggleVis("app")} />
         {settings_vis.app && (

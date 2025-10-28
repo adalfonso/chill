@@ -9,6 +9,8 @@ import { upgradeServer } from "./lib/io/upgradeServer";
 const app = express();
 const { env, wss } = await init(app);
 
+Object.assign(app, { _wss: wss });
+
 const options = {
   key: fs.readFileSync(`${env.SSL_PATH}/chill.key`),
   cert: fs.readFileSync(`${env.SSL_PATH}/chill.crt`),

@@ -39,6 +39,8 @@ export async function createServer(options: ConfigOptions) {
 
   const { wss } = await initializer(app);
 
+  Object.assign(app, { _wss: wss });
+
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
 

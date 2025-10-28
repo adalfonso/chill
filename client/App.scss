@@ -93,13 +93,16 @@ h2 {
   z-index: 3;
   margin: 0;
 
+  &.transparent {
+    background-color: $dm-background-2-transparent;
+  }
+
   &.center-content {
     display: flex;
     justify-content: center;
     align-items: center;
 
     .close {
-      position: absolute;
       top: 1em;
       right: 1em;
     }

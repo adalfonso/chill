@@ -4,7 +4,7 @@ import { z, ZodType } from "zod";
 
 import { AdminRouter } from "@routes/api/v1/trpc/AdminRouter";
 import { AlbumRouter } from "@routes/api/v1/trpc/AlbumRouter";
-import { AppRouter } from "@routes/api/v1/trpc/AppRouter";
+import { CastRouter } from "@server/routes/api/v1/trpc/CastRouter";
 import { ArtistRouter } from "@routes/api/v1/trpc/ArtistRouter";
 import { GenreRouter } from "@routes/api/v1/trpc/GenreRouter";
 import { MediaRouter } from "@routes/api/v1/trpc/MediaRouter";
@@ -42,7 +42,7 @@ export const admin_procedure = procedure.use(isAdmin);
 export const api_router = t.router({
   admin: AdminRouter(router),
   album: AlbumRouter(router),
-  app: AppRouter(router),
+  cast: CastRouter(router),
   artist: ArtistRouter(router),
   genre: GenreRouter(router),
   media: MediaRouter(router),

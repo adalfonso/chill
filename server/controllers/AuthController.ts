@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import path from "node:path";
 import { Request, Response } from "express";
-import { v7 as uuidv7 } from "uuid";
+import { nanoid } from "nanoid";
 
 import { blacklistToken } from "@server/lib/data/Cache";
 import { env } from "@server/init";
@@ -49,7 +49,7 @@ export const AuthController = {
     };
 
     jwt.sign(
-      { user: req.user, session_id: uuidv7() },
+      { user: req.user, session_id: nanoid(4) },
       env.SIGNING_KEY,
       { expiresIn: jwt_expiration_seconds },
       signingCallback,

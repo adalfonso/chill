@@ -53,6 +53,9 @@ importers:
       music-metadata:
         specifier: ^10.3.1
         version: 10.3.1
+      nanoid:
+        specifier: ^5.1.6
+        version: 5.1.6
       passport:
         specifier: ^0.7.0
         version: 0.7.0
@@ -74,9 +77,6 @@ importers:
       sharp:
         specifier: ^0.33.5
         version: 0.33.5
-      uuid:
-        specifier: ^13.0.0
-        version: 13.0.0
       wouter-preact:
         specifier: ^3.3.5
         version: 3.3.5(preact@10.23.2)
@@ -2739,6 +2739,11 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
+  nanoid@5.1.6:
+    resolution: {integrity: sha512-c7+7RQ+dMB5dPwwCp4ee1/iV/q2P6aK1mTZcfr1BTuVlyW9hJYiMPybJCcnBlQtuSmTIWNeazm/zqNoZSSElBg==}
+    engines: {node: ^18 || >=20}
+    hasBin: true
+
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
 
@@ -3467,10 +3472,6 @@ packages:
   utils-merge@1.0.1:
     resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
     engines: {node: '>= 0.4.0'}
-
-  uuid@13.0.0:
-    resolution: {integrity: sha512-XQegIaBTVUjSHliKqcnFqYypAd4S+WCYt5NIeRs6w/UAry7z8Y9j5ZwRRL4kzq9U3sD6v+85er9FvkEaBpji2w==}
-    hasBin: true
 
   v8-to-istanbul@8.1.1:
     resolution: {integrity: sha512-FGtKtv3xIpR6BYhvgH8MI/y78oT7d8Au3ww4QIxymrCtZEh5b8gCw2siywE+puhEmuWKDtmfrvF5UlB298ut3w==}
@@ -6638,6 +6639,8 @@ snapshots:
 
   nanoid@3.3.7: {}
 
+  nanoid@5.1.6: {}
+
   natural-compare@1.4.0: {}
 
   negotiator@0.6.3: {}
@@ -7426,8 +7429,6 @@ snapshots:
       react: 18.2.0
 
   utils-merge@1.0.1: {}
-
-  uuid@13.0.0: {}
 
   v8-to-istanbul@8.1.1:
     dependencies:

@@ -1,23 +1,22 @@
 import { SVGProps } from "preact/compat";
 
 // From hero icons
-export const ChevronDownIcon = (props: SVGProps<SVGSVGElement>) => {
+export const DeviceIcon = (props: SVGProps<SVGSVGElement>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
+      fill="none"
       width="1em"
       height="1em"
       viewBox="0 0 24 24"
+      stroke="currentColor"
       {...props}
     >
       <path
-        fill="none"
-        stroke="currentColor"
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeWidth="1.5"
-        d="m19.5 8.25l-7.5 7.5l-7.5-7.5"
-      ></path>
+        d="M10.5 19.5h3m-6.75 2.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-15a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 4.5v15a2.25 2.25 0 0 0 2.25 2.25Z"
+      />
     </svg>
   );
 };
