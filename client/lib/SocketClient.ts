@@ -1,3 +1,5 @@
+import { getDeviceInfo } from "./DeviceInfo";
+
 /**
  * Websocket client for FE
  */

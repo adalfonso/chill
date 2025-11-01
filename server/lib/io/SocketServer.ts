@@ -1,6 +1,12 @@
 import { RawData, WebSocket, WebSocketServer } from "ws";
 import { TypedRequest } from "./Request";
-import { DeviceClient } from "@common/types";
+import { DeviceClient, DeviceInfo } from "@common/types";
+
+type WrappedSocket = {
+  info: DeviceInfo;
+  session_id: string;
+  socket: WebSocket;
+};
 
 /**
  * Websocket server for BE
@@ -14,12 +20,12 @@ export class SocketServer<
   readonly wss = new WebSocketServer({ noServer: true, path: "/ws" });
 
   #handlers: Partial<{
-    [K in ClientEvent]: (ws: WebSocket, data: ClientData[K]) => void;
+    [K in ClientEvent]: (ws: WrappedSocket, data: ClientData[K]) => void;
   }> = {};
 
   #clients = {
     //by_ip_address: new Map<string, Map<string, WebSocket>>(),
-    by_user_id: new Map<number, Map<string, WebSocket>>(),
+    by_user_id: new Map<number, Map<string, WrappedSocket>>(),
   };
 
   constructor() {
@@ -28,17 +34,23 @@ export class SocketServer<
 
   public emit<E extends ServerEvent>(
     event: E,
-    ws: WebSocket,
+    ws: WrappedSocket,
     data: ServerData[E],
   ) {
-    ws.send(JSON.stringify({ event, data }));
+    ws.socket.send(JSON.stringify({ event, data }));
   }
 
   public on<E extends ClientEvent>(
     event: E,
-    handler: (ws: WebSocket, data: ClientData[E]) => void,
+    handler: (ws: WrappedSocket, data: ClientData[E]) => void,
   ) {
     this.#handlers[event] = handler;
+  }
+
+  public identify(ws: WrappedSocket, data: DeviceInfo) {
+    ws.info.browser = data.browser ?? ws.info.browser;
+    ws.info.os = data.os ?? ws.info.os;
+    ws.info.type = data.type ?? ws.info.type;
   }
 
   public getClients = (
@@ -49,10 +61,12 @@ export class SocketServer<
       this.#clients.by_user_id.get(user_id)?.entries() ?? [],
     );
 
-    return clients?.map(([key, _value]) => ({
+    return clients?.map(([key, { info }]) => ({
       user_id,
       session_id: key,
-      displayAs: session_id === key ? `${key} (this device)` : key,
+      displayAs:
+        `${info.type} ${info.browser} on ${info.os}` +
+        (session_id === key ? ` (this device)` : ""),
     }));
   };
 
@@ -69,22 +83,27 @@ export class SocketServer<
         console.info(
           `Existing websocket connections found for ${user.id} at session ${session_id}`,
         );
-        existing_connection.terminate();
+        existing_connection.socket.terminate();
       }
     } else {
       connections_by_user = new Map();
       this.#clients.by_user_id.set(user.id, connections_by_user);
     }
 
-    connections_by_user.set(session_id, ws);
+    const wrapped_socket: WrappedSocket = {
+      info: { type: "pending", browser: "pending", os: "pending" },
+      session_id,
+      socket: ws,
+    };
+
+    connections_by_user.set(session_id, wrapped_socket);
 
     ws.on("error", console.error);
-
-    ws.on("message", this.#onMessage(ws).bind(this));
+    ws.on("message", this.#onMessage(wrapped_socket).bind(this));
   }
 
   #onMessage =
-    (client: WebSocket) =>
+    (client: WrappedSocket) =>
     <E extends ClientEvent>(message: RawData) => {
       console.info("Inbound websocket message: %s", message);
       const { event, data } = JSON.parse(message.toString()) as {

@@ -42,6 +42,8 @@ export const init = async (app: Express) => {
     wss.emit(ServerSocketEvent.Pong, ws, undefined),
   );
 
+  wss.on(ClientSocketEvent.Identify, wss.identify);
+
   await Promise.all([
     Cache.connect(env.REDIS_HOST),
     Search.connect({

@@ -122,3 +122,9 @@ export type DeviceClient = {
   session_id: string;
   displayAs: string;
 };
+
+export type DeviceInfo = {
+  type: string;
+  browser: string;
+  os: string;
+};

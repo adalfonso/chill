@@ -31,7 +31,8 @@ export const Devices = ({ onClose }: DevicesProps) => {
           {devices.value.map((device) => {
             return (
               <div key={device.session_id} className="device-client">
-                {device.displayAs}
+                {device.session_id}
+                <div>{device.displayAs}</div>
               </div>
             );
           })}
