@@ -3,24 +3,27 @@ import passport from "passport";
 
 import { AuthController } from "@controllers/AuthController";
 import { isAuthenticated } from "@server/middleware/isAuthenticated";
+import { ChillWss } from "@server/init";
 
-const router = express.Router();
+export default (wss: ChillWss) => {
+  const router = express.Router();
 
-router.get("/login", AuthController.login);
-router.get("/logout", isAuthenticated, AuthController.logout);
+  router.get("/login", AuthController.login);
+  router.get("/logout", isAuthenticated, AuthController.logout(wss));
 
-router.get(
-  "/google",
-  passport.authenticate("google", { scope: ["email", "profile"] }),
-);
+  router.get(
+    "/google",
+    passport.authenticate("google", { scope: ["email", "profile"] }),
+  );
 
-router.get(
-  "/google/cb",
-  passport.authenticate("google", {
-    session: false,
-    failureRedirect: "/auth/login?failure=true",
-  }),
-  AuthController.authCallback,
-);
+  router.get(
+    "/google/cb",
+    passport.authenticate("google", {
+      session: false,
+      failureRedirect: "/auth/login?failure=true",
+    }),
+    AuthController.authCallback,
+  );
 
-export default router;
+  return router;
+};

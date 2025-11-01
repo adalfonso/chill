@@ -13,6 +13,13 @@ import { configurePassport } from "./passportConfig";
 import { db } from "./lib/data/db";
 import { initRouter } from "@routes/router";
 
+export type ChillWss = SocketServer<
+  ClientSocketEvent,
+  ClientSocketData,
+  ServerSocketEvent,
+  ServerSocketData
+>;
+
 /**
  * Initialize the express app
  *
@@ -22,20 +29,15 @@ import { initRouter } from "@routes/router";
 export const init = async (app: Express) => {
   const env = initEnvVars();
 
+  const wss: ChillWss = new SocketServer();
+
   configurePassport(passport);
 
   app.use(cookieParser(env.SIGNING_KEY));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  initRouter(app);
-
-  const wss = new SocketServer<
-    ClientSocketEvent,
-    ClientSocketData,
-    ServerSocketEvent,
-    ServerSocketData
-  >();
+  initRouter(app, wss);
 
   // TODO: Move registration of these handlers somewhere
   wss.on(ClientSocketEvent.Ping, (ws) =>

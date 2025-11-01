@@ -47,6 +47,40 @@ export class SocketServer<
     this.#handlers[event] = handler;
   }
 
+  /**
+   * Drop a websocket connection
+   *
+   * @param user_id - user's id
+   * @param session_id - device session id
+   */
+  public drop(user_id: number, session_id: string) {
+    const connections_by_user = this.#clients.by_user_id.get(user_id);
+
+    const missing_error = `Tried to drop websocket for user ${user_id}, session: ${session_id} but could not locate socket`;
+
+    if (!connections_by_user) {
+      return console.info(missing_error);
+    }
+
+    const existing_connection = connections_by_user.get(session_id);
+
+    if (!existing_connection) {
+      return console.info(missing_error);
+    }
+
+    console.info(
+      `Existing websocket connections found for user ${user_id} at session ${session_id}; closing`,
+    );
+
+    existing_connection.socket.terminate();
+    connections_by_user.delete(session_id);
+
+    // If this was the last connection for this user, then drop the grouping
+    if (connections_by_user.size === 0) {
+      this.#clients.by_user_id.delete(user_id);
+    }
+  }
+
   public identify(ws: WrappedSocket, data: DeviceInfo) {
     ws.info.browser = data.browser ?? ws.info.browser;
     ws.info.os = data.os ?? ws.info.os;

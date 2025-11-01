@@ -4,7 +4,8 @@ import { Request, Response } from "express";
 import { nanoid } from "nanoid";
 
 import { blacklistToken } from "@server/lib/data/Cache";
-import { env } from "@server/init";
+import { ChillWss, env } from "@server/init";
+import { TypedRequest } from "@server/lib/io/Request";
 
 // Six hours
 export const jwt_expiration_seconds = 3600 * 6;
@@ -13,9 +14,10 @@ export const AuthController = {
   login: (_req: Request, res: Response) =>
     res.sendFile(path.join(path.resolve(), "views/login.html")),
 
-  logout: async (req: Request, res: Response) => {
+  logout: (wss: ChillWss) => async (req: TypedRequest, res: Response) => {
     const token = req.cookies?.access_token;
 
+    wss.drop(req._user.user.id, req._user.session_id);
     if (token) {
       await blacklistToken(token);
     } else {
