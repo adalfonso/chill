@@ -3,9 +3,10 @@ import path from "node:path";
 import { Request, Response } from "express";
 import { nanoid } from "nanoid";
 
-import { blacklistToken } from "@server/lib/data/Cache";
-import { ChillWss, env } from "@server/init";
+import { ChillWss } from "@server/registerServerSocket";
 import { TypedRequest } from "@server/lib/io/Request";
+import { blacklistToken } from "@server/lib/data/Cache";
+import { env } from "@server/init";
 
 // Six hours
 export const jwt_expiration_seconds = 3600 * 6;

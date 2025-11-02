@@ -2,8 +2,8 @@ import express from "express";
 import passport from "passport";
 
 import { AuthController } from "@controllers/AuthController";
+import { ChillWss } from "@server/registerServerSocket";
 import { isAuthenticated } from "@server/middleware/isAuthenticated";
-import { ChillWss } from "@server/init";
 
 export default (wss: ChillWss) => {
   const router = express.Router();

@@ -120,6 +120,7 @@ export type Raw<T> = {
 export type DeviceClient = {
   user_id: number;
   session_id: string;
+  is_this_device: boolean;
   displayAs: string;
 };
 

@@ -24,6 +24,7 @@ export class SocketServer<
   }> = {};
 
   #clients = {
+    all: new Map<string, WrappedSocket>(),
     //by_ip_address: new Map<string, Map<string, WebSocket>>(),
     by_user_id: new Map<number, Map<string, WrappedSocket>>(),
   };
@@ -74,6 +75,7 @@ export class SocketServer<
 
     existing_connection.socket.terminate();
     connections_by_user.delete(session_id);
+    this.#clients.all.delete(session_id);
 
     // If this was the last connection for this user, then drop the grouping
     if (connections_by_user.size === 0) {
@@ -98,11 +100,14 @@ export class SocketServer<
     return clients?.map(([key, { info }]) => ({
       user_id,
       session_id: key,
-      displayAs:
-        `${info.type} ${info.browser} on ${info.os}` +
-        (session_id === key ? ` (this device)` : ""),
+      is_this_device: session_id === key,
+      displayAs: `${info.type} ${info.browser} on ${info.os}`,
     }));
   };
+
+  public getClientBySessionId(session_id: string) {
+    return this.#clients.all.get(session_id);
+  }
 
   #onConnection(ws: WebSocket, req: TypedRequest) {
     const { user, session_id } = req._user;
@@ -131,6 +136,7 @@ export class SocketServer<
     };
 
     connections_by_user.set(session_id, wrapped_socket);
+    this.#clients.all.set(session_id, wrapped_socket);
 
     ws.on("error", console.error);
     ws.on("message", this.#onMessage(wrapped_socket).bind(this));

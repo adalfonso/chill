@@ -5,20 +5,12 @@ import passport from "passport";
 import { UserType } from "@prisma/client";
 
 import { Cache } from "./lib/data/Cache";
-import { ClientSocketData, ClientSocketEvent } from "@common/SocketClientEvent";
 import { Search } from "./lib/data/Search";
-import { ServerSocketEvent, ServerSocketData } from "@common/SocketServerEvent";
 import { SocketServer } from "./lib/io/SocketServer";
 import { configurePassport } from "./passportConfig";
 import { db } from "./lib/data/db";
 import { initRouter } from "@routes/router";
-
-export type ChillWss = SocketServer<
-  ClientSocketEvent,
-  ClientSocketData,
-  ServerSocketEvent,
-  ServerSocketData
->;
+import { ChillWss, registerServerSocket } from "./registerServerSocket";
 
 /**
  * Initialize the express app
@@ -31,6 +23,7 @@ export const init = async (app: Express) => {
 
   const wss: ChillWss = new SocketServer();
 
+  registerServerSocket(wss);
   configurePassport(passport);
 
   app.use(cookieParser(env.SIGNING_KEY));
@@ -38,13 +31,6 @@ export const init = async (app: Express) => {
   app.use(express.urlencoded({ extended: true }));
 
   initRouter(app, wss);
-
-  // TODO: Move registration of these handlers somewhere
-  wss.on(ClientSocketEvent.Ping, (ws) =>
-    wss.emit(ServerSocketEvent.Pong, ws, undefined),
-  );
-
-  wss.on(ClientSocketEvent.Identify, wss.identify);
 
   await Promise.all([
     Cache.connect(env.REDIS_HOST),

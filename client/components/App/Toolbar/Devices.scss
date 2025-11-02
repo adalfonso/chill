@@ -5,7 +5,7 @@
   width: calc(100% - 4rem);
   min-height: 15rem;
   padding: 1.5rem;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   z-index: 1;
 
   .close {
@@ -15,16 +15,54 @@
 
   .device-client {
     padding: 0.75rem;
+    display: flex;
+    align-items: center;
 
     &:hover {
       background-color: $dm-shadow;
       transition: background-color 0.3s;
     }
 
+    .connected-icon {
+      margin-right: 1rem;
+
+      &.hidden {
+        visibility: hidden;
+      }
+    }
+
+    .device-info {
+      .device-display-as {
+        margin-top: 0.5rem;
+        font-size: 0.8rem;
+        color: $dm-font-3;
+      }
+    }
+  }
+
+  .connect-to {
+    display: flex;
+    justify-content: space-between;
+    border-top: 2px solid $dm-shadow;
+    margin: 1rem -1.5rem -1.5rem -1.5rem;
+
     > div {
-      margin-top: 0.5rem;
-      font-size: 0.8rem;
-      color: $dm-font-3;
+      padding: 1rem;
+      width: 50%;
+      text-align: center;
+
+      &.cancel {
+        border-bottom-left-radius: 0.5rem;
+      }
+
+      &.connect {
+        border-bottom-right-radius: 0.5rem;
+      }
+
+      &:hover {
+        background-color: $dm-shadow;
+        transition: background-color 0.3s;
+      }
     }
   }
 }

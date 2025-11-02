@@ -1,9 +1,11 @@
-import auth from "./auth";
-import cast_media from "./cast_media";
 import express, { Express } from "express";
 import historyApiFallback from "connect-history-api-fallback";
+
+import auth from "./auth";
+import cast_media from "./cast_media";
 import v1 from "./api/v1";
-import { ChillWss, env } from "@server/init";
+import { ChillWss } from "@server/registerServerSocket";
+import { env } from "@server/init";
 import { isAuthenticated } from "@middleware/isAuthenticated";
 
 export const initRouter = (app: Express, wss: ChillWss) => {

@@ -1,23 +1,25 @@
-import {
-  EnforcableSharedSocketData,
-  SharedSocketEvent,
-} from "./SharedSocketEvent";
-
-export const ClientSocketEvent = Object.assign({}, SharedSocketEvent, {
+export const ClientSocketEvent = {
+  DenyConnection: "DenyConnection",
   Identify: "Identify",
   Ping: "Ping",
-} as const);
+  RequestConnection: "RequestConnection",
+  AcceptConnection: "AcceptConnection",
+  Disconnect: "Disconnect",
+} as const;
 
 export type ClientSocketEvent =
   (typeof ClientSocketEvent)[keyof typeof ClientSocketEvent];
 
-const EnforcableClientSocketData = Object.assign(
-  {},
-  EnforcableSharedSocketData,
-  {
-    Identify: { type: "Desktop", browser: "Chrome", os: "Linux" },
-    Ping: undefined,
+const EnforcableClientSocketData = {
+  Identify: { type: "Desktop", browser: "Chrome", os: "Linux" },
+  Ping: undefined,
+  RequestConnection: { to: "connection-target-id" },
+  AcceptConnection: { to: "connection-target-id" },
+  DenyConnection: {
+    to: "connection-target-id",
+    reason: "already connected to another device",
   },
-) satisfies Record<ClientSocketEvent, unknown>;
+  Disconnect: { to: "connection-source-id" },
+} satisfies Record<ClientSocketEvent, unknown>;
 
 export type ClientSocketData = typeof EnforcableClientSocketData;
