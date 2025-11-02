@@ -30,13 +30,17 @@ export class DeviceConnect {
 
     if (
       !connection ||
-      connection.target === target ||
+      connection.target !== target ||
       connection.status !== ConnectionStatus.Requested
     ) {
       return;
     }
 
     connection.status = ConnectionStatus.Accepted;
+  }
+
+  public disconnect(source: string) {
+    this.#connections.delete(source);
   }
 
   public getConnection(source: string, target: string) {

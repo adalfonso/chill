@@ -50,19 +50,19 @@ export const Devices = ({ onClose }: DevicesProps) => {
   });
 
   const disconnect = noPropagate(() => {
-    if (!outgoing_connections.value) {
+    if (!outgoing_connection.value) {
       return;
     }
 
-    ws.emit(ClientSocketEvent.Disconnect, { to: outgoing_connections.value });
-    outgoing_connections.value = null;
+    ws.emit(ClientSocketEvent.Disconnect, { to: outgoing_connection.value });
+    outgoing_connection.value = null;
   });
 
   return (
     <div className="fullscreen center-content transparent" onClick={onClose}>
       <div id="devices">
         <Close onClose={onClose} />
-        {outgoing_connections.value && (
+        {outgoing_connection.value && (
           <button onClick={disconnect}>Disconnect</button>
         )}
         <div className="device-list">
@@ -74,7 +74,7 @@ export const Devices = ({ onClose }: DevicesProps) => {
                 onClick={selectDevice(device)}
               >
                 <div
-                  className={`connected-icon ${outgoing_connections.value !== device.session_id ? "hidden" : ""}`}
+                  className={`connected-icon ${outgoing_connection.value !== device.session_id ? "hidden" : ""}`}
                 >
                   <WifiIcon stroke="rgb(139, 195, 255)" strokeWidth={2} />
                 </div>

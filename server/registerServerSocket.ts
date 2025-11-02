@@ -115,6 +115,8 @@ export const registerServerSocket = (wss: ChillWss) => {
   });
 
   wss.on(ClientSocketEvent.Disconnect, (ws, data) => {
+    connector.disconnect(ws.session_id);
+
     const target = wss.getClientBySessionId(data.to);
 
     // Can't find target; skip
