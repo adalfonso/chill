@@ -1,7 +1,11 @@
 import { ClientSocketData, ClientSocketEvent } from "@common/SocketClientEvent";
 import { SocketClient } from "./SocketClient";
 import { getDeviceInfo } from "./DeviceInfo";
-import { ServerSocketData, ServerSocketEvent } from "@common/SocketServerEvent";
+import {
+  ConnectionDirection,
+  ServerSocketData,
+  ServerSocketEvent,
+} from "@common/SocketServerEvent";
 import { app_state } from "@client/state/AppState";
 
 export const registerClientSocket = (
@@ -24,7 +28,7 @@ export const registerClientSocket = (
 
   ws.on(ServerSocketEvent.RequestConnection, (data) => {
     // This app is already controlling another instance
-    if (app_state.outgoing_connections.value) {
+    if (app_state.outgoing_connection.value) {
       return ws.emit(ClientSocketEvent.DenyConnection, {
         to: data.from,
         reason: "Busy",
@@ -45,7 +49,7 @@ export const registerClientSocket = (
     // TODO: Some sort of check that the connection is ok/safe. maybe the server should handle this
     // should also update app state here
 
-    app_state.outgoing_connections.value = data.from;
+    app_state.outgoing_connection.value = data.from;
   });
 
   ws.on(ServerSocketEvent.Disconnect, (data) => {
@@ -53,5 +57,13 @@ export const registerClientSocket = (
       app_state.incoming_connections.value.filter(
         (value) => value !== data.from,
       );
+  });
+
+  ws.on(ServerSocketEvent.Reconnect, (data) => {
+    if (data.connection.direction === ConnectionDirection.In) {
+      app_state.incoming_connections.value = data.connection.sources;
+    } else if (data.connection.direction === ConnectionDirection.Out) {
+      app_state.outgoing_connection.value = data.connection.target;
+    }
   });
 };

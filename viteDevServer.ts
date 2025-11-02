@@ -2,18 +2,16 @@ import express, { Express } from "express";
 import fs from "fs";
 import path from "path";
 import { EnvStore } from "@server/init";
-import { Server as WebSocketServer } from "ws";
 import { createServer as createViteServer } from "vite";
 import { fileURLToPath } from "url";
 import { upgradeServer } from "@server/lib/io/upgradeServer";
+import { ChillWss } from "@server/registerServerSocket";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 type ConfigOptions = {
   port?: number;
-  initializer: (
-    app: Express,
-  ) => Promise<{ env: EnvStore; wss: WebSocketServer }>;
+  initializer: (app: Express) => Promise<{ env: EnvStore; wss: ChillWss }>;
 };
 
 /**

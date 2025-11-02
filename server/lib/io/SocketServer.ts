@@ -1,11 +1,13 @@
 import { RawData, WebSocket, WebSocketServer } from "ws";
 import { TypedRequest } from "./Request";
 import { DeviceClient, DeviceInfo } from "@common/types";
+import { DeviceConnect } from "./DeviceConnect";
 
 type WrappedSocket = {
-  info: DeviceInfo;
+  device_info: DeviceInfo;
   session_id: string;
   socket: WebSocket;
+  user_id: number;
 };
 
 /**
@@ -28,6 +30,8 @@ export class SocketServer<
     //by_ip_address: new Map<string, Map<string, WebSocket>>(),
     by_user_id: new Map<number, Map<string, WrappedSocket>>(),
   };
+
+  public connector = new DeviceConnect();
 
   constructor() {
     this.wss.on("connection", this.#onConnection.bind(this));
@@ -84,24 +88,24 @@ export class SocketServer<
   }
 
   public identify(ws: WrappedSocket, data: DeviceInfo) {
-    ws.info.browser = data.browser ?? ws.info.browser;
-    ws.info.os = data.os ?? ws.info.os;
-    ws.info.type = data.type ?? ws.info.type;
+    ws.device_info.browser = data.browser ?? ws.device_info.browser;
+    ws.device_info.os = data.os ?? ws.device_info.os;
+    ws.device_info.type = data.type ?? ws.device_info.type;
   }
 
-  public getClients = (
+  public getAccessibleClients = (user_id: number): Array<WrappedSocket> => {
+    return Array.from(this.#clients.by_user_id.get(user_id)?.values() ?? []);
+  };
+
+  public getClientDevicesByUserId = (
     user_id: number,
     session_id: string,
   ): Array<DeviceClient> => {
-    const clients = Array.from(
-      this.#clients.by_user_id.get(user_id)?.entries() ?? [],
-    );
-
-    return clients?.map(([key, { info }]) => ({
-      user_id,
-      session_id: key,
-      is_this_device: session_id === key,
-      displayAs: `${info.type} ${info.browser} on ${info.os}`,
+    return this.getAccessibleClients(user_id).map((client) => ({
+      user_id: client.user_id,
+      session_id: client.session_id,
+      is_this_device: session_id === client.session_id,
+      displayAs: `${client.device_info.type} ${client.device_info.browser} on ${client.device_info.os}`,
     }));
   };
 
@@ -130,8 +134,9 @@ export class SocketServer<
     }
 
     const wrapped_socket: WrappedSocket = {
-      info: { type: "pending", browser: "pending", os: "pending" },
+      device_info: { type: "pending", browser: "pending", os: "pending" },
       session_id,
+      user_id: user.id,
       socket: ws,
     };
 

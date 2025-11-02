@@ -1,22 +1,42 @@
 export const ServerSocketEvent = {
   AcceptConnection: "AcceptConnection",
   DenyConnection: "DenyConnection",
+  Disconnect: "Disconnect",
   Pong: "Pong",
   RequestConnection: "RequestConnection",
-  Disconnect: "Disconnect",
-} as const;
+  Reconnect: "Reconnect",
+} as const satisfies Record<keyof ServerSocketData, string>;
 
 export type ServerSocketEvent =
   (typeof ServerSocketEvent)[keyof typeof ServerSocketEvent];
 
-const EnforcableServerSocketData = {
-  AcceptConnection: {
-    from: "connection-target-id",
-  },
-  DenyConnection: { from: "Server", reason: "Deny reason" },
-  Pong: undefined,
-  RequestConnection: { from: "connection-source-id" },
-  Disconnect: { from: "connection-source-id" },
-} satisfies Record<ServerSocketEvent, unknown>;
+export type ServerSocketData = {
+  AcceptConnection: { from: string };
+  DenyConnection: { from: string; reason: string };
+  Disconnect: { from: string };
+  Pong: undefined;
+  RequestConnection: { from: string };
+  Reconnect: { connection: ConnectionInfo };
+};
 
-export type ServerSocketData = typeof EnforcableServerSocketData;
+export type ConnectionInfo =
+  | {
+      direction: typeof ConnectionDirection.None;
+    }
+  | {
+      target: string;
+      direction: typeof ConnectionDirection.Out;
+    }
+  | {
+      sources: Array<string>;
+      direction: typeof ConnectionDirection.In;
+    };
+
+export const ConnectionDirection = {
+  Out: "Out",
+  In: "In",
+  None: "None",
+} as const;
+
+export type ConnectionDirection =
+  (typeof ConnectionDirection)[keyof typeof ConnectionDirection];

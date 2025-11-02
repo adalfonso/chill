@@ -15,7 +15,7 @@ type DevicesProps = {
 };
 
 export const Devices = ({ onClose }: DevicesProps) => {
-  const { outgoing_connections, is_busy, ws } = useContext(AppContext);
+  const { outgoing_connection, is_busy, ws } = useContext(AppContext);
 
   const devices = useSignal<Array<DeviceClient>>([]);
   const selected_device = useSignal<Maybe<DeviceClient>>(null);
@@ -46,7 +46,7 @@ export const Devices = ({ onClose }: DevicesProps) => {
       to: selected_device.value.session_id,
     });
 
-    selected_device.value = "";
+    selected_device.value = null;
   });
 
   const disconnect = noPropagate(() => {

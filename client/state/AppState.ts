@@ -19,9 +19,9 @@ export const createAppState = () => {
   const is_busy = signal(false);
   const progress = signal(0);
   const incoming_connections = signal<Array<string>>([]);
-  const outgoing_connections = signal<Maybe<string>>(null);
+  const outgoing_connection = signal<Maybe<string>>(null);
 
-  return { is_busy, progress, ws, incoming_connections, outgoing_connections };
+  return { is_busy, progress, ws, incoming_connections, outgoing_connection };
 };
 
 // Create a *single shared instance* of app state

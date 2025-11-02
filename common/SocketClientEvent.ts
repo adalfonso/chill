@@ -1,25 +1,20 @@
 export const ClientSocketEvent = {
+  AcceptConnection: "AcceptConnection",
   DenyConnection: "DenyConnection",
+  Disconnect: "Disconnect",
   Identify: "Identify",
   Ping: "Ping",
   RequestConnection: "RequestConnection",
-  AcceptConnection: "AcceptConnection",
-  Disconnect: "Disconnect",
-} as const;
+} as const satisfies Record<keyof ClientSocketData, unknown>;
 
 export type ClientSocketEvent =
   (typeof ClientSocketEvent)[keyof typeof ClientSocketEvent];
 
-const EnforcableClientSocketData = {
-  Identify: { type: "Desktop", browser: "Chrome", os: "Linux" },
-  Ping: undefined,
-  RequestConnection: { to: "connection-target-id" },
-  AcceptConnection: { to: "connection-target-id" },
-  DenyConnection: {
-    to: "connection-target-id",
-    reason: "already connected to another device",
-  },
-  Disconnect: { to: "connection-source-id" },
-} satisfies Record<ClientSocketEvent, unknown>;
-
-export type ClientSocketData = typeof EnforcableClientSocketData;
+export type ClientSocketData = {
+  AcceptConnection: { to: string };
+  DenyConnection: { to: string; reason: string };
+  Disconnect: { to: string };
+  Identify: { type: string; browser: string; os: string };
+  Ping: undefined;
+  RequestConnection: { to: string };
+};

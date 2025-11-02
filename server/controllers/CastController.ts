@@ -6,6 +6,6 @@ export const CastController = {
   getAppClients: ({ ctx: { req } }: Request) => {
     const { user, session_id } = req._user;
 
-    return req.app._wss.getClients(user.id, session_id);
+    return req.app._wss.getClientDevicesByUserId(user.id, session_id);
   },
 };
