@@ -1,12 +1,14 @@
+import store from "@reducers/store";
 import { ClientSocketData, ClientSocketEvent } from "@common/SocketClientEvent";
 import { SocketClient } from "./SocketClient";
+import { app_state } from "@client/state/AppState";
 import { getDeviceInfo } from "./DeviceInfo";
+import { pause } from "@reducers/player";
 import {
   ConnectionDirection,
   ServerSocketData,
   ServerSocketEvent,
 } from "@common/SocketServerEvent";
-import { app_state } from "@client/state/AppState";
 
 export const registerClientSocket = (
   ws: SocketClient<
@@ -18,7 +20,7 @@ export const registerClientSocket = (
 ) => {
   const identify = () => ws.emit(ClientSocketEvent.Identify, getDeviceInfo());
 
-  const ping = () => ws.emit(ClientSocketEvent.Ping, undefined);
+  const ping = () => ws.emit(ClientSocketEvent.Ping);
 
   // Identify and begin ping when ready
   ws.ready.then(identify).then(ping);
@@ -65,5 +67,9 @@ export const registerClientSocket = (
     } else if (data.connection.direction === ConnectionDirection.Out) {
       app_state.outgoing_connection.value = data.connection.target;
     }
+  });
+
+  ws.on(ServerSocketEvent.PlayerPause, () => {
+    store.dispatch(pause());
   });
 };

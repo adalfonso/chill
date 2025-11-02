@@ -1,5 +1,3 @@
-import { getDeviceInfo } from "./DeviceInfo";
-
 /**
  * Websocket client for FE
  */
@@ -50,7 +48,10 @@ export class SocketClient<
     });
   }
 
-  public emit<E extends ClientEvent>(event: E, data: ClientData[E]) {
+  public emit<E extends ClientEvent>(
+    event: E,
+    ...[data]: ClientData[E] extends undefined ? [] : [ClientData[E]]
+  ) {
     this.instance().send(JSON.stringify({ event, data }));
   }
 

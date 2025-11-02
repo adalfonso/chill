@@ -2,9 +2,10 @@ export const ServerSocketEvent = {
   AcceptConnection: "AcceptConnection",
   DenyConnection: "DenyConnection",
   Disconnect: "Disconnect",
+  PlayerPause: "PlayerPause",
   Pong: "Pong",
-  RequestConnection: "RequestConnection",
   Reconnect: "Reconnect",
+  RequestConnection: "RequestConnection",
 } as const satisfies Record<keyof ServerSocketData, string>;
 
 export type ServerSocketEvent =
@@ -14,6 +15,7 @@ export type ServerSocketData = {
   AcceptConnection: { from: string };
   DenyConnection: { from: string; reason: string };
   Disconnect: { from: string };
+  PlayerPause: undefined;
   Pong: undefined;
   RequestConnection: { from: string };
   Reconnect: { connection: ConnectionInfo };

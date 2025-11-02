@@ -40,7 +40,7 @@ export class SocketServer<
   public emit<E extends ServerEvent>(
     event: E,
     ws: WrappedSocket,
-    data: ServerData[E],
+    ...[data]: ServerData[E] extends undefined ? [] : [ServerData[E]]
   ) {
     ws.socket.send(JSON.stringify({ event, data }));
   }

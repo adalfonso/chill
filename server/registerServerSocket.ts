@@ -22,9 +22,7 @@ export type ChillWss = SocketServer<
 export const registerServerSocket = (wss: ChillWss) => {
   const connector = new DeviceConnect();
 
-  wss.on(ClientSocketEvent.Ping, (ws) =>
-    wss.emit(ServerSocketEvent.Pong, ws, undefined),
-  );
+  wss.on(ClientSocketEvent.Ping, (ws) => wss.emit(ServerSocketEvent.Pong, ws));
 
   wss.on(ClientSocketEvent.Identify, (ws, data) => {
     wss.identify(ws, data);
@@ -127,5 +125,22 @@ export const registerServerSocket = (wss: ChillWss) => {
     wss.emit(ServerSocketEvent.Disconnect, target, {
       from: ws.session_id,
     });
+  });
+
+  wss.on(ServerSocketEvent.PlayerPause, (ws) => {
+    const connection = connector.getActiveConnection(ws.session_id);
+
+    if (!connection) {
+      return;
+    }
+
+    const target = wss.getClientBySessionId(connection.target);
+
+    // Can't find target; skip
+    if (!target) {
+      return;
+    }
+
+    wss.emit(ServerSocketEvent.PlayerPause, target);
   });
 };

@@ -30,6 +30,9 @@ import {
 } from "@reducers/player";
 import { AudioType } from "@server/lib/media/types";
 import { PlayableTrack } from "@common/types";
+import { AppContext } from "@client/state/AppState";
+import { useContext } from "preact/hooks";
+import { ClientSocketEvent } from "@common/SocketClientEvent";
 
 const default_now_playing = "";
 
@@ -53,6 +56,7 @@ const getBitsDisplay = (track: PlayableTrack) => {
 };
 
 export const PlayControls = () => {
+  const { outgoing_connection, ws } = useContext(AppContext);
   const dispatch = useDispatch();
   const [, navigate] = useLocation();
   const file_menu_id = useId();
@@ -91,6 +95,14 @@ export const PlayControls = () => {
   // Toggle audio play / pause
   const togglePlayer = async () => {
     const operation = player.is_playing ? pause() : play({});
+
+    if (outgoing_connection) {
+      if (player.is_playing) {
+        ws.emit(ClientSocketEvent.PlayerPause);
+      }
+      // TODO: Handle play
+    }
+
     dispatch(operation);
   };
 
