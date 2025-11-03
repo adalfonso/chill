@@ -1,9 +1,8 @@
 import { DEFAULT_LIMIT, DEFAULT_PAGE, paginate } from "@common/pagination";
 import { api } from "@client/client";
-import { PlayMode } from "@reducers/player.types";
 import { PlayerState } from "@reducers/player";
 import { SortClause } from "@common/schema";
-import { SortOrder } from "@common/types";
+import { PlayMode, SortOrder } from "@common/types";
 
 /**
  * Get more tracks for the various player modes

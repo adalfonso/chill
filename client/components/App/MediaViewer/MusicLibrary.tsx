@@ -3,8 +3,7 @@ import { useState } from "preact/hooks";
 
 import "./MusicLibrary.scss";
 import { MediaTile } from "./MusicLibrary/MediaTile";
-import { MediaTileData, MediaTileType } from "@common/types";
-import { PlayMode } from "@reducers/player.types";
+import { MediaTileData, MediaTileType, PlayMode } from "@common/types";
 import { Select } from "../../ui/Select";
 import { SmartScroller } from "./SmartScroller";
 import { api } from "@client/client";

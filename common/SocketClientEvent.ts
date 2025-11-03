@@ -1,3 +1,5 @@
+import { PlayPayload } from "./types";
+
 export const ClientSocketEvent = {
   AcceptConnection: "AcceptConnection",
   DenyConnection: "DenyConnection",
@@ -5,6 +7,7 @@ export const ClientSocketEvent = {
   Identify: "Identify",
   Ping: "Ping",
   PlayerPause: "PlayerPause",
+  PlayerPlay: "PlayerPlay",
   RequestConnection: "RequestConnection",
 } as const satisfies Record<keyof ClientSocketData, unknown>;
 
@@ -18,5 +21,6 @@ export type ClientSocketData = {
   Identify: { type: string; browser: string; os: string };
   Ping: undefined;
   PlayerPause: undefined;
+  PlayerPlay: PlayPayload;
   RequestConnection: { to: string };
 };

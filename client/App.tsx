@@ -18,11 +18,13 @@ export const App = () => {
   const player = useSelector(getPlayerState);
   const playlistEditor = useSelector(getPlaylistEditorState);
   useEffect(() => {
+    unlockAudio();
     api.cast.getCastId.query().then((id) => dispatch(setCastAppId(id)));
   }, []);
 
   return (
     <div className="app" onClick={clearActiveFileMenu}>
+      <audio id="unlock-audio" src="" preload="auto" muted></audio>
       <Toolbar />
 
       <PlayModeIterceptor>
@@ -34,3 +36,33 @@ export const App = () => {
     </div>
   );
 };
+
+const unlockAudio = () => {
+  const el = document.getElementById("unlock-audio") as HTMLAudioElement | null;
+
+  if (!el) return;
+
+  // If already unlocked, do nothing
+  if (el.dataset.unlocked === "true") return;
+
+  // Attempt playback
+  el.play()
+    .then(() => {
+      el.pause(); // stop immediately
+      el.muted = false; // restore audio for real use
+      el.dataset.unlocked = "true";
+      console.info("✅ Audio unlocked");
+      // Remove listeners after success
+      document.removeEventListener("click", unlockAudio);
+      document.removeEventListener("touchstart", unlockAudio);
+      document.removeEventListener("keydown", unlockAudio);
+    })
+    .catch((err) => {
+      console.warn("⚠️ Unlock failed:", err);
+    });
+};
+
+// Attach global unlock listeners
+document.addEventListener("click", unlockAudio);
+document.addEventListener("touchstart", unlockAudio);
+document.addEventListener("keydown", unlockAudio);

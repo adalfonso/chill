@@ -3,7 +3,7 @@ import { ClientSocketData, ClientSocketEvent } from "@common/SocketClientEvent";
 import { SocketClient } from "./SocketClient";
 import { app_state } from "@client/state/AppState";
 import { getDeviceInfo } from "./DeviceInfo";
-import { pause } from "@reducers/player";
+import { pause, play } from "@reducers/player";
 import {
   ConnectionDirection,
   ServerSocketData,
@@ -71,5 +71,9 @@ export const registerClientSocket = (
 
   ws.on(ServerSocketEvent.PlayerPause, () => {
     store.dispatch(pause());
+  });
+
+  ws.on(ServerSocketEvent.PlayerPlay, (data) => {
+    store.dispatch(play(data));
   });
 };

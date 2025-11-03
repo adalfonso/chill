@@ -96,7 +96,7 @@ export const PlayControls = () => {
   const togglePlayer = async () => {
     const operation = player.is_playing ? pause() : play({});
 
-    if (outgoing_connection) {
+    if (outgoing_connection.value) {
       if (player.is_playing) {
         ws.emit(ClientSocketEvent.PlayerPause);
       }

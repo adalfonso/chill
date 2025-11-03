@@ -3,16 +3,21 @@ import { useDispatch, useSelector } from "react-redux";
 import { useState, useEffect, useContext, useCallback } from "preact/hooks";
 
 import "./AlbumView.scss";
-import { AlbumRelationalData, Maybe, PlayableTrack, Raw } from "@common/types";
+import {
+  AlbumRelationalData,
+  Maybe,
+  PlayableTrack,
+  PlayMode,
+  Raw,
+} from "@common/types";
 import { AlbumViewRow } from "./AlbumView/AlbumViewRow";
 import { AppContext } from "@client/state/AppState";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@common/pagination";
 import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
-import { PlayMode } from "@reducers/player.types";
 import { api } from "@client/client";
 import { getPlayerState } from "@client/state/reducers/store";
 import { getTracks, sort_clauses } from "@client/lib/TrackLoaders";
-import { play } from "@reducers/player";
+import { play, wrapPlay } from "@reducers/player";
 import { truncate } from "@common/commonUtils";
 
 type AlbumViewProps = {
@@ -66,8 +71,14 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
         more: true,
       };
 
-      dispatch(
-        play({ tracks: [...(tracks ?? [])], cast_info, index, play_options }),
+      wrapPlay(
+        {
+          tracks: [...(tracks ?? [])],
+          cast_info,
+          index,
+          play_options,
+        },
+        (payload) => dispatch(play(payload)),
       );
     };
 

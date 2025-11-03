@@ -1,8 +1,11 @@
+import { PlayPayload } from "./types";
+
 export const ServerSocketEvent = {
   AcceptConnection: "AcceptConnection",
   DenyConnection: "DenyConnection",
   Disconnect: "Disconnect",
   PlayerPause: "PlayerPause",
+  PlayerPlay: "PlayerPlay",
   Pong: "Pong",
   Reconnect: "Reconnect",
   RequestConnection: "RequestConnection",
@@ -16,6 +19,7 @@ export type ServerSocketData = {
   DenyConnection: { from: string; reason: string };
   Disconnect: { from: string };
   PlayerPause: undefined;
+  PlayerPlay: PlayPayload;
   Pong: undefined;
   RequestConnection: { from: string };
   Reconnect: { connection: ConnectionInfo };

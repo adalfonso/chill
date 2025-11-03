@@ -143,4 +143,21 @@ export const registerServerSocket = (wss: ChillWss) => {
 
     wss.emit(ServerSocketEvent.PlayerPause, target);
   });
+
+  wss.on(ClientSocketEvent.PlayerPlay, (ws, data) => {
+    const connection = connector.getActiveConnection(ws.session_id);
+
+    if (!connection) {
+      return;
+    }
+
+    const target = wss.getClientBySessionId(connection.target);
+
+    // Can't find target; skip
+    if (!target) {
+      return;
+    }
+
+    wss.emit(ServerSocketEvent.PlayerPlay, target, data);
+  });
 };
