@@ -1,5 +1,5 @@
 import { Album, Artist } from "@prisma/client";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useState, useEffect, useContext, useCallback } from "preact/hooks";
 
 import "./AlbumView.scss";
@@ -17,8 +17,8 @@ import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
 import { api } from "@client/client";
 import { getPlayerState } from "@client/state/reducers/store";
 import { getTracks, sort_clauses } from "@client/lib/TrackLoaders";
-import { play, wrapPlay } from "@reducers/player";
 import { truncate } from "@common/commonUtils";
+import { usePlay } from "@hooks/usePlay";
 
 type AlbumViewProps = {
   artist_id?: number;
@@ -32,7 +32,7 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
   const [album, setAlbum] =
     useState<Maybe<Raw<Album & AlbumRelationalData>>>(null);
   const [tracks, setTracks] = useState<Maybe<Array<PlayableTrack>>>(null);
-  const dispatch = useDispatch();
+  const play = usePlay();
 
   const loadInfo = useCallback(() => {
     Promise.all(
@@ -71,15 +71,7 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
         more: true,
       };
 
-      wrapPlay(
-        {
-          tracks: [...(tracks ?? [])],
-          cast_info,
-          index,
-          play_options,
-        },
-        (payload) => dispatch(play(payload)),
-      );
+      play({ tracks: [...(tracks ?? [])], cast_info, index, play_options });
     };
 
   const artist_ids = () =>

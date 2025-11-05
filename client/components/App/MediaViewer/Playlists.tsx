@@ -1,4 +1,3 @@
-import { useDispatch } from "react-redux";
 import { useLocation } from "wouter-preact";
 import { useContext, useRef } from "preact/hooks";
 
@@ -9,16 +8,13 @@ import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
 import { PlaylistWithCount, PlayMode, Raw } from "@common/types";
 import { api } from "@client/client";
 import { DEFAULT_LIMIT, DEFAULT_PAGE, paginate } from "@common/pagination";
-import { play } from "@reducers/player";
-import { useInfiniteScroll } from "@hooks/index";
+import { useInfiniteScroll, usePlay } from "@hooks/index";
 import { getPlaylistTracks } from "@client/lib/TrackLoaders";
 
 export const Playlists = () => {
   const observedElement = useRef<HTMLDivElement>(null);
-
-  const dispatch = useDispatch();
+  const play = usePlay();
   const [, navigate] = useLocation();
-
   const { is_busy } = useContext(AppContext);
 
   const loadPlaylists = (page: number) => {
@@ -51,7 +47,7 @@ export const Playlists = () => {
         more: true,
       };
 
-      dispatch(play({ tracks, play_options, index: 0 }));
+      play({ tracks, play_options, index: 0 });
     } catch (e) {
       console.error("Failed to play playlist", (e as Error)?.message);
     }

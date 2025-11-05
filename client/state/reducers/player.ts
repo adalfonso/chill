@@ -13,8 +13,6 @@ import { MobileDisplayMode } from "./player.types";
 import { PreCastPayload } from "@client/lib/cast/types";
 import { api } from "@client/client";
 import { shuffle as _shuffle, findIndex } from "@common/commonUtils";
-import { app_state } from "../AppState";
-import { ClientSocketEvent } from "@common/SocketClientEvent";
 
 export let audio = new Audio();
 export let crossover = new Audio();
@@ -52,7 +50,7 @@ const initialState: PlayerState = {
   },
 };
 
-type PlayLoad = PlayPayload & {
+export type PlayLoad = PlayPayload & {
   cast_info?: Maybe<PreCastPayload>;
   index?: number;
   progress?: number;
@@ -453,18 +451,3 @@ export const getPlayPayload =
 
     return { tracks, cast_info };
   };
-
-export const wrapPlay = (
-  payload: PlayLoad,
-  cb: (playload: PlayLoad) => unknown,
-) => {
-  const { outgoing_connection, ws } = app_state;
-
-  if (!outgoing_connection.value) {
-    return cb(payload);
-  }
-
-  const { cast_info, ...rest } = payload;
-
-  return ws.emit(ClientSocketEvent.PlayerPlay, rest);
-};

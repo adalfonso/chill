@@ -7,6 +7,7 @@ import { api } from "@client/client";
 import { getCasterState, getPlayerState } from "@client/state/reducers/store";
 import { AppContext } from "@client/state/AppState";
 import * as Player from "@client/state/reducers/player";
+import { usePlay } from "@hooks/usePlay";
 
 export const CastPlayer = () => {
   const caster = useSelector(getCasterState);
@@ -14,8 +15,9 @@ export const CastPlayer = () => {
   const { progress } = useContext(AppContext);
   const cast_context = useRef<Maybe<cast.framework.CastContext>>(null);
   const player_ref = useRef(player);
-
+  const play = usePlay();
   const dispatch = useDispatch();
+
   player_ref.current = player;
 
   useEffect(() => {
@@ -111,14 +113,12 @@ export const CastPlayer = () => {
             playlist.length
           ) {
             // Immediately play when starting a cast session
-            dispatch(
-              Player.play({
-                tracks: playlist,
-                cast_info,
-                index,
-                progress: progress.value,
-              }),
-            );
+            play({
+              tracks: playlist,
+              cast_info,
+              index,
+              progress: progress.value,
+            });
           }
 
           break;
