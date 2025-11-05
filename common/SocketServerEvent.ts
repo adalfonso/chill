@@ -6,6 +6,8 @@ export const ServerSocketEvent = {
   Disconnect: "Disconnect",
   PlayerPause: "PlayerPause",
   PlayerPlay: "PlayerPlay",
+  PlayerProgressUpdate: "PlayerProgressUpdate",
+  PlayerSync: "PlayerSync",
   Pong: "Pong",
   Reconnect: "Reconnect",
   RequestConnection: "RequestConnection",
@@ -20,6 +22,8 @@ export type ServerSocketData = {
   Disconnect: { from: string };
   PlayerPause: undefined;
   PlayerPlay: PlayPayload;
+  PlayerProgressUpdate: number;
+  PlayerSync: PlayPayload;
   Pong: undefined;
   RequestConnection: { from: string };
   Reconnect: { connection: ConnectionInfo };

@@ -127,6 +127,16 @@ export const isString = (value: unknown): value is string => {
 };
 
 /**
+ * Check if value is not null or undefined
+ *
+ * @param value - value to check
+ * @returns true if value is not undefined or null
+ */
+export const isNotNullOrUndefined = <T>(value: T): value is NonNullable<T> => {
+  return value !== undefined && value !== null;
+};
+
+/**
  * Returns a new array with all duplicate elements removed from the given array
  *
  * @param array - The array to remove duplicates from

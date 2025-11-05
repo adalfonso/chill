@@ -11,6 +11,7 @@ import {
   ServerSocketData,
   ServerSocketEvent,
 } from "@common/SocketServerEvent";
+import { isNotNullOrUndefined } from "@common/commonUtils";
 
 export type ChillWss = SocketServer<
   ClientSocketEvent,
@@ -29,7 +30,7 @@ export const registerServerSocket = (wss: ChillWss) => {
 
     // Connected devices
     const connection = getConnectionInfo(
-      connector.inferConnections(ws.session_id),
+      connector.inferActiveConnections(ws.session_id),
     );
 
     if (connection.direction !== ConnectionDirection.None) {
@@ -128,7 +129,7 @@ export const registerServerSocket = (wss: ChillWss) => {
   });
 
   wss.on(ServerSocketEvent.PlayerPause, (ws) => {
-    const connection = connector.getActiveConnection(ws.session_id);
+    const connection = connector.getActiveConnectionBySource(ws.session_id);
 
     if (!connection) {
       return;
@@ -145,7 +146,7 @@ export const registerServerSocket = (wss: ChillWss) => {
   });
 
   wss.on(ClientSocketEvent.PlayerPlay, (ws, data) => {
-    const connection = connector.getActiveConnection(ws.session_id);
+    const connection = connector.getActiveConnectionBySource(ws.session_id);
 
     if (!connection) {
       return;
@@ -159,5 +160,36 @@ export const registerServerSocket = (wss: ChillWss) => {
     }
 
     wss.emit(ServerSocketEvent.PlayerPlay, target, data);
+  });
+
+  wss.on(ClientSocketEvent.PlayerSync, (ws, data) => {
+    const connections = connector.inferActiveConnections(ws.session_id);
+
+    if (!Array.isArray(connections)) {
+      return;
+    }
+
+    connections
+      .map((connection) => wss.getClientBySessionId(connection.source))
+      .filter(isNotNullOrUndefined)
+      .forEach((target) => {
+        wss.emit(ServerSocketEvent.PlayerSync, target, data);
+      });
+  });
+
+  // TODO: Abstract this boiler plate for pass-throughs
+  wss.on(ClientSocketEvent.PlayerProgressUpdate, (ws, data) => {
+    const connections = connector.inferActiveConnections(ws.session_id);
+
+    if (!Array.isArray(connections)) {
+      return;
+    }
+
+    connections
+      .map((connection) => wss.getClientBySessionId(connection.source))
+      .filter(isNotNullOrUndefined)
+      .forEach((target) => {
+        wss.emit(ServerSocketEvent.PlayerProgressUpdate, target, data);
+      });
   });
 };

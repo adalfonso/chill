@@ -9,6 +9,7 @@ import {
   ServerSocketData,
   ServerSocketEvent,
 } from "@common/SocketServerEvent";
+import { effect, untracked } from "@preact/signals";
 
 export const registerClientSocket = (
   ws: SocketClient<
@@ -18,6 +19,19 @@ export const registerClientSocket = (
     ServerSocketData
   >,
 ) => {
+  effect(() => {
+    const { incoming_connections, progress, progress_s, ws } = app_state;
+
+    if (!incoming_connections.value.length) {
+      return;
+    }
+
+    // Trigger the effect
+    const _seconds = progress_s.value;
+
+    ws.emit(ClientSocketEvent.PlayerProgressUpdate, progress.peek());
+  });
+
   const identify = () => ws.emit(ClientSocketEvent.Identify, getDeviceInfo());
 
   const ping = () => ws.emit(ClientSocketEvent.Ping);
@@ -75,5 +89,16 @@ export const registerClientSocket = (
 
   ws.on(ServerSocketEvent.PlayerPlay, (data) => {
     store.dispatch(play(data));
+
+    ws.emit(ServerSocketEvent.PlayerSync, { ...data, lazy: true });
   });
+
+  ws.on(ServerSocketEvent.PlayerSync, (data) => {
+    store.dispatch(play(data));
+  });
+
+  ws.on(
+    ServerSocketEvent.PlayerProgressUpdate,
+    (data) => (app_state.progress.value = data),
+  );
 };

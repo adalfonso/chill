@@ -132,10 +132,10 @@ export type DeviceInfo = {
 
 export type PlayPayload = {
   tracks?: Array<PlayableTrack>;
-
   index?: number;
   progress?: number;
   play_options?: PlayOptions;
+  lazy?: boolean;
 };
 
 export const PlayMode = {

@@ -13,18 +13,27 @@ const ws = new SocketClient<
   ServerSocketData
 >();
 
-registerClientSocket(ws);
-
 export const createAppState = () => {
   const is_busy = signal(false);
   const progress = signal(0);
+  // debounced version of progress
+  const progress_s = signal(0);
   const incoming_connections = signal<Array<string>>([]);
   const outgoing_connection = signal<Maybe<string>>(null);
 
-  return { is_busy, progress, ws, incoming_connections, outgoing_connection };
+  return {
+    is_busy,
+    progress,
+    progress_s,
+    ws,
+    incoming_connections,
+    outgoing_connection,
+  };
 };
 
 // Create a *single shared instance* of app state
 export const app_state = createAppState();
+
+registerClientSocket(ws);
 
 export const AppContext = createContext(app_state);

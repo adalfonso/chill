@@ -53,7 +53,7 @@ export class DeviceConnect {
     return connection;
   }
 
-  public getActiveConnection(source: string) {
+  public getActiveConnectionBySource(source: string) {
     const connection = this.#connections.get(source);
 
     if (!connection || connection.status !== ConnectionStatus.Accepted) {
@@ -63,7 +63,7 @@ export class DeviceConnect {
     return connection;
   }
 
-  public inferConnections(subject: string) {
+  public inferActiveConnections(subject: string) {
     const source_connection = this.#connections.get(subject);
 
     if (source_connection) {
@@ -89,7 +89,7 @@ export class DeviceConnect {
 }
 
 export const getConnectionInfo = (
-  connection: ReturnType<DeviceConnect["inferConnections"]>,
+  connection: ReturnType<DeviceConnect["inferActiveConnections"]>,
 ): ConnectionInfo => {
   if (Array.isArray(connection)) {
     return {

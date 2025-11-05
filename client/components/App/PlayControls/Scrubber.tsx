@@ -13,7 +13,7 @@ import { useDrag } from "@hooks/index";
 const gap_offset = 0.25;
 
 export const Scrubber = () => {
-  const { progress } = useContext(AppContext);
+  const { progress, progress_s, outgoing_connection } = useContext(AppContext);
   const player = useSelector(getPlayerState);
   const dispatch = useDispatch();
   const { startDrag, cancelDrag, updateDrag, dragging } = useDrag(
@@ -34,11 +34,19 @@ export const Scrubber = () => {
         is_casting.current,
       );
 
-      if (audio_progress === progress.value) {
+      // Skip if progress is being read from some target device, or if the
+      // progress has not changed
+      if (outgoing_connection.value || audio_progress === progress.value) {
         return;
       }
 
       progress.value = audio_progress;
+
+      if (player.now_playing) {
+        progress_s.value = Math.floor(
+          progress.value * player.now_playing.duration,
+        );
+      }
     }, 20);
 
     /**
@@ -99,9 +107,7 @@ export const Scrubber = () => {
         <div className="current-time">
           {player.now_playing &&
             AudioProgress.getTimeTracking(
-              player.is_casting
-                ? progress.value * player.now_playing.duration
-                : audio.currentTime,
+              progress.value * player.now_playing.duration,
             )}
         </div>
         <div className="end-time">

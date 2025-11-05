@@ -8,6 +8,8 @@ export const ClientSocketEvent = {
   Ping: "Ping",
   PlayerPause: "PlayerPause",
   PlayerPlay: "PlayerPlay",
+  PlayerSync: "PlayerSync",
+  PlayerProgressUpdate: "PlayerProgressUpdate",
   RequestConnection: "RequestConnection",
 } as const satisfies Record<keyof ClientSocketData, unknown>;
 
@@ -22,5 +24,7 @@ export type ClientSocketData = {
   Ping: undefined;
   PlayerPause: undefined;
   PlayerPlay: PlayPayload;
+  PlayerSync: PlayPayload;
+  PlayerProgressUpdate: number;
   RequestConnection: { to: string };
 };

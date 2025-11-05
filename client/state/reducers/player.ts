@@ -52,9 +52,6 @@ const initialState: PlayerState = {
 
 export type PlayLoad = PlayPayload & {
   cast_info?: Maybe<PreCastPayload>;
-  index?: number;
-  progress?: number;
-  play_options?: PlayOptions;
 };
 
 const addSemanticIndex = (
@@ -137,6 +134,7 @@ export const playerSlice = createSlice({
         cast_info = null,
         index = 0,
         progress = 0,
+        lazy = false,
         play_options = { mode: PlayMode.None, more: false },
       } = action.payload;
 
@@ -172,6 +170,11 @@ export const playerSlice = createSlice({
       }
 
       if (!state.now_playing) {
+        return;
+      }
+
+      // Don't start playing in lazy mode
+      if (lazy) {
         return;
       }
 
