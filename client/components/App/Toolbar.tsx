@@ -1,6 +1,6 @@
 import { useLocation } from "wouter-preact";
 import { useSelector } from "react-redux";
-import { useState } from "preact/hooks";
+import { useContext, useState } from "preact/hooks";
 
 import "./Toolbar.scss";
 import { AppSettings as AppSettings } from "./Toolbar/AppSettings";
@@ -13,10 +13,12 @@ import { getCasterState } from "@client/state/reducers/store";
 import { useBackNavigate } from "@hooks/index";
 import { DeviceIcon } from "../ui/icons/DeviceIcon";
 import { Devices } from "./Toolbar/Devices";
+import { AppContext } from "@client/state/AppState";
 
 type SettingsMenu = "user" | "app" | "devices";
 
 export const Toolbar = () => {
+  const { outgoing_connection, incoming_connections } = useContext(AppContext);
   const [settings_vis, setSettingsVis] = useState({
     user: false,
     app: false,
@@ -24,6 +26,9 @@ export const Toolbar = () => {
   });
   const caster = useSelector(getCasterState);
   const [, navigate] = useLocation();
+
+  const device_connected =
+    outgoing_connection.value || incoming_connections.value.length > 0;
 
   /**
    * Toggle the visibility of a menu
@@ -59,7 +64,14 @@ export const Toolbar = () => {
         {/* Invisible, just used to mediate between redux stores */}
         <CastPlayer></CastPlayer>
 
-        <DeviceIcon className="icon-sm" onClick={toggleVis("devices")} />
+        <DeviceIcon
+          className="icon-sm"
+          onClick={toggleVis("devices")}
+          {...(device_connected && {
+            stroke: "rgb(139, 195, 255)",
+            strokeWidth: 2,
+          })}
+        />
 
         {settings_vis.devices && (
           <Devices onClose={toggleVis("devices")}></Devices>
