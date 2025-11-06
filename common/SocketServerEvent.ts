@@ -1,29 +1,24 @@
-import { PlayPayload } from "./types";
+import { SharedEvent, SharedSocketData } from "./SharedEvent";
 
 export const ServerSocketEvent = {
-  AcceptConnection: "AcceptConnection",
-  DenyConnection: "DenyConnection",
-  Disconnect: "Disconnect",
-  PlayerPause: "PlayerPause",
-  PlayerPlay: "PlayerPlay",
-  PlayerProgressUpdate: "PlayerProgressUpdate",
-  PlayerSync: "PlayerSync",
-  Pong: "Pong",
-  Reconnect: "Reconnect",
-  RequestConnection: "RequestConnection",
+  ...SharedEvent,
+  ...{
+    AcceptConnection: "AcceptConnection",
+    DenyConnection: "DenyConnection",
+    Disconnect: "Disconnect",
+    Pong: "Pong",
+    Reconnect: "Reconnect",
+    RequestConnection: "RequestConnection",
+  },
 } as const satisfies Record<keyof ServerSocketData, string>;
 
 export type ServerSocketEvent =
   (typeof ServerSocketEvent)[keyof typeof ServerSocketEvent];
 
-export type ServerSocketData = {
+export type ServerSocketData = SharedSocketData & {
   AcceptConnection: { from: string };
   DenyConnection: { from: string; reason: string };
   Disconnect: { from: string };
-  PlayerPause: undefined;
-  PlayerPlay: PlayPayload;
-  PlayerProgressUpdate: number;
-  PlayerSync: PlayPayload;
   Pong: undefined;
   RequestConnection: { from: string };
   Reconnect: { connection: ConnectionInfo };
