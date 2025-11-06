@@ -2,11 +2,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "wouter-preact";
 
 import "./PlayControls.scss";
-import { AppContext } from "@client/state/AppState";
 import { AudioType } from "@server/lib/media/types";
 import { BackwardIcon } from "../ui/icons/BackwardIcon";
 import { ChevronDownIcon } from "../ui/icons/ChevronDownIcon";
-import { ClientSocketEvent } from "@common/SocketClientEvent";
 import { Close } from "../ui/Close";
 import { FileInfo } from "./MediaViewer/FileInfo";
 import { FileMenu } from "./MediaViewer/FileMenu";
@@ -20,18 +18,18 @@ import { Scrubber } from "./PlayControls/Scrubber";
 import { Shuffle } from "./PlayControls/Shuffle";
 import { VolumeControl } from "./PlayControls/VolumeControl";
 import { artistAlbumUrl, artistUrl } from "@client/lib/Url";
-import { clear, next, previous, setMobileDisplayMode } from "@reducers/player";
+import { clear, setMobileDisplayMode } from "@reducers/player";
 import { getPlayerState } from "@reducers/store";
 import { noPropagate } from "@client/lib/Event";
 import { screen_breakpoint_px } from "@client/lib/constants";
-import { useContext } from "preact/hooks";
-
 import {
   useBackNavigate,
   useId,
   useMenu,
+  useNext,
   usePause,
   usePlay,
+  usePrevious,
   useViewport,
 } from "@hooks/index";
 
@@ -57,9 +55,10 @@ const getBitsDisplay = (track: PlayableTrack) => {
 };
 
 export const PlayControls = () => {
-  const { outgoing_connection, ws } = useContext(AppContext);
   const play = usePlay();
   const pause = usePause();
+  const next = useNext();
+  const previous = usePrevious();
   const dispatch = useDispatch();
   const [, navigate] = useLocation();
   const file_menu_id = useId();
@@ -145,10 +144,7 @@ export const PlayControls = () => {
             <div className="title">{getNowPlaying()}</div>
 
             <div className="controls">
-              <div
-                className="circle-button"
-                onClick={() => dispatch(previous())}
-              >
+              <div className="circle-button" onClick={previous}>
                 <BackwardIcon className="icon-md" />
               </div>
               <div className="circle-button play" onClick={togglePlayer}>
@@ -160,7 +156,7 @@ export const PlayControls = () => {
               </div>
               <div
                 className="circle-button"
-                onClick={() => dispatch(next({ auto: false }))}
+                onClick={() => next({ auto: false })}
               >
                 <ForwardIcon className="icon-md" />
               </div>

@@ -6,14 +6,15 @@ import * as AudioProgress from "@client/lib/AudioProgress";
 import { AppContext } from "@client/state/AppState";
 import { CastSdk } from "@client/lib/cast/CastSdk";
 import { Maybe, PlayableTrackWithIndex } from "@common/types";
-import { audio, crossover, next, seek } from "@reducers/player";
+import { audio, crossover, seek } from "@reducers/player";
 import { getPlayerState } from "@reducers/store";
-import { useDrag } from "@hooks/index";
+import { useDrag, useNext } from "@hooks/index";
 
 const gap_offset = 0.25;
 
 export const Scrubber = () => {
   const { progress, progress_s, outgoing_connection } = useContext(AppContext);
+  const next = useNext();
   const player = useSelector(getPlayerState);
   const dispatch = useDispatch();
   const { startDrag, cancelDrag, updateDrag, dragging } = useDrag(
@@ -59,8 +60,7 @@ export const Scrubber = () => {
      */
 
     const onCrossover = () =>
-      audio.duration - audio.currentTime < gap_offset &&
-      dispatch(next({ auto: true }));
+      audio.duration - audio.currentTime < gap_offset && next({ auto: true });
 
     // Copy of this value in case it changes before this effect is cleaned up
     const is_casting_local_var = is_casting.current;

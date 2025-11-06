@@ -238,7 +238,8 @@ export const playerSlice = createSlice({
       }
     },
 
-    previous: (state) => {
+    previous: (state, action: Action<{ is_virtual?: boolean }>) => {
+      const { is_virtual = false } = action.payload;
       state.index--;
 
       if (state.index < 0) {
@@ -251,6 +252,10 @@ export const playerSlice = createSlice({
 
       state.now_playing = state.playlist[state.index];
       state.next_playing = state.playlist[state.index + 1] ?? null;
+
+      if (is_virtual) {
+        return;
+      }
 
       if (state.is_casting) {
         if (state.cast_info === null) {
@@ -269,8 +274,8 @@ export const playerSlice = createSlice({
       state.is_playing = true;
     },
 
-    next: (state, action: Action<{ auto?: boolean }>) => {
-      const { auto = false } = action.payload;
+    next: (state, action: Action<{ auto?: boolean; is_virtual?: boolean }>) => {
+      const { auto = false, is_virtual = false } = action.payload;
 
       state.index++;
 
@@ -287,6 +292,10 @@ export const playerSlice = createSlice({
 
       state.now_playing = state.playlist[state.index];
       state.next_playing = state.playlist[state.index + 1] ?? null;
+
+      if (is_virtual) {
+        return;
+      }
 
       if (crossover.src) {
         [audio, crossover] = [crossover, audio];

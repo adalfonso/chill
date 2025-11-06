@@ -148,7 +148,6 @@ export const registerServerSocket = (wss: ChillWss) => {
   });
 
   // ---- Client <=> Client Events ----
-  // TODO: make these events work for target senders too
   Object.values(DuplexEvent).forEach((event) => {
     wss.on(event, (ws, data) => {
       const { sender } = data;

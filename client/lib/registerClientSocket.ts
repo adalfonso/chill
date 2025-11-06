@@ -1,16 +1,17 @@
+import { effect } from "@preact/signals";
+
 import store from "@reducers/store";
 import { ClientSocketData, ClientSocketEvent } from "@common/SocketClientEvent";
+import { SenderType } from "@common/CommonEvent";
 import { SocketClient } from "./SocketClient";
 import { app_state } from "@client/state/AppState";
 import { getDeviceInfo } from "./DeviceInfo";
-import { pause, play } from "@reducers/player";
+import { next, pause, play, previous } from "@reducers/player";
 import {
   ConnectionDirection,
   ServerSocketData,
   ServerSocketEvent,
 } from "@common/SocketServerEvent";
-import { effect } from "@preact/signals";
-import { SenderType } from "@common/CommonEvent";
 
 export const registerClientSocket = (
   ws: SocketClient<
@@ -107,8 +108,29 @@ export const registerClientSocket = (
     }
   });
 
-  ws.on(ServerSocketEvent.PlayerSync, (data) => {
-    store.dispatch(play(data));
+  ws.on(ServerSocketEvent.PlayerPrevious, (data) => {
+    const is_target = app_state.incoming_connections.value.length > 0;
+
+    store.dispatch(previous({ is_virtual: !is_target }));
+
+    if (is_target) {
+      ws.emit(ServerSocketEvent.PlayerPrevious, {
+        sender: SenderType.Target,
+      });
+    }
+  });
+
+  ws.on(ServerSocketEvent.PlayerNext, (data) => {
+    const is_target = app_state.incoming_connections.value.length > 0;
+
+    store.dispatch(next({ ...data.payload, is_virtual: !is_target }));
+
+    if (is_target) {
+      ws.emit(ServerSocketEvent.PlayerNext, {
+        payload: data.payload,
+        sender: SenderType.Target,
+      });
+    }
   });
 
   ws.on(
