@@ -5,6 +5,7 @@ export * from "./useId";
 export * from "./useInfiniteScroll";
 export * from "./useLongPress";
 export * from "./useMenu";
+export * from "./usePause";
 export * from "./usePlay";
 export * from "./useScroll";
 export * from "./useViewport";

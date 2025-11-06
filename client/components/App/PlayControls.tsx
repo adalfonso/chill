@@ -2,8 +2,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "wouter-preact";
 
 import "./PlayControls.scss";
+import { AppContext } from "@client/state/AppState";
+import { AudioType } from "@server/lib/media/types";
 import { BackwardIcon } from "../ui/icons/BackwardIcon";
 import { ChevronDownIcon } from "../ui/icons/ChevronDownIcon";
+import { ClientSocketEvent } from "@common/SocketClientEvent";
 import { Close } from "../ui/Close";
 import { FileInfo } from "./MediaViewer/FileInfo";
 import { FileMenu } from "./MediaViewer/FileMenu";
@@ -11,28 +14,26 @@ import { ForwardIcon } from "../ui/icons/ForwardIcon";
 import { MobileDisplayMode } from "@reducers/player.types";
 import { PauseIcon } from "../ui/icons/PauseIcon";
 import { PlayIcon } from "../ui/icons/PlayIcon";
+import { PlayableTrack } from "@common/types";
 import { Playlist } from "./PlayControls/Playlist";
 import { Scrubber } from "./PlayControls/Scrubber";
 import { Shuffle } from "./PlayControls/Shuffle";
 import { VolumeControl } from "./PlayControls/VolumeControl";
 import { artistAlbumUrl, artistUrl } from "@client/lib/Url";
+import { clear, next, previous, setMobileDisplayMode } from "@reducers/player";
 import { getPlayerState } from "@reducers/store";
 import { noPropagate } from "@client/lib/Event";
 import { screen_breakpoint_px } from "@client/lib/constants";
-import { useBackNavigate, useId, useMenu, useViewport } from "@hooks/index";
-import {
-  clear,
-  next,
-  pause,
-  play,
-  previous,
-  setMobileDisplayMode,
-} from "@reducers/player";
-import { AudioType } from "@server/lib/media/types";
-import { PlayableTrack } from "@common/types";
-import { AppContext } from "@client/state/AppState";
 import { useContext } from "preact/hooks";
-import { ClientSocketEvent } from "@common/SocketClientEvent";
+
+import {
+  useBackNavigate,
+  useId,
+  useMenu,
+  usePause,
+  usePlay,
+  useViewport,
+} from "@hooks/index";
 
 const default_now_playing = "";
 
@@ -57,6 +58,8 @@ const getBitsDisplay = (track: PlayableTrack) => {
 
 export const PlayControls = () => {
   const { outgoing_connection, ws } = useContext(AppContext);
+  const play = usePlay();
+  const pause = usePause();
   const dispatch = useDispatch();
   const [, navigate] = useLocation();
   const file_menu_id = useId();
@@ -93,18 +96,7 @@ export const PlayControls = () => {
   };
 
   // Toggle audio play / pause
-  const togglePlayer = async () => {
-    const operation = player.is_playing ? pause() : play({});
-
-    if (outgoing_connection.value) {
-      if (player.is_playing) {
-        ws.emit(ClientSocketEvent.PlayerPause);
-      }
-      // TODO: Handle play
-    }
-
-    dispatch(operation);
-  };
+  const togglePlayer = async () => (player.is_playing ? pause() : play({}));
 
   // Stop all audio from playing
   const stop = () => {

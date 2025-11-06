@@ -135,7 +135,7 @@ export type PlayPayload = {
   index?: number;
   progress?: number;
   play_options?: PlayOptions;
-  lazy?: boolean;
+  is_virtual?: boolean;
 };
 
 export const PlayMode = {

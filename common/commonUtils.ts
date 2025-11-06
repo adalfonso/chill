@@ -132,7 +132,7 @@ export const isString = (value: unknown): value is string => {
  * @param value - value to check
  * @returns true if value is not undefined or null
  */
-export const isNotNullOrUndefined = <T>(value: T): value is NonNullable<T> => {
+export const isNotNullish = <T>(value: T): value is NonNullable<T> => {
   return value !== undefined && value !== null;
 };
 

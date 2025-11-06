@@ -11,8 +11,8 @@ import {
   ServerSocketData,
   ServerSocketEvent,
 } from "@common/SocketServerEvent";
-import { isNotNullOrUndefined } from "@common/commonUtils";
-import { SharedEvent, TargetEvent } from "@common/SharedEvent";
+import { isNotNullish } from "@common/commonUtils";
+import { DuplexEvent, SenderType, TargetEvent } from "@common/CommonEvent";
 
 export type ChillWss = SocketServer<
   ClientSocketEvent,
@@ -140,7 +140,7 @@ export const registerServerSocket = (wss: ChillWss) => {
 
       connections
         .map((connection) => wss.getClientBySessionId(connection.source))
-        .filter(isNotNullOrUndefined)
+        .filter(isNotNullish)
         .forEach((target) => {
           wss.emit(event, target, data);
         });
@@ -149,8 +149,20 @@ export const registerServerSocket = (wss: ChillWss) => {
 
   // ---- Client <=> Client Events ----
   // TODO: make these events work for target senders too
-  Object.values(SharedEvent).forEach((event) => {
+  Object.values(DuplexEvent).forEach((event) => {
     wss.on(event, (ws, data) => {
+      const { sender } = data;
+
+      if (sender === SenderType.Target) {
+        return connector
+          .getConnectionsByTargetId(ws.session_id)
+          .map((connection) => wss.getClientBySessionId(connection.source))
+          .filter(isNotNullish)
+          .forEach((target) => {
+            wss.emit(event, target, data);
+          });
+      }
+
       const connection = connector.getConnectionBySourceId(ws.session_id);
 
       if (!connection) {

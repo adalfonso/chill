@@ -1,11 +1,11 @@
 import {
-  SharedEvent,
-  SharedSocketData,
+  DuplexEvent,
+  DuplexSocketData,
   TargetEvent,
   TargetSocketData,
-} from "./SharedEvent";
+} from "./CommonEvent";
 
-export const ServerSocketEvent = Object.assign({}, SharedEvent, TargetEvent, {
+export const ServerSocketEvent = Object.assign({}, DuplexEvent, TargetEvent, {
   AcceptConnection: "AcceptConnection",
   Connect: "Connect",
   DenyConnection: "DenyConnection",
@@ -17,7 +17,7 @@ export const ServerSocketEvent = Object.assign({}, SharedEvent, TargetEvent, {
 export type ServerSocketEvent =
   (typeof ServerSocketEvent)[keyof typeof ServerSocketEvent];
 
-export type ServerSocketData = SharedSocketData &
+export type ServerSocketData = DuplexSocketData &
   TargetSocketData & {
     AcceptConnection: { from: string };
     Connect: { from: string };

@@ -1,4 +1,5 @@
 import { app_state } from "@client/state/AppState";
+import { SenderType } from "@common/CommonEvent";
 import { ClientSocketEvent } from "@common/SocketClientEvent";
 import { play, PlayLoad } from "@reducers/player";
 import { useDispatch } from "react-redux";
@@ -15,6 +16,9 @@ export const usePlay = () => {
 
     const { cast_info, ...rest } = payload;
 
-    return ws.emit(ClientSocketEvent.PlayerPlay, rest);
+    return ws.emit(ClientSocketEvent.PlayerPlay, {
+      payload: rest,
+      sender: SenderType.Source,
+    });
   };
 };

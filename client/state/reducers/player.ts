@@ -134,7 +134,7 @@ export const playerSlice = createSlice({
         cast_info = null,
         index = 0,
         progress = 0,
-        lazy = false,
+        is_virtual = false,
         play_options = { mode: PlayMode.None, more: false },
       } = action.payload;
 
@@ -173,8 +173,10 @@ export const playerSlice = createSlice({
         return;
       }
 
-      // Don't start playing in lazy mode
-      if (lazy) {
+      // Virtual play happens when the source is remote controlling playback on
+      // a target
+      if (is_virtual) {
+        state.is_playing = true;
         return;
       }
 

@@ -10,6 +10,7 @@ import {
   ServerSocketEvent,
 } from "@common/SocketServerEvent";
 import { effect } from "@preact/signals";
+import { SenderType } from "@common/CommonEvent";
 
 export const registerClientSocket = (
   ws: SocketClient<
@@ -84,12 +85,26 @@ export const registerClientSocket = (
 
   ws.on(ServerSocketEvent.PlayerPause, () => {
     store.dispatch(pause());
+
+    const is_target = app_state.incoming_connections.value.length > 0;
+
+    if (is_target) {
+      ws.emit(ServerSocketEvent.PlayerPause, { sender: SenderType.Target });
+    }
   });
 
   ws.on(ServerSocketEvent.PlayerPlay, (data) => {
-    store.dispatch(play(data));
+    const is_target = app_state.incoming_connections.value.length > 0;
 
-    ws.emit(ServerSocketEvent.PlayerSync, { ...data, lazy: true });
+    // Make playback virtual for the source device
+    store.dispatch(play({ ...data.payload, is_virtual: !is_target }));
+
+    if (is_target) {
+      ws.emit(ServerSocketEvent.PlayerPlay, {
+        payload: data.payload,
+        sender: SenderType.Target,
+      });
+    }
   });
 
   ws.on(ServerSocketEvent.PlayerSync, (data) => {
