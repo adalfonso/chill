@@ -1,28 +1,31 @@
-import { SharedEvent, SharedSocketData } from "./SharedEvent";
+import {
+  SharedEvent,
+  SharedSocketData,
+  TargetEvent,
+  TargetSocketData,
+} from "./SharedEvent";
 
-export const ServerSocketEvent = {
-  ...SharedEvent,
-  ...{
-    AcceptConnection: "AcceptConnection",
-    DenyConnection: "DenyConnection",
-    Disconnect: "Disconnect",
-    Pong: "Pong",
-    Reconnect: "Reconnect",
-    RequestConnection: "RequestConnection",
-  },
-} as const satisfies Record<keyof ServerSocketData, string>;
+export const ServerSocketEvent = Object.assign({}, SharedEvent, TargetEvent, {
+  AcceptConnection: "AcceptConnection",
+  Connect: "Connect",
+  DenyConnection: "DenyConnection",
+  Disconnect: "Disconnect",
+  Pong: "Pong",
+  Reconnect: "Reconnect",
+} as const) satisfies Record<keyof ServerSocketData, string>;
 
 export type ServerSocketEvent =
   (typeof ServerSocketEvent)[keyof typeof ServerSocketEvent];
 
-export type ServerSocketData = SharedSocketData & {
-  AcceptConnection: { from: string };
-  DenyConnection: { from: string; reason: string };
-  Disconnect: { from: string };
-  Pong: undefined;
-  RequestConnection: { from: string };
-  Reconnect: { connection: ConnectionInfo };
-};
+export type ServerSocketData = SharedSocketData &
+  TargetSocketData & {
+    AcceptConnection: { from: string };
+    Connect: { from: string };
+    DenyConnection: { from: string; reason: string };
+    Disconnect: { from: string };
+    Pong: undefined;
+    Reconnect: { connection: ConnectionInfo };
+  };
 
 export type ConnectionInfo =
   | {

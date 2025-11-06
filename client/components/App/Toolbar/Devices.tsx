@@ -42,7 +42,7 @@ export const Devices = ({ onClose }: DevicesProps) => {
       return;
     }
 
-    ws.emit(ClientSocketEvent.RequestConnection, {
+    ws.emit(ClientSocketEvent.Connect, {
       to: selected_device.value.session_id,
     });
 

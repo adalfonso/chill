@@ -9,7 +9,7 @@ import {
   ServerSocketData,
   ServerSocketEvent,
 } from "@common/SocketServerEvent";
-import { effect, untracked } from "@preact/signals";
+import { effect } from "@preact/signals";
 
 export const registerClientSocket = (
   ws: SocketClient<
@@ -21,13 +21,12 @@ export const registerClientSocket = (
 ) => {
   effect(() => {
     const { incoming_connections, progress, progress_s, ws } = app_state;
-
-    if (!incoming_connections.value.length) {
-      return;
-    }
-
     // Trigger the effect
     const _seconds = progress_s.value;
+
+    if (!incoming_connections.peek().length) {
+      return;
+    }
 
     ws.emit(ClientSocketEvent.PlayerProgressUpdate, progress.peek());
   });
@@ -42,7 +41,7 @@ export const registerClientSocket = (
   // Start ping-pong loop
   ws.on(ServerSocketEvent.Pong, () => setTimeout(ping, 5_000));
 
-  ws.on(ServerSocketEvent.RequestConnection, (data) => {
+  ws.on(ServerSocketEvent.Connect, (data) => {
     // This app is already controlling another instance
     if (app_state.outgoing_connection.value) {
       return ws.emit(ClientSocketEvent.DenyConnection, {

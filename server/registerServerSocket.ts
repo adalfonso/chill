@@ -12,6 +12,7 @@ import {
   ServerSocketEvent,
 } from "@common/SocketServerEvent";
 import { isNotNullOrUndefined } from "@common/commonUtils";
+import { SharedEvent, TargetEvent } from "@common/SharedEvent";
 
 export type ChillWss = SocketServer<
   ClientSocketEvent,
@@ -23,6 +24,7 @@ export type ChillWss = SocketServer<
 export const registerServerSocket = (wss: ChillWss) => {
   const connector = new DeviceConnect();
 
+  // ---- General Client Events ----
   wss.on(ClientSocketEvent.Ping, (ws) => wss.emit(ServerSocketEvent.Pong, ws));
 
   wss.on(ClientSocketEvent.Identify, (ws, data) => {
@@ -38,7 +40,8 @@ export const registerServerSocket = (wss: ChillWss) => {
     }
   });
 
-  wss.on(ClientSocketEvent.RequestConnection, (ws, data) => {
+  // ---- Client Source -> Target Events ----
+  wss.on(ClientSocketEvent.Connect, (ws, data) => {
     // Cannot connect to itself
     if (ws.session_id === data.to) {
       return;
@@ -58,20 +61,36 @@ export const registerServerSocket = (wss: ChillWss) => {
 
     connector.requestConnection(ws.session_id, data.to);
 
-    wss.emit(ServerSocketEvent.RequestConnection, target, {
+    wss.emit(ServerSocketEvent.Connect, target, {
       from: ws.session_id,
     });
   });
 
-  wss.on(ClientSocketEvent.DenyConnection, (ws, data) => {
-    const taret = wss.getClientBySessionId(data.to);
+  wss.on(ClientSocketEvent.Disconnect, (ws, data) => {
+    connector.disconnect(ws.session_id);
+
+    const target = wss.getClientBySessionId(data.to);
 
     // Can't find target; skip
-    if (!taret) {
+    if (!target) {
       return;
     }
 
-    wss.emit(ServerSocketEvent.DenyConnection, taret, {
+    wss.emit(ServerSocketEvent.Disconnect, target, {
+      from: ws.session_id,
+    });
+  });
+
+  // ---- Client Target -> Source Events ----
+  wss.on(ClientSocketEvent.DenyConnection, (ws, data) => {
+    const target = wss.getClientBySessionId(data.to);
+
+    // Can't find target; skip
+    if (!target) {
+      return;
+    }
+
+    wss.emit(ServerSocketEvent.DenyConnection, target, {
       from: ws.session_id,
       reason: data.reason,
     });
@@ -113,83 +132,39 @@ export const registerServerSocket = (wss: ChillWss) => {
     });
   });
 
-  wss.on(ClientSocketEvent.Disconnect, (ws, data) => {
-    connector.disconnect(ws.session_id);
+  // ---- Client Target -> Source (proxied) Events ----
+  // All events sent from target need to just be proxied to all sources
+  Object.values(TargetEvent).forEach((event) => {
+    wss.on(event, (ws, data) => {
+      const connections = connector.getConnectionsByTargetId(ws.session_id);
 
-    const target = wss.getClientBySessionId(data.to);
-
-    // Can't find target; skip
-    if (!target) {
-      return;
-    }
-
-    wss.emit(ServerSocketEvent.Disconnect, target, {
-      from: ws.session_id,
+      connections
+        .map((connection) => wss.getClientBySessionId(connection.source))
+        .filter(isNotNullOrUndefined)
+        .forEach((target) => {
+          wss.emit(event, target, data);
+        });
     });
   });
 
-  wss.on(ServerSocketEvent.PlayerPause, (ws) => {
-    const connection = connector.getActiveConnectionBySource(ws.session_id);
+  // ---- Client <=> Client Events ----
+  // TODO: make these events work for target senders too
+  Object.values(SharedEvent).forEach((event) => {
+    wss.on(event, (ws, data) => {
+      const connection = connector.getConnectionBySourceId(ws.session_id);
 
-    if (!connection) {
-      return;
-    }
+      if (!connection) {
+        return;
+      }
 
-    const target = wss.getClientBySessionId(connection.target);
+      const target = wss.getClientBySessionId(connection.target);
 
-    // Can't find target; skip
-    if (!target) {
-      return;
-    }
+      // Can't find target; skip
+      if (!target) {
+        return;
+      }
 
-    wss.emit(ServerSocketEvent.PlayerPause, target);
-  });
-
-  wss.on(ClientSocketEvent.PlayerPlay, (ws, data) => {
-    const connection = connector.getActiveConnectionBySource(ws.session_id);
-
-    if (!connection) {
-      return;
-    }
-
-    const target = wss.getClientBySessionId(connection.target);
-
-    // Can't find target; skip
-    if (!target) {
-      return;
-    }
-
-    wss.emit(ServerSocketEvent.PlayerPlay, target, data);
-  });
-
-  wss.on(ClientSocketEvent.PlayerSync, (ws, data) => {
-    const connections = connector.inferActiveConnections(ws.session_id);
-
-    if (!Array.isArray(connections)) {
-      return;
-    }
-
-    connections
-      .map((connection) => wss.getClientBySessionId(connection.source))
-      .filter(isNotNullOrUndefined)
-      .forEach((target) => {
-        wss.emit(ServerSocketEvent.PlayerSync, target, data);
-      });
-  });
-
-  // TODO: Abstract this boiler plate for pass-throughs
-  wss.on(ClientSocketEvent.PlayerProgressUpdate, (ws, data) => {
-    const connections = connector.inferActiveConnections(ws.session_id);
-
-    if (!Array.isArray(connections)) {
-      return;
-    }
-
-    connections
-      .map((connection) => wss.getClientBySessionId(connection.source))
-      .filter(isNotNullOrUndefined)
-      .forEach((target) => {
-        wss.emit(ServerSocketEvent.PlayerProgressUpdate, target, data);
-      });
+      wss.emit(event, target, data);
+    });
   });
 };

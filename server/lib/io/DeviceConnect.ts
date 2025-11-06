@@ -53,38 +53,64 @@ export class DeviceConnect {
     return connection;
   }
 
-  public getActiveConnectionBySource(source: string) {
-    const connection = this.#connections.get(source);
-
-    if (!connection || connection.status !== ConnectionStatus.Accepted) {
-      return null;
-    }
-
-    return connection;
-  }
-
+  /**
+   * Find connection(s) for a subject
+   *
+   * We don't know whether the subject is a source or target because it is
+   * reconnecting to the websocket service. One connection found indicates
+   * subject is source; multiple connections indicate subject is target.
+   **
+   * @param subject - session id
+   * @returns connection(s) found.
+   */
   public inferActiveConnections(subject: string) {
-    const source_connection = this.#connections.get(subject);
+    const source_connection = this.getConnectionBySourceId(subject);
 
     if (source_connection) {
-      // Don't infer a connection that hasn't actually resovled
-      if (source_connection.status === ConnectionStatus.Requested) {
-        return null;
-      }
-
       return source_connection;
     }
 
+    const target_connections = this.getConnectionsByTargetId(subject);
+
+    return target_connections.length > 0 ? target_connections : null;
+  }
+
+  /**
+   * Get a connection where the source matches the source_id
+   *
+   * @param source_id - session id for source device
+   * @param is_active - if the connection must be active (by default)
+   * @returns found connections
+   */
+  public getConnectionBySourceId(source_id: string, is_active = true) {
+    const connection = this.#connections.get(source_id);
+
+    if (!connection) {
+      return null;
+    }
+
+    return !is_active || connection.status === ConnectionStatus.Accepted
+      ? connection
+      : null;
+  }
+
+  /**
+   * Get connections where the target matches the target_id
+   *
+   * @param target_id - session if for target device
+   * @param is_active - if the connection must be active (by default)
+   * @returns found connections
+   */
+  public getConnectionsByTargetId(target_id: string, is_active = true) {
     // TODO: Make this O(1)
-    const target_connections = this.#connections
+    return this.#connections
       .values()
       .filter(
         ({ target, status }) =>
-          target === subject && status === ConnectionStatus.Accepted,
+          target === target_id &&
+          (!is_active || status === ConnectionStatus.Accepted),
       )
       .toArray();
-
-    return target_connections.length > 0 ? target_connections : null;
   }
 }
 
