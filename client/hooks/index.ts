@@ -8,6 +8,7 @@ export * from "./useMenu";
 export * from "./useNext";
 export * from "./usePause";
 export * from "./usePlay";
+export * from "./usePlayNext";
 export * from "./usePrevious";
 export * from "./useScroll";
 export * from "./useViewport";
