@@ -8,17 +8,22 @@ export const usePlay = () => {
   const dispatch = useDispatch();
 
   return (payload: PlayLoad) => {
-    const { outgoing_connection, ws } = app_state;
+    const { outgoing_connection, incoming_connections, ws } = app_state;
 
-    if (!outgoing_connection.value) {
-      return dispatch(play(payload));
+    const is_target = incoming_connections.value.length > 0;
+    const is_source = Boolean(outgoing_connection.value);
+
+    if (!is_source) {
+      dispatch(play(payload));
     }
 
-    const { cast_info, ...rest } = payload;
+    if (is_source || is_target) {
+      const { cast_info, ...rest } = payload;
 
-    return ws.emit(ClientSocketEvent.PlayerPlay, {
-      payload: rest,
-      sender: SenderType.Source,
-    });
+      return ws.emit(ClientSocketEvent.PlayerPlay, {
+        payload: rest,
+        sender: is_target ? SenderType.Target : SenderType.Source,
+      });
+    }
   };
 };

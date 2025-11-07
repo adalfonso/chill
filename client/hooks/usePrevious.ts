@@ -9,14 +9,19 @@ export const usePrevious = () => {
   const dispatch = useDispatch();
 
   return () => {
-    const { outgoing_connection, ws } = app_state;
+    const { outgoing_connection, incoming_connections, ws } = app_state;
 
-    if (!outgoing_connection.value) {
-      return dispatch(previous({}));
+    const is_target = incoming_connections.value.length > 0;
+    const is_source = Boolean(outgoing_connection.value);
+
+    if (is_source || is_target) {
+      ws.emit(ClientSocketEvent.PlayerPrevious, {
+        sender: is_target ? SenderType.Target : SenderType.Source,
+      });
     }
 
-    return ws.emit(ClientSocketEvent.PlayerPrevious, {
-      sender: SenderType.Source,
-    });
+    if (!is_source) {
+      dispatch(previous({}));
+    }
   };
 };
