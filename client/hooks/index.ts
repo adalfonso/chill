@@ -1,3 +1,4 @@
+export * from "./useAddToQueue";
 export * from "./useBackNavigate";
 export * from "./useDebounce";
 export * from "./useDrag";

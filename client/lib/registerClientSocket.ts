@@ -6,7 +6,14 @@ import { SenderType } from "@common/CommonEvent";
 import { SocketClient } from "./SocketClient";
 import { app_state } from "@client/state/AppState";
 import { getDeviceInfo } from "./DeviceInfo";
-import { next, pause, play, playNext, previous } from "@reducers/player";
+import {
+  addToQueue,
+  next,
+  pause,
+  play,
+  playNext,
+  previous,
+} from "@reducers/player";
 import {
   ConnectionDirection,
   ServerSocketData,
@@ -140,6 +147,19 @@ export const registerClientSocket = (
 
     if (is_target) {
       ws.emit(ServerSocketEvent.PlayerPlayNext, {
+        payload: data.payload,
+        sender: SenderType.Target,
+      });
+    }
+  });
+
+  ws.on(ServerSocketEvent.PlayerAddToQueue, (data) => {
+    const is_target = app_state.incoming_connections.value.length > 0;
+
+    store.dispatch(addToQueue({ tracks: data.payload, cast_info: null }));
+
+    if (is_target) {
+      ws.emit(ServerSocketEvent.PlayerAddToQueue, {
         payload: data.payload,
         sender: SenderType.Target,
       });

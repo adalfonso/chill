@@ -4,11 +4,10 @@ import { useEffect } from "preact/hooks";
 import { Maybe, PlayableTrack } from "@common/types";
 import { PreCastPayload } from "@client/lib/cast/types";
 import { VerticalEllipsisIcon } from "@client/components/ui/icons/VerticalEllipsisIcon";
-import { addToQueue } from "@reducers/player";
 import { getMediaMenuState, getPlayerState } from "@reducers/store";
 import { noPropagate } from "@client/lib/Event";
 import { toggle } from "@reducers/playlistEditor";
-import { useMenu, usePlayNext } from "@hooks/index";
+import { useAddToQueue, useMenu, usePlayNext } from "@hooks/index";
 
 export type FileMenuHandler = {
   play: (e?: UIEvent) => void;
@@ -35,6 +34,7 @@ export const FileMenu = ({
 }: FileMenuProps) => {
   const player = useSelector(getPlayerState);
   const playNext = usePlayNext();
+  const addToQueue = useAddToQueue();
   const mediaMenu = useSelector(getMediaMenuState);
   const active = menu_id === mediaMenu.menu_id;
   const dispatch = useDispatch();
@@ -64,8 +64,7 @@ export const FileMenu = ({
     playNext: async () =>
       handler && playNext(await handler.getTracks(player.is_casting)),
     addToQueue: async () =>
-      handler &&
-      dispatch(addToQueue(await handler.getTracks(player.is_casting))),
+      handler && addToQueue(await handler.getTracks(player.is_casting)),
     addToPlaylist: async () =>
       handler &&
       dispatch(

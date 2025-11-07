@@ -1,13 +1,13 @@
 import { useDispatch } from "react-redux";
 
 import { ClientSocketEvent } from "@common/SocketClientEvent";
-import { SenderType } from "@common/CommonEvent";
-import { app_state } from "@client/state/AppState";
-import { playNext } from "@reducers/player";
 import { Maybe, PlayableTrack } from "@common/types";
 import { PreCastPayload } from "@client/lib/cast/types";
+import { SenderType } from "@common/CommonEvent";
+import { addToQueue } from "@reducers/player";
+import { app_state } from "@client/state/AppState";
 
-export const usePlayNext = () => {
+export const useAddToQueue = () => {
   const dispatch = useDispatch();
 
   return (payload: {
@@ -20,14 +20,14 @@ export const usePlayNext = () => {
     const is_source = Boolean(outgoing_connection.value);
 
     if (is_source || is_target) {
-      ws.emit(ClientSocketEvent.PlayerPlayNext, {
+      ws.emit(ClientSocketEvent.PlayerAddToQueue, {
         payload: payload.tracks,
         sender: is_target ? SenderType.Target : SenderType.Source,
       });
     }
 
     if (!is_source) {
-      dispatch(playNext(payload));
+      dispatch(addToQueue(payload));
     }
   };
 };

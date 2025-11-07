@@ -1,25 +1,31 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useState } from "preact/hooks";
+import { useContext, useState } from "preact/hooks";
 
+import { AppContext } from "@client/state/AppState";
 import { PlayMode, PlayableTrack } from "@common/types";
-import { addToQueue, updatePlayOptions } from "@reducers/player";
 import { api } from "@client/client";
 import { getMoreTracks } from "@client/lib/TrackLoaders";
 import { getPlayerState } from "@reducers/store";
+import { updatePlayOptions } from "@reducers/player";
+import { useAddToQueue } from "@hooks/useAddToQueue";
 
 type PlayModeIterceptorProps = {
   children?: JSX.Element | JSX.Element[];
 };
 
 export const PlayModeIterceptor = ({ children }: PlayModeIterceptorProps) => {
+  const { outgoing_connection } = useContext(AppContext);
   const [busy, setBusy] = useState(false);
+  const addToQueue = useAddToQueue();
   const player = useSelector(getPlayerState);
   const dispatch = useDispatch();
+  const is_source = Boolean(outgoing_connection.value);
 
   const queueMoreTracks = async (
     getTracks: () => Promise<Array<PlayableTrack>>,
   ) => {
-    if (busy) {
+    // Source should not queue more; target will handle
+    if (busy || is_source) {
       return;
     }
 
@@ -34,7 +40,7 @@ export const PlayModeIterceptor = ({ children }: PlayModeIterceptorProps) => {
           })
         : null;
 
-      dispatch(addToQueue({ tracks, cast_info }));
+      addToQueue({ tracks, cast_info });
 
       if (player.play_options.mode === PlayMode.Random) {
         dispatch(
