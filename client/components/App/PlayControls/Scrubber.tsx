@@ -1,19 +1,18 @@
-import { useEffect, useRef, useContext } from "preact/hooks";
+import { useEffect, useRef } from "preact/hooks";
 import { useDispatch, useSelector } from "react-redux";
 
 import "./Scrubber.scss";
 import * as AudioProgress from "@client/lib/AudioProgress";
-import { AppContext } from "@client/state/AppState";
 import { CastSdk } from "@client/lib/cast/CastSdk";
 import { Maybe, PlayableTrackWithIndex } from "@common/types";
 import { audio, crossover, seek } from "@reducers/player";
 import { getPlayerState } from "@reducers/store";
-import { useDrag, useNext } from "@hooks/index";
+import { useDrag, useAppState, useNext } from "@hooks/index";
 
 const gap_offset = 0.25;
 
 export const Scrubber = () => {
-  const { progress, progress_s, outgoing_connection } = useContext(AppContext);
+  const { progress, progress_s, outgoing_connection } = useAppState();
   const next = useNext();
   const player = useSelector(getPlayerState);
   const dispatch = useDispatch();

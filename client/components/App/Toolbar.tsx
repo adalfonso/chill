@@ -1,24 +1,23 @@
 import { useLocation } from "wouter-preact";
 import { useSelector } from "react-redux";
-import { useContext, useState } from "preact/hooks";
+import { useState } from "preact/hooks";
 
 import "./Toolbar.scss";
 import { AppSettings as AppSettings } from "./Toolbar/AppSettings";
 import { CastPlayer } from "./CastPlayer";
+import { DeviceIcon } from "../ui/icons/DeviceIcon";
+import { Devices } from "./Toolbar/Devices";
 import { GearIcon } from "../ui/icons/GearIcon";
 import { Search } from "./Toolbar/Search";
 import { UserIcon } from "../ui/icons/UserIcon";
 import { UserSettings } from "./Toolbar/UserSettings";
 import { getCasterState } from "@client/state/reducers/store";
-import { useBackNavigate } from "@hooks/index";
-import { DeviceIcon } from "../ui/icons/DeviceIcon";
-import { Devices } from "./Toolbar/Devices";
-import { AppContext } from "@client/state/AppState";
+import { useBackNavigate, useAppState } from "@hooks/index";
 
 type SettingsMenu = "user" | "app" | "devices";
 
 export const Toolbar = () => {
-  const { outgoing_connection, incoming_connections } = useContext(AppContext);
+  const { outgoing_connection, incoming_connections } = useAppState();
   const [settings_vis, setSettingsVis] = useState({
     user: false,
     app: false,

@@ -1,6 +1,6 @@
 import { Album, Artist } from "@prisma/client";
 import { useSelector } from "react-redux";
-import { useState, useEffect, useContext, useCallback } from "preact/hooks";
+import { useState, useEffect, useCallback } from "preact/hooks";
 
 import "./AlbumView.scss";
 import {
@@ -11,14 +11,13 @@ import {
   Raw,
 } from "@common/types";
 import { AlbumViewRow } from "./AlbumView/AlbumViewRow";
-import { AppContext } from "@client/state/AppState";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@common/pagination";
 import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
 import { api } from "@client/client";
 import { getPlayerState } from "@client/state/reducers/store";
 import { getTracks, sort_clauses } from "@client/lib/TrackLoaders";
 import { truncate } from "@common/commonUtils";
-import { usePlay } from "@hooks/usePlay";
+import { useAppState, usePlay } from "@hooks/index";
 
 type AlbumViewProps = {
   artist_id?: number;
@@ -26,7 +25,7 @@ type AlbumViewProps = {
 };
 
 export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
-  const { is_busy } = useContext(AppContext);
+  const { is_busy } = useAppState();
   const player = useSelector(getPlayerState);
   const [artist, setArtist] = useState<Maybe<Raw<Artist>>>(null);
   const [album, setAlbum] =

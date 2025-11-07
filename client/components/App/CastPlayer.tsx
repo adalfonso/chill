@@ -1,18 +1,18 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useContext, useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef } from "preact/hooks";
 
 import "./Toolbar.scss";
+import * as Player from "@client/state/reducers/player";
 import { Maybe } from "@common/types";
 import { api } from "@client/client";
 import { getCasterState, getPlayerState } from "@client/state/reducers/store";
-import { AppContext } from "@client/state/AppState";
-import * as Player from "@client/state/reducers/player";
-import { usePlay } from "@hooks/usePlay";
+import { useAppState, usePlay } from "@hooks/index";
 
 export const CastPlayer = () => {
+  const { progress } = useAppState();
   const caster = useSelector(getCasterState);
   const player = useSelector(getPlayerState);
-  const { progress } = useContext(AppContext);
+
   const cast_context = useRef<Maybe<cast.framework.CastContext>>(null);
   const player_ref = useRef(player);
   const play = usePlay();

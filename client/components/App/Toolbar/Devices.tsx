@@ -1,21 +1,21 @@
 import { useSignal } from "@preact/signals";
-import { useContext, useEffect } from "preact/hooks";
+import { useEffect } from "preact/hooks";
 
 import "./Devices.scss";
-import { AppContext } from "@client/state/AppState";
 import { ClientSocketEvent } from "@common/SocketClientEvent";
 import { Close } from "@client/components/ui/Close";
 import { DeviceClient, Maybe } from "@common/types";
 import { WifiIcon } from "@client/components/ui/icons/WifiIcon";
 import { api } from "@client/client";
 import { noPropagate } from "@client/lib/Event";
+import { useAppState } from "@hooks/useAppState";
 
 type DevicesProps = {
   onClose: () => void;
 };
 
 export const Devices = ({ onClose }: DevicesProps) => {
-  const { outgoing_connection, is_busy, ws } = useContext(AppContext);
+  const { outgoing_connection, is_busy, ws } = useAppState();
 
   const devices = useSignal<Array<DeviceClient>>([]);
   const selected_device = useSignal<Maybe<DeviceClient>>(null);

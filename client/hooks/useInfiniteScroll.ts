@@ -1,6 +1,6 @@
-import { useContext, useState, useEffect, useCallback } from "preact/hooks";
+import { useState, useEffect, useCallback } from "preact/hooks";
 
-import { AppContext } from "@client/state/AppState";
+import { useAppState } from "./useAppState";
 
 type UseInfiniteScrollOptions<T> = {
   onScroll: (page: number) => Promise<T[]>;
@@ -24,9 +24,8 @@ type UseInfiniteScrollResult<T> = {
 export const useInfiniteScroll = <T>(
   args: UseInfiniteScrollOptions<T>,
 ): UseInfiniteScrollResult<T> => {
+  const { is_busy } = useAppState();
   const { onScroll, observedElement, dependencies = [], options } = args;
-  const { is_busy } = useContext(AppContext);
-
   const [has_more, setHasMore] = useState(true);
   const [items, setItems] = useState<Array<T>>([]);
   const [page, setPage] = useState(0);

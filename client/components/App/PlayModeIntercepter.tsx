@@ -1,20 +1,20 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useContext, useState } from "preact/hooks";
+import { useState } from "preact/hooks";
 
-import { AppContext } from "@client/state/AppState";
 import { PlayMode, PlayableTrack } from "@common/types";
 import { api } from "@client/client";
 import { getMoreTracks } from "@client/lib/TrackLoaders";
 import { getPlayerState } from "@reducers/store";
 import { updatePlayOptions } from "@reducers/player";
 import { useAddToQueue } from "@hooks/useAddToQueue";
+import { useAppState } from "@hooks/index";
 
 type PlayModeIterceptorProps = {
   children?: JSX.Element | JSX.Element[];
 };
 
 export const PlayModeIterceptor = ({ children }: PlayModeIterceptorProps) => {
-  const { outgoing_connection } = useContext(AppContext);
+  const { outgoing_connection } = useAppState();
   const [busy, setBusy] = useState(false);
   const addToQueue = useAddToQueue();
   const player = useSelector(getPlayerState);

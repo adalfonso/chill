@@ -4,7 +4,7 @@ import store from "@reducers/store";
 import { ClientSocketData, ClientSocketEvent } from "@common/SocketClientEvent";
 import { SenderType } from "@common/CommonEvent";
 import { SocketClient } from "./SocketClient";
-import { app_state } from "@client/state/AppState";
+import { getAppState } from "@client/state/AppState";
 import { getDeviceInfo } from "./DeviceInfo";
 import {
   addToQueue,
@@ -29,7 +29,7 @@ export const registerClientSocket = (
   >,
 ) => {
   effect(() => {
-    const { incoming_connections, progress, progress_s, ws } = app_state;
+    const { incoming_connections, progress, progress_s, ws } = getAppState();
     // Trigger the effect
     const _seconds = progress_s.value;
 
@@ -51,8 +51,10 @@ export const registerClientSocket = (
   ws.on(ServerSocketEvent.Pong, () => setTimeout(ping, 5_000));
 
   ws.on(ServerSocketEvent.Connect, (data) => {
+    const { outgoing_connection, incoming_connections } = getAppState();
+
     // This app is already controlling another instance
-    if (app_state.outgoing_connection.value) {
+    if (outgoing_connection.value) {
       return ws.emit(ClientSocketEvent.DenyConnection, {
         to: data.from,
         reason: "Busy",
@@ -63,38 +65,40 @@ export const registerClientSocket = (
 
     ws.emit(ClientSocketEvent.AcceptConnection, { to: data.from });
 
-    app_state.incoming_connections.value = [
-      ...app_state.incoming_connections.value,
-      data.from,
-    ];
+    incoming_connections.value = [...incoming_connections.value, data.from];
   });
 
   ws.on(ServerSocketEvent.AcceptConnection, (data) => {
+    const { outgoing_connection } = getAppState();
     // TODO: Some sort of check that the connection is ok/safe. maybe the server should handle this
     // should also update app state here
 
-    app_state.outgoing_connection.value = data.from;
+    outgoing_connection.value = data.from;
   });
 
   ws.on(ServerSocketEvent.Disconnect, (data) => {
-    app_state.incoming_connections.value =
-      app_state.incoming_connections.value.filter(
-        (value) => value !== data.from,
-      );
+    const { incoming_connections } = getAppState();
+
+    incoming_connections.value = incoming_connections.value.filter(
+      (value) => value !== data.from,
+    );
   });
 
   ws.on(ServerSocketEvent.Reconnect, (data) => {
+    const { outgoing_connection, incoming_connections } = getAppState();
     if (data.connection.direction === ConnectionDirection.In) {
-      app_state.incoming_connections.value = data.connection.sources;
+      incoming_connections.value = data.connection.sources;
     } else if (data.connection.direction === ConnectionDirection.Out) {
-      app_state.outgoing_connection.value = data.connection.target;
+      outgoing_connection.value = data.connection.target;
     }
   });
 
   ws.on(ServerSocketEvent.PlayerPause, () => {
+    const { incoming_connections } = getAppState();
+
     store.dispatch(pause());
 
-    const is_target = app_state.incoming_connections.value.length > 0;
+    const is_target = incoming_connections.value.length > 0;
 
     if (is_target) {
       ws.emit(ServerSocketEvent.PlayerPause, { sender: SenderType.Target });
@@ -102,7 +106,8 @@ export const registerClientSocket = (
   });
 
   ws.on(ServerSocketEvent.PlayerPlay, (data) => {
-    const is_target = app_state.incoming_connections.value.length > 0;
+    const { incoming_connections } = getAppState();
+    const is_target = incoming_connections.value.length > 0;
 
     // Make playback virtual for the source device
     store.dispatch(play({ ...data.payload, is_virtual: !is_target }));
@@ -116,7 +121,8 @@ export const registerClientSocket = (
   });
 
   ws.on(ServerSocketEvent.PlayerPrevious, (data) => {
-    const is_target = app_state.incoming_connections.value.length > 0;
+    const { incoming_connections } = getAppState();
+    const is_target = incoming_connections.value.length > 0;
 
     store.dispatch(previous({ is_virtual: !is_target }));
 
@@ -128,7 +134,8 @@ export const registerClientSocket = (
   });
 
   ws.on(ServerSocketEvent.PlayerNext, (data) => {
-    const is_target = app_state.incoming_connections.value.length > 0;
+    const { incoming_connections } = getAppState();
+    const is_target = incoming_connections.value.length > 0;
 
     store.dispatch(next({ ...data.payload, is_virtual: !is_target }));
 
@@ -141,7 +148,8 @@ export const registerClientSocket = (
   });
 
   ws.on(ServerSocketEvent.PlayerPlayNext, (data) => {
-    const is_target = app_state.incoming_connections.value.length > 0;
+    const { incoming_connections } = getAppState();
+    const is_target = incoming_connections.value.length > 0;
 
     store.dispatch(playNext({ tracks: data.payload, cast_info: null }));
 
@@ -154,7 +162,8 @@ export const registerClientSocket = (
   });
 
   ws.on(ServerSocketEvent.PlayerAddToQueue, (data) => {
-    const is_target = app_state.incoming_connections.value.length > 0;
+    const { incoming_connections } = getAppState();
+    const is_target = incoming_connections.value.length > 0;
 
     store.dispatch(addToQueue({ tracks: data.payload, cast_info: null }));
 
@@ -168,6 +177,6 @@ export const registerClientSocket = (
 
   ws.on(
     ServerSocketEvent.PlayerProgressUpdate,
-    (data) => (app_state.progress.value = data),
+    (data) => (getAppState().progress.value = data),
   );
 };

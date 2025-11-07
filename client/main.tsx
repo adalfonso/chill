@@ -3,7 +3,7 @@ import { render } from "preact";
 
 import store from "@reducers/store";
 import { App } from "./App";
-import { AppContext, app_state } from "./state/AppState";
+import { AppContext, getAppState } from "./state/AppState";
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/service-worker.js");
@@ -20,7 +20,7 @@ window.__chill_app = {
 };
 
 render(
-  <AppContext.Provider value={app_state}>
+  <AppContext.Provider value={getAppState()}>
     <Provider store={store}>
       <App />
     </Provider>

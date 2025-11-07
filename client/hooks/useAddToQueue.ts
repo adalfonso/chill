@@ -5,7 +5,7 @@ import { Maybe, PlayableTrack } from "@common/types";
 import { PreCastPayload } from "@client/lib/cast/types";
 import { SenderType } from "@common/CommonEvent";
 import { addToQueue } from "@reducers/player";
-import { app_state } from "@client/state/AppState";
+import { getAppState } from "@client/state/AppState";
 
 export const useAddToQueue = () => {
   const dispatch = useDispatch();
@@ -14,7 +14,7 @@ export const useAddToQueue = () => {
     tracks: Array<PlayableTrack>;
     cast_info: Maybe<PreCastPayload>;
   }) => {
-    const { outgoing_connection, incoming_connections, ws } = app_state;
+    const { outgoing_connection, incoming_connections, ws } = getAppState();
 
     const is_target = incoming_connections.value.length > 0;
     const is_source = Boolean(outgoing_connection.value);

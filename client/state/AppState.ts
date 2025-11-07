@@ -6,12 +6,16 @@ import { ServerSocketData, ServerSocketEvent } from "@common/SocketServerEvent";
 import { Maybe } from "@common/types";
 import { registerClientSocket } from "@client/lib/registerClientSocket";
 
+export type AppState = ReturnType<typeof createAppState>;
+
 const ws = new SocketClient<
   ClientSocketEvent,
   ClientSocketData,
   ServerSocketEvent,
   ServerSocketData
 >();
+
+let _app_state: Maybe<AppState> = null;
 
 export const createAppState = () => {
   const is_busy = signal(false);
@@ -31,9 +35,13 @@ export const createAppState = () => {
   };
 };
 
-// Create a *single shared instance* of app state
-export const app_state = createAppState();
+export const getAppState = (): AppState => {
+  if (!_app_state) {
+    _app_state = createAppState();
+  }
+  return _app_state;
+};
 
 registerClientSocket(ws);
 
-export const AppContext = createContext(app_state);
+export const AppContext = createContext(getAppState());
