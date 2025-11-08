@@ -31,15 +31,16 @@ export const Playlist = () => {
     <>
       <div className={playlistClassName}>
         <Close onClose={togglePlaylist} />
-
         {player.playlist.map((track, index) => (
           <div
             className="playlist-item"
             onClick={() =>
               play({
-                tracks: player.playlist,
+                // No new tracks are added
+                tracks: [],
                 cast_info: player.cast_info,
                 play_options: { ...player.play_options },
+                skip_reload: true,
                 index,
               })
             }

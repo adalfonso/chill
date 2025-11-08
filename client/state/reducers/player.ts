@@ -135,12 +135,13 @@ export const playerSlice = createSlice({
         index = 0,
         progress = 0,
         is_virtual = false,
+        skip_reload = false,
         play_options = { mode: PlayMode.None, more: false },
       } = action.payload;
 
-      const tracks_with_index = action.payload.tracks
-        ? addSemanticIndex(action.payload.tracks)
-        : [];
+      const tracks_with_index = skip_reload
+        ? state.playlist
+        : addSemanticIndex(tracks ?? []);
 
       if (tracks) {
         state.playlist = tracks_with_index;

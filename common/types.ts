@@ -135,6 +135,7 @@ export type PlayPayload = {
   index?: number;
   progress?: number;
   play_options?: PlayOptions;
+  skip_reload?: boolean;
   is_virtual?: boolean;
 };
 
