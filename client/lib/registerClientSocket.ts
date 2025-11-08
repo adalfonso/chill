@@ -13,6 +13,7 @@ import {
   play,
   playNext,
   previous,
+  setIsPlaying,
 } from "@reducers/player";
 import {
   ConnectionDirection,
@@ -130,6 +131,8 @@ export const registerClientSocket = (
       ws.emit(ServerSocketEvent.PlayerPrevious, {
         sender: SenderType.Target,
       });
+    } else {
+      store.dispatch(setIsPlaying());
     }
   });
 
@@ -144,6 +147,8 @@ export const registerClientSocket = (
         payload: data.payload,
         sender: SenderType.Target,
       });
+    } else {
+      store.dispatch(setIsPlaying());
     }
   });
 

@@ -367,6 +367,10 @@ export const playerSlice = createSlice({
       loadNext(state);
     },
 
+    setIsPlaying: (state) => {
+      state.is_playing = true;
+    },
+
     setMobileDisplayMode: (state, action: Action<MobileDisplayMode>) => {
       state.mobile_display_mode = action.payload;
     },
@@ -388,16 +392,17 @@ export const playerSlice = createSlice({
 export const {
   addToQueue,
   changeVolume,
-  next,
   clear,
+  next,
   pause,
   play,
   playNext,
   previous,
   seek,
-  shuffle,
+  setIsPlaying,
   setMobileDisplayMode,
   setPlayerIsCasting,
+  shuffle,
   updatePlayOptions,
 } = playerSlice.actions;
 
