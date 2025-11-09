@@ -6,7 +6,7 @@ import * as Player from "@client/state/reducers/player";
 import { Maybe } from "@common/types";
 import { api } from "@client/client";
 import { getCasterState, getPlayerState } from "@client/state/reducers/store";
-import { useAppState, usePlay } from "@hooks/index";
+import { useAppState, usePlay, useSeek } from "@hooks/index";
 
 export const CastPlayer = () => {
   const { progress } = useAppState();
@@ -16,6 +16,7 @@ export const CastPlayer = () => {
   const cast_context = useRef<Maybe<cast.framework.CastContext>>(null);
   const player_ref = useRef(player);
   const play = usePlay();
+  const seek = useSeek();
   const dispatch = useDispatch();
 
   player_ref.current = player;
@@ -125,7 +126,7 @@ export const CastPlayer = () => {
         }
         case cast.framework.SessionState.SESSION_ENDED:
           dispatch(Player.setPlayerIsCasting(false));
-          dispatch(Player.seek(progress.value));
+          seek(progress.value);
           break;
 
         default:

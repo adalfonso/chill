@@ -7,6 +7,7 @@ export const DuplexEvent = {
   PlayerPlay: "PlayerPlay",
   PlayerPlayNext: "PlayerPlayNext",
   PlayerPrevious: "PlayerPrevious",
+  PlayerSeek: "PlayerSeek",
   PlayerShuffle: "PlayerShuffle",
 } as const satisfies Record<keyof DuplexSocketData, unknown>;
 
@@ -20,6 +21,7 @@ export type DuplexSocketData = {
   PlayerPlayNext: { payload: Array<PlayableTrack>; sender: SenderType };
   PlayerPrevious: { sender: SenderType };
   PlayerShuffle: { payload: Array<PlayableTrackWithIndex>; sender: SenderType };
+  PlayerSeek: { payload: number; sender: SenderType };
 };
 
 export const TargetEvent = {

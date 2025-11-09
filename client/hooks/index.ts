@@ -1,4 +1,14 @@
+// player hooks
 export * from "./useAddToQueue";
+export * from "./useNext";
+export * from "./usePause";
+export * from "./usePlay";
+export * from "./usePlayNext";
+export * from "./usePrevious";
+export * from "./useShuffle";
+export * from "./useSeek";
+
+// misc hooks
 export * from "./useAppState";
 export * from "./useBackNavigate";
 export * from "./useDebounce";
@@ -7,11 +17,5 @@ export * from "./useId";
 export * from "./useInfiniteScroll";
 export * from "./useLongPress";
 export * from "./useMenu";
-export * from "./useNext";
-export * from "./usePause";
-export * from "./usePlay";
-export * from "./usePlayNext";
-export * from "./usePrevious";
 export * from "./useScroll";
-export * from "./useShuffle";
 export * from "./useViewport";

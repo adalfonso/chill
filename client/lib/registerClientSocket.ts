@@ -14,6 +14,7 @@ import {
   play,
   playNext,
   previous,
+  seek,
   setIsPlaying,
   shuffle,
 } from "@reducers/player";
@@ -207,6 +208,19 @@ export const registerClientSocket = (
         sender: SenderType.Target,
       });
     }
+  });
+
+  ws.on(ServerSocketEvent.PlayerSeek, (data) => {
+    const { incoming_connections } = getAppState();
+    const is_target = incoming_connections.value.length > 0;
+
+    // Only set (shuffled) tracks in payload if the target took this action
+    // Otherwise the target will do this in registerClientSocket
+    if (is_target) {
+      store.dispatch(seek(data.payload));
+    }
+
+    // Do not propagate because target already emites progress update
   });
 
   ws.on(
