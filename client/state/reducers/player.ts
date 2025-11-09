@@ -341,12 +341,20 @@ export const playerSlice = createSlice({
       audio.currentTime = time;
     },
 
-    shuffle: (state) => {
+    shuffle: (
+      state,
+      action: Action<Array<PlayableTrackWithIndex> | undefined>,
+    ) => {
+      // The only time tracks are sent is if this is the source in a websocket
+      // connection and the target sends the newly shuffled playlist
+      const tracks = action?.payload;
+
       if (state.is_shuffled) {
         state.playlist = [...state.original_playlist];
       } else {
         state.original_playlist = [...state.playlist];
-        state.playlist = _shuffle(state.playlist);
+        state.playlist =
+          tracks && tracks.length ? tracks : _shuffle(state.playlist);
       }
 
       state.is_shuffled = !state.is_shuffled;

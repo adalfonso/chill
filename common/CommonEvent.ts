@@ -1,4 +1,4 @@
-import { PlayableTrack, PlayPayload } from "./types";
+import { PlayableTrack, PlayableTrackWithIndex, PlayPayload } from "./types";
 
 export const DuplexEvent = {
   PlayerAddToQueue: "PlayerAddToQueue",
@@ -7,6 +7,7 @@ export const DuplexEvent = {
   PlayerPlay: "PlayerPlay",
   PlayerPlayNext: "PlayerPlayNext",
   PlayerPrevious: "PlayerPrevious",
+  PlayerShuffle: "PlayerShuffle",
 } as const satisfies Record<keyof DuplexSocketData, unknown>;
 
 export type DuplexEvent = (typeof DuplexEvent)[keyof typeof DuplexEvent];
@@ -18,6 +19,7 @@ export type DuplexSocketData = {
   PlayerPlay: { payload: PlayPayload; sender: SenderType };
   PlayerPlayNext: { payload: Array<PlayableTrack>; sender: SenderType };
   PlayerPrevious: { sender: SenderType };
+  PlayerShuffle: { payload: Array<PlayableTrackWithIndex>; sender: SenderType };
 };
 
 export const TargetEvent = {

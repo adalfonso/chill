@@ -13,4 +13,5 @@ export * from "./usePlay";
 export * from "./usePlayNext";
 export * from "./usePrevious";
 export * from "./useScroll";
+export * from "./useShuffle";
 export * from "./useViewport";

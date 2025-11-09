@@ -1,7 +1,8 @@
 import { effect } from "@preact/signals";
 
-import store from "@reducers/store";
+import store, { getPlayerState } from "@reducers/store";
 import { ClientSocketData, ClientSocketEvent } from "@common/SocketClientEvent";
+import { PlayableTrackWithIndex } from "@common/types";
 import { SenderType } from "@common/CommonEvent";
 import { SocketClient } from "./SocketClient";
 import { getAppState } from "@client/state/AppState";
@@ -14,6 +15,7 @@ import {
   playNext,
   previous,
   setIsPlaying,
+  shuffle,
 } from "@reducers/player";
 import {
   ConnectionDirection,
@@ -175,6 +177,33 @@ export const registerClientSocket = (
     if (is_target) {
       ws.emit(ServerSocketEvent.PlayerAddToQueue, {
         payload: data.payload,
+        sender: SenderType.Target,
+      });
+    }
+  });
+
+  ws.on(ServerSocketEvent.PlayerShuffle, (data) => {
+    const { incoming_connections, outgoing_connection } = getAppState();
+    const is_target = incoming_connections.value.length > 0;
+    const is_source = outgoing_connection.value;
+    let player = getPlayerState(store.getState());
+
+    let tracks: Array<PlayableTrackWithIndex> = [];
+
+    // Only set (shuffled) tracks in payload if the target took this action
+    // Otherwise the target will do this in registerClientSocket
+    if (is_source && !player.is_shuffled) {
+      tracks = data.payload;
+    }
+
+    store.dispatch(shuffle(tracks));
+
+    if (is_target) {
+      // Refresh player state
+      player = getPlayerState(store.getState());
+
+      ws.emit(ServerSocketEvent.PlayerShuffle, {
+        payload: player.playlist,
         sender: SenderType.Target,
       });
     }
