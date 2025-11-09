@@ -2,6 +2,7 @@ import { PlayableTrack, PlayableTrackWithIndex, PlayPayload } from "./types";
 
 export const DuplexEvent = {
   PlayerAddToQueue: "PlayerAddToQueue",
+  PlayerChangeVolume: "PlayerChangeVolume",
   PlayerNext: "PlayerNext",
   PlayerPause: "PlayerPause",
   PlayerPlay: "PlayerPlay",
@@ -15,13 +16,14 @@ export type DuplexEvent = (typeof DuplexEvent)[keyof typeof DuplexEvent];
 
 export type DuplexSocketData = {
   PlayerAddToQueue: { payload: Array<PlayableTrack>; sender: SenderType };
+  PlayerChangeVolume: { payload: number; sender: SenderType };
   PlayerNext: { payload: { auto?: boolean }; sender: SenderType };
   PlayerPause: { sender: SenderType };
   PlayerPlay: { payload: PlayPayload; sender: SenderType };
   PlayerPlayNext: { payload: Array<PlayableTrack>; sender: SenderType };
   PlayerPrevious: { sender: SenderType };
+  PlayerSeek: { payload: number; sender: typeof SenderType.Source };
   PlayerShuffle: { payload: Array<PlayableTrackWithIndex>; sender: SenderType };
-  PlayerSeek: { payload: number; sender: SenderType };
 };
 
 export const TargetEvent = {

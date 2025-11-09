@@ -9,6 +9,7 @@ import { getAppState } from "@client/state/AppState";
 import { getDeviceInfo } from "./DeviceInfo";
 import {
   addToQueue,
+  changeVolume,
   next,
   pause,
   play,
@@ -214,13 +215,25 @@ export const registerClientSocket = (
     const { incoming_connections } = getAppState();
     const is_target = incoming_connections.value.length > 0;
 
-    // Only set (shuffled) tracks in payload if the target took this action
-    // Otherwise the target will do this in registerClientSocket
     if (is_target) {
       store.dispatch(seek(data.payload));
     }
 
     // Do not propagate because target already emites progress update
+  });
+
+  ws.on(ServerSocketEvent.PlayerChangeVolume, (data) => {
+    const { incoming_connections } = getAppState();
+    const is_target = incoming_connections.value.length > 0;
+
+    store.dispatch(changeVolume(data.payload));
+
+    if (is_target) {
+      ws.emit(ServerSocketEvent.PlayerChangeVolume, {
+        payload: data.payload,
+        sender: SenderType.Target,
+      });
+    }
   });
 
   ws.on(
