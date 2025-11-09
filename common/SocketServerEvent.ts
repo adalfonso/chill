@@ -1,3 +1,4 @@
+import { PlayerState } from "@reducers/player";
 import {
   DuplexEvent,
   DuplexSocketData,
@@ -10,6 +11,7 @@ export const ServerSocketEvent = Object.assign({}, DuplexEvent, TargetEvent, {
   Connect: "Connect",
   DenyConnection: "DenyConnection",
   Disconnect: "Disconnect",
+  PlayerReconnect: "PlayerReconnect",
   Pong: "Pong",
   Reconnect: "Reconnect",
 } as const) satisfies Record<keyof ServerSocketData, string>;
@@ -25,6 +27,7 @@ export type ServerSocketData = DuplexSocketData &
     Disconnect: { from: string };
     Pong: undefined;
     Reconnect: { connection: ConnectionInfo };
+    PlayerReconnect: { from: string } | { payload: PlayerState };
   };
 
 export type ConnectionInfo =

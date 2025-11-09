@@ -139,6 +139,14 @@ export type PlayPayload = {
   is_virtual?: boolean;
 };
 
+export type PlayerReconnectPayload = {
+  original_playlist: Array<PlayableTrackWithIndex>;
+  playlist: Array<PlayableTrackWithIndex>;
+  is_playing: boolean;
+  is_shuffled: boolean;
+  volume: boolean;
+};
+
 export const PlayMode = {
   None: "none",
   Random: "random",

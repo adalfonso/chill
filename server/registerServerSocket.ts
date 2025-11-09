@@ -40,6 +40,39 @@ export const registerServerSocket = (wss: ChillWss) => {
     }
   });
 
+  wss.on(ClientSocketEvent.PlayerReconnect, (ws, data) => {
+    // from source
+    if (!data) {
+      const connection = connector.getConnectionBySourceId(ws.session_id);
+
+      if (!connection) {
+        return;
+      }
+
+      const target = wss.getClientBySessionId(connection.target);
+
+      // Can't find target; skip
+      if (!target) {
+        return;
+      }
+
+      return wss.emit(ServerSocketEvent.PlayerReconnect, target, {
+        from: ws.session_id,
+      });
+    }
+
+    const source = wss.getClientBySessionId(data.to);
+
+    // Can't find source; skip
+    if (!source) {
+      return;
+    }
+
+    return wss.emit(ServerSocketEvent.PlayerReconnect, source, {
+      payload: data.payload,
+    });
+  });
+
   // ---- Client Source -> Target Events ----
   wss.on(ClientSocketEvent.Connect, (ws, data) => {
     // Cannot connect to itself

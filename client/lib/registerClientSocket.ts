@@ -15,6 +15,7 @@ import {
   play,
   playNext,
   previous,
+  replaceState,
   seek,
   setIsPlaying,
   shuffle,
@@ -95,6 +96,8 @@ export const registerClientSocket = (
       incoming_connections.value = data.connection.sources;
     } else if (data.connection.direction === ConnectionDirection.Out) {
       outgoing_connection.value = data.connection.target;
+
+      ws.emit(ClientSocketEvent.PlayerReconnect, undefined);
     }
   });
 
@@ -233,6 +236,25 @@ export const registerClientSocket = (
         payload: data.payload,
         sender: SenderType.Target,
       });
+    }
+  });
+
+  ws.on(ServerSocketEvent.PlayerReconnect, (data) => {
+    const { incoming_connections, outgoing_connection } = getAppState();
+    const is_target = incoming_connections.value.length > 0;
+    const is_source = outgoing_connection.value;
+
+    if (is_target && "from" in data) {
+      const player = getPlayerState(store.getState());
+
+      ws.emit(ServerSocketEvent.PlayerReconnect, {
+        payload: player,
+        to: data.from,
+      });
+    }
+
+    if (is_source && "payload" in data) {
+      store.dispatch(replaceState(data.payload));
     }
   });
 

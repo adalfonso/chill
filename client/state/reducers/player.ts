@@ -394,6 +394,8 @@ export const playerSlice = createSlice({
 
       state.play_options = { ...options };
     },
+
+    replaceState: (_state, action: Action<PlayerState>) => action.payload,
   },
 });
 
@@ -406,6 +408,7 @@ export const {
   play,
   playNext,
   previous,
+  replaceState,
   seek,
   setIsPlaying,
   setMobileDisplayMode,
