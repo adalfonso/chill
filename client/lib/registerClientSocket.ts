@@ -67,8 +67,6 @@ export const registerClientSocket = (
       });
     }
 
-    // should also update app state here
-
     ws.emit(ClientSocketEvent.AcceptConnection, { to: data.from });
 
     incoming_connections.value = [...incoming_connections.value, data.from];
@@ -80,6 +78,8 @@ export const registerClientSocket = (
     // should also update app state here
 
     outgoing_connection.value = data.from;
+
+    ws.emit(ClientSocketEvent.PlayerReconnect, undefined);
   });
 
   ws.on(ServerSocketEvent.Disconnect, (data) => {
