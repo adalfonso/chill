@@ -63,7 +63,9 @@ export const Devices = ({ onClose }: DevicesProps) => {
       <div id="devices">
         <Close onClose={onClose} />
         {outgoing_connection.value && (
-          <button onClick={disconnect}>Disconnect</button>
+          <div className="device-disconnect" onClick={disconnect}>
+            Disconnect
+          </div>
         )}
         <div className="device-list">
           {devices.value.map((device) => {
