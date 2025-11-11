@@ -96,6 +96,7 @@ export const cacheAlbumArt = async () => {
             console.error(`Failed to cache album art:`, {
               id: art.album_id,
               size,
+              error,
             });
           }
         }),

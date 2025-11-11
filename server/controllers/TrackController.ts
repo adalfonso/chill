@@ -79,6 +79,8 @@ export const TrackController = {
 
   cover: async (req: Req, res: Res) => {
     const { filename } = req.params;
+    const MAX_SIZE = 2048;
+
     const raw_size = req.query.size ?? "256";
 
     if (typeof raw_size !== "string") {
@@ -95,6 +97,12 @@ export const TrackController = {
       return res
         .status(400)
         .send(`Invalid size provided. "${req.query.size}" must be an integer.`);
+    }
+
+    if (size > MAX_SIZE) {
+      return res
+        .status(400)
+        .send(`Invalid size provided: ${size}; must be <= ${MAX_SIZE}.`);
     }
 
     try {
