@@ -11,6 +11,7 @@ import { configurePassport } from "./passportConfig";
 import { db } from "./lib/data/db";
 import { initRouter } from "@routes/router";
 import { ChillWss, registerServerSocket } from "./registerServerSocket";
+import { accessLogs } from "./middleware/accessLogs";
 
 /**
  * Initialize the express app
@@ -29,6 +30,7 @@ export const init = async (app: Express) => {
   app.use(cookieParser(env.SIGNING_KEY));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+  app.use(accessLogs);
 
   initRouter(app, wss);
 
