@@ -1,5 +1,6 @@
 import { RawMediaPayload } from "../MediaCrawler";
 import { db } from "../../data/db";
+import { getAlbumLookupKey } from "./albumMapper";
 
 export const insertTracks = async (
   records: Array<RawMediaPayload>,
@@ -10,8 +11,9 @@ export const insertTracks = async (
   },
 ) => {
   const tracks = records.map((record) => {
-    const album_key = JSON.stringify({
-      title: record.album,
+    const album_key = getAlbumLookupKey({
+      artist_id: record.artist === null ? null : maps.artist[record.artist],
+      title: record.album ?? "",
       year: record.year,
     });
 

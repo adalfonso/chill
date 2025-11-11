@@ -2,6 +2,8 @@ import { AlbumCover, RawMediaPayload } from "../MediaCrawler";
 import { Maybe } from "@common/types";
 import { db } from "../../data/db";
 
+const UNKNOWN_ALBUM_TITLE = "Unknown Album";
+
 type AlbumUpsertInput = {
   title: string;
   year: number;
@@ -9,8 +11,16 @@ type AlbumUpsertInput = {
   cover: Maybe<AlbumCover>;
 };
 
-const getLookupKey = (album: { title: string; year: Maybe<number> }) => {
-  return JSON.stringify({ title: album.title, year: album.year });
+export const getAlbumLookupKey = (album: {
+  artist_id: Maybe<number>;
+  title: string;
+  year: Maybe<number>;
+}) => {
+  return JSON.stringify({
+    artist_id: album.artist_id,
+    title: album.title,
+    year: album.year,
+  });
 };
 
 export const upsertAlbums = async (
@@ -40,17 +50,24 @@ export const upsertAlbums = async (
 
   const existing_albums = await db.album.findMany({
     where: { OR: albums },
-    select: { id: true, title: true, year: true, album_art: true },
+    select: {
+      id: true,
+      artist_id: true,
+      title: true,
+      year: true,
+      album_art: true,
+    },
   });
 
   // Detect album art that has not yet been inserted
   const album_art_to_add = existing_albums
     .filter(
       (album) =>
-        !album.album_art && recordsGroupedByAlbum[getLookupKey(album)].cover,
+        !album.album_art &&
+        recordsGroupedByAlbum[getAlbumLookupKey(album)].cover,
     )
     .map((album) => {
-      const cover = recordsGroupedByAlbum[getLookupKey(album)]
+      const cover = recordsGroupedByAlbum[getAlbumLookupKey(album)]
         .cover as AlbumCover;
 
       return {
@@ -68,7 +85,7 @@ export const upsertAlbums = async (
   }
 
   return Object.fromEntries(
-    existing_albums.map((album) => [getLookupKey(album), album.id]),
+    existing_albums.map((album) => [getAlbumLookupKey(album), album.id]),
   );
 };
 
@@ -78,13 +95,13 @@ const toGroupedAlbumInput = (
 ) =>
   records
     .map(({ album, year, artist, cover }) => ({
-      title: album ?? "Unknown Album",
+      title: album ?? UNKNOWN_ALBUM_TITLE,
       year: year ?? 0,
       artist_id: artist ? (artist_map[artist] ?? null) : null,
       cover,
     }))
     .reduce<Record<string, AlbumUpsertInput>>((carry, album) => {
-      const key = getLookupKey(album);
+      const key = getAlbumLookupKey(album);
 
       const { title, year, artist_id, cover } = album;
 
