@@ -48,13 +48,7 @@ export const registerClientSocket = (
 
   const identify = () => ws.emit(ClientSocketEvent.Identify, getDeviceInfo());
 
-  const ping = () => ws.emit(ClientSocketEvent.Ping);
-
-  // Identify and begin ping when ready
-  ws.ready.then(identify).then(ping);
-
-  // Start ping-pong loop
-  ws.on(ServerSocketEvent.Pong, () => setTimeout(ping, 5_000));
+  ws.ready().then(identify);
 
   ws.on(ServerSocketEvent.Connect, (data) => {
     const { outgoing_connection, incoming_connections } = getAppState();

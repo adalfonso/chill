@@ -18,7 +18,7 @@ export const AuthController = {
   logout: (wss: ChillWss) => async (req: TypedRequest, res: Response) => {
     const token = req.cookies?.access_token;
 
-    wss.drop(req._user.user.id, req._user.session_id);
+    wss.drop(req._user.session_id);
     if (token) {
       await blacklistToken(token);
     } else {

@@ -3,12 +3,16 @@ import { TypedRequest } from "./Request";
 import { DeviceClient, DeviceInfo } from "@common/types";
 import { DeviceConnect } from "./DeviceConnect";
 
-type WrappedSocket = {
-  device_info: DeviceInfo;
-  session_id: string;
-  socket: WebSocket;
+interface ExtWebSocket extends WebSocket {
   user_id: number;
-};
+  session_id: string;
+  device_info: DeviceInfo;
+  is_alive: boolean;
+}
+
+const CLEANUP_INTERVAL_MS = 30_000;
+
+const PING_INTERVAL_MS = 5_000;
 
 /**
  * Websocket server for BE
@@ -22,32 +26,50 @@ export class SocketServer<
   readonly wss = new WebSocketServer({ noServer: true, path: "/ws" });
 
   #handlers: Partial<{
-    [K in ClientEvent]: (ws: WrappedSocket, data: ClientData[K]) => void;
+    [K in ClientEvent]: (ws: ExtWebSocket, data: ClientData[K]) => void;
   }> = {};
-
-  #clients = {
-    all: new Map<string, WrappedSocket>(),
-    //by_ip_address: new Map<string, Map<string, WebSocket>>(),
-    by_user_id: new Map<number, Map<string, WrappedSocket>>(),
-  };
 
   public connector = new DeviceConnect();
 
   constructor() {
     this.wss.on("connection", this.#onConnection.bind(this));
+
+    // Cleanup interval
+    setInterval(() => {
+      (this.wss.clients as Set<ExtWebSocket>).forEach((ws) => {
+        if (!ws.is_alive) {
+          console.log(`Dropping stale socket ${ws.user_id}, ${ws.session_id}`);
+          return ws.terminate();
+        }
+
+        // Set false for next cleanup cycle
+        ws.is_alive = false;
+      });
+    }, CLEANUP_INTERVAL_MS);
+
+    // Pink interval
+    setInterval(() => {
+      (this.wss.clients as Set<ExtWebSocket>).forEach((ws) => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.ping();
+        }
+      });
+    }, PING_INTERVAL_MS);
   }
 
   public emit<E extends ServerEvent>(
     event: E,
-    ws: WrappedSocket,
+    ws: ExtWebSocket,
     ...[data]: ServerData[E] extends undefined ? [] : [ServerData[E]]
   ) {
-    ws.socket.send(JSON.stringify({ event, data }));
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ event, data }));
+    }
   }
 
   public on<E extends ClientEvent>(
     event: E,
-    handler: (ws: WrappedSocket, data: ClientData[E]) => void,
+    handler: (ws: ExtWebSocket, data: ClientData[E]) => void,
   ) {
     this.#handlers[event] = handler;
   }
@@ -55,53 +77,38 @@ export class SocketServer<
   /**
    * Drop a websocket connection
    *
-   * @param user_id - user's id
    * @param session_id - device session id
    */
-  public drop(user_id: number, session_id: string) {
-    const connections_by_user = this.#clients.by_user_id.get(user_id);
-
-    const missing_error = `Tried to drop websocket for user ${user_id}, session: ${session_id} but could not locate socket`;
-
-    if (!connections_by_user) {
-      return console.info(missing_error);
-    }
-
-    const existing_connection = connections_by_user.get(session_id);
-
-    if (!existing_connection) {
-      return console.info(missing_error);
-    }
-
-    console.info(
-      `Existing websocket connections found for user ${user_id} at session ${session_id}; closing`,
-    );
-
-    existing_connection.socket.terminate();
-    connections_by_user.delete(session_id);
-    this.#clients.all.delete(session_id);
-
-    // If this was the last connection for this user, then drop the grouping
-    if (connections_by_user.size === 0) {
-      this.#clients.by_user_id.delete(user_id);
-    }
+  public drop(session_id: string) {
+    this.getClientBySessionId(session_id)?.terminate();
   }
 
-  public identify(ws: WrappedSocket, data: DeviceInfo) {
+  public identify(ws: ExtWebSocket, data: DeviceInfo) {
     ws.device_info.browser = data.browser ?? ws.device_info.browser;
     ws.device_info.os = data.os ?? ws.device_info.os;
     ws.device_info.type = data.type ?? ws.device_info.type;
   }
 
-  public getAccessibleClients = (user_id: number): Array<WrappedSocket> => {
-    return Array.from(this.#clients.by_user_id.get(user_id)?.values() ?? []);
-  };
+  public getClientBySessionId(session_id: string) {
+    for (const client of this.wss.clients as Set<ExtWebSocket>) {
+      if (client.session_id === session_id) return client;
+    }
+
+    return null;
+  }
+
+  public getClientsByUserId(user_id: number) {
+    return (this.wss.clients as Set<ExtWebSocket>)
+      .values()
+      .filter((client) => client.user_id === user_id)
+      .toArray();
+  }
 
   public getClientDevicesByUserId = (
     user_id: number,
     session_id: string,
   ): Array<DeviceClient> => {
-    return this.getAccessibleClients(user_id).map((client) => ({
+    return this.getClientsByUserId(user_id).map((client) => ({
       user_id: client.user_id,
       session_id: client.session_id,
       is_this_device: session_id === client.session_id,
@@ -109,46 +116,24 @@ export class SocketServer<
     }));
   };
 
-  public getClientBySessionId(session_id: string) {
-    return this.#clients.all.get(session_id);
-  }
-
-  #onConnection(ws: WebSocket, req: TypedRequest) {
+  #onConnection(ws: ExtWebSocket, req: TypedRequest) {
     const { user, session_id } = req._user;
 
-    let connections_by_user = this.#clients.by_user_id.get(user.id);
+    ws.user_id = user.id;
+    ws.session_id = session_id;
+    ws.device_info = { type: "pending", browser: "pending", os: "pending" };
+    ws.is_alive = true;
 
-    if (connections_by_user) {
-      console.info(`Existing websocket connections found for ${user.id}`);
-      const existing_connection = connections_by_user.get(session_id);
-
-      if (existing_connection) {
-        console.info(
-          `Existing websocket connections found for ${user.id} at session ${session_id}`,
-        );
-        existing_connection.socket.terminate();
-      }
-    } else {
-      connections_by_user = new Map();
-      this.#clients.by_user_id.set(user.id, connections_by_user);
-    }
-
-    const wrapped_socket: WrappedSocket = {
-      device_info: { type: "pending", browser: "pending", os: "pending" },
-      session_id,
-      user_id: user.id,
-      socket: ws,
-    };
-
-    connections_by_user.set(session_id, wrapped_socket);
-    this.#clients.all.set(session_id, wrapped_socket);
+    ws.on("pong", () => {
+      ws.is_alive = true;
+    });
 
     ws.on("error", console.error);
-    ws.on("message", this.#onMessage(wrapped_socket).bind(this));
+    ws.on("message", this.#onMessage(ws).bind(this));
   }
 
   #onMessage =
-    (client: WrappedSocket) =>
+    (client: ExtWebSocket) =>
     <E extends ClientEvent>(message: RawData) => {
       console.info("Inbound websocket message: %s", message);
       const { event, data } = JSON.parse(message.toString()) as {

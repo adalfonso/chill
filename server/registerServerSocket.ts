@@ -25,8 +25,6 @@ export const registerServerSocket = (wss: ChillWss) => {
   const connector = new DeviceConnect();
 
   // ---- General Client Events ----
-  wss.on(ClientSocketEvent.Ping, (ws) => wss.emit(ServerSocketEvent.Pong, ws));
-
   wss.on(ClientSocketEvent.Identify, (ws, data) => {
     wss.identify(ws, data);
 
@@ -82,7 +80,7 @@ export const registerServerSocket = (wss: ChillWss) => {
 
     const target = wss
       //  Tie this to the requester's user_id to limit access
-      .getAccessibleClients(ws.user_id)
+      .getClientsByUserId(ws.user_id)
       .find((client) => client.session_id === data.to);
 
     if (!target) {
@@ -137,7 +135,7 @@ export const registerServerSocket = (wss: ChillWss) => {
 
     const target = wss
       //  Tie this to the requester's user_id to limit access
-      .getAccessibleClients(ws.user_id)
+      .getClientsByUserId(ws.user_id)
       .find((client) => client.session_id === data.to);
 
     if (!target) {
