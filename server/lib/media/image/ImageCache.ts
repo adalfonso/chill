@@ -5,7 +5,7 @@ import { makeDirIfNotExists } from "@server/lib/file";
 import { adjustImage } from "./ImageAdjust";
 import { db } from "@server/lib/data/db";
 
-const common_album_art_sizes = [36, 160, 176, 256];
+const common_album_art_sizes = [36, 160, 176, 256, 500];
 const data_dir = `/opt/app/data`;
 const album_art_dir = `/opt/app/data/albumart`;
 
@@ -20,7 +20,7 @@ export const getAlbumFromFs = async (filename: string, size: number) => {
   const album_art_filename_pattern = /^\d+\.(jpe?g|png|gif)$/;
 
   if (!album_art_filename_pattern.test(filename)) {
-    throw new Error("Invalid album art filename");
+    throw new Error(`Invalid album art filename, "${filename}"`);
   }
 
   if (!common_album_art_sizes.includes(size)) {
@@ -90,7 +90,7 @@ export const cacheAlbumArt = async () => {
                 size.toString(),
                 `${art.album_id}.${art.format.split("/").at(1)}`,
               ),
-              await adjustImage(art.data, { size, quality: 80 }),
+              await adjustImage(art.data, { size, quality: 90 }),
             );
           } catch (error) {
             console.error(`Failed to cache album art:`, {

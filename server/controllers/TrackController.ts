@@ -122,7 +122,7 @@ export const TrackController = {
     }
 
     try {
-      const img = await adjustImage(result.data, { size, quality: 50 });
+      const img = await adjustImage(result.data, { size, quality: 90 });
 
       res.writeHead(200, {
         "Content-Type": result.format,

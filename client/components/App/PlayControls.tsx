@@ -130,7 +130,7 @@ export const PlayControls = () => {
             <div className="cover">
               {player.now_playing?.album_art_filename && (
                 <img
-                  src={`/api/v1/media/cover/${player.now_playing?.album_art_filename}?size=256`}
+                  src={`/api/v1/media/cover/${player.now_playing?.album_art_filename}?size=500`}
                   loading="lazy"
                 />
               )}
