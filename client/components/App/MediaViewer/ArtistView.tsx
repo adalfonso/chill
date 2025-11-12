@@ -56,7 +56,7 @@ const makeAlbumTiles =
         tile_data={tile}
         url={() => artistAlbumUrl(artist_id, tile.id)}
         displayAs={({ name, data }: MediaTileData<AlbumMetadata>) =>
-          `${name} (${data?.year})`
+          `${name}` + (data?.year ? ` (${data?.year})` : "")
         }
       />
     ));
