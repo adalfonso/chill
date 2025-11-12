@@ -52,13 +52,13 @@ export const cacheAlbumArt = async () => {
     ),
   );
 
-  const chunk = 25;
-  let page = 0;
+  const chunk_size = 25;
+  let chunk = 0;
   let more_results = true;
   let records_processed = 0;
 
   while (more_results) {
-    console.info(`Caching page ${page} of album art...`);
+    console.info(`Caching chunk ${chunk} of album art...`);
     const album_art = await db.albumArt.findMany({
       select: {
         album_id: true,
@@ -69,11 +69,11 @@ export const cacheAlbumArt = async () => {
       orderBy: {
         id: "asc",
       },
-      skip: page * chunk,
-      take: chunk,
+      skip: chunk * chunk_size,
+      take: chunk_size,
     });
 
-    page++;
+    chunk++;
     records_processed += album_art.length;
 
     if (!album_art.length) {
@@ -105,7 +105,7 @@ export const cacheAlbumArt = async () => {
   }
 
   console.info(
-    `Album art cahed. Took ${
+    `Album art cached. Took ${
       (new Date().valueOf() - start?.valueOf()) / 1000
     } seconds for ${records_processed} records`,
   );

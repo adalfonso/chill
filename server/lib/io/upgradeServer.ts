@@ -28,7 +28,14 @@ export const upgradeServer = (
 
     socket.removeListener("error", console.error);
 
-    Object.assign(req, { _user: await verifyAndDecodeJwt(access_token) });
+    try {
+      Object.assign(req, { _user: await verifyAndDecodeJwt(access_token) });
+    } catch (err) {
+      console.error("JWT verification failed:", err);
+      socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
+      socket.destroy();
+      return;
+    }
 
     socket_server.wss.handleUpgrade(req, socket, head, (ws) => {
       socket_server.wss.emit("connection", ws, req);

@@ -38,7 +38,7 @@ export class SocketServer<
     setInterval(() => {
       (this.wss.clients as Set<ExtWebSocket>).forEach((ws) => {
         if (!ws.is_alive) {
-          console.log(`Dropping stale socket ${ws.user_id}, ${ws.session_id}`);
+          console.info(`Dropping stale socket ${ws.user_id}, ${ws.session_id}`);
           return ws.terminate();
         }
 

@@ -26,7 +26,7 @@ model Album {
   created_at DateTime  @default(now())
   updated_at DateTime  @default(now()) @updatedAt
 
-  @@unique([title, year])
+  @@unique([title, year, artist_id])
 }
 
 model AlbumArt {

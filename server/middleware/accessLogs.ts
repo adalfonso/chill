@@ -5,7 +5,7 @@ export const accessLogs = (req: Request, res: Response, next: NextFunction) => {
 
   res.on("finish", () => {
     const duration = Date.now() - start;
-    console.log(
+    console.info(
       `${req.method} ${req.originalUrl} → ${res.statusCode} (${duration}ms)`,
     );
   });
