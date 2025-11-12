@@ -2,7 +2,7 @@ import { AlbumCover, RawMediaPayload } from "../MediaCrawler";
 import { Maybe } from "@common/types";
 import { db } from "../../data/db";
 
-const UNKNOWN_ALBUM_TITLE = "Unknown Album";
+export const UNKNOWN_ALBUM_TITLE = "Unknown Album";
 
 type AlbumUpsertInput = {
   title: string;
@@ -13,13 +13,13 @@ type AlbumUpsertInput = {
 
 export const getAlbumLookupKey = (album: {
   artist_id: Maybe<number>;
-  title: string;
+  title: Maybe<string>;
   year: Maybe<number>;
 }) => {
   return JSON.stringify({
     artist_id: album.artist_id,
-    title: album.title,
-    year: album.year,
+    title: album.title ?? UNKNOWN_ALBUM_TITLE,
+    year: album.year ?? 0,
   });
 };
 

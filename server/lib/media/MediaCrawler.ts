@@ -9,6 +9,7 @@ import { adjustImage } from "./image/ImageAdjust";
 import { db } from "../data/db";
 import { rebuildMusicSearchIndex } from "./MusicSearch";
 import { cacheAlbumArt } from "./image/ImageCache";
+import { deleteOrphans } from "./deleteOrphans";
 
 /** Config options used by the crawler */
 type MediaCrawlerConfig = {
@@ -286,6 +287,7 @@ export class MediaCrawler {
     this._queue = [];
 
     await this._write();
+    await deleteOrphans();
 
     if (this._scan === null) {
       throw new Error("Tried to complete scan but it was null");
