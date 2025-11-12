@@ -109,7 +109,7 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
               </h4>
             )}
             <h4>{truncate(album?.title ?? "", { length: 50 })}</h4>
-            <h4>{album?.year}</h4>
+            <h4>{album?.year || ""}</h4>
             <div className="play-button" onClick={() => playAll()()}>
               <PlayCircleIcon className="icon-xxs" />
               Play
