@@ -50,10 +50,13 @@ export const ArtistController = {
       },
     });
 
+    console.log(JSON.stringify(artists, null, 2));
+
     return artists.map(({ id, name, albums }) => ({
       id,
       name,
-      image: albums.find(Boolean)?.album_art?.filename,
+      image: albums.find((album) => album?.album_art?.filename)?.album_art
+        ?.filename,
     }));
   },
 
