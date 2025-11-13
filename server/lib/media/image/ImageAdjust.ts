@@ -8,21 +8,19 @@ type ImageOptions = {
 /**
  * Adjust the size/quality of an image
  *
- * @param data image data
+ * @param data image data Buffer
  * @param options resize options
- * @returns new image buffer
+ * @returns resized/compressed image buffer
  */
 export const adjustImage = async (
-  data: string,
-  options: Partial<ImageOptions>,
-) => {
-  const { size, quality } = options;
+  data: Buffer,
+  options: ImageOptions,
+): Promise<Buffer> => {
+  const { size, quality = 100 } = options;
 
-  const buffer = Buffer.from(data, "base64");
+  // Accept either a Buffer or base64 string
+  const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data, "base64");
 
-  if (size === undefined) {
-    return buffer;
-  }
-
+  // Use sharp for resizing and quality adjustment
   return sharp(buffer).resize(size).jpeg({ quality }).toBuffer();
 };

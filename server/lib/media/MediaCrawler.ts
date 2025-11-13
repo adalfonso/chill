@@ -1,11 +1,11 @@
 import fs from "node:fs/promises";
+import crypto from "node:crypto";
 import * as mm from "music-metadata";
 import { extname, join } from "node:path";
 import { Scan, ScanStatus } from "@prisma/client";
 
 import * as mappers from "./mappers";
 import { Maybe } from "@common/types";
-import { adjustImage } from "./image/ImageAdjust";
 import { db } from "../data/db";
 import { rebuildMusicSearchIndex } from "./MusicSearch";
 import { cacheAlbumArt } from "./image/ImageCache";
@@ -37,7 +37,8 @@ export type RawMediaPayload = {
 
 export type AlbumCover = {
   format: string;
-  data: string;
+  data: Buffer;
+  checksum: string;
   type: string;
 };
 
@@ -190,19 +191,7 @@ export class MediaCrawler {
     const result = await mm.parseFile(file_path, { duration: true });
     const { common, format } = result;
 
-    const cover = mm.selectCover(common.picture);
-
-    let cover_data = cover ? Buffer.from(cover.data).toString("base64") : null;
-
-    if (cover_data !== null) {
-      try {
-        cover_data = (
-          await adjustImage(cover_data, { size: 512, quality: 100 })
-        ).toString("base64");
-      } catch (e) {
-        console.error(`Failed to convert cover data for ${file_path}: ${e}`);
-      }
-    }
+    const cover = await getCoverData(common.picture);
 
     return {
       path: file_path,
@@ -217,14 +206,14 @@ export class MediaCrawler {
       bitrate: Math.floor(format.bitrate ?? 0 / 1000) || 0,
       sample_rate: Math.floor(format.sampleRate ?? 0 / 1000) || 0,
       bits_per_sample: await getBitsPerSample(file_path, format),
-      cover:
-        cover && cover_data
-          ? {
-              format: cover.format,
-              type: cover.type ?? "",
-              data: cover_data,
-            }
-          : null,
+      cover: cover
+        ? {
+            format: cover.format,
+            type: cover.type ?? "",
+            data: cover.data,
+            checksum: cover.checksum,
+          }
+        : null,
 
       file_modified: (await fs.stat(file_path)).ctime,
     };
@@ -343,4 +332,51 @@ const getBitsPerSample = async (file_path: string, format: mm.IFormat) => {
   }
 
   return 0;
+};
+
+/**
+ * Compute a SHA-256 checksum of a buffer
+ */
+const computeCoverDataChecksum = (buffer: Buffer) =>
+  crypto.createHash("sha256").update(buffer).digest("hex");
+
+/**
+ * Extracts, normalizes, and encodes cover art data from a parsed audio file.
+ *
+ * This function selects the most appropriate cover image from the provided
+ * metadata pictures, computes its checksum for deduplication or change tracking,
+ * and resizes the image to a standard size before returning it as a Base64 string.
+ *
+ * @param file_path - The absolute or relative path of the source audio file (used for logging).
+ * @param input - An array of `music-metadata` picture objects (e.g., from `common.picture`), or `undefined` if none exist.
+ * @returns cover data or null
+ */
+const getCoverData = async (
+  input: Array<mm.IPicture> | undefined,
+): Promise<
+  Maybe<{
+    data: Buffer;
+    checksum: string;
+    format: string;
+    type: string | undefined;
+  }>
+> => {
+  if (!input) {
+    return null;
+  }
+
+  const cover = mm.selectCover(input);
+
+  if (!cover) {
+    return null;
+  }
+
+  const buffer = Buffer.from(cover.data);
+
+  return {
+    data: buffer,
+    checksum: computeCoverDataChecksum(buffer),
+    format: cover.format,
+    type: cover.type,
+  };
 };

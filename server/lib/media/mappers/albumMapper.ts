@@ -61,11 +61,14 @@ export const upsertAlbums = async (
 
   // Detect album art that has not yet been inserted
   const album_art_to_add = existing_albums
-    .filter(
-      (album) =>
-        !album.album_art &&
-        recordsGroupedByAlbum[getAlbumLookupKey(album)].cover,
-    )
+    .filter((album) => {
+      const cover = recordsGroupedByAlbum[getAlbumLookupKey(album)].cover;
+
+      return (
+        cover &&
+        (!album.album_art || album.album_art.checksum !== cover.checksum)
+      );
+    })
     .map((album) => {
       const cover = recordsGroupedByAlbum[getAlbumLookupKey(album)]
         .cover as AlbumCover;
