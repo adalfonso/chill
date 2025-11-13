@@ -81,9 +81,14 @@ export const upsertAlbums = async (
     });
 
   if (album_art_to_add.length) {
+    const albumIds = album_art_to_add.map((a) => a.album_id);
+
+    await db.albumArt.deleteMany({
+      where: { album_id: { in: albumIds } },
+    });
+
     await db.albumArt.createMany({
       data: album_art_to_add,
-      skipDuplicates: true,
     });
   }
 
