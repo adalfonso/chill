@@ -17,6 +17,7 @@ export class SocketClient<
 > {
   /** Current WebSocket instance, or null if not connected */
   #ws: WebSocket | null = null;
+  #onWakeFns: Array<() => void> = [];
 
   /** Handlers for server-sent events */
   #handlers: Partial<{ [K in ServerEvent]: (data: ServerData[K]) => void }> =
@@ -35,11 +36,14 @@ export class SocketClient<
   constructor() {
     this.connect();
 
+    const wakeUp = () => this.#onWakeFns.forEach((fn) => fn());
+
     // Reconnect when returning from idle
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") {
         console.info("Visibility changed; attempting reconnect");
         this.reconnectIfNeeded();
+        wakeUp();
       }
     });
 
@@ -47,6 +51,7 @@ export class SocketClient<
     window.addEventListener("online", () => {
       console.info("Online status changed; attempting reconnect");
       this.reconnectIfNeeded();
+      wakeUp();
     });
   }
 
@@ -178,6 +183,10 @@ export class SocketClient<
     handler: (data: ServerData[E]) => void,
   ) {
     this.#handlers[event] = handler;
+  }
+
+  public onWake(fn: () => void) {
+    this.#onWakeFns.push(fn);
   }
 
   /**

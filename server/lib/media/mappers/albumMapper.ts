@@ -89,6 +89,7 @@ export const upsertAlbums = async (
 
     await db.albumArt.createMany({
       data: album_art_to_add,
+      skipDuplicates: true,
     });
   }
 
