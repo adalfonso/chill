@@ -11,9 +11,8 @@ export const useSeek = () => {
   const lastEmit = useRef(0);
 
   return (percent: number) => {
-    const { outgoing_connection, incoming_connections, ws } = getAppState();
+    const { outgoing_connection, ws } = getAppState();
 
-    const is_target = incoming_connections.value.length > 0;
     const is_source = Boolean(outgoing_connection.value);
 
     const now = performance.now();
@@ -24,7 +23,7 @@ export const useSeek = () => {
 
     lastEmit.current = now;
 
-    if (is_target) {
+    if (!is_source) {
       dispatch(seek(percent));
     }
 
