@@ -49,7 +49,7 @@ Configure your HOST env var to be your IP on the local network, not localhost.
 
 **Running in Production**
 
-n.b. that if the nginx config/docker setup causes the config to be overwritten
+n.b. that the nginx config/docker setup causes the config to be overwritten
 by whatever is stored in the local file system, so until it's fix default.conf
 needs to be updated manually.
 
