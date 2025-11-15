@@ -24,7 +24,7 @@ export const useChangeVolume = () => {
 
     lastEmit.current = now;
 
-    if (is_target) {
+    if (!is_source) {
       dispatch(changeVolume(percent));
     }
 
