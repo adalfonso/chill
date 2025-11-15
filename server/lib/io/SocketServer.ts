@@ -47,7 +47,7 @@ export class SocketServer<
       });
     }, CLEANUP_INTERVAL_MS);
 
-    // Pink interval
+    // Ping interval
     setInterval(() => {
       (this.wss.clients as Set<ExtWebSocket>).forEach((ws) => {
         if (ws.readyState === WebSocket.OPEN) {
@@ -108,12 +108,26 @@ export class SocketServer<
     user_id: number,
     session_id: string,
   ): Array<DeviceClient> => {
-    return this.getClientsByUserId(user_id).map((client) => ({
-      user_id: client.user_id,
-      session_id: client.session_id,
-      is_this_device: session_id === client.session_id,
-      displayAs: `${client.device_info.type} ${client.device_info.browser} on ${client.device_info.os}`,
-    }));
+    const clients = this.getClientsByUserId(user_id);
+
+    // Dedup by session_id
+    const deduped = new Map<string, ExtWebSocket>();
+
+    for (const client of clients) {
+      if (!deduped.has(client.session_id)) {
+        deduped.set(client.session_id, client);
+      }
+    }
+
+    return deduped
+      .values()
+      .toArray()
+      .map((client) => ({
+        user_id: client.user_id,
+        session_id: client.session_id,
+        is_this_device: session_id === client.session_id,
+        displayAs: `${client.device_info.type} ${client.device_info.browser} on ${client.device_info.os}`,
+      }));
   };
 
   #onConnection(ws: ExtWebSocket, req: TypedRequest) {

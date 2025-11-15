@@ -50,8 +50,6 @@ export const ArtistController = {
       },
     });
 
-    console.log(JSON.stringify(artists, null, 2));
-
     return artists.map(({ id, name, albums }) => ({
       id,
       name,
