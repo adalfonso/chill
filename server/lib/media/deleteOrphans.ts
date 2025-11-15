@@ -1,7 +1,6 @@
 import { db } from "../data/db";
 
 export const deleteOrphans = async () => {
-  // Step 1: delete albums, artists, and genres with no tracks
   const [albumResult, artistResult, genreResult] = await db.$transaction([
     db.album.deleteMany({ where: { tracks: { none: {} } } }),
     db.artist.deleteMany({ where: { tracks: { none: {} } } }),

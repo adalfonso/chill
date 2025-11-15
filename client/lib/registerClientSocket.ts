@@ -70,8 +70,6 @@ export const registerClientSocket = (
 
   ws.on(ServerSocketEvent.AcceptConnection, (data) => {
     const { outgoing_connection } = getAppState();
-    // TODO: Some sort of check that the connection is ok/safe. maybe the server should handle this
-    // should also update app state here
 
     outgoing_connection.value = data.from;
 
