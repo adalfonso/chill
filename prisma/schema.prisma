@@ -26,21 +26,23 @@ model Album {
   created_at DateTime  @default(now())
   updated_at DateTime  @default(now()) @updatedAt
 
-  @@unique([title, year])
+  @@unique([title, year, artist_id])
 }
 
 model AlbumArt {
   id         Int      @id @default(autoincrement())
   filename   String   @unique
   format     String
-  data       String
+  data       Bytes
   type       String
-  album      Album    @relation(fields: [album_id], references: [id])
+  checksum   String
+  album      Album    @relation(fields: [album_id], references: [id], onDelete: Cascade)
   album_id   Int      @unique
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
 
   @@index([album_id])
+  @@index([checksum])
 }
 
 model Artist {

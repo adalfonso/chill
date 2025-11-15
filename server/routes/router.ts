@@ -1,14 +1,16 @@
-import auth from "./auth";
-import cast_media from "./cast_media";
 import express, { Express } from "express";
 import historyApiFallback from "connect-history-api-fallback";
+
+import auth from "./auth";
+import cast_media from "./cast_media";
 import v1 from "./api/v1";
+import { ChillWss } from "@server/registerServerSocket";
 import { env } from "@server/init";
 import { isAuthenticated } from "@middleware/isAuthenticated";
 
-export const initRouter = (app: Express) => {
+export const initRouter = (app: Express, wss: ChillWss) => {
   // Register open routes
-  app.use("/auth", auth);
+  app.use("/auth", auth(wss));
 
   // Chromecast receiver app
   app.use("/receiver", express.static(env.RECEIVER_SOURCE_DIR));

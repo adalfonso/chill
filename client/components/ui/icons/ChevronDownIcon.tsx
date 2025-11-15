@@ -1,5 +1,6 @@
 import { SVGProps } from "preact/compat";
 
+// From hero icons
 export const ChevronDownIcon = (props: SVGProps<SVGSVGElement>) => {
   return (
     <svg

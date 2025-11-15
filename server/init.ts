@@ -5,10 +5,13 @@ import passport from "passport";
 import { UserType } from "@prisma/client";
 
 import { Cache } from "./lib/data/Cache";
-import { configurePassport } from "./passportConfig";
-import { initRouter } from "@routes/router";
 import { Search } from "./lib/data/Search";
+import { SocketServer } from "./lib/io/SocketServer";
+import { configurePassport } from "./passportConfig";
 import { db } from "./lib/data/db";
+import { initRouter } from "@routes/router";
+import { ChillWss, registerServerSocket } from "./registerServerSocket";
+import { accessLogs } from "./middleware/accessLogs";
 
 /**
  * Initialize the express app
@@ -19,13 +22,17 @@ import { db } from "./lib/data/db";
 export const init = async (app: Express) => {
   const env = initEnvVars();
 
+  const wss: ChillWss = new SocketServer();
+
+  registerServerSocket(wss);
   configurePassport(passport);
 
   app.use(cookieParser(env.SIGNING_KEY));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+  app.use(accessLogs);
 
-  initRouter(app);
+  initRouter(app, wss);
 
   await Promise.all([
     Cache.connect(env.REDIS_HOST),
@@ -38,7 +45,7 @@ export const init = async (app: Express) => {
 
   await createInitialAdminUser();
 
-  return env;
+  return { env, wss };
 };
 
 // List of required env vars
@@ -72,7 +79,7 @@ const defaults: Record<string, string> = {
   RECEIVER_SOURCE_DIR: "dist/receiver",
 } as const;
 
-type EnvStore = {
+export type EnvStore = {
   [K in (typeof required_vars)[number]]: string;
 };
 

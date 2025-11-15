@@ -5,7 +5,7 @@ import { makeDirIfNotExists } from "@server/lib/file";
 import { adjustImage } from "./ImageAdjust";
 import { db } from "@server/lib/data/db";
 
-const common_album_art_sizes = [36, 160, 176, 256];
+const common_album_art_sizes = [36, 160, 176, 256, 500];
 const data_dir = `/opt/app/data`;
 const album_art_dir = `/opt/app/data/albumart`;
 
@@ -20,7 +20,7 @@ export const getAlbumFromFs = async (filename: string, size: number) => {
   const album_art_filename_pattern = /^\d+\.(jpe?g|png|gif)$/;
 
   if (!album_art_filename_pattern.test(filename)) {
-    throw new Error("Invalid album art filename");
+    throw new Error(`Invalid album art filename, "${filename}"`);
   }
 
   if (!common_album_art_sizes.includes(size)) {
@@ -52,13 +52,13 @@ export const cacheAlbumArt = async () => {
     ),
   );
 
-  const chunk = 25;
-  let page = 0;
+  const chunk_size = 25;
+  let chunk = 0;
   let more_results = true;
   let records_processed = 0;
 
   while (more_results) {
-    console.info(`Caching page ${page} of album art...`);
+    console.info(`Caching chunk ${chunk} of album art...`);
     const album_art = await db.albumArt.findMany({
       select: {
         album_id: true,
@@ -69,11 +69,11 @@ export const cacheAlbumArt = async () => {
       orderBy: {
         id: "asc",
       },
-      skip: page * chunk,
-      take: chunk,
+      skip: chunk * chunk_size,
+      take: chunk_size,
     });
 
-    page++;
+    chunk++;
     records_processed += album_art.length;
 
     if (!album_art.length) {
@@ -90,12 +90,13 @@ export const cacheAlbumArt = async () => {
                 size.toString(),
                 `${art.album_id}.${art.format.split("/").at(1)}`,
               ),
-              await adjustImage(art.data, { size, quality: 80 }),
+              await adjustImage(art.data, { size, quality: 90 }),
             );
           } catch (error) {
             console.error(`Failed to cache album art:`, {
               id: art.album_id,
               size,
+              error,
             });
           }
         }),
@@ -104,7 +105,7 @@ export const cacheAlbumArt = async () => {
   }
 
   console.info(
-    `Album art cahed. Took ${
+    `Album art cached. Took ${
       (new Date().valueOf() - start?.valueOf()) / 1000
     } seconds for ${records_processed} records`,
   );

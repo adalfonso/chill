@@ -1,26 +1,20 @@
-import { useDispatch } from "react-redux";
 import { useLocation } from "wouter-preact";
-import { useContext, useRef } from "preact/hooks";
+import { useRef } from "preact/hooks";
 
 import "./MusicLibrary.scss";
-import { AppContext } from "@client/state/AppState";
+import { DEFAULT_LIMIT, DEFAULT_PAGE, paginate } from "@common/pagination";
 import { PenIcon } from "@client/components/ui/icons/PenIcon";
 import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
-import { PlayMode } from "@reducers/player.types";
-import { PlaylistWithCount, Raw } from "@common/types";
+import { PlaylistWithCount, PlayMode, Raw } from "@common/types";
 import { api } from "@client/client";
-import { DEFAULT_LIMIT, DEFAULT_PAGE, paginate } from "@common/pagination";
-import { play } from "@reducers/player";
-import { useInfiniteScroll } from "@hooks/index";
 import { getPlaylistTracks } from "@client/lib/TrackLoaders";
+import { useAppState, useInfiniteScroll, usePlay } from "@hooks/index";
 
 export const Playlists = () => {
+  const { is_busy } = useAppState();
   const observedElement = useRef<HTMLDivElement>(null);
-
-  const dispatch = useDispatch();
+  const play = usePlay();
   const [, navigate] = useLocation();
-
-  const { is_busy } = useContext(AppContext);
 
   const loadPlaylists = (page: number) => {
     is_busy.value = true;
@@ -52,7 +46,7 @@ export const Playlists = () => {
         more: true,
       };
 
-      dispatch(play({ tracks, play_options, index: 0 }));
+      play({ tracks, play_options, index: 0 });
     } catch (e) {
       console.error("Failed to play playlist", (e as Error)?.message);
     }

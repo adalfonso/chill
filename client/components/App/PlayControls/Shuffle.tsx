@@ -1,18 +1,16 @@
-import { useDispatch, useSelector } from "react-redux";
-
+import { useSelector } from "react-redux";
 import { getPlayerState } from "@reducers/store";
-import { shuffle } from "@reducers/player";
+
 import { ShuffleIcon } from "@client/components/ui/icons/ShuffleIcon";
+import { useShuffle } from "@hooks/index";
 
 export const Shuffle = () => {
   const player = useSelector(getPlayerState);
-  const dispatch = useDispatch();
-
-  const toggleShuffle = () => dispatch(shuffle());
+  const shuffle = useShuffle();
 
   return (
     <ShuffleIcon
-      onClick={toggleShuffle}
+      onClick={shuffle}
       className={player.is_shuffled ? "active icon-xs" : "icon-xs"}
     />
   );

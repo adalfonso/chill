@@ -1,7 +1,10 @@
 import jwt from "jsonwebtoken";
 import path from "node:path";
 import { Request, Response } from "express";
+import { nanoid } from "nanoid";
 
+import { ChillWss } from "@server/registerServerSocket";
+import { TypedRequest } from "@server/lib/io/Request";
 import { blacklistToken } from "@server/lib/data/Cache";
 import { env } from "@server/init";
 
@@ -12,9 +15,10 @@ export const AuthController = {
   login: (_req: Request, res: Response) =>
     res.sendFile(path.join(path.resolve(), "views/login.html")),
 
-  logout: async (req: Request, res: Response) => {
+  logout: (wss: ChillWss) => async (req: TypedRequest, res: Response) => {
     const token = req.cookies?.access_token;
 
+    wss.drop(req._user.session_id);
     if (token) {
       await blacklistToken(token);
     } else {
@@ -48,7 +52,7 @@ export const AuthController = {
     };
 
     jwt.sign(
-      { user: req.user },
+      { user: req.user, session_id: nanoid(4) },
       env.SIGNING_KEY,
       { expiresIn: jwt_expiration_seconds },
       signingCallback,

@@ -1,20 +1,20 @@
 import { Genre } from "@prisma/client";
-import { useContext, useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
-import { AppContext } from "@client/state/AppState";
-import { MediaTile } from "./MusicLibrary/MediaTile";
 import { Maybe, MediaTileData, MediaTileType, Raw } from "@common/types";
+import { MediaTile } from "./MusicLibrary/MediaTile";
 import { SmartScroller } from "./SmartScroller";
-import { artistUrl } from "@client/lib/Url";
 import { api } from "@client/client";
+import { artistUrl } from "@client/lib/Url";
 import { paginate } from "@common/pagination";
+import { useAppState } from "@hooks/index";
 
 type GenreViewProps = {
   genre_id: number;
 };
 
 export const GenreView = ({ genre_id }: GenreViewProps) => {
-  const { is_busy } = useContext(AppContext);
+  const { is_busy } = useAppState();
   const [genre, setGenre] = useState<Maybe<Raw<Genre>>>(null);
 
   useEffect(() => {

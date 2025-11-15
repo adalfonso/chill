@@ -1,21 +1,24 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useContext, useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef } from "preact/hooks";
 
 import "./Toolbar.scss";
+import * as Player from "@client/state/reducers/player";
 import { Maybe } from "@common/types";
 import { api } from "@client/client";
 import { getCasterState, getPlayerState } from "@client/state/reducers/store";
-import { AppContext } from "@client/state/AppState";
-import * as Player from "@client/state/reducers/player";
+import { useAppState, usePlay, useSeek } from "@hooks/index";
 
 export const CastPlayer = () => {
+  const { progress } = useAppState();
   const caster = useSelector(getCasterState);
   const player = useSelector(getPlayerState);
-  const { progress } = useContext(AppContext);
+
   const cast_context = useRef<Maybe<cast.framework.CastContext>>(null);
   const player_ref = useRef(player);
-
+  const play = usePlay();
+  const seek = useSeek();
   const dispatch = useDispatch();
+
   player_ref.current = player;
 
   useEffect(() => {
@@ -111,21 +114,19 @@ export const CastPlayer = () => {
             playlist.length
           ) {
             // Immediately play when starting a cast session
-            dispatch(
-              Player.play({
-                tracks: playlist,
-                cast_info,
-                index,
-                progress: progress.value,
-              }),
-            );
+            play({
+              tracks: playlist,
+              cast_info,
+              index,
+              progress: progress.value,
+            });
           }
 
           break;
         }
         case cast.framework.SessionState.SESSION_ENDED:
           dispatch(Player.setPlayerIsCasting(false));
-          dispatch(Player.seek(progress.value));
+          seek(progress.value);
           break;
 
         default:

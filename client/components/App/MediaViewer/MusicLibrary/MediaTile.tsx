@@ -1,6 +1,7 @@
+import { Signal } from "@preact/signals";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation } from "wouter-preact";
 import { useEffect, useRef, useState } from "preact/hooks";
+import { useLocation } from "wouter-preact";
 
 import "./MediaTile.scss";
 import { FileMenu, FileMenuHandler } from "../FileMenu";
@@ -10,7 +11,6 @@ import { albumUrl, artistUrl, matchUrl } from "@client/lib/Url";
 import { api } from "@client/client";
 import { getPlayerState } from "@client/state/reducers/store";
 import { noPropagate } from "@client/lib/Event";
-import { play } from "@reducers/player";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import { setMenu } from "@client/state/reducers/mediaMenu";
 import {
@@ -18,6 +18,7 @@ import {
   useId,
   useLongPress,
   useMenu,
+  usePlay,
   useViewport,
 } from "@hooks/index";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@common/pagination";
@@ -26,7 +27,6 @@ import {
   getTracks as loadTracks,
   sort_clauses,
 } from "@client/lib/TrackLoaders";
-import { Signal } from "@preact/signals";
 
 type MediaTileProps<T extends Record<string, unknown>> = {
   tile_type: MediaTileType;
@@ -50,7 +50,7 @@ export const MediaTile = <T extends Record<string, unknown>>({
   const player = useSelector(getPlayerState);
   const menu_id = useId();
   const previous_position = useRef(parent_scroll_position?.peek());
-
+  const play = usePlay();
   const menu = useMenu(menu_id);
   const { width } = useViewport();
   const [menu_visible, setMenuVisible] = useState(false);
@@ -112,7 +112,7 @@ export const MediaTile = <T extends Record<string, unknown>>({
         more: true,
       };
 
-      dispatch(play({ tracks, cast_info, index: 0, play_options }));
+      play({ tracks, cast_info, index: 0, play_options });
     },
     getTracks: getTracksForMediaTile(tile_type, tile_data),
     getTrackIds: () =>

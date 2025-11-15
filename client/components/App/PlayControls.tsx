@@ -2,6 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "wouter-preact";
 
 import "./PlayControls.scss";
+import { AudioType } from "@server/lib/media/types";
 import { BackwardIcon } from "../ui/icons/BackwardIcon";
 import { ChevronDownIcon } from "../ui/icons/ChevronDownIcon";
 import { Close } from "../ui/Close";
@@ -11,25 +12,26 @@ import { ForwardIcon } from "../ui/icons/ForwardIcon";
 import { MobileDisplayMode } from "@reducers/player.types";
 import { PauseIcon } from "../ui/icons/PauseIcon";
 import { PlayIcon } from "../ui/icons/PlayIcon";
+import { PlayableTrack } from "@common/types";
 import { Playlist } from "./PlayControls/Playlist";
 import { Scrubber } from "./PlayControls/Scrubber";
 import { Shuffle } from "./PlayControls/Shuffle";
 import { VolumeControl } from "./PlayControls/VolumeControl";
 import { artistAlbumUrl, artistUrl } from "@client/lib/Url";
+import { clear, setMobileDisplayMode } from "@reducers/player";
 import { getPlayerState } from "@reducers/store";
 import { noPropagate } from "@client/lib/Event";
 import { screen_breakpoint_px } from "@client/lib/constants";
-import { useBackNavigate, useId, useMenu, useViewport } from "@hooks/index";
 import {
-  clear,
-  next,
-  pause,
-  play,
-  previous,
-  setMobileDisplayMode,
-} from "@reducers/player";
-import { AudioType } from "@server/lib/media/types";
-import { PlayableTrack } from "@common/types";
+  useBackNavigate,
+  useId,
+  useMenu,
+  useNext,
+  usePause,
+  usePlay,
+  usePrevious,
+  useViewport,
+} from "@hooks/index";
 
 const default_now_playing = "";
 
@@ -53,6 +55,10 @@ const getBitsDisplay = (track: PlayableTrack) => {
 };
 
 export const PlayControls = () => {
+  const play = usePlay();
+  const pause = usePause();
+  const next = useNext();
+  const previous = usePrevious();
   const dispatch = useDispatch();
   const [, navigate] = useLocation();
   const file_menu_id = useId();
@@ -89,10 +95,7 @@ export const PlayControls = () => {
   };
 
   // Toggle audio play / pause
-  const togglePlayer = async () => {
-    const operation = player.is_playing ? pause() : play({});
-    dispatch(operation);
-  };
+  const togglePlayer = async () => (player.is_playing ? pause() : play({}));
 
   // Stop all audio from playing
   const stop = () => {
@@ -127,7 +130,7 @@ export const PlayControls = () => {
             <div className="cover">
               {player.now_playing?.album_art_filename && (
                 <img
-                  src={`/api/v1/media/cover/${player.now_playing?.album_art_filename}?size=256`}
+                  src={`/api/v1/media/cover/${player.now_playing?.album_art_filename}?size=500`}
                   loading="lazy"
                 />
               )}
@@ -141,10 +144,7 @@ export const PlayControls = () => {
             <div className="title">{getNowPlaying()}</div>
 
             <div className="controls">
-              <div
-                className="circle-button"
-                onClick={() => dispatch(previous())}
-              >
+              <div className="circle-button" onClick={previous}>
                 <BackwardIcon className="icon-md" />
               </div>
               <div className="circle-button play" onClick={togglePlayer}>
@@ -156,7 +156,7 @@ export const PlayControls = () => {
               </div>
               <div
                 className="circle-button"
-                onClick={() => dispatch(next({ auto: false }))}
+                onClick={() => next({ auto: false })}
               >
                 <ForwardIcon className="icon-md" />
               </div>

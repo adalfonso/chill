@@ -116,3 +116,65 @@ export type Raw<T> = {
       ? Raw<T[K]>
       : T[K];
 };
+
+export type DeviceClient = {
+  user_id: number;
+  session_id: string;
+  is_this_device: boolean;
+  displayAs: string;
+};
+
+export type DeviceInfo = {
+  type: string;
+  browser: string;
+  os: string;
+};
+
+export type PlayPayload = {
+  tracks?: Array<PlayableTrack>;
+  index?: number;
+  progress?: number;
+  play_options?: PlayOptions;
+  skip_reload?: boolean;
+  is_virtual?: boolean;
+};
+
+export type PlayerReconnectPayload = {
+  original_playlist: Array<PlayableTrackWithIndex>;
+  playlist: Array<PlayableTrackWithIndex>;
+  is_playing: boolean;
+  is_shuffled: boolean;
+  volume: boolean;
+};
+
+export const PlayMode = {
+  None: "none",
+  Random: "random",
+  UserPlaylist: "user-playlist",
+  Artist: "artist",
+  Album: "album",
+  Genre: "genre",
+} as const;
+
+export type PlayMode = ObjectValues<typeof PlayMode>;
+
+type RandomPlayOptions = {
+  mode: typeof PlayMode.Random;
+  more: boolean;
+};
+
+type NonePlayOptions = {
+  mode: typeof PlayMode.None;
+  more: false;
+};
+
+export type PlayOptions =
+  | RandomPlayOptions
+  | NonePlayOptions
+  | {
+      mode: Exclude<PlayMode, typeof PlayMode.Random & typeof PlayMode.None>;
+      id: number;
+      page: number;
+      limit: number;
+      more: boolean;
+    };

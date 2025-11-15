@@ -1,10 +1,9 @@
-import { useContext, useEffect } from "preact/hooks";
+import { useEffect } from "preact/hooks";
 import { useDispatch } from "react-redux";
 import { Switch, Route } from "wouter-preact";
 
 import "./MediaViewer.scss";
 import { AlbumView } from "./MediaViewer/AlbumView";
-import { AppContext } from "@client/state/AppState";
 import { ArtistView } from "./MediaViewer/ArtistView";
 import { GenreView } from "./MediaViewer/GenreView";
 import { MusicLibrary } from "./MediaViewer/MusicLibrary";
@@ -12,9 +11,10 @@ import { PlaylistViewer } from "./MediaViewer/PlaylistViewer";
 import { Playlists } from "./MediaViewer/Playlists";
 import { api } from "@client/client";
 import { setUser } from "@reducers/user";
+import { useAppState } from "@hooks/index";
 
 export const AppRouter = () => {
-  const { is_busy } = useContext(AppContext);
+  const { is_busy } = useAppState();
   const dispatch = useDispatch();
 
   // Let's load the user once and expect that any updates to the user through

@@ -1,10 +1,9 @@
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useState } from "preact/hooks";
 
 import "./MusicLibrary.scss";
 import { MediaTile } from "./MusicLibrary/MediaTile";
-import { MediaTileData, MediaTileType } from "@common/types";
-import { PlayMode } from "@reducers/player.types";
+import { MediaTileData, MediaTileType, PlayMode } from "@common/types";
 import { Select } from "../../ui/Select";
 import { SmartScroller } from "./SmartScroller";
 import { api } from "@client/client";
@@ -13,11 +12,11 @@ import { getPlayerState } from "@client/state/reducers/store";
 import { getRandomTracks } from "@client/lib/TrackLoaders";
 import { matchUrl } from "@client/lib/Url";
 import { paginate } from "@common/pagination";
-import { play } from "@reducers/player";
+import { usePlay } from "@hooks/usePlay";
 
 export const MusicLibrary = () => {
-  const dispatch = useDispatch();
   const player = useSelector(getPlayerState);
+  const play = usePlay();
 
   const [match, setMatch] = useState<MediaTileType>(MediaTileType.Artist);
 
@@ -44,7 +43,8 @@ export const MusicLibrary = () => {
       : null;
 
     const play_options = { mode: PlayMode.Random, more: true };
-    dispatch(play({ tracks: tracks, play_options, cast_info, index: 0 }));
+
+    play({ tracks, play_options, cast_info, index: 0 });
   };
 
   return (

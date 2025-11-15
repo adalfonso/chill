@@ -1,19 +1,23 @@
 import { Album, Artist } from "@prisma/client";
-import { useDispatch, useSelector } from "react-redux";
-import { useState, useEffect, useContext, useCallback } from "preact/hooks";
+import { useSelector } from "react-redux";
+import { useState, useEffect, useCallback } from "preact/hooks";
 
 import "./AlbumView.scss";
-import { AlbumRelationalData, Maybe, PlayableTrack, Raw } from "@common/types";
+import {
+  AlbumRelationalData,
+  Maybe,
+  PlayableTrack,
+  PlayMode,
+  Raw,
+} from "@common/types";
 import { AlbumViewRow } from "./AlbumView/AlbumViewRow";
-import { AppContext } from "@client/state/AppState";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@common/pagination";
 import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
-import { PlayMode } from "@reducers/player.types";
 import { api } from "@client/client";
 import { getPlayerState } from "@client/state/reducers/store";
 import { getTracks, sort_clauses } from "@client/lib/TrackLoaders";
-import { play } from "@reducers/player";
 import { truncate } from "@common/commonUtils";
+import { useAppState, usePlay } from "@hooks/index";
 
 type AlbumViewProps = {
   artist_id?: number;
@@ -21,13 +25,13 @@ type AlbumViewProps = {
 };
 
 export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
-  const { is_busy } = useContext(AppContext);
+  const { is_busy } = useAppState();
   const player = useSelector(getPlayerState);
   const [artist, setArtist] = useState<Maybe<Raw<Artist>>>(null);
   const [album, setAlbum] =
     useState<Maybe<Raw<Album & AlbumRelationalData>>>(null);
   const [tracks, setTracks] = useState<Maybe<Array<PlayableTrack>>>(null);
-  const dispatch = useDispatch();
+  const play = usePlay();
 
   const loadInfo = useCallback(() => {
     Promise.all(
@@ -66,9 +70,7 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
         more: true,
       };
 
-      dispatch(
-        play({ tracks: [...(tracks ?? [])], cast_info, index, play_options }),
-      );
+      play({ tracks: [...(tracks ?? [])], cast_info, index, play_options });
     };
 
   const artist_ids = () =>
@@ -107,7 +109,7 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
               </h4>
             )}
             <h4>{truncate(album?.title ?? "", { length: 50 })}</h4>
-            <h4>{album?.year}</h4>
+            <h4>{album?.year || ""}</h4>
             <div className="play-button" onClick={() => playAll()()}>
               <PlayCircleIcon className="icon-xxs" />
               Play

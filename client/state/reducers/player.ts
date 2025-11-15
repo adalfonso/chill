@@ -1,8 +1,15 @@
 import { createSlice, PayloadAction as Action } from "@reduxjs/toolkit";
 
 import { CastSdk } from "@client/lib/cast/CastSdk";
-import { Maybe, PlayableTrack, PlayableTrackWithIndex } from "@common/types";
-import { MobileDisplayMode, PlayMode, PlayOptions } from "./player.types";
+import {
+  Maybe,
+  PlayableTrack,
+  PlayableTrackWithIndex,
+  PlayPayload,
+  PlayMode,
+  PlayOptions,
+} from "@common/types";
+import { MobileDisplayMode } from "./player.types";
 import { PreCastPayload } from "@client/lib/cast/types";
 import { api } from "@client/client";
 import { shuffle as _shuffle, findIndex } from "@common/commonUtils";
@@ -43,12 +50,8 @@ const initialState: PlayerState = {
   },
 };
 
-type PlayLoad = {
-  tracks?: Array<PlayableTrack>;
+export type PlayLoad = PlayPayload & {
   cast_info?: Maybe<PreCastPayload>;
-  index?: number;
-  progress?: number;
-  play_options?: PlayOptions;
 };
 
 const addSemanticIndex = (
@@ -131,12 +134,14 @@ export const playerSlice = createSlice({
         cast_info = null,
         index = 0,
         progress = 0,
+        is_virtual = false,
+        skip_reload = false,
         play_options = { mode: PlayMode.None, more: false },
       } = action.payload;
 
-      const tracks_with_index = action.payload.tracks
-        ? addSemanticIndex(action.payload.tracks)
-        : [];
+      const tracks_with_index = skip_reload
+        ? state.playlist
+        : addSemanticIndex(tracks ?? []);
 
       if (tracks) {
         state.playlist = tracks_with_index;
@@ -166,6 +171,13 @@ export const playerSlice = createSlice({
       }
 
       if (!state.now_playing) {
+        return;
+      }
+
+      // Virtual play happens when the source is remote controlling playback on
+      // a target
+      if (is_virtual) {
+        state.is_playing = true;
         return;
       }
 
@@ -227,7 +239,8 @@ export const playerSlice = createSlice({
       }
     },
 
-    previous: (state) => {
+    previous: (state, action: Action<{ is_virtual?: boolean }>) => {
+      const { is_virtual = false } = action.payload;
       state.index--;
 
       if (state.index < 0) {
@@ -240,6 +253,10 @@ export const playerSlice = createSlice({
 
       state.now_playing = state.playlist[state.index];
       state.next_playing = state.playlist[state.index + 1] ?? null;
+
+      if (is_virtual) {
+        return;
+      }
 
       if (state.is_casting) {
         if (state.cast_info === null) {
@@ -258,8 +275,8 @@ export const playerSlice = createSlice({
       state.is_playing = true;
     },
 
-    next: (state, action: Action<{ auto?: boolean }>) => {
-      const { auto = false } = action.payload;
+    next: (state, action: Action<{ auto?: boolean; is_virtual?: boolean }>) => {
+      const { auto = false, is_virtual = false } = action.payload;
 
       state.index++;
 
@@ -276,6 +293,10 @@ export const playerSlice = createSlice({
 
       state.now_playing = state.playlist[state.index];
       state.next_playing = state.playlist[state.index + 1] ?? null;
+
+      if (is_virtual) {
+        return;
+      }
 
       if (crossover.src) {
         [audio, crossover] = [crossover, audio];
@@ -320,12 +341,20 @@ export const playerSlice = createSlice({
       audio.currentTime = time;
     },
 
-    shuffle: (state) => {
+    shuffle: (
+      state,
+      action: Action<Array<PlayableTrackWithIndex> | undefined>,
+    ) => {
+      // The only time tracks are sent is if this is the source in a websocket
+      // connection and the target sends the newly shuffled playlist
+      const tracks = action?.payload;
+
       if (state.is_shuffled) {
         state.playlist = [...state.original_playlist];
       } else {
         state.original_playlist = [...state.playlist];
-        state.playlist = _shuffle(state.playlist);
+        state.playlist =
+          tracks && tracks.length ? tracks : _shuffle(state.playlist);
       }
 
       state.is_shuffled = !state.is_shuffled;
@@ -346,6 +375,10 @@ export const playerSlice = createSlice({
       loadNext(state);
     },
 
+    setIsPlaying: (state) => {
+      state.is_playing = true;
+    },
+
     setMobileDisplayMode: (state, action: Action<MobileDisplayMode>) => {
       state.mobile_display_mode = action.payload;
     },
@@ -361,22 +394,26 @@ export const playerSlice = createSlice({
 
       state.play_options = { ...options };
     },
+
+    replaceState: (_state, action: Action<PlayerState>) => action.payload,
   },
 });
 
 export const {
   addToQueue,
   changeVolume,
-  next,
   clear,
+  next,
   pause,
   play,
   playNext,
   previous,
+  replaceState,
   seek,
-  shuffle,
+  setIsPlaying,
   setMobileDisplayMode,
   setPlayerIsCasting,
+  shuffle,
   updatePlayOptions,
 } = playerSlice.actions;
 

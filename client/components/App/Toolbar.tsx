@@ -5,19 +5,29 @@ import { useState } from "preact/hooks";
 import "./Toolbar.scss";
 import { AppSettings as AppSettings } from "./Toolbar/AppSettings";
 import { CastPlayer } from "./CastPlayer";
+import { DeviceIcon } from "../ui/icons/DeviceIcon";
+import { Devices } from "./Toolbar/Devices";
 import { GearIcon } from "../ui/icons/GearIcon";
 import { Search } from "./Toolbar/Search";
 import { UserIcon } from "../ui/icons/UserIcon";
 import { UserSettings } from "./Toolbar/UserSettings";
 import { getCasterState } from "@client/state/reducers/store";
-import { useBackNavigate } from "@hooks/index";
+import { useBackNavigate, useAppState } from "@hooks/index";
 
-type SettingsMenu = "user" | "app";
+type SettingsMenu = "user" | "app" | "devices";
 
 export const Toolbar = () => {
-  const [settings_vis, setSettingsVis] = useState({ user: false, app: false });
+  const { outgoing_connection, incoming_connections } = useAppState();
+  const [settings_vis, setSettingsVis] = useState({
+    user: false,
+    app: false,
+    devices: false,
+  });
   const caster = useSelector(getCasterState);
   const [, navigate] = useLocation();
+
+  const device_connected =
+    outgoing_connection.value || incoming_connections.value.length > 0;
 
   /**
    * Toggle the visibility of a menu
@@ -28,6 +38,7 @@ export const Toolbar = () => {
     setSettingsVis({
       user: false,
       app: false,
+      devices: false,
       [type]: !settings_vis[type],
     });
   };
@@ -37,7 +48,7 @@ export const Toolbar = () => {
     // Override location change when either settings menu is open
     () => settings_vis.app || settings_vis.user,
     // Hide the playlist instead of changing location
-    () => setSettingsVis({ app: false, user: false }),
+    () => setSettingsVis({ app: false, user: false, devices: false }),
   );
 
   return (
@@ -51,6 +62,19 @@ export const Toolbar = () => {
         {caster.ready && <google-cast-launcher></google-cast-launcher>}
         {/* Invisible, just used to mediate between redux stores */}
         <CastPlayer></CastPlayer>
+
+        <DeviceIcon
+          className="icon-sm"
+          onClick={toggleVis("devices")}
+          {...(device_connected && {
+            stroke: "rgb(139, 195, 255)",
+            strokeWidth: 2,
+          })}
+        />
+
+        {settings_vis.devices && (
+          <Devices onClose={toggleVis("devices")}></Devices>
+        )}
 
         <GearIcon className="icon-sm" onClick={toggleVis("app")} />
         {settings_vis.app && (

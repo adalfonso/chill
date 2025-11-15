@@ -9,7 +9,7 @@ import { Request } from "@server/trpc";
 import { db } from "@server/lib/data/db";
 import { AudioQuality, Prisma } from "@prisma/client";
 import { convert as convertAudioTrack } from "@server/lib/conversion";
-import { stream_file as streamAudioTrack } from "@server/lib/stream";
+import { stream_file as streamAudioTrack } from "@server/lib/io/stream";
 import { adjustImage } from "@server/lib/media/image/ImageAdjust";
 import { getFileTypeFromPath } from "@common/commonUtils";
 import { env } from "@server/init";
@@ -79,6 +79,8 @@ export const TrackController = {
 
   cover: async (req: Req, res: Res) => {
     const { filename } = req.params;
+    const MAX_SIZE = 2048;
+
     const raw_size = req.query.size ?? "256";
 
     if (typeof raw_size !== "string") {
@@ -95,6 +97,12 @@ export const TrackController = {
       return res
         .status(400)
         .send(`Invalid size provided. "${req.query.size}" must be an integer.`);
+    }
+
+    if (size > MAX_SIZE) {
+      return res
+        .status(400)
+        .send(`Invalid size provided: ${size}; must be <= ${MAX_SIZE}.`);
     }
 
     try {
@@ -122,7 +130,7 @@ export const TrackController = {
     }
 
     try {
-      const img = await adjustImage(result.data, { size, quality: 50 });
+      const img = await adjustImage(result.data, { size, quality: 90 });
 
       res.writeHead(200, {
         "Content-Type": result.format,

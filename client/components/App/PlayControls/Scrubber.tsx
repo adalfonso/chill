@@ -1,24 +1,22 @@
-import { useEffect, useRef, useContext } from "preact/hooks";
-import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useRef } from "preact/hooks";
+import { useSelector } from "react-redux";
 
 import "./Scrubber.scss";
 import * as AudioProgress from "@client/lib/AudioProgress";
-import { AppContext } from "@client/state/AppState";
 import { CastSdk } from "@client/lib/cast/CastSdk";
 import { Maybe, PlayableTrackWithIndex } from "@common/types";
-import { audio, crossover, next, seek } from "@reducers/player";
+import { audio, crossover } from "@reducers/player";
 import { getPlayerState } from "@reducers/store";
-import { useDrag } from "@hooks/index";
+import { useDrag, useAppState, useNext, useSeek } from "@hooks/index";
 
 const gap_offset = 0.25;
 
 export const Scrubber = () => {
-  const { progress } = useContext(AppContext);
+  const { progress, progress_s, outgoing_connection } = useAppState();
+  const seek = useSeek();
+  const next = useNext();
   const player = useSelector(getPlayerState);
-  const dispatch = useDispatch();
-  const { startDrag, cancelDrag, updateDrag, dragging } = useDrag(
-    (percent: number) => dispatch(seek(percent)),
-  );
+  const { startDrag, cancelDrag, updateDrag, dragging } = useDrag(seek);
 
   const is_casting = useRef(player.is_casting);
 
@@ -34,11 +32,19 @@ export const Scrubber = () => {
         is_casting.current,
       );
 
-      if (audio_progress === progress.value) {
+      // Skip if progress is being read from some target device, or if the
+      // progress has not changed
+      if (outgoing_connection.value || audio_progress === progress.value) {
         return;
       }
 
       progress.value = audio_progress;
+
+      if (player.now_playing) {
+        progress_s.value = Math.floor(
+          progress.value * player.now_playing.duration,
+        );
+      }
     }, 20);
 
     /**
@@ -51,8 +57,7 @@ export const Scrubber = () => {
      */
 
     const onCrossover = () =>
-      audio.duration - audio.currentTime < gap_offset &&
-      dispatch(next({ auto: true }));
+      audio.duration - audio.currentTime < gap_offset && next({ auto: true });
 
     // Copy of this value in case it changes before this effect is cleaned up
     const is_casting_local_var = is_casting.current;
@@ -99,9 +104,7 @@ export const Scrubber = () => {
         <div className="current-time">
           {player.now_playing &&
             AudioProgress.getTimeTracking(
-              player.is_casting
-                ? progress.value * player.now_playing.duration
-                : audio.currentTime,
+              progress.value * player.now_playing.duration,
             )}
         </div>
         <div className="end-time">

@@ -1,16 +1,14 @@
 import { Playlist } from "@prisma/client";
-import { useDispatch } from "react-redux";
 import { useEffect, useState } from "preact/hooks";
 
 import "./MusicLibrary.scss";
-import { PlayableTrack, Raw } from "@common/types";
+import { PlayableTrack, PlayMode, Raw } from "@common/types";
 import { PlaylistRow } from "./Playlist/PlaylistRow";
 import { SmartScroller } from "./SmartScroller";
 import { api } from "@client/client";
-import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@common/pagination";
-import { play } from "@reducers/player";
-import { PlayMode } from "@reducers/player.types";
+import { DEFAULT_LIMIT } from "@common/pagination";
 import { getPlaylistTracks } from "@client/lib/TrackLoaders";
+import { usePlay } from "@hooks/index";
 
 type PlaylistViewerProps = {
   playlist_id: number;
@@ -18,7 +16,7 @@ type PlaylistViewerProps = {
 
 export const PlaylistViewer = ({ playlist_id }: PlaylistViewerProps) => {
   const [playlist, setPlaylist] = useState<Raw<Playlist>>();
-  const dispatch = useDispatch();
+  const play = usePlay();
 
   const playAll =
     (index = 0) =>
@@ -35,19 +33,17 @@ export const PlaylistViewer = ({ playlist_id }: PlaylistViewerProps) => {
 
       // todo cast info?
 
-      dispatch(
-        play({
-          tracks,
-          index,
-          play_options: {
-            mode: PlayMode.UserPlaylist,
-            id: playlist_id,
-            limit: DEFAULT_LIMIT,
-            page,
-            more: true,
-          },
-        }),
-      );
+      play({
+        tracks,
+        index,
+        play_options: {
+          mode: PlayMode.UserPlaylist,
+          id: playlist_id,
+          limit: DEFAULT_LIMIT,
+          page,
+          more: true,
+        },
+      });
     };
 
   useEffect(() => {
