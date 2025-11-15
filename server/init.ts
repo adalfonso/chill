@@ -66,7 +66,6 @@ const required_vars = [
   "SEARCH_ENGINE_USERNAME",
   "SIGNING_KEY",
   "SOURCE_DIR",
-  "SSL_PATH",
 ] as const;
 
 const defaults: Record<string, string> = {
