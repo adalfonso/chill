@@ -50,7 +50,7 @@ export const registerClientSocket = (
 
   ws.ready().then(identify);
 
-  ws.onWake(identify);
+  ws.onSync(identify);
 
   ws.on(ServerSocketEvent.Connect, (data) => {
     const { outgoing_connection, incoming_connections } = getAppState();

@@ -24,6 +24,13 @@ export type ChillWss = SocketServer<
 export const registerServerSocket = (wss: ChillWss) => {
   const connector = new DeviceConnect();
 
+  wss.onPing((ws) => wss.emit(ServerSocketEvent.Ping, ws));
+
+  // Ideally this is in the SocketServer
+  wss.on(ClientSocketEvent.Pong, (ws) => {
+    ws.is_alive = true;
+  });
+
   // ---- General Client Events ----
   wss.on(ClientSocketEvent.Identify, (ws, data) => {
     wss.identify(ws, data);

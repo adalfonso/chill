@@ -11,8 +11,8 @@ export const ServerSocketEvent = Object.assign({}, DuplexEvent, TargetEvent, {
   Connect: "Connect",
   DenyConnection: "DenyConnection",
   Disconnect: "Disconnect",
+  Ping: "Ping",
   PlayerReconnect: "PlayerReconnect",
-
   Reconnect: "Reconnect",
 } as const) satisfies Record<keyof ServerSocketData, string>;
 
@@ -25,8 +25,9 @@ export type ServerSocketData = DuplexSocketData &
     Connect: { from: string };
     DenyConnection: { from: string; reason: string };
     Disconnect: { from: string };
-    Reconnect: { connection: ConnectionInfo };
+    Ping: undefined;
     PlayerReconnect: { from: string } | { payload: PlayerState };
+    Reconnect: { connection: ConnectionInfo };
   };
 
 export type ConnectionInfo =

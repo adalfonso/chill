@@ -17,14 +17,16 @@ export class SocketClient<
 > {
   /** Current WebSocket instance, or null if not connected */
   #ws: WebSocket | null = null;
-  #onWakeFns: Array<() => void> = [];
+
+  /** Does some syncing action when connecting; your choice */
+  #syncFn: () => void = () => {};
 
   /** Handlers for server-sent events */
   #handlers: Partial<{ [K in ServerEvent]: (data: ServerData[K]) => void }> =
     {};
 
   /** Timeout ID for scheduled reconnect attempts */
-  #reconnect_timeout: number | null = null;
+  #reconnect_timeout_cb: number | null = null;
 
   /** Counter for exponential backoff reconnect attempts */
   #reconnect_attempt = 0;
@@ -36,22 +38,22 @@ export class SocketClient<
   constructor() {
     this.connect();
 
-    const wakeUp = () => this.#onWakeFns.forEach((fn) => fn());
-
     // Reconnect when returning from idle
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") {
-        console.info("Visibility changed; attempting reconnect");
-        this.reconnectIfNeeded();
-        wakeUp();
+      if (document.visibilityState === "hidden") {
+        // Clear any reconnections underway we don't need them when we're going idle
+        return this.clearReconnectionMeta();
       }
+
+      // visible → reconnect if needed
+      this.reconnectIfNeeded();
     });
 
     // Reconnect when network comes back
     window.addEventListener("online", () => {
       console.info("Online status changed; attempting reconnect");
+
       this.reconnectIfNeeded();
-      wakeUp();
     });
   }
 
@@ -68,17 +70,18 @@ export class SocketClient<
     this.#ws.onopen = (event) => {
       console.info("Connected to WebSocket", { event });
 
-      // Reset exponential backoff
-      this.#reconnect_attempt = 0;
-
-      if (this.#reconnect_timeout) {
-        clearTimeout(this.#reconnect_timeout);
-        this.#reconnect_timeout = null;
-      }
+      this.#syncFn();
+      this.clearReconnectionMeta();
     };
 
     this.#ws.onclose = () => {
       console.warn("WebSocket closed — scheduling reconnect");
+
+      // Ignore closes while idle
+      if (document.visibilityState === "hidden") {
+        return;
+      }
+
       this.scheduleReconnect();
     };
 
@@ -91,7 +94,6 @@ export class SocketClient<
       console.info("Message received over websocket", message.data);
 
       const { event, data } = JSON.parse(message.data) ?? {};
-
       const handler = this.#handlers[event as ServerEvent];
 
       if (handler) {
@@ -102,27 +104,36 @@ export class SocketClient<
     };
   }
 
+  /** Clear reconnection metadata */
+  private clearReconnectionMeta() {
+    if (this.#reconnect_timeout_cb) {
+      clearTimeout(this.#reconnect_timeout_cb);
+      this.#reconnect_timeout_cb = null;
+    }
+
+    this.#reconnect_attempt = 0;
+  }
+
   /**
    * Schedule a reconnect attempt with exponential backoff.
    * Uses a 2s, 4s, 8s, ... up to a maximum of 30s between attempts.
    */
   private scheduleReconnect() {
-    // already scheduled
-    if (this.#reconnect_timeout) {
+    // Already scheduled, abort
+    if (this.#reconnect_timeout_cb) {
       return;
     }
 
-    const tryReconnect = () => {
-      this.#reconnect_attempt++;
-      console.info("Attempting WebSocket reconnect", this.#reconnect_attempt);
-      this.connect();
-      this.#reconnect_timeout = window.setTimeout(
-        tryReconnect,
-        Math.min(2000 * this.#reconnect_attempt, 30_000),
-      );
-    };
+    const delay = Math.min(500 * this.#reconnect_attempt + 1, 10_000);
 
-    this.#reconnect_timeout = window.setTimeout(tryReconnect, 2000);
+    console.info("Scheduling reconnect in", delay, "ms");
+
+    this.#reconnect_timeout_cb = window.setTimeout(() => {
+      this.#reconnect_timeout_cb = null;
+      this.#reconnect_attempt++;
+
+      this.connect();
+    }, delay);
   }
 
   /**
@@ -132,8 +143,6 @@ export class SocketClient<
    * @returns promise
    */
   public async ready(): Promise<void> {
-    this.reconnectIfNeeded();
-
     if (this.#ws?.readyState === WebSocket.OPEN) {
       return;
     }
@@ -185,8 +194,13 @@ export class SocketClient<
     this.#handlers[event] = handler;
   }
 
-  public onWake(fn: () => void) {
-    this.#onWakeFns.push(fn);
+  /**
+   * Cause websocket connection to sync to given fn
+   *
+   * @param fn - function to call
+   */
+  public onSync(fn: () => void) {
+    this.#syncFn = fn;
   }
 
   /**
@@ -194,12 +208,13 @@ export class SocketClient<
    * Called automatically on network/visibility changes.
    */
   public reconnectIfNeeded() {
-    if (
-      !this.#ws ||
-      this.#ws.readyState === WebSocket.CLOSING ||
-      this.#ws.readyState === WebSocket.CLOSED
-    ) {
+    if (document.visibilityState === "hidden") {
+      return; // don't reconnect while idle
+    }
+
+    if (!this.#ws || this.#ws.readyState !== WebSocket.OPEN) {
       console.info("WebSocket is closed — reconnecting");
+      this.clearReconnectionMeta();
       this.connect();
     }
   }

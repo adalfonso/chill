@@ -20,6 +20,7 @@ let _app_state: Maybe<AppState> = null;
 export const createAppState = () => {
   const is_busy = signal(false);
   const progress = signal(0);
+
   // debounced version of progress
   const progress_s = signal(0);
   const incoming_connections = signal<Array<string>>([]);

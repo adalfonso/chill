@@ -29,6 +29,8 @@ export class SocketServer<
     [K in ClientEvent]: (ws: ExtWebSocket, data: ClientData[K]) => void;
   }> = {};
 
+  #pingFn: (ws: ExtWebSocket) => void = () => {};
+
   public connector = new DeviceConnect();
 
   constructor() {
@@ -49,9 +51,10 @@ export class SocketServer<
 
     // Ping interval
     setInterval(() => {
+      console.log(this.wss.clients.size, " clients");
       (this.wss.clients as Set<ExtWebSocket>).forEach((ws) => {
         if (ws.readyState === WebSocket.OPEN) {
-          ws.ping();
+          this.#pingFn(ws);
         }
       });
     }, PING_INTERVAL_MS);
@@ -72,6 +75,15 @@ export class SocketServer<
     handler: (ws: ExtWebSocket, data: ClientData[E]) => void,
   ) {
     this.#handlers[event] = handler;
+  }
+
+  /**
+   * Designate a function that causes a ping
+   *
+   * @param fn  ping fn
+   */
+  public onPing(fn: (ws: ExtWebSocket) => void) {
+    this.#pingFn = fn;
   }
 
   /**
