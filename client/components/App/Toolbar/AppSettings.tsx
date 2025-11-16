@@ -1,65 +1,86 @@
-import { useEffect, useState } from "preact/hooks";
 import { useSelector } from "react-redux";
-import { useSignal } from "@preact/signals";
 
 import "./AppSettings.scss";
 import { AudioQualitySetting } from "./AppSettings/AudioQualitySetting";
 import { Close } from "@client/components/ui/Close";
 import { InviteUser } from "./AppSettings/InviteUser";
 import { UserType } from "@common/types";
-import { api } from "@client/client";
 import { getUserState } from "@reducers/store";
-import { FileTypeGraph } from "./AppSettings/FileTypeGraph";
+import { AppSetting } from "./AppSetting";
+import { noPropagate } from "@client/lib/Event";
+import { FileTypeCounts } from "./AppSettings/FileTypeCounts";
+import { AmbiguousArtistGenre } from "./AppSettings/AmbiguousArtistGenre";
+import { LibraryScan } from "./AppSettings/LibraryScan";
+import { AppSettingType as SettingType } from "@client/types";
+import { useAppState } from "@hooks/useAppState";
 
 type AppSettingsProps = {
   onClose: () => void;
 };
 
+const settingsContent = {
+  [SettingType.None]: <></>,
+  [SettingType.MusicQuality]: <AudioQualitySetting />,
+  [SettingType.InviteUser]: <InviteUser />,
+  [SettingType.LibraryScan]: <LibraryScan />,
+  [SettingType.LibraryInsights]: (
+    <>
+      <FileTypeCounts />
+      <AmbiguousArtistGenre />
+    </>
+  ),
+} as const satisfies Record<SettingType, unknown>;
+
 export const AppSettings = ({ onClose }: AppSettingsProps) => {
-  const fileTypeCounts = useSignal({} as Record<string, number>);
-  const [busy, setBusy] = useState(false);
+  const { current_app_setting } = useAppState();
   const user = useSelector(getUserState);
-
-  // Cause file scanner to run
-  // TODO: can this be refactored to use useFetch?
-  const scan = async () => {
-    if (busy) {
-      return;
-    }
-
-    if (!confirm("Are you sure you want to run a scan?")) {
-      return;
-    }
-
-    setBusy(true);
-    await api.media.scan.mutate();
-    setBusy(false);
-  };
-
-  useEffect(() => {
-    api.media.byFileType
-      .query()
-      .then((result) => (fileTypeCounts.value = result));
-  }, []);
 
   return (
     <div className="fullscreen">
       <div id="app-settings">
         <Close onClose={onClose} />
-
-        <div className="settings">
-          {Object.keys(fileTypeCounts.value).length && (
-            <FileTypeGraph data={fileTypeCounts} />
-          )}
-          <AudioQualitySetting user={user} />
-
-          {user.type === UserType.Admin && <InviteUser />}
-
-          {user.type === UserType.Admin && (
-            <div className="link setting" onMouseUp={scan}>
-              Run Scan Now!
+        <h2 className="settings-header">Settings</h2>
+        <div className="settings-body">
+          <div className="settings-list">
+            <h3>Playback & Audio</h3>
+            <div className="settings-group">
+              <AppSetting
+                id={SettingType.MusicQuality}
+                title="Music quality"
+              ></AppSetting>
             </div>
-          )}
+
+            <h3>Library</h3>
+            <div className="settings-group">
+              {user.type === UserType.Admin && (
+                <>
+                  <AppSetting
+                    id={SettingType.InviteUser}
+                    title="Invite a user"
+                  />
+                  <AppSetting
+                    id={SettingType.LibraryScan}
+                    title="Scan library files"
+                  />
+                </>
+              )}
+
+              <AppSetting
+                id={SettingType.LibraryInsights}
+                title="Library insights"
+              />
+            </div>
+          </div>
+
+          <div className={`settings-content ${current_app_setting.value}`}>
+            <Close
+              onClose={noPropagate(
+                () => (current_app_setting.value = SettingType.None),
+              )}
+            />
+
+            {settingsContent[current_app_setting.value]}
+          </div>
         </div>
       </div>
     </div>

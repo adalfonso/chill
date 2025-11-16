@@ -13,6 +13,7 @@ import { TrackRouter } from "./routes/api/v1/trpc/TrackRouter";
 import { UserRouter } from "@routes/api/v1/trpc/UserRouter";
 import { UserType } from "@prisma/client";
 import { TypedRequest } from "./lib/io/Request";
+import { LibraryHealthRouter } from "./routes/api/v1/trpc/LibraryHealthRouter";
 
 export const createContext = ({
   req,
@@ -42,9 +43,10 @@ export const admin_procedure = procedure.use(isAdmin);
 export const api_router = t.router({
   admin: AdminRouter(router),
   album: AlbumRouter(router),
-  cast: CastRouter(router),
   artist: ArtistRouter(router),
+  cast: CastRouter(router),
   genre: GenreRouter(router),
+  libraryHealth: LibraryHealthRouter(router),
   media: MediaRouter(router),
   playlist: PlaylistRouter(router),
   track: TrackRouter(router),

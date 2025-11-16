@@ -5,6 +5,7 @@ import { ClientSocketData, ClientSocketEvent } from "@common/SocketClientEvent";
 import { ServerSocketData, ServerSocketEvent } from "@common/SocketServerEvent";
 import { Maybe } from "@common/types";
 import { registerClientSocket } from "@client/lib/registerClientSocket";
+import { AppSettingType } from "@client/types";
 
 export type AppState = ReturnType<typeof createAppState>;
 
@@ -20,6 +21,7 @@ let _app_state: Maybe<AppState> = null;
 export const createAppState = () => {
   const is_busy = signal(false);
   const progress = signal(0);
+  const current_app_setting = signal<AppSettingType>(AppSettingType.None);
 
   // debounced version of progress
   const progress_s = signal(0);
@@ -27,12 +29,13 @@ export const createAppState = () => {
   const outgoing_connection = signal<Maybe<string>>(null);
 
   return {
+    current_app_setting,
+    incoming_connections,
     is_busy,
+    outgoing_connection,
     progress,
     progress_s,
     ws,
-    incoming_connections,
-    outgoing_connection,
   };
 };
 

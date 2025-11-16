@@ -178,3 +178,9 @@ export type PlayOptions =
       limit: number;
       more: boolean;
     };
+
+export type AmbiguousArtistGenre = {
+  id: number;
+  artist: string;
+  genres: Array<string>;
+};

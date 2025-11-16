@@ -36,7 +36,7 @@ export const InviteUser = () => {
         sendInvite();
       }}
     >
-      <p>Invite new user to Chill:</p>
+      <h2>Invite a user</h2>
       <input
         type="email"
         name="invite-email"
