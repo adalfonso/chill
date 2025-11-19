@@ -18,6 +18,7 @@ import { useViewport } from "@hooks/useViewport";
 import { AccountSettings } from "./AppSettings/AccountSettings";
 import { useEffect } from "preact/hooks";
 import { LibraryStats } from "./AppSettings/LibraryStats";
+import { LowQualityAlbums } from "./AppSettings/LowQualityAlbums";
 
 type AppSettingsProps = {
   onClose: () => void;
@@ -34,6 +35,7 @@ const settingsContent = {
       <FileTypeCounts />
       <LibraryStats />
       <AmbiguousArtistGenre />
+      <LowQualityAlbums />
     </>
   ),
 } as const satisfies Record<SettingType, unknown>;
