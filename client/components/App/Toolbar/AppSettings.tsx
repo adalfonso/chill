@@ -69,7 +69,7 @@ export const AppSettings = ({ onClose }: AppSettingsProps) => {
             <div className="settings-group">
               <AppSetting
                 id={SettingType.MusicQuality}
-                title="Music quality"
+                title="Audio quality"
               ></AppSetting>
             </div>
 

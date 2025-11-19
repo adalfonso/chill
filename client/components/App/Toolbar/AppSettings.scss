@@ -50,6 +50,10 @@
       padding: 1rem;
       background-color: $dm-shadow;
       overflow-y: scroll;
+
+      > .setting {
+        margin-bottom: 3rem;
+      }
     }
   }
 

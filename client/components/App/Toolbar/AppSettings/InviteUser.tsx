@@ -31,6 +31,7 @@ export const InviteUser = () => {
 
   return (
     <form
+      className="setting-invite-user setting"
       onSubmit={(e) => {
         e.preventDefault();
         sendInvite();

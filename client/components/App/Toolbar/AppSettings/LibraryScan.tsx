@@ -27,11 +27,11 @@ export const LibraryScan = () => {
   };
 
   return (
-    <>
+    <div className="setting-scan-library setting">
       <h2>Scan library files</h2>
       <div className="link setting" onMouseUp={scan}>
         Run Scan Now!
       </div>
-    </>
+    </div>
   );
 };

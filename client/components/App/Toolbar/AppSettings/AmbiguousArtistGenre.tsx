@@ -15,8 +15,8 @@ export const AmbiguousArtistGenre = () => {
   }, []);
 
   return (
-    <div className="setting-artist-ambiguous-genre">
-      <h2>Artists with ambiguous genre</h2>
+    <div className="setting-artist-ambiguous-genre setting">
+      <h2>Ambiguous genre</h2>
       {ambigouous_artist_genre.value.map((entry) => {
         return (
           <div key={entry.artist}>
