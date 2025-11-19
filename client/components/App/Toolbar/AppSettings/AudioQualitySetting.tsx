@@ -50,7 +50,7 @@ export const AudioQualitySetting = () => {
   };
 
   return (
-    <div className="audio-quality setting">
+    <div className="setting-audio-quality">
       <h2>Music quality</h2>
 
       <Select

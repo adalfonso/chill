@@ -9,17 +9,15 @@ import { DeviceIcon } from "../ui/icons/DeviceIcon";
 import { Devices } from "./Toolbar/Devices";
 import { GearIcon } from "../ui/icons/GearIcon";
 import { Search } from "./Toolbar/Search";
-import { UserIcon } from "../ui/icons/UserIcon";
-import { UserSettings } from "./Toolbar/UserSettings";
+
 import { getCasterState } from "@client/state/reducers/store";
 import { useBackNavigate, useAppState } from "@hooks/index";
 
-type SettingsMenu = "user" | "app" | "devices";
+type SettingsMenu = "app" | "devices";
 
 export const Toolbar = () => {
   const { outgoing_connection, incoming_connections } = useAppState();
   const [settings_vis, setSettingsVis] = useState({
-    user: false,
     app: false,
     devices: false,
   });
@@ -36,7 +34,6 @@ export const Toolbar = () => {
    */
   const toggleVis = (type: SettingsMenu) => () => {
     setSettingsVis({
-      user: false,
       app: false,
       devices: false,
       [type]: !settings_vis[type],
@@ -46,9 +43,9 @@ export const Toolbar = () => {
   // Minimize the player on back navigation when fullscreen
   useBackNavigate(
     // Override location change when either settings menu is open
-    () => settings_vis.app || settings_vis.user,
+    () => settings_vis.app,
     // Hide the playlist instead of changing location
-    () => setSettingsVis({ app: false, user: false, devices: false }),
+    () => setSettingsVis({ app: false, devices: false }),
   );
 
   return (
@@ -79,11 +76,6 @@ export const Toolbar = () => {
         <GearIcon className="icon-sm" onClick={toggleVis("app")} />
         {settings_vis.app && (
           <AppSettings onClose={toggleVis("app")}></AppSettings>
-        )}
-
-        <UserIcon className="icon-sm" onClick={toggleVis("user")} />
-        {settings_vis.user && (
-          <UserSettings setVis={toggleVis("user")}></UserSettings>
         )}
       </div>
       <Search></Search>

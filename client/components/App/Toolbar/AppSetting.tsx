@@ -9,7 +9,6 @@ type AppSettingProps = {
 
 export const AppSetting = ({ id, title }: AppSettingProps) => {
   const { current_app_setting } = useAppState();
-
   const is_selected = current_app_setting.value === id;
 
   const onClick = () => (current_app_setting.value = id);

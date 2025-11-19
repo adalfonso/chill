@@ -1,9 +1,10 @@
 export const AppSettingType = {
   None: "None",
-  MusicQuality: "MusicQuality",
+  Account: "Account",
   InviteUser: "InviteUser",
-  LibraryScan: "LibraryScan",
   LibraryInsights: "LibraryInsights",
+  LibraryScan: "LibraryScan",
+  MusicQuality: "MusicQuality",
 } as const;
 
 export type AppSettingType =

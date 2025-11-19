@@ -14,7 +14,6 @@ export const FileTypeCounts = () => {
 
   return (
     <>
-      {" "}
       {Object.keys(fileTypeCounts.value).length && (
         <FileTypeGraph data={fileTypeCounts} />
       )}

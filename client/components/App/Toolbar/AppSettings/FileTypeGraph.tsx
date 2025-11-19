@@ -16,7 +16,7 @@ export const FileTypeGraph = ({ data }: FileTypeGraphProps) => {
       .at(0) ?? 100;
 
   return (
-    <div className="file-type-graph setting">
+    <div className="setting-file-type-graph">
       <h2>File type percentages</h2>
       {Object.entries(data.value).map(([file_type, count], i, arr) => {
         const percent = (count / total) * 100;

@@ -13,6 +13,10 @@ import { AmbiguousArtistGenre } from "./AppSettings/AmbiguousArtistGenre";
 import { LibraryScan } from "./AppSettings/LibraryScan";
 import { AppSettingType as SettingType } from "@client/types";
 import { useAppState } from "@hooks/useAppState";
+import { screen_breakpoint_px } from "@client/lib/constants";
+import { useViewport } from "@hooks/useViewport";
+import { AccountSettings } from "./AppSettings/AccountSettings";
+import { useEffect } from "preact/hooks";
 
 type AppSettingsProps = {
   onClose: () => void;
@@ -20,6 +24,7 @@ type AppSettingsProps = {
 
 const settingsContent = {
   [SettingType.None]: <></>,
+  [SettingType.Account]: <AccountSettings />,
   [SettingType.MusicQuality]: <AudioQualitySetting />,
   [SettingType.InviteUser]: <InviteUser />,
   [SettingType.LibraryScan]: <LibraryScan />,
@@ -34,6 +39,16 @@ const settingsContent = {
 export const AppSettings = ({ onClose }: AppSettingsProps) => {
   const { current_app_setting } = useAppState();
   const user = useSelector(getUserState);
+  const { width } = useViewport();
+  const is_mobile = width < screen_breakpoint_px;
+
+  useEffect(() => {
+    if (is_mobile) {
+      current_app_setting.value = SettingType.None;
+    } else if (current_app_setting.value === SettingType.None) {
+      current_app_setting.value = SettingType.Account;
+    }
+  }, [is_mobile]);
 
   return (
     <div className="fullscreen">
@@ -42,6 +57,14 @@ export const AppSettings = ({ onClose }: AppSettingsProps) => {
         <h2 className="settings-header">Settings</h2>
         <div className="settings-body">
           <div className="settings-list">
+            <h3>Account</h3>
+            <div className="settings-group">
+              <AppSetting
+                id={SettingType.Account}
+                title="Account settings"
+              ></AppSetting>
+            </div>
+
             <h3>Playback & Audio</h3>
             <div className="settings-group">
               <AppSetting
