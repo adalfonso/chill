@@ -184,3 +184,13 @@ export type AmbiguousArtistGenre = {
   artist: string;
   genres: Array<string>;
 };
+
+export type AlbumBitrateStats = {
+  id: number;
+  title: string;
+  year: Maybe<number>;
+  track_count: number;
+  total_file_size: number;
+  total_duration: number;
+  avg_bitrate_kbps: number;
+};
