@@ -1,18 +1,16 @@
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useState } from "preact/hooks";
 
 import { Select } from "@client/components/ui/Select";
-import { UserState } from "@reducers/user";
 import { updateUserSettings } from "@reducers/user";
 import { AudioQuality, AudioQualityBitrate } from "@common/types";
 import { api } from "@client/client";
+import { useAppState } from "@hooks/useAppState";
+import { getUserState } from "@reducers/store";
 
-type AudioQualityProps = {
-  user: UserState;
-};
-
-export const AudioQualitySetting = ({ user }: AudioQualityProps) => {
-  const [busy, setBusy] = useState(false);
+export const AudioQualitySetting = () => {
+  const user = useSelector(getUserState);
+  const { is_busy } = useAppState();
   const [input, setInput] = useState(
     user?.settings?.audio_quality ?? AudioQuality.Original,
   );
@@ -20,10 +18,10 @@ export const AudioQualitySetting = ({ user }: AudioQualityProps) => {
   const dispatch = useDispatch();
 
   const changeQuality = async (quality: AudioQuality) => {
-    if (busy) {
+    if (is_busy.value) {
       return;
     }
-    setBusy(true);
+    is_busy.value = true;
     setInput(quality);
 
     try {
@@ -39,7 +37,7 @@ export const AudioQualitySetting = ({ user }: AudioQualityProps) => {
       // Reset on failure
       setInput(user?.settings?.audio_quality ?? AudioQuality.Original);
     } finally {
-      setBusy(false);
+      is_busy.value = false;
     }
   };
 
@@ -52,8 +50,8 @@ export const AudioQualitySetting = ({ user }: AudioQualityProps) => {
   };
 
   return (
-    <div className="audio-quality setting">
-      <div>Audio Quality:</div>
+    <div className="setting-audio-quality setting">
+      <h2>Audio quality</h2>
 
       <Select
         onChange={changeQuality}

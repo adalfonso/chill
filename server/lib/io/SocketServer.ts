@@ -51,7 +51,6 @@ export class SocketServer<
 
     // Ping interval
     setInterval(() => {
-      console.log(this.wss.clients.size, " clients");
       (this.wss.clients as Set<ExtWebSocket>).forEach((ws) => {
         if (ws.readyState === WebSocket.OPEN) {
           this.#pingFn(ws);
