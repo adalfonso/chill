@@ -60,6 +60,7 @@ model Track {
   path            String          @unique
   number          Int?
   duration        Decimal
+  file_size       Int
   file_type       String
   file_modified   DateTime
   bitrate         Int

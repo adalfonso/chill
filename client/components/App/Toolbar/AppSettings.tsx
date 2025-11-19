@@ -17,6 +17,7 @@ import { screen_breakpoint_px } from "@client/lib/constants";
 import { useViewport } from "@hooks/useViewport";
 import { AccountSettings } from "./AppSettings/AccountSettings";
 import { useEffect } from "preact/hooks";
+import { LibraryStats } from "./AppSettings/LibraryStats";
 
 type AppSettingsProps = {
   onClose: () => void;
@@ -31,6 +32,7 @@ const settingsContent = {
   [SettingType.LibraryInsights]: (
     <>
       <FileTypeCounts />
+      <LibraryStats />
       <AmbiguousArtistGenre />
     </>
   ),

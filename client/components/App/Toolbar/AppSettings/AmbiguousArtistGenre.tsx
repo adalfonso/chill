@@ -17,18 +17,20 @@ export const AmbiguousArtistGenre = () => {
   return (
     <div className="setting-artist-ambiguous-genre setting">
       <h2>Ambiguous genre</h2>
-      {ambigouous_artist_genre.value.map((entry) => {
-        return (
-          <div key={entry.artist}>
-            {entry.artist}
-            {entry.genres.map((genre) => (
-              <div className="ambiguous-genre" key={genre}>
-                {genre}
-              </div>
-            ))}
-          </div>
-        );
-      })}
+      <ul>
+        {ambigouous_artist_genre.value.map((entry) => {
+          return (
+            <li key={entry.artist}>
+              <strong>{entry.artist}</strong>
+              {entry.genres.map((genre) => (
+                <div className="ambiguous-genre" key={genre}>
+                  {genre}
+                </div>
+              ))}
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 };

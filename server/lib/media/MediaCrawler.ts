@@ -29,6 +29,7 @@ export type RawMediaPayload = {
   year: Maybe<number>;
   cover?: Maybe<AlbumCover>;
   file_modified: Date;
+  file_size: number;
   file_type: string;
   bitrate: number;
   sample_rate: number;
@@ -192,6 +193,7 @@ export class MediaCrawler {
     const { common, format } = result;
 
     const cover = await getCoverData(common.picture);
+    const stat = await fs.stat(file_path);
 
     return {
       path: file_path,
@@ -214,8 +216,8 @@ export class MediaCrawler {
             checksum: cover.checksum,
           }
         : null,
-
-      file_modified: (await fs.stat(file_path)).ctime,
+      file_modified: stat.ctime,
+      file_size: stat.size,
     };
   }
 
