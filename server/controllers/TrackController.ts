@@ -57,7 +57,7 @@ export const TrackController = {
         // audio, then sets the audio quality to medium after?
         const file_type =
           req.user?.settings?.audio_quality === AudioQuality.Original
-            ? getFileTypeFromPath(track.path)
+            ? track.file_type
             : "mp3";
 
         const content_type = `audio/${file_type}`;

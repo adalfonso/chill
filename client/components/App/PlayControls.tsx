@@ -35,7 +35,7 @@ import {
 
 const default_now_playing = "";
 
-const getBitsDisplay = (track: PlayableTrack) => {
+export const getBitsDisplay = (track: PlayableTrack) => {
   const bitrate = Math.floor((track.bitrate ?? 0) / 1000);
 
   const is_lossless =

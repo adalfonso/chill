@@ -12,6 +12,12 @@
       &:first-of-type {
         font-weight: 600;
         padding-right: 1rem;
+        text-align: right;
+      }
+
+      &:nth-of-type(2) {
+        text-align: left;
+        color: $dm-font-3;
       }
     }
   }
