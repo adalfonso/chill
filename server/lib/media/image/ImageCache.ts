@@ -5,7 +5,7 @@ import { makeDirIfNotExists } from "@server/lib/file";
 import { adjustImage } from "./ImageAdjust";
 import { db } from "@server/lib/data/db";
 
-const common_album_art_sizes = [36, 160, 176, 256, 500];
+const common_album_art_sizes = [42, 160, 176, 256, 500];
 const data_dir = `/opt/app/data`;
 const album_art_dir = `/opt/app/data/albumart`;
 

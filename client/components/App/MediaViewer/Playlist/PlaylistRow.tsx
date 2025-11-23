@@ -56,7 +56,7 @@ export const PlaylistRow = ({ track, index, playAll }: PlaylistRowProps) => {
       <div>
         {album_art_filename && (
           <img
-            src={`/api/v1/media/cover/${album_art_filename}?size=36`}
+            src={`/api/v1/media/cover/${album_art_filename}?size=42`}
             loading="lazy"
           />
         )}

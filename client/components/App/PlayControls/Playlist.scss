@@ -23,7 +23,7 @@
   }
 
   .close {
-    margin: -1em 1em 1rem 0;
+    margin: -2em 0em 1rem 0;
     align-self: flex-end;
   }
 
@@ -33,7 +33,8 @@
   }
 
   .artist {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
+    color: $dm-font-3;
   }
 
   .playlist-item {
@@ -41,7 +42,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.25rem 2rem;
+    padding: 0.25rem 1rem;
 
     &:hover {
       background-color: $dm-background;
@@ -54,12 +55,12 @@
 
   .cover {
     margin-right: 1rem;
-    height: 36px;
-    width: 36px;
+    height: 42px;
+    width: 42px;
     background-color: $dm-background;
-    border-radius: 0.125rem;
+    border-radius: 0.25rem;
     > img {
-      border-radius: 0.125rem;
+      border-radius: 0.25rem;
     }
   }
 
