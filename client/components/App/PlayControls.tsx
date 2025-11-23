@@ -85,11 +85,15 @@ export const PlayControls = () => {
           <div className="file-type">
             <span>{track.file_type?.toUpperCase()}</span>
           </div>
-
           <div className="track-title">{track.title}</div>
-
           <div className="quality">{getBitsDisplay(track)}</div>
         </div>
+
+        {(track.album || track.year) && (
+          <div className="track-album">
+            {track.album} {(track.year && `(${track.year})`) || ``}
+          </div>
+        )}
       </>
     );
   };

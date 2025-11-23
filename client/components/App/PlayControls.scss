@@ -116,6 +116,11 @@
           margin: 0.5rem 0;
         }
 
+        .track-album {
+          margin-top: 0.5rem;
+          color: $dm-font-3;
+        }
+
         .track-title {
           margin: 0 1.5rem;
           font-weight: 500;
@@ -130,6 +135,7 @@
           .file-type,
           .quality {
             font-size: 1rem;
+            color: $dm-font-3;
           }
         }
       }

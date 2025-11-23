@@ -205,12 +205,14 @@ export const TrackController = {
         track.id, track.title, track.path, track.number, track.duration,
         track.artist_id, track.album_id, artist.name AS artist,
         album.title AS album, album_art.filename AS album_art_filename,
-        file_type, bitrate, sample_rate, bits_per_sample
+        album.year, genre.name AS genre, file_type, bitrate, sample_rate,
+        bits_per_sample
 
       FROM public."Track" track
       LEFT JOIN public."Artist" artist ON track.artist_id = artist.id
       LEFT JOIN public."Album" album ON track.album_id = album.id
       LEFT JOIN public."AlbumArt" album_art ON album.id = album_art.album_id
+      LEFT JOIN public."Genre" genre ON track.genre_id = genre.id
       WHERE track.id IN (SELECT id FROM random_tracks LIMIT ${limit})`) as Array<PlayableTrack>;
   },
 
