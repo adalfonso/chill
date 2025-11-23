@@ -104,6 +104,9 @@ export const FileMenu = ({
           )}
 
           {children}
+          <div onClick={() => handler?.toggle && handler.toggle(false)}>
+            Close
+          </div>
         </section>
       )}
     </>
