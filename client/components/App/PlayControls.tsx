@@ -168,12 +168,14 @@ export const PlayControls = () => {
           </div>
           <div className="side-panel">
             <div className="icons">
+              <Playlist></Playlist>
               <div>
                 {now_playing !== null && (
                   <>
                     <FileMenu
                       menu_id={file_menu_id}
                       title={`${now_playing.artist} - ${now_playing.title}`}
+                      icon_orientation="horizontal"
                     >
                       {artist_id ? (
                         <div
@@ -217,8 +219,6 @@ export const PlayControls = () => {
                 )}
               </div>
               <Shuffle></Shuffle>
-
-              <Playlist></Playlist>
             </div>
 
             <VolumeControl></VolumeControl>

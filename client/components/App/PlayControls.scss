@@ -281,6 +281,20 @@
           }
         }
       }
+
+      .side-panel {
+        .icons {
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          margin-top: 0.5rem;
+
+          svg,
+          div {
+            margin: 0;
+          }
+        }
+      }
     }
   }
 }
