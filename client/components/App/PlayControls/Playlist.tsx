@@ -49,7 +49,7 @@ export const Playlist = () => {
             <div className="cover">
               {track.album_art_filename && (
                 <img
-                  src={`/api/v1/media/cover/${track.album_art_filename}?size=48`}
+                  src={`/api/v1/media/cover/${track.album_art_filename}?size=160`}
                   loading="lazy"
                 />
               )}

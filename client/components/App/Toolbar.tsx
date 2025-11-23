@@ -40,19 +40,35 @@ export const Toolbar = () => {
     });
   };
 
+  const hideMenus = () => setSettingsVis({ app: false, devices: false });
+
   // Minimize the player on back navigation when fullscreen
   useBackNavigate(
     // Override location change when either settings menu is open
     () => settings_vis.app,
     // Hide the playlist instead of changing location
-    () => setSettingsVis({ app: false, devices: false }),
+    hideMenus,
   );
 
   return (
     <div id="toolbar">
       <div className="libraries">
-        <div onClick={() => navigate("/")}>Music</div>
-        <div onClick={() => navigate("/playlists")}>Playlists</div>
+        <div
+          onClick={() => {
+            hideMenus();
+            navigate("/");
+          }}
+        >
+          Music
+        </div>
+        <div
+          onClick={() => {
+            hideMenus();
+            navigate("/playlists");
+          }}
+        >
+          Playlists
+        </div>
       </div>
 
       <div className="tools">
