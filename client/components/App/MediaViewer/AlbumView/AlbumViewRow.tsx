@@ -67,13 +67,19 @@ export const AlbumViewRow = ({ track, index, playAll }: AlbumViewRowProps) => {
       <div className="tail">
         <FileMenu
           menu_id={file_menu_id}
-          title={`${track?.artist} - ${track.title}`}
+          title={
+            <>
+              <div>{track.title}</div>
+              <div className="dim file-menu-subtext">{track.artist}</div>
+            </>
+          }
           handler={menuHandler}
         >
           <>
             {artist_id && (
               <div onClick={noPropagate(() => navigate(artistUrl(artist_id)))}>
                 Go to Artist
+                <div className="dim file-menu-subtext">{track.artist}</div>
               </div>
             )}
           </>

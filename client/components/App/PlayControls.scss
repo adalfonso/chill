@@ -6,7 +6,12 @@
   background-color: $dm-background-2;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: end;
+
+  .dim {
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+  }
 
   .controls {
     display: flex;
@@ -290,7 +295,7 @@
           margin-top: 0.5rem;
 
           svg,
-          div {
+          .file-info-menu {
             margin: 0;
           }
         }

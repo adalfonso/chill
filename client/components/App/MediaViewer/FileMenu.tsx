@@ -9,6 +9,7 @@ import { noPropagate } from "@client/lib/Event";
 import { toggle } from "@reducers/playlistEditor";
 import { useAddToQueue, useMenu, usePlayNext } from "@hooks/index";
 import { EllipsisIcon } from "@client/components/ui/icons/EllipsisIcon";
+import { ComponentChildren } from "preact";
 
 export type FileMenuHandler = {
   play: (e?: UIEvent) => void;
@@ -22,7 +23,7 @@ export type FileMenuHandler = {
 
 type FileMenuProps = {
   menu_id: string;
-  title: string;
+  title: string | ComponentChildren;
   handler?: FileMenuHandler;
   children?: JSX.Element | JSX.Element[];
   icon_orientation?: "vertical" | "horizontal";

@@ -139,6 +139,7 @@ export const MediaTile = <T extends Record<string, unknown>>({
           })}
         >
           Go to Artist
+          <div className="dim file-menu-subtext">{tile_data.name}</div>
         </div>,
       ],
       [
@@ -152,6 +153,7 @@ export const MediaTile = <T extends Record<string, unknown>>({
           })}
         >
           Go to Album
+          <div className="dim file-menu-subtext">{tile_data.name}</div>
         </div>,
       ],
       [
@@ -165,6 +167,7 @@ export const MediaTile = <T extends Record<string, unknown>>({
           })}
         >
           Go to Genre
+          <div className="dim file-menu-subtext">{tile_data.name}</div>
         </div>,
       ],
     ];

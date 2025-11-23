@@ -169,12 +169,19 @@ export const PlayControls = () => {
           <div className="side-panel">
             <div className="icons">
               <Playlist></Playlist>
-              <div>
+              <div className="file-info-menu">
                 {now_playing !== null && (
                   <>
                     <FileMenu
                       menu_id={file_menu_id}
-                      title={`${now_playing.artist} - ${now_playing.title}`}
+                      title={
+                        <>
+                          <div>{now_playing.title}</div>
+                          <div className="dim file-menu-subtext">
+                            {now_playing.artist}
+                          </div>
+                        </>
+                      }
                       icon_orientation="horizontal"
                     >
                       {artist_id ? (
@@ -185,6 +192,9 @@ export const PlayControls = () => {
                           }
                         >
                           Go to Artist
+                          <div className="dim file-menu-subtext">
+                            {now_playing.artist}
+                          </div>
                         </div>
                       ) : (
                         <></>
@@ -199,6 +209,9 @@ export const PlayControls = () => {
                           }
                         >
                           Go to Album
+                          <div className="dim file-menu-subtext">
+                            {now_playing.album}
+                          </div>
                         </div>
                       ) : (
                         <></>
@@ -227,7 +240,11 @@ export const PlayControls = () => {
       </div>
       {player.mobile_display_mode === MobileDisplayMode.Minimized && (
         <div id="play-controls-minimized" onClick={noPropagate(goFullscreen)}>
-          {player?.now_playing?.artist} - {player?.now_playing?.title}
+          <div>
+            {player?.now_playing?.title}
+            <div className="dim">{player?.now_playing?.artist}</div>
+          </div>
+
           <div className="controls">
             <div onClick={noPropagate(togglePlayer)}>
               {player.is_playing ? (
