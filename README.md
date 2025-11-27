@@ -9,7 +9,10 @@ pnpm i
 ```
 
 **Initial Setup**
-When setting up this repo for the first time, you will need to configure google oauth and seed the database with a user that has a gmail address. The easiest way to insert the admin email is by running `pnpm init:email <email_address>`
+
+1. You will need to configure google oauth for this application
+2. You will need to seed the database with a user that has a gmail address. Assign desired email to the env var `ADMIN_EMAIL`
+3. In the .env file temporarily change `DATABASE_URL` to replace "postgres" with "localhost". Then run `pnpm prisma migrate dev. Revert changes to `DATABASE_URL` url value.
 
 ## Environment
 
