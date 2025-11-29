@@ -32,6 +32,7 @@ import {
   usePrevious,
   useViewport,
 } from "@hooks/index";
+import { MobileVolumeControl } from "./PlayControls/MobileVolumeControl";
 
 const default_now_playing = "";
 
@@ -126,6 +127,7 @@ export const PlayControls = () => {
   return (
     <>
       <div id="play-controls" className={player.mobile_display_mode}>
+        {is_mobile && <MobileVolumeControl />}
         <div className="content">
           <div className="controls">
             <ChevronDownIcon onClick={minimize} className="icon-sm" />
@@ -234,12 +236,14 @@ export const PlayControls = () => {
               <Shuffle></Shuffle>
             </div>
 
-            <VolumeControl></VolumeControl>
+            <VolumeControl />
           </div>
         </div>
       </div>
+
       {player.mobile_display_mode === MobileDisplayMode.Minimized && (
         <div id="play-controls-minimized" onClick={noPropagate(goFullscreen)}>
+          {is_mobile && <MobileVolumeControl />}
           <div>
             {player?.now_playing?.title}
             <div className="dim">{player?.now_playing?.artist}</div>

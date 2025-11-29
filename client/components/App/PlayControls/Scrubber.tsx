@@ -7,7 +7,13 @@ import { CastSdk } from "@client/lib/cast/CastSdk";
 import { Maybe, PlayableTrackWithIndex } from "@common/types";
 import { audio, crossover } from "@reducers/player";
 import { getPlayerState } from "@reducers/store";
-import { useDrag, useAppState, useNext, useSeek } from "@hooks/index";
+import {
+  useDrag,
+  useAppState,
+  useNext,
+  useSeek,
+  DragOrientation,
+} from "@hooks/index";
 
 const gap_offset = 0.25;
 
@@ -16,7 +22,10 @@ export const Scrubber = () => {
   const seek = useSeek();
   const next = useNext();
   const player = useSelector(getPlayerState);
-  const { startDrag, cancelDrag, updateDrag, dragging } = useDrag(seek);
+  const { startDrag, cancelDrag, updateDrag, dragging } = useDrag(
+    DragOrientation.Horizontal,
+    seek,
+  );
 
   const is_casting = useRef(player.is_casting);
 
@@ -81,14 +90,10 @@ export const Scrubber = () => {
     <>
       <div
         className="scrubber-container"
-        onMouseDown={startDrag}
-        onMouseUp={cancelDrag}
-        onMouseLeave={cancelDrag}
-        onMouseMove={updateDrag}
-        onTouchStart={startDrag}
-        onTouchEnd={cancelDrag}
-        onTouchCancel={cancelDrag}
-        onTouchMove={updateDrag}
+        onPointerDown={startDrag}
+        onPointerUp={cancelDrag}
+        onPointerCancel={cancelDrag}
+        onPointerMove={updateDrag}
       >
         <div
           className="scrubber"
