@@ -68,6 +68,10 @@ export const registerClientSocket = (
     incoming_connections.value = [...incoming_connections.value, data.from];
   });
 
+  ws.on(ServerSocketEvent.Ping, () => {
+    ws.emit(ClientSocketEvent.Pong);
+  });
+
   ws.on(ServerSocketEvent.AcceptConnection, (data) => {
     const { outgoing_connection } = getAppState();
 
