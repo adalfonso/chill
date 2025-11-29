@@ -38,9 +38,11 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
       [
         artist_id && api.artist.get.query({ id: artist_id }).then(setArtist),
         api.album.get.query({ id: album_id }).then(setAlbum),
-        getTracks({ artist_id, album_id }, { sort: sort_clauses.album }).then(
-          setTracks,
-        ),
+        getTracks(
+          { artist_id, album_id },
+          // Make sure all tracks are loaded because we only do this once
+          { sort: sort_clauses.album, limit: 999 },
+        ).then(setTracks),
       ].filter(Boolean),
     ).finally(() => (is_busy.value = false));
   }, [album_id]);
