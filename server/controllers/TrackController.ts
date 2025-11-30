@@ -202,11 +202,11 @@ export const TrackController = {
       )
       SELECT
         track.id, track.title, track.path, track.number, track.duration,
-        track.artist_id, track.album_id, artist.name AS artist,
-        album.title AS album, album_art.filename AS album_art_filename,
+        track.disc_number, track.artist_id, track.album_id,
+        artist.name AS artist, album.title AS album,
+        album_art.filename AS album_art_filename,
         album.year, genre.name AS genre, file_type, bitrate, sample_rate,
         bits_per_sample
-
       FROM public."Track" track
       LEFT JOIN public."Artist" artist ON track.artist_id = artist.id
       LEFT JOIN public."Album" album ON track.album_id = album.id

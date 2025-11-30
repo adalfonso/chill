@@ -46,7 +46,7 @@ export type AlbumRelationalData = {
 
 export type PlayableTrack = Pick<
   Track,
-  "id" | "artist_id" | "album_id" | "title" | "path" | "number"
+  "id" | "artist_id" | "album_id" | "title" | "path" | "number" | "disc_number"
 > & {
   artist: Maybe<string>;
   album: Maybe<string>;
