@@ -28,6 +28,7 @@ export const insertTracks = async (
       file_type: record.file_type,
       genre_id: record.genre === null ? null : maps.genre[record.genre],
       number: record.track,
+      disc_number: record.disc_number,
       path: record.path,
       sample_rate: record.sample_rate,
       title: record.title ?? "",

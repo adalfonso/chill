@@ -306,6 +306,7 @@ export const playable_track_selection = {
   title: true,
   path: true,
   number: true,
+  disc_number: true,
   duration: true,
   artist_id: true,
   album_id: true,

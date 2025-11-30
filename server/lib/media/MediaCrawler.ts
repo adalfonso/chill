@@ -25,6 +25,7 @@ export type RawMediaPayload = {
   album: Maybe<string>;
   title: Maybe<string>;
   track: Maybe<number>;
+  disc_number: number;
   genre: Maybe<string>;
   year: Maybe<number>;
   cover?: Maybe<AlbumCover>;
@@ -202,6 +203,7 @@ export class MediaCrawler {
       artist: common.artist ?? null,
       title: common.title ?? null,
       track: common.track?.no ?? null,
+      disc_number: common.disk?.no ?? 1,
       album: common.album ?? null,
       genre: common.genre?.[0] ?? null,
       year: common.year ?? null,
