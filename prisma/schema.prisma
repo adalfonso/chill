@@ -59,6 +59,7 @@ model Track {
   title           String
   path            String          @unique
   number          Int?
+  disc_number     Int
   duration        Decimal
   file_size       Int
   file_type       String
