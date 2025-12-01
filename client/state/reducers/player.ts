@@ -107,6 +107,7 @@ export const playerSlice = createSlice({
 
     changeVolume: (state, action: Action<number>) => {
       state.volume = audio.volume = action.payload;
+      crossover.volume = action.payload;
     },
 
     clear: (state) => {
