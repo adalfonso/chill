@@ -49,7 +49,7 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
           { artist_id, album_id },
           // Make sure all tracks are loaded because we only do this once
           { sort: sort_clauses.album, limit: 999 },
-        ).then((value) => (tracks.value = value)),
+        ).then((value) => (tracks.value = sortTracks(value))),
       ].filter(Boolean),
     ).finally(() => (is_busy.value = false));
   }, [album_id]);
@@ -105,7 +105,9 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
     .entries()
     .toArray()
     .sort((a, b) => a[0] - b[0])
-    .map(([key, value]) => value);
+    .map(([_key, value]) =>
+      value.sort((a, b) => (a.number ?? 0) - (b.number ?? 0)),
+    );
 
   return (
     <div id="media-viewer">
@@ -172,5 +174,14 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
         </div>
       </div>
     </div>
+  );
+};
+
+const sortTracks = (tracks: Array<PlayableTrack>) => {
+  return tracks.sort(
+    (a, b) =>
+      a.disc_number * 1000 +
+      (a.number ?? 0) -
+      ((b.disc_number ?? 0) * 1000 + (b.number ?? 0)),
   );
 };
