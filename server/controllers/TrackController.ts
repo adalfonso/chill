@@ -160,6 +160,7 @@ export const TrackController = {
     ).map((track) => ({
       ...track,
       artist: track?.artist?.name ?? null,
+      album_artist: track.album_artist?.name ?? null,
       album: track.album?.title ?? null,
       album_art_filename: track.album?.album_art?.filename ?? null,
       year: track?.album?.year ?? null,
@@ -191,6 +192,7 @@ export const TrackController = {
   getRandomTracks: async ({
     input: { limit, exclusions },
   }: Request<typeof schema.getRandomTracks>): Promise<Array<PlayableTrack>> => {
+    // Ensure exclusions is not empty to avoid SQL syntax errors
     exclusions.push(9e16);
 
     return (await db.$queryRaw`
@@ -202,13 +204,14 @@ export const TrackController = {
       )
       SELECT
         track.id, track.title, track.path, track.number, track.duration,
-        track.disc_number, track.artist_id, track.album_id,
-        artist.name AS artist, album.title AS album,
+        track.disc_number, track.artist_id, track.album_artist_id, track.album_id,
+        artist.name AS artist, album_artist.name AS album_artist, album.title AS album,
         album_art.filename AS album_art_filename,
         album.year, genre.name AS genre, file_type, bitrate, sample_rate,
         bits_per_sample
       FROM public."Track" track
       LEFT JOIN public."Artist" artist ON track.artist_id = artist.id
+      LEFT JOIN public."Artist" album_artist ON track.album_artist_id = album_artist.id
       LEFT JOIN public."Album" album ON track.album_id = album.id
       LEFT JOIN public."AlbumArt" album_art ON album.id = album_art.album_id
       LEFT JOIN public."Genre" genre ON track.genre_id = genre.id
@@ -309,12 +312,16 @@ export const playable_track_selection = {
   disc_number: true,
   duration: true,
   artist_id: true,
+  album_artist_id: true,
   album_id: true,
   file_type: true,
   bitrate: true,
   sample_rate: true,
   bits_per_sample: true,
   artist: {
+    select: { name: true },
+  },
+  album_artist: {
     select: { name: true },
   },
   album: {

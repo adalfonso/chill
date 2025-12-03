@@ -12,7 +12,8 @@ export const insertTracks = async (
 ) => {
   const tracks = records.map((record) => {
     const album_key = getAlbumLookupKey({
-      artist_id: record.artist === null ? null : maps.artist[record.artist],
+      artist_id:
+        record.album_artist === null ? null : maps.artist[record.album_artist],
       title: record.album,
       year: record.year,
     });
@@ -20,6 +21,8 @@ export const insertTracks = async (
     return {
       album_id: maps.album[album_key] ?? null,
       artist_id: record.artist === null ? null : maps.artist[record.artist],
+      album_artist_id:
+        record.album_artist === null ? null : maps.artist[record.album_artist],
       bitrate: record.bitrate,
       bits_per_sample: record.bits_per_sample,
       duration: record.duration,

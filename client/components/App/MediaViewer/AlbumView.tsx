@@ -34,8 +34,8 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
   const tracks = useSignal<Array<PlayableTrack>>([]);
   const play = usePlay();
 
-  const artist_ids = useComputed(() =>
-    new Set(tracks.value.map((track) => track.artist_id).filter(Boolean))
+  const artist_names = useComputed(() =>
+    new Set(tracks.value.map((track) => track.artist).filter(Boolean))
       .values()
       .toArray(),
   );
@@ -46,7 +46,7 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
         artist_id && api.artist.get.query({ id: artist_id }).then(setArtist),
         api.album.get.query({ id: album_id }).then(setAlbum),
         getTracks(
-          { artist_id, album_id },
+          { album_id },
           // Make sure all tracks are loaded because we only do this once
           { sort: sort_clauses.album, limit: 999 },
         ).then((value) => (tracks.value = sortTracks(value))),
@@ -82,12 +82,13 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
       play({ tracks: [...tracks.value], cast_info, index, play_options });
     };
 
+  // TODO: This is the old way of doing things from mongo days, needs to be cleaned up
   const getArtistName = () => {
     return (
       // Explicitly loaded album for artist from music library/artist
       artist?.name ||
       // Loaded album and there are multiple artists
-      (artist_ids.value.length > 1 && "Various Artists") ||
+      (artist_names.value.length > 1 && "Various Artists") ||
       // Loaded album but there is a single artist
       album?.artist?.name ||
       // Fallback
@@ -124,9 +125,9 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
 
           <div className="info">
             <h2>{getArtistName()}</h2>
-            {artist_ids.value.length > 1 && (
-              <h4 title={artist_ids.value.values().toArray().join(",  ")}>
-                {truncate(artist_ids.value.values().toArray().join(",  "), {
+            {artist_names.value.length > 1 && (
+              <h4 title={artist_names.value.values().toArray().join(",  ")}>
+                {truncate(artist_names.value.values().toArray().join(",  "), {
                   length: 72,
                 })}
               </h4>

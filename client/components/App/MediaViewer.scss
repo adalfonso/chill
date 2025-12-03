@@ -79,7 +79,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.125rem 0 0.125rem 0.5rem;
+      padding: 0.65rem 0 0.65rem 1rem;
 
       &:first-of-type {
         padding-left: 1rem;
@@ -108,7 +108,7 @@
         width: 0.5rem;
         box-sizing: content-box;
         text-align: center;
-        margin-right: -1rem;
+        margin: -0.3rem -1rem -0.3rem 0;
         padding: 0.8rem 1.15rem;
       }
     }

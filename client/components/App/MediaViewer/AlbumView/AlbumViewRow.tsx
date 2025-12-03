@@ -60,7 +60,10 @@ export const AlbumViewRow = ({ track, index, playAll }: AlbumViewRowProps) => {
           <Equalizer />
         )}
       </div>
-      <div>{track.title}</div>
+      <div className="album-track-title">
+        <div> {track.title}</div>
+        <span>{track.artist}</span>
+      </div>
       <div>
         <div className="duration mono">{secondsToMinutes(track.duration)}</div>
       </div>

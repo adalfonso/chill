@@ -3,7 +3,15 @@ import { db } from "../data/db";
 export const deleteOrphans = async () => {
   const [albumResult, artistResult, genreResult] = await db.$transaction([
     db.album.deleteMany({ where: { tracks: { none: {} } } }),
-    db.artist.deleteMany({ where: { tracks: { none: {} } } }),
+    db.artist.deleteMany({
+      where: {
+        AND: [
+          { tracks: { none: {} } },
+          { album_artist_tracks: { none: {} } },
+          { albums: { none: {} } },
+        ],
+      },
+    }),
     db.genre.deleteMany({ where: { tracks: { none: {} } } }),
   ]);
 

@@ -22,6 +22,7 @@ export type RawMediaPayload = {
   path: string;
   duration: number;
   artist: Maybe<string>;
+  album_artist: Maybe<string>;
   album: Maybe<string>;
   title: Maybe<string>;
   track: Maybe<number>;
@@ -201,6 +202,7 @@ export class MediaCrawler {
       file_type: extname(file_path).replace(".", "").toLowerCase(),
       duration: format.duration ?? 0,
       artist: common.artist ?? null,
+      album_artist: common.albumartist ?? common.artist ?? null,
       title: common.title ?? null,
       track: common.track?.no ?? null,
       disc_number: common.disk?.no ?? 1,

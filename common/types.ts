@@ -49,6 +49,7 @@ export type PlayableTrack = Pick<
   "id" | "artist_id" | "album_id" | "title" | "path" | "number" | "disc_number"
 > & {
   artist: Maybe<string>;
+  album_artist: Maybe<string>;
   album: Maybe<string>;
   album_art_filename: Maybe<string>;
   year: Maybe<number>;

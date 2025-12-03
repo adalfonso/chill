@@ -43,6 +43,17 @@
     width: auto;
   }
 
+  .row {
+    .album-track-title {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      align-items: flex-start;
+      justify-content: center;
+      color: $dm-font-3;
+    }
+  }
+
   .play-icon {
     margin-left: 1rem;
     color: $primary-light;
