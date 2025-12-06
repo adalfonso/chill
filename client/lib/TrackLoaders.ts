@@ -122,7 +122,11 @@ export const getTracks = (
 };
 
 export const sort_clauses: Record<string, Array<SortClause>> = {
-  album: [{ album_id: SortOrder.asc }],
+  album: [
+    { album_id: SortOrder.asc },
+    { disc_number: SortOrder.asc },
+    { number: SortOrder.asc },
+  ],
   artist: [{ album_id: SortOrder.asc }, { number: SortOrder.asc }],
   genre: [
     { artist_id: SortOrder.asc },

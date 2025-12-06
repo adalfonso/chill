@@ -5,7 +5,7 @@ import { useLocation } from "wouter-preact";
 
 import "./MediaTile.scss";
 import { FileMenu, FileMenuHandler } from "../FileMenu";
-import { MediaTileData, MediaTileType, PlayableTrack } from "@common/types";
+import { MediaTileData, MediaTileType } from "@common/types";
 import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
 import { albumUrl, artistUrl, matchUrl } from "@client/lib/Url";
 import { api } from "@client/client";
@@ -207,11 +207,6 @@ export const MediaTile = <T extends Record<string, unknown>>({
   );
 };
 
-const getSortString = (track: PlayableTrack) =>
-  (track.artist ?? "") +
-  (track.album ?? "") +
-  (track.number ?? "").toString().padStart(3, "0");
-
 const getTracksForMediaTile =
   <T extends Record<string, unknown>>(
     tile_tile: MediaTileType,
@@ -219,12 +214,7 @@ const getTracksForMediaTile =
     limit?: number,
   ) =>
   async (is_casting = false) => {
-    // TODO: The controller used here has an issue with the type
-    // e.g. duration is not available but the type thinks it's valid
-
-    const tracks = (await TrackApi(tile_tile, tile, limit)).sort((a, b) =>
-      getSortString(a).localeCompare(getSortString(b)),
-    );
+    const tracks = await TrackApi(tile_tile, tile, limit);
 
     if (!is_casting) {
       return { tracks, cast_info: null };

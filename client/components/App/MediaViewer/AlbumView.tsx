@@ -49,7 +49,7 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
           { album_id },
           // Make sure all tracks are loaded because we only do this once
           { sort: sort_clauses.album, limit: 999 },
-        ).then((value) => (tracks.value = sortTracks(value))),
+        ).then((value) => (tracks.value = value)),
       ].filter(Boolean),
     ).finally(() => (is_busy.value = false));
   }, [album_id]);
@@ -110,6 +110,9 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
       value.sort((a, b) => (a.number ?? 0) - (b.number ?? 0)),
     );
 
+  // Allows albums with multiple discs to have continuous track numbering
+  let total_index = -1;
+
   return (
     <div id="media-viewer">
       <div className="album-view wide">
@@ -150,39 +153,34 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
           {groupedByDisc.map((group) =>
             group
               .sort((a, b) => (a.number ?? 0) - (b.number ?? 0))
-              .map((track, index) => (
-                <>
-                  {groupedByDisc.length > 1 && index === 0 && (
-                    <div
-                      className="row row-disc-separator"
-                      key={`disc-${track.disc_number}`}
-                    >
-                      <div> Disc {track.disc_number}</div>
-                      <div></div>
-                      <div></div>
-                      <div></div>
-                    </div>
-                  )}
-                  <AlbumViewRow
-                    index={index}
-                    track={track}
-                    playAll={playAll}
-                    key={track.id.toString()}
-                  ></AlbumViewRow>
-                </>
-              )),
+              .map((track, index) => {
+                total_index++;
+
+                return (
+                  <>
+                    {groupedByDisc.length > 1 && index === 0 && (
+                      <div
+                        className="row row-disc-separator"
+                        key={`disc-${track.disc_number}`}
+                      >
+                        <div>Disc {track.disc_number}</div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                      </div>
+                    )}
+                    <AlbumViewRow
+                      index={total_index}
+                      track={track}
+                      playAll={playAll}
+                      key={track.id}
+                    />
+                  </>
+                );
+              }),
           )}
         </div>
       </div>
     </div>
-  );
-};
-
-const sortTracks = (tracks: Array<PlayableTrack>) => {
-  return tracks.sort(
-    (a, b) =>
-      a.disc_number * 1000 +
-      (a.number ?? 0) -
-      ((b.disc_number ?? 0) * 1000 + (b.number ?? 0)),
   );
 };
