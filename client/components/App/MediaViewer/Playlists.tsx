@@ -1,7 +1,6 @@
 import { useLocation } from "wouter-preact";
 import { useRef } from "preact/hooks";
 
-import "./MusicLibrary.scss";
 import { DEFAULT_LIMIT, DEFAULT_PAGE, paginate } from "@common/pagination";
 import { PenIcon } from "@client/components/ui/icons/PenIcon";
 import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";

@@ -7,6 +7,7 @@
   overflow-y: scroll;
   padding: 1rem;
   flex-grow: 1;
+  height: 100%;
 
   .info {
     margin: 0 0 1rem 0;
@@ -105,7 +106,7 @@
       padding: 0;
 
       .file-menu-entry {
-        width: 0.5rem;
+        width: 1rem;
         box-sizing: content-box;
         text-align: center;
         margin: -0.3rem -1rem -0.3rem 0;

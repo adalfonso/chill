@@ -141,6 +141,7 @@ export const PlaylistController = {
       return playlist_items.map(({ track }) => ({
         ...track,
         artist: track?.artist?.name ?? null,
+        album_artist: track?.album_artist?.name ?? null,
         album: track.album?.title ?? null,
         album_art_filename: track.album?.album_art?.filename ?? null,
         year: track?.album?.year ?? null,

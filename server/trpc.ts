@@ -12,14 +12,15 @@ import { PlaylistRouter } from "@routes/api/v1/trpc/PlaylistRouter";
 import { TrackRouter } from "./routes/api/v1/trpc/TrackRouter";
 import { UserRouter } from "@routes/api/v1/trpc/UserRouter";
 import { UserType } from "@prisma/client";
-import { TypedRequest } from "./lib/io/Request";
 import { LibraryHealthRouter } from "./routes/api/v1/trpc/LibraryHealthRouter";
+import { CompilationRouter } from "./routes/api/v1/trpc/CompilationRouter";
+import { SplitRouter } from "./routes/api/v1/trpc/SplitRouter";
 
 export const createContext = ({
   req,
   res,
 }: trpcExpress.CreateExpressContextOptions) => ({
-  req: req as TypedRequest,
+  req,
   res,
 });
 
@@ -45,10 +46,12 @@ export const api_router = t.router({
   album: AlbumRouter(router),
   artist: ArtistRouter(router),
   cast: CastRouter(router),
+  compilation: CompilationRouter(router),
   genre: GenreRouter(router),
   libraryHealth: LibraryHealthRouter(router),
   media: MediaRouter(router),
   playlist: PlaylistRouter(router),
+  split: SplitRouter(router),
   track: TrackRouter(router),
   user: UserRouter(router),
 });

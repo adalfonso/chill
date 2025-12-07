@@ -5,7 +5,7 @@ import { useLocation } from "wouter-preact";
 
 import "./MediaTile.scss";
 import { FileMenu, FileMenuHandler } from "../FileMenu";
-import { MediaTileData, MediaTileType } from "@common/types";
+import { Maybe, MediaTileData, MediaTileType } from "@common/types";
 import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
 import { albumUrl, artistUrl, matchUrl } from "@client/lib/Url";
 import { api } from "@client/client";
@@ -31,7 +31,7 @@ import {
 type MediaTileProps<T extends Record<string, unknown>> = {
   tile_type: MediaTileType;
   tile_data: MediaTileData<T>;
-  url: (file: MediaTileData<T>) => string;
+  url: Maybe<(file: MediaTileData<T>) => string>;
   displayAs: (file: MediaTileData<T>) => string;
 
   // This gets attached automatically by SmartScroller
@@ -104,8 +104,26 @@ export const MediaTile = <T extends Record<string, unknown>>({
         tile_data,
       )(player.is_casting);
 
+      const getMode = (type: MediaTileType) => {
+        switch (type) {
+          case MediaTileType.Artist:
+            return MediaTileType.Artist;
+
+          case MediaTileType.Album:
+          case MediaTileType.Compilation:
+          case MediaTileType.Split:
+            return MediaTileType.Album;
+
+          case MediaTileType.Genre:
+            return MediaTileType.Genre;
+
+          case MediaTileType.Track:
+            return MediaTileType.Track;
+        }
+      };
+
       const play_options = {
-        mode: tile_type,
+        mode: getMode(tile_type),
         id: tile_data.id,
         limit: DEFAULT_LIMIT,
         page: DEFAULT_PAGE,
@@ -115,6 +133,7 @@ export const MediaTile = <T extends Record<string, unknown>>({
       play({ tracks, cast_info, index: 0, play_options });
     },
     getTracks: getTracksForMediaTile(tile_type, tile_data),
+
     getTrackIds: () =>
       TrackIdApi(
         tile_type,
@@ -175,12 +194,23 @@ export const MediaTile = <T extends Record<string, unknown>>({
     return children.filter(([cond]) => cond).map(([_, jsx]) => jsx);
   };
 
+  const contextMenu = (
+    <FileMenu
+      menu_id={menu_id}
+      title={tile_data.name ?? "File Menu"}
+      handler={optionsHandler}
+    >
+      {getFileMenuChildren()}
+    </FileMenu>
+  );
+
   return (
-    <div className="media-tile-wrapper" {...onPress.events}>
-      <div
-        className={"media-tile" + (menu_visible ? " active" : "")}
-        onClick={() => navigate(url(tile_data))}
-      >
+    <div
+      className="media-tile"
+      {...onPress.events}
+      onClick={() => url && navigate(url(tile_data))}
+    >
+      <div className={"media-tile-image" + (menu_visible ? " active" : "")}>
         {tile_data.image && (
           <img
             src={`/api/v1/media/cover/${tile_data.image}?size=176`}
@@ -188,21 +218,21 @@ export const MediaTile = <T extends Record<string, unknown>>({
           />
         )}
 
-        <div className={"more" + (menu_visible ? " active" : "")}>
-          <div className="play" onClick={noPropagate(optionsHandler.play)}>
-            <PlayCircleIcon className="play-icon icon-lg" />
-          </div>
+        {/* Show context menu on image in desktop */}
+        {!is_mobile && (
+          <div className={"more" + (menu_visible ? " active" : "")}>
+            <div className="play" onClick={noPropagate(optionsHandler.play)}>
+              <PlayCircleIcon className="play-icon icon-lg" />
+            </div>
 
-          <FileMenu
-            menu_id={menu_id}
-            title={tile_data.name ?? "File Menu"}
-            handler={optionsHandler}
-          >
-            {getFileMenuChildren()}
-          </FileMenu>
-        </div>
+            {contextMenu}
+          </div>
+        )}
       </div>
       <div className="display-as">{displayAs(tile_data)}</div>
+
+      {/* Show context menu always on mobile*/}
+      {is_mobile && contextMenu}
     </div>
   );
 };
@@ -240,6 +270,8 @@ const TrackApi = async <T extends Record<string, unknown>>(
       );
 
     case MediaTileType.Album:
+    case MediaTileType.Compilation:
+    case MediaTileType.Split:
       return loadTracks(
         { album_id: tile.id },
         { limit, sort: sort_clauses.album },
@@ -250,6 +282,9 @@ const TrackApi = async <T extends Record<string, unknown>>(
         { genre_id: tile.id },
         { limit, sort: sort_clauses.genre },
       );
+
+    case MediaTileType.Track:
+      return loadTracks({}, { limit, sort: sort_clauses.track });
   }
 };
 
@@ -266,6 +301,8 @@ const TrackIdApi = async <T extends Record<string, unknown>>(
       );
 
     case MediaTileType.Album:
+    case MediaTileType.Compilation:
+    case MediaTileType.Split:
       return getTrackIds(
         { album_id: tile.id },
         { limit, sort: sort_clauses.album },
@@ -276,5 +313,8 @@ const TrackIdApi = async <T extends Record<string, unknown>>(
         { genre_id: tile.id },
         { limit, sort: sort_clauses.genre },
       );
+
+    case MediaTileType.Track:
+      return getTrackIds({}, { limit, sort: sort_clauses.track });
   }
 };

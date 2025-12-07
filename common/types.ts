@@ -14,7 +14,7 @@ export type SearchResult = {
 };
 
 export type MediaTileData<
-  T extends Record<string, unknown> = Record<string, never>,
+  T extends Record<string, unknown> = Record<string, unknown>,
 > = {
   id: number;
   name: string;
@@ -26,6 +26,9 @@ export const MediaTileType = {
   Artist: "artist",
   Album: "album",
   Genre: "genre",
+  Compilation: "compilation",
+  Split: "split",
+  Track: "track",
 } as const;
 
 export type MediaTileType = ObjectValues<typeof MediaTileType>;
@@ -155,6 +158,7 @@ export const PlayMode = {
   Artist: "artist",
   Album: "album",
   Genre: "genre",
+  Track: "track",
 } as const;
 
 export type PlayMode = ObjectValues<typeof PlayMode>;
@@ -195,3 +199,5 @@ export type AlbumBitrateStats = {
   total_duration: number;
   avg_bitrate_kbps: number;
 };
+
+// TODO: Remove some of these to apiTypes.ts

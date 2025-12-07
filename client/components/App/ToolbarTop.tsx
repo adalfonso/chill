@@ -2,23 +2,20 @@ import { useLocation } from "wouter-preact";
 import { useSelector } from "react-redux";
 import { useState } from "preact/hooks";
 
-import "./Toolbar.scss";
-import { AppSettings as AppSettings } from "./Toolbar/AppSettings";
+import "./ToolbarTop.scss";
 import { CastPlayer } from "./CastPlayer";
+import { CoreViewState } from "@client/state/AppState";
 import { DeviceIcon } from "../ui/icons/DeviceIcon";
 import { Devices } from "./Toolbar/Devices";
-import { GearIcon } from "../ui/icons/GearIcon";
-import { Search } from "./Toolbar/Search";
-
 import { getCasterState } from "@client/state/reducers/store";
-import { useBackNavigate, useAppState } from "@hooks/index";
+import { noPropagate } from "@client/lib/Event";
+import { useAppState } from "@hooks/useAppState";
 
-type SettingsMenu = "app" | "devices";
+type SettingsMenu = "devices";
 
-export const Toolbar = () => {
-  const { outgoing_connection, incoming_connections } = useAppState();
+export const ToolbarTop = () => {
+  const { view, outgoing_connection, incoming_connections } = useAppState();
   const [settings_vis, setSettingsVis] = useState({
-    app: false,
     devices: false,
   });
   const caster = useSelector(getCasterState);
@@ -34,28 +31,19 @@ export const Toolbar = () => {
    */
   const toggleVis = (type: SettingsMenu) => () => {
     setSettingsVis({
-      app: false,
-      devices: false,
       [type]: !settings_vis[type],
     });
   };
 
-  const hideMenus = () => setSettingsVis({ app: false, devices: false });
-
-  // Minimize the player on back navigation when fullscreen
-  useBackNavigate(
-    // Override location change when either settings menu is open
-    () => settings_vis.app,
-    // Hide the playlist instead of changing location
-    hideMenus,
-  );
+  const hideMenus = () => setSettingsVis({ devices: false });
 
   return (
-    <div id="toolbar">
+    <div id="toolbar-top">
       <div className="libraries">
         <div
           onClick={() => {
             hideMenus();
+            view.value = CoreViewState.Library;
             navigate("/");
           }}
         >
@@ -64,6 +52,7 @@ export const Toolbar = () => {
         <div
           onClick={() => {
             hideMenus();
+            view.value = CoreViewState.Router;
             navigate("/playlists");
           }}
         >
@@ -73,12 +62,13 @@ export const Toolbar = () => {
 
       <div className="tools">
         {caster.ready && <google-cast-launcher></google-cast-launcher>}
+
         {/* Invisible, just used to mediate between redux stores */}
         <CastPlayer></CastPlayer>
 
         <DeviceIcon
           className="icon-sm"
-          onClick={toggleVis("devices")}
+          onClick={noPropagate(toggleVis("devices"))}
           {...(device_connected && {
             stroke: "rgb(139, 195, 255)",
             strokeWidth: 2,
@@ -88,13 +78,7 @@ export const Toolbar = () => {
         {settings_vis.devices && (
           <Devices onClose={toggleVis("devices")}></Devices>
         )}
-
-        <GearIcon className="icon-sm" onClick={toggleVis("app")} />
-        {settings_vis.app && (
-          <AppSettings onClose={toggleVis("app")}></AppSettings>
-        )}
       </div>
-      <Search></Search>
     </div>
   );
 };

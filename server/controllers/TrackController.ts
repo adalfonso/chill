@@ -4,7 +4,7 @@ import { Request as Req, Response as Res } from "express";
 import fs from "node:fs/promises";
 import jwt from "jsonwebtoken";
 
-import { AudioQualityBitrate, PlayableTrack } from "@common/types";
+import { AudioQualityBitrate, PlayableTrack, SortOrder } from "@common/types";
 import { Request } from "@server/trpc";
 import { db } from "@server/lib/data/db";
 import { AudioQuality, Prisma } from "@prisma/client";
@@ -23,6 +23,9 @@ export const schema = {
     album_id: z.number().int().optional(),
     artist_id: z.number().int().optional(),
     genre_id: z.number().int().optional(),
+    options: pagination_schema,
+  }),
+  getTrackTiles: z.object({
     options: pagination_schema,
   }),
   getRandomTracks: z.object({
@@ -187,6 +190,36 @@ export const TrackController = {
         orderBy: sort,
       })
     ).map(({ id }) => id);
+  },
+
+  getTrackTiles: async ({
+    input: { options },
+  }: Request<typeof schema.getTrackTiles>) => {
+    const { limit, page } = options;
+
+    const tracks = await db.track.findMany({
+      orderBy: { title: "asc" },
+      skip: page * limit,
+      take: limit,
+
+      select: {
+        id: true,
+        title: true,
+        album: {
+          select: {
+            album_art: {
+              select: { filename: true },
+            },
+          },
+        },
+      },
+    });
+
+    return tracks.map(({ id, title, album }) => ({
+      id,
+      name: title,
+      image: album?.album_art?.filename ?? null,
+    }));
   },
 
   getRandomTracks: async ({

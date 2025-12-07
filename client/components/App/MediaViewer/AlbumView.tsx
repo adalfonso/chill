@@ -1,4 +1,4 @@
-import { Album, Artist } from "@prisma/client";
+import { Album } from "@prisma/client";
 import { useSelector } from "react-redux";
 import { useState, useEffect, useCallback } from "preact/hooks";
 import { useComputed, useSignal } from "@preact/signals";
@@ -25,10 +25,9 @@ type AlbumViewProps = {
   album_id: number;
 };
 
-export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
+export const AlbumView = ({ album_id }: AlbumViewProps) => {
   const { is_busy } = useAppState();
   const player = useSelector(getPlayerState);
-  const [artist, setArtist] = useState<Maybe<Raw<Artist>>>(null);
   const [album, setAlbum] =
     useState<Maybe<Raw<Album & AlbumRelationalData>>>(null);
   const tracks = useSignal<Array<PlayableTrack>>([]);
@@ -43,7 +42,6 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
   const loadInfo = useCallback(() => {
     Promise.all(
       [
-        artist_id && api.artist.get.query({ id: artist_id }).then(setArtist),
         api.album.get.query({ id: album_id }).then(setAlbum),
         getTracks(
           { album_id },
@@ -82,11 +80,8 @@ export const AlbumView = ({ artist_id, album_id }: AlbumViewProps) => {
       play({ tracks: [...tracks.value], cast_info, index, play_options });
     };
 
-  // TODO: This is the old way of doing things from mongo days, needs to be cleaned up
   const getArtistName = () => {
     return (
-      // Explicitly loaded album for artist from music library/artist
-      artist?.name ||
       // Loaded album and there are multiple artists
       (artist_names.value.length > 1 && "Various Artists") ||
       // Loaded album but there is a single artist

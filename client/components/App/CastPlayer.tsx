@@ -1,7 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef } from "preact/hooks";
 
-import "./Toolbar.scss";
 import * as Player from "@client/state/reducers/player";
 import { Maybe } from "@common/types";
 import { api } from "@client/client";

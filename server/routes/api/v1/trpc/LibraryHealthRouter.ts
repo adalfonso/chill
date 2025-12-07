@@ -6,6 +6,7 @@ export const LibraryHealthRouter = (routes: typeof router) =>
     ambiguousArtistGenre: procedure.query(
       LibraryHealthController.ambiguousArtistGenre,
     ),
-    libraryStats: procedure.query(LibraryHealthController.libraryStats),
+    libraryCounts: procedure.query(LibraryHealthController.libraryCounts),
+    librarySize: procedure.query(LibraryHealthController.librarySize),
     lowQualityAlbums: procedure.query(LibraryHealthController.lowQualityAlbums),
   });

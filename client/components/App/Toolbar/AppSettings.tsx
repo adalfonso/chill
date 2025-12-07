@@ -20,10 +20,6 @@ import { useEffect } from "preact/hooks";
 import { LibraryStats } from "./AppSettings/LibraryStats";
 import { LowQualityAlbums } from "./AppSettings/LowQualityAlbums";
 
-type AppSettingsProps = {
-  onClose: () => void;
-};
-
 const settingsContent = {
   [SettingType.None]: <></>,
   [SettingType.Account]: <AccountSettings />,
@@ -40,7 +36,7 @@ const settingsContent = {
   ),
 } as const satisfies Record<SettingType, unknown>;
 
-export const AppSettings = ({ onClose }: AppSettingsProps) => {
+export const AppSettings = () => {
   const { current_app_setting } = useAppState();
   const user = useSelector(getUserState);
   const { width } = useViewport();
@@ -55,59 +51,53 @@ export const AppSettings = ({ onClose }: AppSettingsProps) => {
   }, [is_mobile]);
 
   return (
-    <div className="fullscreen">
-      <div id="app-settings">
-        <Close onClose={onClose} />
-        <h2 className="settings-header">Settings</h2>
-        <div className="settings-body">
-          <div className="settings-list">
-            <h3>Account</h3>
-            <div className="settings-group">
-              <AppSetting
-                id={SettingType.Account}
-                title="Account settings"
-              ></AppSetting>
-            </div>
-
-            <h3>Playback & Audio</h3>
-            <div className="settings-group">
-              <AppSetting
-                id={SettingType.MusicQuality}
-                title="Audio quality"
-              ></AppSetting>
-            </div>
-
-            <h3>Library</h3>
-            <div className="settings-group">
-              {user.type === UserType.Admin && (
-                <>
-                  <AppSetting
-                    id={SettingType.InviteUser}
-                    title="Invite a user"
-                  />
-                  <AppSetting
-                    id={SettingType.LibraryScan}
-                    title="Scan library files"
-                  />
-                </>
-              )}
-
-              <AppSetting
-                id={SettingType.LibraryInsights}
-                title="Library insights"
-              />
-            </div>
+    <div id="app-settings">
+      <h2 className="settings-header">Settings</h2>
+      <div className="settings-body">
+        <div className="settings-list">
+          <h3>Account</h3>
+          <div className="settings-group">
+            <AppSetting
+              id={SettingType.Account}
+              title="Account settings"
+            ></AppSetting>
           </div>
 
-          <div className={`settings-content ${current_app_setting.value}`}>
-            <Close
-              onClose={noPropagate(
-                () => (current_app_setting.value = SettingType.None),
-              )}
+          <h3>Playback & Audio</h3>
+          <div className="settings-group">
+            <AppSetting
+              id={SettingType.MusicQuality}
+              title="Audio quality"
+            ></AppSetting>
+          </div>
+
+          <h3>Library</h3>
+          <div className="settings-group">
+            {user.type === UserType.Admin && (
+              <>
+                <AppSetting id={SettingType.InviteUser} title="Invite a user" />
+                <AppSetting
+                  id={SettingType.LibraryScan}
+                  title="Scan library files"
+                />
+              </>
+            )}
+
+            <AppSetting
+              id={SettingType.LibraryInsights}
+              title="Library insights"
             />
-
-            {settingsContent[current_app_setting.value]}
           </div>
+        </div>
+
+        <div className={`settings-content ${current_app_setting.value}`}>
+          <Close
+            onClose={noPropagate(
+              () => (current_app_setting.value = SettingType.None),
+            )}
+          />
+
+          {settingsContent[current_app_setting.value]}
         </div>
       </div>
     </div>

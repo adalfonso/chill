@@ -1,7 +1,6 @@
 import { Playlist } from "@prisma/client";
 import { useEffect, useState } from "preact/hooks";
 
-import "./MusicLibrary.scss";
 import { PlayableTrack, PlayMode, Raw } from "@common/types";
 import { PlaylistRow } from "./Playlist/PlaylistRow";
 import { SmartScroller } from "./SmartScroller";

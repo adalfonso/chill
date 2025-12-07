@@ -1,4 +1,3 @@
-import "./app.scss";
 import { castDebugLogger, log_tag } from "./debug";
 import type { ErrorReason } from "chromecast-caf-receiver/cast.framework.messages";
 

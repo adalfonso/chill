@@ -47,6 +47,11 @@ export const getMoreTracks = (player: PlayerState) => {
       );
     }
 
+    case PlayMode.Track: {
+      const { limit, page } = player.play_options;
+      return getTracks({}, { limit, page: page + 1, sort: sort_clauses.track });
+    }
+
     case PlayMode.None: {
       return Promise.resolve([]);
     }
@@ -133,6 +138,7 @@ export const sort_clauses: Record<string, Array<SortClause>> = {
     { album_id: SortOrder.asc },
     { number: SortOrder.asc },
   ],
+  track: [{ title: SortOrder.asc }],
 };
 
 /**

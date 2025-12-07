@@ -34,7 +34,6 @@ export const SmartScroller = <T,>({
 }: SmartScrollProps<T>) => {
   const mediaViewer = useRef<HTMLDivElement>(null);
   const observedElement = useRef<HTMLDivElement>(null);
-
   const scroll_position = useRef(signal(0));
   const scroll_throttle_ms = 500;
 

@@ -1,8 +1,11 @@
 @import "@client/variables.scss";
 
 #app-settings {
+  background-color: $dm-background-2;
+  flex-grow: 1;
+
   .settings-header {
-    margin: -1rem 0rem 2rem 1rem;
+    margin: 1rem 0rem 2rem 1rem;
   }
 
   .settings-body {
@@ -76,10 +79,6 @@
 }
 
 @media screen and (min-width: 844px) {
-  .fullscreen {
-    margin-top: 4rem;
-  }
-
   #app-settings {
     height: 100%;
 

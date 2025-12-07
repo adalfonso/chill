@@ -243,7 +243,6 @@ export const PlayControls = () => {
 
       {player.mobile_display_mode === MobileDisplayMode.Minimized && (
         <div id="play-controls-minimized" onClick={noPropagate(goFullscreen)}>
-          {is_mobile && <MobileVolumeControl />}
           <div>
             {player?.now_playing?.title}
             <div className="dim">{player?.now_playing?.artist}</div>

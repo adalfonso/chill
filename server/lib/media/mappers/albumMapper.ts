@@ -62,7 +62,9 @@ export const upsertAlbums = async (
   // Detect album art that has not yet been inserted
   const album_art_to_add = existing_albums
     .filter((album) => {
-      const cover = recordsGroupedByAlbum[getAlbumLookupKey(album)].cover;
+      // TODO: Check why the optional chaining is needed. Suddenly it became
+      // needed or else we would error sometimes
+      const cover = recordsGroupedByAlbum[getAlbumLookupKey(album)]?.cover;
 
       return (
         cover &&

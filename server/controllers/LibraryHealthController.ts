@@ -1,3 +1,4 @@
+import { LibraryCounts } from "@common/apiTypes";
 import { AlbumBitrateStats, AmbiguousArtistGenre } from "@common/types";
 import { db } from "@server/lib/data/db";
 import { formatFileSize } from "@server/lib/file";
@@ -18,20 +19,53 @@ export const LibraryHealthController = {
       ORDER BY a.name ASC`;
   },
 
-  libraryStats: async () => {
-    const [tracks, artists, genres, library_size] = await Promise.all([
+  libraryCounts: async (): Promise<LibraryCounts> => {
+    const [tracks, artists, genres, albums] = await Promise.all([
       db.track.count(),
       db.artist.count(),
       db.genre.count(),
-      db.track.aggregate({ _sum: { file_size: true } }),
+      db.album.count(),
     ]);
 
+    const compilations = await db.$queryRaw<Array<{ count: number }>>`
+      SELECT COUNT(*)::int AS count
+      FROM (
+        SELECT a.id
+        FROM "Album" a
+        JOIN "Track" t ON t.album_id = a.id
+        WHERE t.artist_id IS NOT NULL
+        GROUP BY a.id, a.title
+        HAVING COUNT(DISTINCT t.artist_id) > 3
+      )`;
+
+    const splits = await db.$queryRaw<Array<{ count: number }>>`
+      SELECT COUNT(*)::int AS count
+      FROM (
+        SELECT a.id
+        FROM "Album" a
+        JOIN "Track" t ON t.album_id = a.id
+        WHERE t.artist_id IS NOT NULL
+        GROUP BY a.id, a.title
+        HAVING COUNT(DISTINCT t.artist_id) > 1
+          AND COUNT(DISTINCT t.artist_id) < 3
+      )`;
+
     return {
-      library_size: formatFileSize(library_size._sum.file_size ?? 0),
-      tracks,
       artists,
+      albums,
+      compilations: compilations[0].count,
+      splits: splits[0].count,
+      tracks,
       genres,
     };
+  },
+
+  librarySize: async (): Promise<string> => {
+    const library_size = await db.track.aggregate({
+      _sum: { file_size: true },
+    });
+
+    return formatFileSize(library_size._sum.file_size ?? 0);
   },
 
   lowQualityAlbums: async () => {
