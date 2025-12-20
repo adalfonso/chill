@@ -1,6 +1,6 @@
-@import "./variables.scss";
-@import "./mixins.scss";
-@import "./font.scss";
+@import "@client/variables.scss";
+@import "@client/mixins.scss";
+@import "@client/font.scss";
 
 * {
   box-sizing: border-box;
@@ -67,11 +67,42 @@ h2 {
   height: 100%;
 }
 
-.app {
+#app {
   background-color: $dm-background;
   height: 100%;
   display: flex;
   flex-direction: column;
+
+  &:not(.view-library) #library,
+  &:not(.view-search) .search,
+  &:not(.view-settings) #app-settings {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  &:not(.view-router) #native-router {
+    display: none;
+  }
+
+  #native-router {
+    overflow: hidden;
+  }
+
+  #virtual-router {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+
+    > div {
+      position: absolute;
+      overflow-y: scroll;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  }
 }
 
 .align-right {
@@ -115,6 +146,10 @@ h2 {
 
 .close {
   padding: 1em;
+}
+
+.dim {
+  color: $dm-font-3;
 }
 
 @keyframes throbber {

@@ -51,14 +51,33 @@ export const AlbumController = {
       sort.push(default_album_sort);
     }
 
+    // 1) Get album IDs from the artist's tracks
+
+    let albumIds: number[] = [];
+
+    if (filter?.artist_id) {
+      const trackAlbums = await db.track.findMany({
+        where: {
+          artist_id: filter.artist_id,
+          album_id: { not: null },
+        },
+        select: { album_id: true },
+        distinct: ["album_id"],
+      });
+
+      albumIds = trackAlbums.map((t) => t.album_id!);
+
+      // No albums? Return early
+      if (albumIds.length === 0) return [];
+    }
+
+    // 2) Load the albums, sorted + paginated
+
     const albums = await db.album.findMany({
+      where: albumIds.length > 0 ? { id: { in: albumIds } } : {},
       orderBy: sort,
       skip: page * limit,
       take: limit,
-
-      where: {
-        artist_id: filter?.artist_id,
-      },
 
       select: {
         id: true,

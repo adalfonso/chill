@@ -1,42 +1,68 @@
 @import "@client/variables.scss";
 
 .search {
-  margin: 1.5rem 0 0.5rem 0;
+  padding: 1rem;
   position: relative;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
 
-  input {
-    border: transparent;
+  .search-input {
+    background-color: $dm-background-2;
+    height: 2.5rem;
+    border-radius: 0.4rem;
+    display: flex;
     width: 100%;
-  }
 
-  .close {
-    position: absolute;
-    right: 1rem;
-    top: calc(50% - 0.5rem);
-    padding: 0;
-    line-height: 1rem;
-    color: $dm-font-3;
-    cursor: pointer;
+    input {
+      border: transparent;
+      border-radius: 0.25rem;
+      background-color: $dm-background-2;
+      width: 100%;
+      padding: 0.5rem 0;
+    }
+
+    .search-icon,
+    .search-clear {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 0.75rem;
+    }
+
+    .search-icon {
+      color: $dm-font-3;
+      font-size: 1rem;
+      width: 3rem;
+    }
+
+    .search-clear {
+      width: 3rem;
+      padding-right: 1rem;
+      .close {
+        padding: 0;
+        line-height: 1rem;
+        color: $dm-font-3;
+        cursor: pointer;
+      }
+    }
   }
 
   .search-results {
-    position: absolute;
-    top: calc(100% + 0.5rem - 1px);
-    z-index: 3;
-    max-height: 26rem;
+    margin-top: 1rem;
     overflow: auto;
     width: 100%;
-    border-top: 1px dashed $dm-background;
+
+    h4 {
+      margin-bottom: 0rem;
+      padding-bottom: 0.25rem;
+      border-bottom: 1px solid $dm-font-5;
+    }
 
     .result {
-      background-color: $dm-background-2;
-      border-bottom: 1px dashed $dm-background;
-      padding: 0.35rem 1rem;
-      font-size: 0.9rem;
+      padding: 0.35rem;
+      font-size: 1rem;
       cursor: pointer;
       user-select: none;
 
@@ -44,8 +70,12 @@
         color: $dm-font-3;
       }
 
+      .ternary {
+        color: $dm-font-4;
+      }
+
       &:hover {
-        background-color: $dm-background;
+        background-color: $dm-background-2;
       }
     }
   }
@@ -53,20 +83,12 @@
 
 @media screen and (min-width: 844px) {
   .search {
-    margin: 0;
-    width: 25rem;
-
     .search-results {
-      border-top: none;
-      border-top-left-radius: 0.25rem;
-      border-top-right-radius: 0.25rem;
-      border-bottom-left-radius: 0.25rem;
-      border-bottom-right-radius: 0.25rem;
+      width: 25rem;
     }
 
-    input {
-      border: 1px solid $dm-font;
-      margin-bottom: 0;
+    .search-input {
+      width: 25rem;
     }
   }
 }

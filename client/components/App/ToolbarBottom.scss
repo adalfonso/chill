@@ -1,0 +1,11 @@
+@import "@client/variables.scss";
+
+#toolbar-bottom {
+  background-color: $dm-background-2;
+  justify-content: space-between;
+  display: flex;
+
+  div.action {
+    padding: 1rem 2rem 0.65rem 2rem;
+  }
+}

@@ -8,6 +8,7 @@
   justify-content: center;
   margin-top: -2rem;
   user-select: none;
+  touch-action: none;
 
   .scrubber {
     background: $primary;

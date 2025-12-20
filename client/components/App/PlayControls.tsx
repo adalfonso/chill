@@ -32,10 +32,11 @@ import {
   usePrevious,
   useViewport,
 } from "@hooks/index";
+import { MobileVolumeControl } from "./PlayControls/MobileVolumeControl";
 
 const default_now_playing = "";
 
-const getBitsDisplay = (track: PlayableTrack) => {
+export const getBitsDisplay = (track: PlayableTrack) => {
   const bitrate = Math.floor((track.bitrate ?? 0) / 1000);
 
   const is_lossless =
@@ -85,11 +86,15 @@ export const PlayControls = () => {
           <div className="file-type">
             <span>{track.file_type?.toUpperCase()}</span>
           </div>
-
           <div className="track-title">{track.title}</div>
-
           <div className="quality">{getBitsDisplay(track)}</div>
         </div>
+
+        {(track.album || track.year) && (
+          <div className="track-album">
+            {track.album} {(track.year && `(${track.year})`) || ``}
+          </div>
+        )}
       </>
     );
   };
@@ -122,6 +127,7 @@ export const PlayControls = () => {
   return (
     <>
       <div id="play-controls" className={player.mobile_display_mode}>
+        {is_mobile && <MobileVolumeControl />}
         <div className="content">
           <div className="controls">
             <ChevronDownIcon onClick={minimize} className="icon-sm" />
@@ -164,12 +170,21 @@ export const PlayControls = () => {
           </div>
           <div className="side-panel">
             <div className="icons">
-              <div>
+              <Playlist></Playlist>
+              <div className="file-info-menu">
                 {now_playing !== null && (
                   <>
                     <FileMenu
                       menu_id={file_menu_id}
-                      title={`${now_playing.artist} - ${now_playing.title}`}
+                      title={
+                        <>
+                          <div>{now_playing.title}</div>
+                          <div className="dim file-menu-subtext">
+                            {now_playing.artist}
+                          </div>
+                        </>
+                      }
+                      icon_orientation="horizontal"
                     >
                       {artist_id ? (
                         <div
@@ -179,6 +194,9 @@ export const PlayControls = () => {
                           }
                         >
                           Go to Artist
+                          <div className="dim file-menu-subtext">
+                            {now_playing.artist}
+                          </div>
                         </div>
                       ) : (
                         <></>
@@ -193,6 +211,9 @@ export const PlayControls = () => {
                           }
                         >
                           Go to Album
+                          <div className="dim file-menu-subtext">
+                            {now_playing.album}
+                          </div>
                         </div>
                       ) : (
                         <></>
@@ -213,17 +234,20 @@ export const PlayControls = () => {
                 )}
               </div>
               <Shuffle></Shuffle>
-
-              <Playlist></Playlist>
             </div>
 
-            <VolumeControl></VolumeControl>
+            <VolumeControl />
           </div>
         </div>
       </div>
+
       {player.mobile_display_mode === MobileDisplayMode.Minimized && (
         <div id="play-controls-minimized" onClick={noPropagate(goFullscreen)}>
-          {player?.now_playing?.artist} - {player?.now_playing?.title}
+          <div>
+            {player?.now_playing?.title}
+            <div className="dim">{player?.now_playing?.artist}</div>
+          </div>
+
           <div className="controls">
             <div onClick={noPropagate(togglePlayer)}>
               {player.is_playing ? (

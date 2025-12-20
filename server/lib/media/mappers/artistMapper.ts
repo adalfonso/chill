@@ -4,7 +4,13 @@ import { isString, uniq } from "@common/commonUtils";
 
 export const upsertArtists = async (records: Array<RawMediaPayload>) => {
   const artists = uniq(
-    records.map(({ artist }) => artist ?? "Unknown Artist").filter(isString),
+    records
+      .map(({ artist, album_artist }) => [
+        artist ?? "Unknown Artist",
+        album_artist ?? "Unknown Artist",
+      ])
+      .flat()
+      .filter(isString),
   );
 
   await db.artist.createMany({

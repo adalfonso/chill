@@ -7,14 +7,14 @@ export type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 
 export type SearchResult = {
-  type: MediaTileType | "track";
+  type: MediaTileType;
   value: string;
   displayAs: string[];
   path: string;
 };
 
 export type MediaTileData<
-  T extends Record<string, unknown> = Record<string, never>,
+  T extends Record<string, unknown> = Record<string, unknown>,
 > = {
   id: number;
   name: string;
@@ -26,6 +26,9 @@ export const MediaTileType = {
   Artist: "artist",
   Album: "album",
   Genre: "genre",
+  Compilation: "compilation",
+  Split: "split",
+  Track: "track",
 } as const;
 
 export type MediaTileType = ObjectValues<typeof MediaTileType>;
@@ -46,9 +49,10 @@ export type AlbumRelationalData = {
 
 export type PlayableTrack = Pick<
   Track,
-  "id" | "artist_id" | "album_id" | "title" | "path" | "number"
+  "id" | "artist_id" | "album_id" | "title" | "path" | "number" | "disc_number"
 > & {
   artist: Maybe<string>;
+  album_artist: Maybe<string>;
   album: Maybe<string>;
   album_art_filename: Maybe<string>;
   year: Maybe<number>;
@@ -154,6 +158,7 @@ export const PlayMode = {
   Artist: "artist",
   Album: "album",
   Genre: "genre",
+  Track: "track",
 } as const;
 
 export type PlayMode = ObjectValues<typeof PlayMode>;
@@ -178,3 +183,21 @@ export type PlayOptions =
       limit: number;
       more: boolean;
     };
+
+export type AmbiguousArtistGenre = {
+  id: number;
+  artist: string;
+  genres: Array<string>;
+};
+
+export type AlbumBitrateStats = {
+  id: number;
+  title: string;
+  year: Maybe<number>;
+  track_count: number;
+  total_file_size: number;
+  total_duration: number;
+  avg_bitrate_kbps: number;
+};
+
+// TODO: Remove some of these to apiTypes.ts

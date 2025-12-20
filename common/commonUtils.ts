@@ -1,12 +1,3 @@
-/**
- * Extract the file type from a file's path
- *
- * @param file_path - file's path
- * @returns file type
- */
-export const getFileTypeFromPath = (file_path: string) =>
-  file_path.match(/\.(\w+)$/)?.[1]?.toUpperCase();
-
 type TruncateOptions = {
   length?: number;
   omission?: string;

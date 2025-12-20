@@ -10,8 +10,14 @@ export const FileTypeGraph = ({ data }: FileTypeGraphProps) => {
     0,
   );
 
+  const basis =
+    Object.values(data.value)
+      .sort((a, b) => b - a)
+      .at(0) ?? 100;
+
   return (
-    <div className="file-type-graph setting">
+    <div className="setting-file-type-graph setting">
+      <h2>File types</h2>
       {Object.entries(data.value).map(([file_type, count], i, arr) => {
         const percent = (count / total) * 100;
 
@@ -21,7 +27,7 @@ export const FileTypeGraph = ({ data }: FileTypeGraphProps) => {
         const style = {
           color: `rgb(${color}, ${color}, ${color})`,
           backgroundColor: `rgb(${backgroundColor}, ${backgroundColor}, ${backgroundColor})`,
-          width: `${(count / total) * 100}%`,
+          width: `${(count / basis) * 100}%`,
         };
 
         return (

@@ -1,0 +1,70 @@
+@import "@client/variables.scss";
+
+#library {
+  width: 100%;
+
+  > div {
+    position: absolute;
+    overflow-y: scroll;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    visibility: hidden;
+    pointer-events: none;
+
+    &:last-child {
+      visibility: inherit;
+      pointer-events: all;
+    }
+  }
+
+  .library-menu {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .library-menu-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .library-menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .play-random {
+    color: $primary-very-light;
+    font-weight: 500;
+  }
+
+  &.mobile #media-viewer {
+    .media-tiles {
+      .media-tile {
+        width: 100%;
+        margin: 0;
+        display: flex;
+        justify-content: space-between;
+
+        .display-as {
+          font-size: 1rem;
+          flex-grow: 1;
+        }
+
+        .media-tile-image {
+          height: 3rem;
+          width: 3rem;
+          margin-right: 1rem;
+          margin-bottom: 0.5rem;
+        }
+      }
+    }
+  }
+}

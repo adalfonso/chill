@@ -1,0 +1,26 @@
+@import "@client/variables.scss";
+
+#mobile-volume {
+  touch-action: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 4rem;
+  opacity: 0;
+  transition: opacity 150ms ease;
+
+  &[data-visible="true"] {
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 2;
+  }
+
+  .volume-level {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 50%;
+    background-color: $primary;
+  }
+}

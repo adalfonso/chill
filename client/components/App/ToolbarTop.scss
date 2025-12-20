@@ -1,6 +1,6 @@
 @import "@client/variables.scss";
 
-#toolbar {
+#toolbar-top {
   background-color: $dm-background-2;
   padding-top: 1rem;
   display: flex;
@@ -8,6 +8,7 @@
   align-items: center;
   flex-wrap: wrap;
   position: relative;
+  padding-bottom: 1rem;
 
   .libraries {
     margin-left: 1rem;
@@ -37,7 +38,7 @@
 }
 
 @media screen and (min-width: 512px) and (max-width: 843px) {
-  #toolbar {
+  #toolbar-top {
     padding: 1rem 0 0 0;
     > * {
       padding: 0 0.5rem;
@@ -46,7 +47,7 @@
 }
 
 @media screen and (min-width: 844px) {
-  #toolbar {
+  #toolbar-top {
     flex-wrap: nowrap;
     padding: 1rem 2rem;
 

@@ -49,7 +49,7 @@ export const Playlist = () => {
             <div className="cover">
               {track.album_art_filename && (
                 <img
-                  src={`/api/v1/media/cover/${track.album_art_filename}?size=36`}
+                  src={`/api/v1/media/cover/${track.album_art_filename}?size=160`}
                   loading="lazy"
                 />
               )}
@@ -57,9 +57,7 @@ export const Playlist = () => {
 
             <div className="content">
               <div className="title">{track.title}</div>
-              <div className="artist">
-                {track.artist} {track.album ? ` -  ${track.album}` : ""}
-              </div>
+              <div className="artist">{track.artist}</div>
             </div>
 
             {player.now_playing === track && player.is_playing && <Equalizer />}

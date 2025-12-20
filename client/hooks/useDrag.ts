@@ -1,6 +1,12 @@
-import { useState } from "preact/hooks";
+import { useSignal } from "@preact/signals";
 
-type DragEvent = MouseEvent | TouchEvent;
+export const DragOrientation = {
+  Horizontal: "horizontal",
+  Vertical: "vertical",
+} as const;
+
+export type DragOrientation =
+  (typeof DragOrientation)[keyof typeof DragOrientation];
 
 /**
  * Utilize dragging behavior
@@ -8,43 +14,59 @@ type DragEvent = MouseEvent | TouchEvent;
  * @param onApply - fn to apply on drag
  * @returns drag events
  */
-export const useDrag = (onApply: (percent: number) => void) => {
-  const [dragging, setDragging] = useState(false);
+export const useDrag = (
+  orientation: DragOrientation,
+  onApply: (percent: number) => void,
+) => {
+  const dragging = useSignal(false);
 
-  const startDrag = () => setDragging(true);
-  const cancelDrag = () => setDragging(false);
+  const startDrag = (e: PointerEvent) => {
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    dragging.value = true;
+  };
 
-  const updateDrag = (e: DragEvent) => {
-    if (!dragging || !(e.currentTarget instanceof HTMLElement)) {
+  const cancelDrag = (e: PointerEvent) => {
+    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    dragging.value = false;
+  };
+
+  const updateDrag = (e: PointerEvent) => {
+    if (!dragging.value || !(e.currentTarget instanceof HTMLElement)) {
       return;
     }
 
-    onApply(calculateXPos(e.currentTarget, getOffset(e)));
+    onApply(
+      calculatePos(orientation)(e.currentTarget, getOffset(orientation)(e)),
+    );
   };
 
   return {
     startDrag,
     cancelDrag,
     updateDrag,
-    dragging,
+    dragging: dragging.value,
   };
 };
 
-const getOffset = (e: DragEvent) => {
-  if (e instanceof MouseEvent) {
-    return e.clientX;
-  }
-
-  if (e instanceof TouchEvent) {
-    return e.touches[0].pageX;
-  }
-
-  throw new Error("Unable to detect offset from event.");
+const getOffset = (orientation: DragOrientation) => (e: PointerEvent) => {
+  return orientation === DragOrientation.Horizontal ? e.clientX : e.clientY;
 };
 
-const calculateXPos = (element: HTMLElement, offset: number) => {
-  const rect = element.getBoundingClientRect();
-  const x = offset - rect.left;
+const calculatePos =
+  (orientation: DragOrientation) => (element: HTMLElement, offset: number) => {
+    const rect = element.getBoundingClientRect();
+    const size =
+      orientation === DragOrientation.Horizontal ? rect.width : rect.height;
 
-  return Math.min(1, Math.max(0, x / (rect.right - rect.left)));
-};
+    const raw =
+      orientation === DragOrientation.Horizontal
+        ? offset - rect.left
+        : offset - rect.top;
+
+    const normalized = Math.min(1, Math.max(0, raw / size));
+
+    // Vertical sliders: invert so bottom = 0, top = 1
+    return orientation === DragOrientation.Horizontal
+      ? normalized
+      : 1 - normalized;
+  };

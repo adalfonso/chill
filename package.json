@@ -16,8 +16,7 @@
     "lint": "eslint ./{server,client,common}/**/*.{mts,ts,tsx} --quiet",
     "test": "jest --coverage --watchAll",
     "viz": "npx vite-bundle-visualizer",
-    "prisma:build": "npx prisma format && npx prisma generate",
-    "init:email": "node scripts/initEmail.js"
+    "prisma:build": "npx prisma format && npx prisma generate"
   },
   "dependencies": {
     "@elastic/elasticsearch": "^8.19.1",

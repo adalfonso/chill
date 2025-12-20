@@ -1,5 +1,6 @@
 import { RawData, WebSocket, WebSocketServer } from "ws";
-import { TypedRequest } from "./Request";
+import { Request } from "express";
+
 import { DeviceClient, DeviceInfo } from "@common/types";
 import { DeviceConnect } from "./DeviceConnect";
 
@@ -51,7 +52,6 @@ export class SocketServer<
 
     // Ping interval
     setInterval(() => {
-      console.log(this.wss.clients.size, " clients");
       (this.wss.clients as Set<ExtWebSocket>).forEach((ws) => {
         if (ws.readyState === WebSocket.OPEN) {
           this.#pingFn(ws);
@@ -142,7 +142,7 @@ export class SocketServer<
       }));
   };
 
-  #onConnection(ws: ExtWebSocket, req: TypedRequest) {
+  #onConnection(ws: ExtWebSocket, req: Request) {
     const { user, session_id } = req._user;
 
     ws.user_id = user.id;

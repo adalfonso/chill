@@ -4,7 +4,6 @@ import { Request, Response } from "express";
 import { nanoid } from "nanoid";
 
 import { ChillWss } from "@server/registerServerSocket";
-import { TypedRequest } from "@server/lib/io/Request";
 import { blacklistToken } from "@server/lib/data/Cache";
 import { env } from "@server/init";
 
@@ -15,7 +14,7 @@ export const AuthController = {
   login: (_req: Request, res: Response) =>
     res.sendFile(path.join(path.resolve(), "views/login.html")),
 
-  logout: (wss: ChillWss) => async (req: TypedRequest, res: Response) => {
+  logout: (wss: ChillWss) => async (req: Request, res: Response) => {
     const token = req.cookies?.access_token;
 
     wss.drop(req._user.session_id);

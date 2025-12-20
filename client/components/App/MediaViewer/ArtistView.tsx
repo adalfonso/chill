@@ -9,7 +9,7 @@ import {
   SortOrder,
   Raw,
 } from "@common/types";
-import { artistAlbumUrl } from "@client/lib/Url";
+import { matchUrl } from "@client/lib/Url";
 import { MediaTile } from "./MusicLibrary/MediaTile";
 import { SmartScroller } from "./SmartScroller";
 import { api } from "@client/client";
@@ -42,21 +42,20 @@ export const ArtistView = ({ artist_id }: ArtistViewProps) => {
       header={artist?.name}
       dependencies={[artist_id.toString()]}
       onScroll={loadAlbums}
-      makeItems={makeAlbumTiles(artist_id)}
+      makeItems={makeAlbumTiles}
     ></SmartScroller>
   );
 };
 
-const makeAlbumTiles =
-  (artist_id: number) => (tiles: Array<MediaTileData<AlbumMetadata>>) =>
-    tiles.map((tile) => (
-      <MediaTile
-        tile_type={MediaTileType.Album}
-        key={tile.id}
-        tile_data={tile}
-        url={() => artistAlbumUrl(artist_id, tile.id)}
-        displayAs={({ name, data }: MediaTileData<AlbumMetadata>) =>
-          `${name}` + (data?.year ? ` (${data?.year})` : "")
-        }
-      />
-    ));
+const makeAlbumTiles = (tiles: Array<MediaTileData<AlbumMetadata>>) =>
+  tiles.map((tile) => (
+    <MediaTile
+      tile_type={MediaTileType.Album}
+      key={tile.id}
+      tile_data={tile}
+      url={() => matchUrl("album")(tile.id)}
+      displayAs={({ name, data }: MediaTileData<AlbumMetadata>) =>
+        `${name}` + (data?.year ? ` (${data?.year})` : "")
+      }
+    />
+  ));

@@ -8,12 +8,13 @@ type SearchResultProps = {
 export const SearchResult = ({ result, onVisit }: SearchResultProps) => {
   const handleClick = () => onVisit(result);
 
-  const [primary, secondary] = result.displayAs;
+  const [primary, secondary, ternary] = result.displayAs;
 
   return (
     <div className="result" onClick={handleClick}>
       {primary}
       {secondary !== undefined && <div className="secondary">{secondary}</div>}
+      {ternary !== undefined && <div className="ternary">{ternary}</div>}
     </div>
   );
 };

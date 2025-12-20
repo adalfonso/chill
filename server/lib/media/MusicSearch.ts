@@ -61,7 +61,7 @@ const getArtistIndex = async () => {
       type: "artist",
       value: name,
       path: `/artist/${id}`,
-      displayAs: [name, "Artist"],
+      displayAs: [name],
     },
   ]);
 };
@@ -81,7 +81,7 @@ const getAlbumIndex = async () => {
       type: "album",
       value: title,
       path: artist?.id ? `/artist/${artist.id}/album/${id}` : `/album/${id}`,
-      displayAs: [title, `Album - ${artist?.name ?? "Unknown Artist"}`],
+      displayAs: [title, `${artist?.name ?? "Unknown Artist"}`],
     },
   ]);
 };
@@ -97,7 +97,7 @@ const getGenreIndex = async () => {
       type: "genre",
       value: name,
       path: `/genre/${id}`,
-      displayAs: [name, `Genre`],
+      displayAs: [name],
     },
   ]);
 };
@@ -107,7 +107,7 @@ const getTrackIndex = async () => {
     select: {
       title: true,
       artist: { select: { id: true, name: true } },
-      album: { select: { id: true, title: true } },
+      album: { select: { id: true, title: true, year: true } },
     },
   });
 
@@ -122,7 +122,12 @@ const getTrackIndex = async () => {
           : album?.id
             ? `/album/${album.id}`
             : "",
-      displayAs: [title, `Track - ${artist?.name ?? "Unknown Artist"}`],
+      displayAs: [
+        title,
+        `${artist?.name ?? "Unknown Artist"}`,
+        (album?.title ?? "") +
+          (album?.title && album?.year ? ` (${album.year})` : ``),
+      ],
     },
   ]);
 };

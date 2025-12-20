@@ -33,6 +33,11 @@ export const ArtistController = {
     }
 
     const artists = await db.artist.findMany({
+      where: {
+        tracks: {
+          some: {},
+        },
+      },
       orderBy: sort,
       skip: page * limit,
       take: limit,
@@ -40,21 +45,32 @@ export const ArtistController = {
       select: {
         id: true,
         name: true,
-        albums: {
+        tracks: {
+          take: 1,
+          where: {
+            album: {
+              album_art: {
+                isNot: null,
+              },
+            },
+          },
           select: {
-            album_art: {
-              select: { filename: true },
+            album: {
+              select: {
+                album_art: {
+                  select: { filename: true },
+                },
+              },
             },
           },
         },
       },
     });
 
-    return artists.map(({ id, name, albums }) => ({
+    return artists.map(({ id, name, tracks }) => ({
       id,
       name,
-      image: albums.find((album) => album?.album_art?.filename)?.album_art
-        ?.filename,
+      image: tracks[0]?.album?.album_art?.filename ?? null,
     }));
   },
 

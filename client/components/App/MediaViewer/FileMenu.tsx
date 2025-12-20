@@ -8,6 +8,8 @@ import { getMediaMenuState, getPlayerState } from "@reducers/store";
 import { noPropagate } from "@client/lib/Event";
 import { toggle } from "@reducers/playlistEditor";
 import { useAddToQueue, useMenu, usePlayNext } from "@hooks/index";
+import { EllipsisIcon } from "@client/components/ui/icons/EllipsisIcon";
+import { ComponentChildren } from "preact";
 
 export type FileMenuHandler = {
   play: (e?: UIEvent) => void;
@@ -21,9 +23,10 @@ export type FileMenuHandler = {
 
 type FileMenuProps = {
   menu_id: string;
-  title: string;
+  title: string | ComponentChildren;
   handler?: FileMenuHandler;
   children?: JSX.Element | JSX.Element[];
+  icon_orientation?: "vertical" | "horizontal";
 };
 
 export const FileMenu = ({
@@ -31,6 +34,7 @@ export const FileMenu = ({
   title,
   handler,
   children,
+  icon_orientation = "vertical",
 }: FileMenuProps) => {
   const player = useSelector(getPlayerState);
   const playNext = usePlayNext();
@@ -80,7 +84,9 @@ export const FileMenu = ({
         className={"file-menu-entry" + (active ? " active" : "")}
         onClick={onEntryClick}
       >
-        <VerticalEllipsisIcon className="icon-xs" />
+        {(icon_orientation === "vertical" && (
+          <VerticalEllipsisIcon className="icon-xs" />
+        )) || <EllipsisIcon className="icon-xs" />}
       </div>
       {active && (
         <section className="file-menu">
@@ -98,6 +104,9 @@ export const FileMenu = ({
           )}
 
           {children}
+          <div onClick={() => handler?.toggle && handler.toggle(false)}>
+            Close
+          </div>
         </section>
       )}
     </>

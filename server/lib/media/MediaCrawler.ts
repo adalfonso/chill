@@ -22,13 +22,16 @@ export type RawMediaPayload = {
   path: string;
   duration: number;
   artist: Maybe<string>;
+  album_artist: Maybe<string>;
   album: Maybe<string>;
   title: Maybe<string>;
   track: Maybe<number>;
+  disc_number: number;
   genre: Maybe<string>;
   year: Maybe<number>;
   cover?: Maybe<AlbumCover>;
   file_modified: Date;
+  file_size: number;
   file_type: string;
   bitrate: number;
   sample_rate: number;
@@ -192,14 +195,17 @@ export class MediaCrawler {
     const { common, format } = result;
 
     const cover = await getCoverData(common.picture);
+    const stat = await fs.stat(file_path);
 
     return {
       path: file_path,
       file_type: extname(file_path).replace(".", "").toLowerCase(),
       duration: format.duration ?? 0,
       artist: common.artist ?? null,
+      album_artist: common.albumartist ?? common.artist ?? null,
       title: common.title ?? null,
       track: common.track?.no ?? null,
+      disc_number: common.disk?.no ?? 1,
       album: common.album ?? null,
       genre: common.genre?.[0] ?? null,
       year: common.year ?? null,
@@ -214,8 +220,8 @@ export class MediaCrawler {
             checksum: cover.checksum,
           }
         : null,
-
-      file_modified: (await fs.stat(file_path)).ctime,
+      file_modified: stat.ctime,
+      file_size: stat.size,
     };
   }
 

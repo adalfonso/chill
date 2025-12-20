@@ -1,4 +1,4 @@
-import express, { Express } from "express";
+import express, { Express, type RequestHandler } from "express";
 import historyApiFallback from "connect-history-api-fallback";
 
 import auth from "./auth";
@@ -29,7 +29,7 @@ export const initRouter = (app: Express, wss: ChillWss) => {
           to: (context) => context.parsedUrl.path ?? "/missing",
         },
       ],
-    }),
+    }) as RequestHandler,
   );
 
   // Register all API routes

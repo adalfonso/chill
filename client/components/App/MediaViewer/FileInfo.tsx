@@ -1,10 +1,10 @@
 import "./FileInfo.scss";
 import { Close } from "@client/components/ui/Close";
 import { PlayableTrack } from "@common/types";
-import { getFileTypeFromPath } from "@common/commonUtils";
 import { noPropagate } from "@client/lib/Event";
 import { secondsToMinutes } from "@client/lib/AudioProgress";
 import { useMenu } from "@hooks/index";
+import { getBitsDisplay } from "../PlayControls";
 
 type FileInfoProps = {
   menu_id: string;
@@ -59,7 +59,12 @@ export const FileInfo = ({ file, menu_id }: FileInfoProps) => {
 
               <tr>
                 <td>File Type</td>
-                <td>{getFileTypeFromPath(file.path)}</td>
+                <td>{file.file_type?.toUpperCase()}</td>
+              </tr>
+
+              <tr>
+                <td>Quality</td>
+                <td>{getBitsDisplay(file)} </td>
               </tr>
             </tbody>
           </table>

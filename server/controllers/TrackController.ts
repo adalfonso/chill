@@ -4,14 +4,13 @@ import { Request as Req, Response as Res } from "express";
 import fs from "node:fs/promises";
 import jwt from "jsonwebtoken";
 
-import { AudioQualityBitrate, PlayableTrack } from "@common/types";
+import { AudioQualityBitrate, PlayableTrack, SortOrder } from "@common/types";
 import { Request } from "@server/trpc";
 import { db } from "@server/lib/data/db";
 import { AudioQuality, Prisma } from "@prisma/client";
 import { convert as convertAudioTrack } from "@server/lib/conversion";
 import { stream_file as streamAudioTrack } from "@server/lib/io/stream";
 import { adjustImage } from "@server/lib/media/image/ImageAdjust";
-import { getFileTypeFromPath } from "@common/commonUtils";
 import { env } from "@server/init";
 import { getAlbumFromFs } from "@server/lib/media/image/ImageCache";
 import { pagination_schema } from "@common/schema";
@@ -24,6 +23,9 @@ export const schema = {
     album_id: z.number().int().optional(),
     artist_id: z.number().int().optional(),
     genre_id: z.number().int().optional(),
+    options: pagination_schema,
+  }),
+  getTrackTiles: z.object({
     options: pagination_schema,
   }),
   getRandomTracks: z.object({
@@ -57,7 +59,7 @@ export const TrackController = {
         // audio, then sets the audio quality to medium after?
         const file_type =
           req.user?.settings?.audio_quality === AudioQuality.Original
-            ? getFileTypeFromPath(track.path)
+            ? track.file_type
             : "mp3";
 
         const content_type = `audio/${file_type}`;
@@ -161,6 +163,7 @@ export const TrackController = {
     ).map((track) => ({
       ...track,
       artist: track?.artist?.name ?? null,
+      album_artist: track.album_artist?.name ?? null,
       album: track.album?.title ?? null,
       album_art_filename: track.album?.album_art?.filename ?? null,
       year: track?.album?.year ?? null,
@@ -189,9 +192,40 @@ export const TrackController = {
     ).map(({ id }) => id);
   },
 
+  getTrackTiles: async ({
+    input: { options },
+  }: Request<typeof schema.getTrackTiles>) => {
+    const { limit, page } = options;
+
+    const tracks = await db.track.findMany({
+      orderBy: { title: "asc" },
+      skip: page * limit,
+      take: limit,
+
+      select: {
+        id: true,
+        title: true,
+        album: {
+          select: {
+            album_art: {
+              select: { filename: true },
+            },
+          },
+        },
+      },
+    });
+
+    return tracks.map(({ id, title, album }) => ({
+      id,
+      name: title,
+      image: album?.album_art?.filename ?? null,
+    }));
+  },
+
   getRandomTracks: async ({
     input: { limit, exclusions },
   }: Request<typeof schema.getRandomTracks>): Promise<Array<PlayableTrack>> => {
+    // Ensure exclusions is not empty to avoid SQL syntax errors
     exclusions.push(9e16);
 
     return (await db.$queryRaw`
@@ -203,14 +237,17 @@ export const TrackController = {
       )
       SELECT
         track.id, track.title, track.path, track.number, track.duration,
-        track.artist_id, track.album_id, artist.name AS artist,
-        album.title AS album, album_art.filename AS album_art_filename,
-        file_type, bitrate, sample_rate, bits_per_sample
-
+        track.disc_number, track.artist_id, track.album_artist_id, track.album_id,
+        artist.name AS artist, album_artist.name AS album_artist, album.title AS album,
+        album_art.filename AS album_art_filename,
+        album.year, genre.name AS genre, file_type, bitrate, sample_rate,
+        bits_per_sample
       FROM public."Track" track
       LEFT JOIN public."Artist" artist ON track.artist_id = artist.id
+      LEFT JOIN public."Artist" album_artist ON track.album_artist_id = album_artist.id
       LEFT JOIN public."Album" album ON track.album_id = album.id
       LEFT JOIN public."AlbumArt" album_art ON album.id = album_art.album_id
+      LEFT JOIN public."Genre" genre ON track.genre_id = genre.id
       WHERE track.id IN (SELECT id FROM random_tracks LIMIT ${limit})`) as Array<PlayableTrack>;
   },
 
@@ -305,14 +342,19 @@ export const playable_track_selection = {
   title: true,
   path: true,
   number: true,
+  disc_number: true,
   duration: true,
   artist_id: true,
+  album_artist_id: true,
   album_id: true,
   file_type: true,
   bitrate: true,
   sample_rate: true,
   bits_per_sample: true,
   artist: {
+    select: { name: true },
+  },
+  album_artist: {
     select: { name: true },
   },
   album: {

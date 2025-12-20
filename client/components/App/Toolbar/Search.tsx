@@ -1,32 +1,49 @@
 import { useLocation } from "wouter-preact";
-import { useState } from "preact/hooks";
+import { useSignal } from "@preact/signals";
 
 import "./Search.scss";
-import { SearchResult as SearchResultType } from "@common/types";
+import { Close } from "@client/components/ui/Close";
+import { CoreViewState } from "@client/state/AppState";
+import { MagnifyingGlassIcon } from "@client/components/ui/icons/MagnifyingGlassIcon";
+import { MediaTileType, SearchResult as SearchResultType } from "@common/types";
 import { SearchResult } from "./Search/SearchResult";
 import { api } from "@client/client";
-import { useDebounce } from "@hooks/index";
-import { Close } from "@client/components/ui/Close";
+import { useAppState, useDebounce } from "@hooks/index";
+
+const searchGroupSortOrder: Partial<Record<MediaTileType, number>> = {
+  [MediaTileType.Artist]: 1,
+  [MediaTileType.Album]: 2,
+  [MediaTileType.Track]: 3,
+  [MediaTileType.Genre]: 4,
+};
+
+const unknownSearchOrder = 10;
 
 export const Search = () => {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResultType[]>([]);
+  const { view } = useAppState();
+  const query = useSignal("");
+  const results = useSignal<Map<string, Array<SearchResultType>>>(new Map());
   const [, navigate] = useLocation();
 
   useDebounce(
     async () => {
-      if (query === "") {
+      if (query.value === "") {
         return clear();
       }
 
       try {
-        const results = await api.media.search.query({ query });
-        setResults(results);
+        const res = await api.media.search.query({ query: query.value });
+
+        results.value = res.reduce((acc, item) => {
+          const items = acc.get(item.type) ?? [];
+          items.push(item);
+          return acc.set(item.type, items);
+        }, new Map<string, Array<SearchResultType>>());
       } catch (err) {
         console.error(`Search Failed:`, (err as Error).message);
       }
     },
-    [query],
+    [query.value],
     300,
   );
 
@@ -34,37 +51,68 @@ export const Search = () => {
   const visitMedia = async (file: SearchResultType) => {
     const { path } = file;
 
-    clear();
-    navigate(path);
+    view.value = CoreViewState.Library;
+
+    navigate("/library" + path);
   };
 
   // Clear the search input/results
   const clear = () => {
-    setQuery("");
-    setResults([]);
+    query.value = "";
+    results.value = new Map();
   };
 
   return (
     <div className="search">
-      <input
-        placeholder="search"
-        value={query}
-        onChange={(e) =>
-          setQuery((e.target as HTMLInputElement).value.replace(/\s+/g, " "))
-        }
-      />
-      {query.length > 0 && <Close onClose={clear} size="xxs" />}
-      {results.length > 0 && (
+      <div className="search-input">
+        <div className="search-icon">
+          <MagnifyingGlassIcon className="icon-xs" />
+        </div>
+
+        <input
+          placeholder="search"
+          value={query.value}
+          onChange={(e) =>
+            (query.value = (e.target as HTMLInputElement).value.replace(
+              /\s+/g,
+              " ",
+            ))
+          }
+        />
+        <div className="search-clear">
+          {query.value.length > 0 && <Close onClose={clear} size="xxs" />}
+        </div>
+      </div>
+
+      {results.value.size > 0 && (
         <div className="search-results">
-          {results.map((result) => {
-            return (
-              <SearchResult
-                result={result}
-                onVisit={visitMedia}
-                key={result.displayAs.join("|") + result.value}
-              />
-            );
-          })}
+          {results.value
+            .entries()
+            .toArray()
+            .sort(
+              ([a], [b]) =>
+                (searchGroupSortOrder[a as MediaTileType] ??
+                  unknownSearchOrder) -
+                (searchGroupSortOrder[b as MediaTileType] ??
+                  unknownSearchOrder),
+            )
+            .map(([key, value]) => {
+              return (
+                <>
+                  <h4>{key.toUpperCase()}</h4>
+
+                  {value.map((result) => {
+                    return (
+                      <SearchResult
+                        result={result}
+                        onVisit={visitMedia}
+                        key={result.displayAs.join("|") + result.value}
+                      />
+                    );
+                  })}
+                </>
+              );
+            })}
         </div>
       )}
     </div>
