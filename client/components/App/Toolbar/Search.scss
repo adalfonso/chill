@@ -10,7 +10,8 @@
 
   .search-input {
     background-color: $dm-background-2;
-    height: 2.5rem;
+    height: 2.75rem;
+    min-height: 2.75rem;
     border-radius: 0.4rem;
     display: flex;
     width: 100%;
