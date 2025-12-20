@@ -31,6 +31,7 @@ import {
 type MediaTileProps<T extends Record<string, unknown>> = {
   tile_type: MediaTileType;
   tile_data: MediaTileData<T>;
+  index: number;
   url: Maybe<(file: MediaTileData<T>) => string>;
   displayAs: (file: MediaTileData<T>) => string;
 
@@ -41,6 +42,7 @@ type MediaTileProps<T extends Record<string, unknown>> = {
 export const MediaTile = <T extends Record<string, unknown>>({
   tile_type,
   tile_data,
+  index,
   url,
   displayAs,
   parent_scroll_position,
@@ -130,7 +132,8 @@ export const MediaTile = <T extends Record<string, unknown>>({
         more: true,
       };
 
-      play({ tracks, cast_info, index: 0, play_options });
+      const i = tile_type === MediaTileType.Track ? index : 0;
+      play({ tracks, cast_info, index: i, play_options });
     },
     getTracks: getTracksForMediaTile(tile_type, tile_data),
 
@@ -204,12 +207,19 @@ export const MediaTile = <T extends Record<string, unknown>>({
     </FileMenu>
   );
 
+  const onClick = () => {
+    if (tile_type === MediaTileType.Track) {
+      optionsHandler.play();
+      return;
+    }
+
+    if (url) {
+      navigate(url(tile_data));
+    }
+  };
+
   return (
-    <div
-      className="media-tile"
-      {...onPress.events}
-      onClick={() => url && navigate(url(tile_data))}
-    >
+    <div className="media-tile" {...onPress.events} onClick={onClick}>
       <div className={"media-tile-image" + (menu_visible ? " active" : "")}>
         {tile_data.image && (
           <img

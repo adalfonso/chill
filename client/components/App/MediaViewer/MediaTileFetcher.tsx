@@ -26,10 +26,11 @@ export const MediaTileFetcher = ({ type }: MediaTileFetcherProps) => {
 const makeItems = (type: MediaTileType) => (tiles: Array<MediaTileData>) =>
   tiles
     .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
-    .map((tile) => (
+    .map((tile, index) => (
       <MediaTile
         tile_type={type}
         key={tile.id}
+        index={index}
         tile_data={tile}
         displayAs={(item: MediaTileData) => item.name ?? ""}
         url={(item: MediaTileData) => matchUrl(type)(item.id)}

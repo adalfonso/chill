@@ -48,9 +48,10 @@ export const ArtistView = ({ artist_id }: ArtistViewProps) => {
 };
 
 const makeAlbumTiles = (tiles: Array<MediaTileData<AlbumMetadata>>) =>
-  tiles.map((tile) => (
+  tiles.map((tile, index) => (
     <MediaTile
       tile_type={MediaTileType.Album}
+      index={index}
       key={tile.id}
       tile_data={tile}
       url={() => matchUrl("album")(tile.id)}

@@ -42,9 +42,10 @@ export const GenreView = ({ genre_id }: GenreViewProps) => {
 };
 
 const makeArtistGenreTiles = (tiles: Array<MediaTileData>) =>
-  tiles.map((tile) => (
+  tiles.map((tile, index) => (
     <MediaTile
       tile_type={MediaTileType.Artist}
+      index={index}
       key={tile.id}
       tile_data={tile}
       url={() => artistUrl(tile.id)}
