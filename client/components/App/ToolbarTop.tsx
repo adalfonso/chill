@@ -47,7 +47,7 @@ export const ToolbarTop = () => {
             navigate("/");
           }}
         >
-          Music
+          Library
         </div>
         <div
           onClick={() => {
