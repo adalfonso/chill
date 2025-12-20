@@ -107,7 +107,7 @@ const getTrackIndex = async () => {
     select: {
       title: true,
       artist: { select: { id: true, name: true } },
-      album: { select: { id: true, title: true } },
+      album: { select: { id: true, title: true, year: true } },
     },
   });
 
@@ -122,7 +122,12 @@ const getTrackIndex = async () => {
           : album?.id
             ? `/album/${album.id}`
             : "",
-      displayAs: [title, `${artist?.name ?? "Unknown Artist"}`],
+      displayAs: [
+        title,
+        `${artist?.name ?? "Unknown Artist"}`,
+        (album?.title ?? "") +
+          (album?.title && album?.year ? ` (${album.year})` : ``),
+      ],
     },
   ]);
 };
