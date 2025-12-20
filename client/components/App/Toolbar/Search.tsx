@@ -10,7 +10,7 @@ import { SearchResult } from "./Search/SearchResult";
 import { api } from "@client/client";
 import { useAppState, useDebounce } from "@hooks/index";
 
-const searchGroupSortOrder: Record<MediaTileType, number> = {
+const searchGroupSortOrder: Partial<Record<MediaTileType, number>> = {
   [MediaTileType.Artist]: 1,
   [MediaTileType.Album]: 2,
   [MediaTileType.Track]: 3,
@@ -53,7 +53,6 @@ export const Search = () => {
 
     view.value = CoreViewState.Library;
 
-    clear();
     navigate("/library" + path);
   };
 
