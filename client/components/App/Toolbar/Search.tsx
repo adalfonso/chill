@@ -5,10 +5,19 @@ import "./Search.scss";
 import { Close } from "@client/components/ui/Close";
 import { CoreViewState } from "@client/state/AppState";
 import { MagnifyingGlassIcon } from "@client/components/ui/icons/MagnifyingGlassIcon";
-import { SearchResult as SearchResultType } from "@common/types";
+import { MediaTileType, SearchResult as SearchResultType } from "@common/types";
 import { SearchResult } from "./Search/SearchResult";
 import { api } from "@client/client";
 import { useAppState, useDebounce } from "@hooks/index";
+
+const searchGroupSortOrder: Record<MediaTileType, number> = {
+  [MediaTileType.Artist]: 1,
+  [MediaTileType.Album]: 2,
+  [MediaTileType.Track]: 3,
+  [MediaTileType.Genre]: 4,
+};
+
+const unknownSearchOrder = 10;
 
 export const Search = () => {
   const { view } = useAppState();
@@ -81,6 +90,13 @@ export const Search = () => {
           {results.value
             .entries()
             .toArray()
+            .sort(
+              ([a], [b]) =>
+                (searchGroupSortOrder[a as MediaTileType] ??
+                  unknownSearchOrder) -
+                (searchGroupSortOrder[b as MediaTileType] ??
+                  unknownSearchOrder),
+            )
             .map(([key, value]) => {
               return (
                 <>

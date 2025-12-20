@@ -7,7 +7,7 @@ export type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 
 export type SearchResult = {
-  type: MediaTileType | "track";
+  type: MediaTileType;
   value: string;
   displayAs: string[];
   path: string;
