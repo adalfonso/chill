@@ -13,7 +13,6 @@ export const ToolbarBottom = () => {
 
   const onPress = useLongPress(
     () => {
-      console.log("view");
       setViewState(CoreViewState.Library)();
       navigate("/library");
     },
@@ -29,18 +28,30 @@ export const ToolbarBottom = () => {
   return (
     <div id="toolbar-bottom">
       <div
-        className="action"
+        className={
+          "action" + (view.value === CoreViewState.Library ? " active" : "")
+        }
         onClick={setViewState(CoreViewState.Library)}
         {...onPress.events}
       >
         <MusicalNoteIcon className="icon-sm" />
       </div>
 
-      <div className="action" onClick={setViewState(CoreViewState.Search)}>
+      <div
+        className={
+          "action" + (view.value === CoreViewState.Search ? " active" : "")
+        }
+        onClick={setViewState(CoreViewState.Search)}
+      >
         <MagnifyingGlassIcon className="icon-sm" />
       </div>
 
-      <div className="action" onClick={setViewState(CoreViewState.Settings)}>
+      <div
+        className={
+          "action" + (view.value === CoreViewState.Settings ? " active" : "")
+        }
+        onClick={setViewState(CoreViewState.Settings)}
+      >
         <GearIcon className="icon-sm" />
       </div>
     </div>
