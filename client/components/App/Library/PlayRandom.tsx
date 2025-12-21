@@ -1,6 +1,7 @@
 import { useSelector } from "react-redux";
 
 import { PlayMode } from "@common/types";
+import { ShuffleIcon } from "@client/components/ui/icons/ShuffleIcon";
 import { api } from "@client/client";
 import { getPlayerState } from "@reducers/store";
 import { getRandomTracks } from "@client/lib/TrackLoaders";
@@ -26,7 +27,7 @@ export const PlayRandom = () => {
 
   return (
     <div className="play-random" onClick={playRandomTracks}>
-      Shuffle All
+      <ShuffleIcon className="icon-sm" />
     </div>
   );
 };

@@ -3,7 +3,6 @@ import { useEffect } from "preact/hooks";
 import { useSignal } from "@preact/signals";
 
 import { LibraryCounts } from "@common/apiTypes";
-import { PlayRandom } from "./PlayRandom";
 import { api } from "@client/client";
 import { capitalize } from "@common/commonUtils";
 
@@ -25,14 +24,13 @@ export const LibraryMenu = () => {
 
   return (
     <div className="library-menu" key="library">
-      <PlayRandom />
-
       {Object.entries(counts.value).map(([key, value]) => (
         <MenuItem
           key={key}
           to={`/library/${key}`}
           label={capitalize(key)}
           count={value}
+          type={key}
         />
       ))}
     </div>
@@ -43,10 +41,11 @@ type MenuItemProps = {
   to: string;
   label: string;
   count: number;
+  type: string;
 };
 
-const MenuItem = ({ to, label, count }: MenuItemProps) => (
-  <Link href={to} className="library-menu-item">
+const MenuItem = ({ to, label, count, type }: MenuItemProps) => (
+  <Link href={to} className={`library-menu-item ${type}`}>
     <div className="label">{label}</div>
     <div className="count">{count}</div>
   </Link>

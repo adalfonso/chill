@@ -8,6 +8,7 @@ import { ArtistView } from "./MediaViewer/ArtistView";
 import { GenreView } from "./MediaViewer/GenreView";
 import { LibraryMenu } from "./Library/LibraryMenu";
 import { MediaTileFetcher } from "./MediaViewer/MediaTileFetcher";
+import { PlayRandom } from "./Library/PlayRandom";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import { useAppState } from "@hooks/useAppState";
 import { useViewport } from "@hooks/useViewport";
@@ -98,7 +99,12 @@ const routes: Route[] = [
   },
   {
     pattern: /^\/library\/tracks$/,
-    render: () => <MediaTileFetcher type="track" key="track-list" />,
+    render: () => (
+      <div className="tracks-view">
+        <PlayRandom />
+        <MediaTileFetcher type="track" key="track-list" />
+      </div>
+    ),
   },
   {
     pattern: /^\/library\/genres$/,
