@@ -67,6 +67,10 @@
       cursor: pointer;
       user-select: none;
 
+      &.single {
+        padding: 0.75rem 0.35rem;
+      }
+
       .secondary {
         color: $dm-font-3;
       }

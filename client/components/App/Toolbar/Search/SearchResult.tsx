@@ -10,11 +10,14 @@ export const SearchResult = ({ result, onVisit }: SearchResultProps) => {
 
   const [primary, secondary, ternary] = result.displayAs;
 
+  const hasSecondary = secondary !== undefined;
+  const hasTernary = ternary !== undefined;
+
   return (
-    <div className="result" onClick={handleClick}>
+    <div className={`result ${!hasSecondary && !hasTernary ? 'single' : ''}`} onClick={handleClick}>
       {primary}
-      {secondary !== undefined && <div className="secondary">{secondary}</div>}
-      {ternary !== undefined && <div className="ternary">{ternary}</div>}
+      {hasSecondary && <div className="secondary">{secondary}</div>}
+      {hasTernary && <div className="ternary">{ternary}</div>}
     </div>
   );
 };
