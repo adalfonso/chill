@@ -126,7 +126,16 @@ export const PlayControls = () => {
 
   return (
     <>
-      <div id="play-controls" className={player.mobile_display_mode}>
+      <div
+        id="play-controls"
+        className={player.mobile_display_mode + (is_mobile ? " mobile" : "")}
+        style={{
+          "--bg-image":
+            is_mobile && player.now_playing?.album_art_filename
+              ? `url(/api/v1/media/cover/${player.now_playing.album_art_filename}?size=500)`
+              : "none",
+        }}
+      >
         {is_mobile && <MobileVolumeControl />}
         <div className="content">
           <div className="controls">
@@ -144,7 +153,7 @@ export const PlayControls = () => {
           </div>
         </div>
         <Scrubber />
-        <div className="panel">
+        <div className="controls-panel">
           <div className="side-panel"></div>
           <div className="now-playing">
             <div className="title">{getNowPlaying()}</div>
