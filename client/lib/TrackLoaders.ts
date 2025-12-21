@@ -1,4 +1,9 @@
-import { DEFAULT_LIMIT, DEFAULT_PAGE, paginate } from "@common/pagination";
+import {
+  DEFAULT_LIMIT,
+  DEFAULT_OFFSET,
+  DEFAULT_PAGE,
+  paginate,
+} from "@common/pagination";
 import { api } from "@client/client";
 import { PlayerState } from "@reducers/player";
 import { SortClause } from "@common/schema";
@@ -48,8 +53,11 @@ export const getMoreTracks = (player: PlayerState) => {
     }
 
     case PlayMode.Track: {
-      const { limit, page } = player.play_options;
-      return getTracks({}, { limit, page: page + 1, sort: sort_clauses.track });
+      const { limit, offset, page } = player.play_options;
+      return getTracks(
+        {},
+        { limit, page: page + 1, offset, sort: sort_clauses.track },
+      );
     }
 
     case PlayMode.None: {
@@ -116,13 +124,23 @@ export const getPlaylistTracks = (
  */
 export const getTracks = (
   filter: { artist_id?: number; album_id?: number; genre_id?: number } = {},
-  options: { page?: number; limit?: number; sort?: Array<SortClause> } = {},
+  options: {
+    page?: number;
+    limit?: number;
+    offset?: number;
+    sort?: Array<SortClause>;
+  } = {},
 ) => {
-  const { page = DEFAULT_PAGE, limit = DEFAULT_LIMIT, sort = [] } = options;
+  const {
+    page = DEFAULT_PAGE,
+    limit = DEFAULT_LIMIT,
+    sort = [],
+    offset = DEFAULT_OFFSET,
+  } = options;
 
   return api.track.get.query({
     ...filter,
-    options: paginate({ page, limit, sort }),
+    options: paginate({ page, limit, offset, sort }),
   });
 };
 

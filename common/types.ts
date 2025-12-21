@@ -78,6 +78,7 @@ export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder];
 export type PaginationOptions = {
   limit: number;
   page: number;
+  offset: number;
   sort: Array<SortClause>;
 };
 

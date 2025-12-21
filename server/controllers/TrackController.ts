@@ -4,7 +4,7 @@ import { Request as Req, Response as Res } from "express";
 import fs from "node:fs/promises";
 import jwt from "jsonwebtoken";
 
-import { AudioQualityBitrate, PlayableTrack, SortOrder } from "@common/types";
+import { AudioQualityBitrate, PlayableTrack } from "@common/types";
 import { Request } from "@server/trpc";
 import { db } from "@server/lib/data/db";
 import { AudioQuality, Prisma } from "@prisma/client";
@@ -14,6 +14,7 @@ import { adjustImage } from "@server/lib/media/image/ImageAdjust";
 import { env } from "@server/init";
 import { getAlbumFromFs } from "@server/lib/media/image/ImageCache";
 import { pagination_schema } from "@common/schema";
+import { DEFAULT_OFFSET } from "@common/pagination";
 
 export const schema = {
   cast_info: z.object({
@@ -150,14 +151,14 @@ export const TrackController = {
   get: async ({
     input: { album_id, artist_id, genre_id, options },
   }: Request<typeof schema.get>): Promise<Array<PlayableTrack>> => {
-    const { limit, page, sort } = options;
+    const { limit, page, sort, offset = DEFAULT_OFFSET } = options;
 
     return (
       await db.track.findMany({
         where: { album_id, artist_id, genre_id },
         select: playable_track_selection,
         take: limit,
-        skip: page * limit,
+        skip: page * limit + offset,
         orderBy: sort,
       })
     ).map((track) => ({

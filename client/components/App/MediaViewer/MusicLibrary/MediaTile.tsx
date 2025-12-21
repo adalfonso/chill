@@ -21,7 +21,11 @@ import {
   usePlay,
   useViewport,
 } from "@hooks/index";
-import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@common/pagination";
+import {
+  DEFAULT_LIMIT,
+  DEFAULT_OFFSET,
+  DEFAULT_PAGE,
+} from "@common/pagination";
 import {
   getTrackIds,
   getTracks as loadTracks,
@@ -101,9 +105,13 @@ export const MediaTile = <T extends Record<string, unknown>>({
 
   const optionsHandler: FileMenuHandler = {
     play: async () => {
+      const offset = index ?? DEFAULT_OFFSET;
+
       const { tracks, cast_info } = await getTracksForMediaTile(
         tile_type,
         tile_data,
+        DEFAULT_LIMIT,
+        offset,
       )(player.is_casting);
 
       const getMode = (type: MediaTileType) => {
@@ -128,12 +136,12 @@ export const MediaTile = <T extends Record<string, unknown>>({
         mode: getMode(tile_type),
         id: tile_data.id,
         limit: DEFAULT_LIMIT,
+        offset,
         page: DEFAULT_PAGE,
         more: true,
       };
 
-      const i = tile_type === MediaTileType.Track ? index : 0;
-      play({ tracks, cast_info, index: i, play_options });
+      play({ tracks, cast_info, index: 0, play_options });
     },
     getTracks: getTracksForMediaTile(tile_type, tile_data),
 
@@ -252,9 +260,10 @@ const getTracksForMediaTile =
     tile_tile: MediaTileType,
     tile: MediaTileData<T>,
     limit?: number,
+    offset?: number,
   ) =>
   async (is_casting = false) => {
-    const tracks = await TrackApi(tile_tile, tile, limit);
+    const tracks = await TrackApi(tile_tile, tile, limit, offset);
 
     if (!is_casting) {
       return { tracks, cast_info: null };
@@ -271,12 +280,13 @@ const TrackApi = async <T extends Record<string, unknown>>(
   tile_type: MediaTileType,
   tile: MediaTileData<T>,
   limit?: number,
+  offset?: number,
 ) => {
   switch (tile_type) {
     case MediaTileType.Artist:
       return loadTracks(
         { artist_id: tile.id },
-        { limit, sort: sort_clauses.artist },
+        { limit, offset, sort: sort_clauses.artist },
       );
 
     case MediaTileType.Album:
@@ -284,17 +294,17 @@ const TrackApi = async <T extends Record<string, unknown>>(
     case MediaTileType.Split:
       return loadTracks(
         { album_id: tile.id },
-        { limit, sort: sort_clauses.album },
+        { limit, offset, sort: sort_clauses.album },
       );
 
     case MediaTileType.Genre:
       return loadTracks(
         { genre_id: tile.id },
-        { limit, sort: sort_clauses.genre },
+        { limit, offset, sort: sort_clauses.genre },
       );
 
     case MediaTileType.Track:
-      return loadTracks({}, { limit, sort: sort_clauses.track });
+      return loadTracks({}, { limit, offset, sort: sort_clauses.track });
   }
 };
 

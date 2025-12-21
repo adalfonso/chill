@@ -7,6 +7,7 @@ export type SortClause = z.infer<typeof sort_schema>;
 
 export const pagination_schema = z.object({
   limit: z.number().int(),
+  offset: z.number().int(),
   page: z.number().int(),
   sort: z.array(sort_schema).default([]),
 });
