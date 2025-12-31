@@ -1,3 +1,5 @@
+import { errors } from "@elastic/elasticsearch";
+
 import { db } from "../data/db";
 import { Search } from "../data/Search";
 
@@ -6,26 +8,43 @@ export const rebuildMusicSearchIndex = async () => {
 
   console.info("Rebuilding music search index...");
 
-  const index_exists = await Search.instance().indices.exists({
-    index: "music",
-  });
-
-  if (index_exists) {
+  try {
+    console.log("Deleting existing music index...");
     await Search.instance().indices.delete({ index: "music" });
+    console.log("Existing music index deleted.");
+  } catch (e: unknown) {
+    if (e instanceof errors.ResponseError && e.meta.statusCode === 404) {
+      // index didn't exist — safe to ignore
+    } else {
+      throw e;
+    }
   }
 
   await Search.instance().indices.create({
     index: "music",
+    settings: {
+      number_of_replicas: 0,
+    },
     body: {
       mappings: {
         properties: {
           type: { type: "keyword" },
           value: { type: "text" },
           path: { type: "text" },
-          displayAs: { type: "keyword" },
+          displayAs: {
+            type: "text",
+            fields: {
+              keyword: { type: "keyword" },
+            },
+          },
         },
       },
     },
+  });
+
+  await Search.instance().cluster.health({
+    index: "music",
+    wait_for_status: "yellow",
   });
 
   const body = await getFullMusicIndex();
