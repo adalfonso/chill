@@ -50,13 +50,34 @@ export const MediaFileController = {
   },
 
   search: async ({ input: { query } }: Request<typeof schema.search>) => {
-    const response = await Search.instance().search<SearchResult>({
-      index: "music",
-      body: { query: { match: { value: query } } },
+    const TYPES = ["artist", "album", "track", "genre"];
+
+    const queries = TYPES.flatMap((type) => [
+      { index: "music" },
+      {
+        size: 5,
+        query: {
+          bool: {
+            must: [{ term: { type } }],
+            should: [
+              { match_phrase: { value: { query, boost: 3 } } },
+              { match: { value: { query, operator: "and" } } },
+            ],
+            minimum_should_match: 1,
+          },
+        },
+      },
+    ]);
+
+    const response = await Search.instance().msearch<SearchResult>({
+      body: queries,
     });
 
-    return response.hits.hits
-      .map((hit) => hit._source)
-      .filter((source): source is SearchResult => !!source);
+    return response.responses.flatMap((res) => {
+      if (!("hits" in res)) return [];
+      return res.hits.hits
+        .map((hit) => hit._source)
+        .filter((s): s is SearchResult => !!s);
+    });
   },
 };
