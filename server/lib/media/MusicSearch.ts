@@ -22,17 +22,36 @@ export const rebuildMusicSearchIndex = async () => {
 
   await Search.instance().indices.create({
     index: "music",
-    settings: {
-      number_of_replicas: 0,
-    },
     body: {
+      settings: {
+        number_of_replicas: 0,
+        analysis: {
+          analyzer: {
+            folding_analyzer: {
+              type: "custom",
+              tokenizer: "standard",
+              filter: ["lowercase", "asciifolding"],
+            },
+          },
+        },
+      },
       mappings: {
         properties: {
           type: { type: "keyword" },
-          value: { type: "text" },
-          path: { type: "text" },
+
+          value: {
+            type: "text",
+            analyzer: "folding_analyzer",
+          },
+
+          path: {
+            type: "text",
+            analyzer: "folding_analyzer",
+          },
+
           displayAs: {
             type: "text",
+            analyzer: "folding_analyzer",
             fields: {
               keyword: { type: "keyword" },
             },
