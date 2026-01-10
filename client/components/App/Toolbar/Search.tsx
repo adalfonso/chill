@@ -1,5 +1,6 @@
 import { useLocation } from "wouter-preact";
-import { useSignal } from "@preact/signals";
+import { effect, useSignal } from "@preact/signals";
+import { useEffect, useRef } from "preact/hooks";
 
 import "./Search.scss";
 import { Close } from "@client/components/ui/Close";
@@ -24,6 +25,7 @@ export const Search = () => {
   const query = useSignal("");
   const results = useSignal<Map<string, Array<SearchResultType>>>(new Map());
   const [, navigate] = useLocation();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useDebounce(
     async () => {
@@ -47,6 +49,12 @@ export const Search = () => {
     300,
   );
 
+  useEffect(() => {
+    if (view.value === CoreViewState.Search) {
+      inputRef.current?.focus();
+    }
+  }, [view.value]);
+
   // Visit page for search result
   const visitMedia = async (file: SearchResultType) => {
     const { path } = file;
@@ -60,6 +68,7 @@ export const Search = () => {
   const clear = () => {
     query.value = "";
     results.value = new Map();
+    inputRef.current?.focus();
   };
 
   return (
@@ -70,6 +79,7 @@ export const Search = () => {
         </div>
 
         <input
+          ref={inputRef}
           placeholder="search"
           value={query.value}
           onChange={(e) =>
