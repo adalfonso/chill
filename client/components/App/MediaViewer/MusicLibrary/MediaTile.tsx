@@ -105,7 +105,10 @@ export const MediaTile = <T extends Record<string, unknown>>({
 
   const optionsHandler: FileMenuHandler = {
     play: async () => {
-      const offset = index ?? DEFAULT_OFFSET;
+      const offset =
+        tile_type === MediaTileType.Track
+          ? (index ?? DEFAULT_OFFSET)
+          : DEFAULT_OFFSET;
 
       const { tracks, cast_info } = await getTracksForMediaTile(
         tile_type,
@@ -113,6 +116,11 @@ export const MediaTile = <T extends Record<string, unknown>>({
         DEFAULT_LIMIT,
         offset,
       )(player.is_casting);
+
+      if (!tracks.length) {
+        console.error("No tracks found for media tile", tile_type, tile_data);
+        return;
+      }
 
       const getMode = (type: MediaTileType) => {
         switch (type) {
