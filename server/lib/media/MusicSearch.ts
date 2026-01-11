@@ -27,10 +27,25 @@ export const rebuildMusicSearchIndex = async () => {
         number_of_replicas: 0,
         analysis: {
           analyzer: {
-            folding_analyzer: {
+            music_analyzer: {
               type: "custom",
               tokenizer: "standard",
-              filter: ["lowercase", "asciifolding"],
+              filter: [
+                "lowercase",
+                "asciifolding",
+                "english_possessive_stemmer",
+                "english_stemmer",
+              ],
+            },
+          },
+          filter: {
+            english_possessive_stemmer: {
+              type: "stemmer",
+              language: "possessive_english",
+            },
+            english_stemmer: {
+              type: "stemmer",
+              language: "english",
             },
           },
         },
@@ -41,17 +56,17 @@ export const rebuildMusicSearchIndex = async () => {
 
           value: {
             type: "text",
-            analyzer: "folding_analyzer",
+            analyzer: "music_analyzer",
           },
 
           path: {
             type: "text",
-            analyzer: "folding_analyzer",
+            analyzer: "music_analyzer",
           },
 
           displayAs: {
             type: "text",
-            analyzer: "folding_analyzer",
+            analyzer: "music_analyzer",
             fields: {
               keyword: { type: "keyword" },
             },
