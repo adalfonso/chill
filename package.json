@@ -5,10 +5,10 @@
   "type": "module",
   "author": "Anthony Dalfonso <anthonyjdalfonso@gmail.com>",
   "scripts": {
-    "dev": "pnpm prisma:build && nodemon --watch './server' -e ts --exec 'node --loader @esbuild-kit/esm-loader ./server/index.dev.ts'",
+    "dev": "pnpm prisma:build && tsx watch ./server/index.dev.ts",
     "build": "pnpm prisma:build && pnpm prisma migrate deploy && vite build && pnpm build-receiver",
     "build-receiver": "vite build --config receiver.vite.config.js",
-    "start": "pnpm build && node --loader @esbuild-kit/esm-loader ./server/index.ts",
+    "start": "pnpm build && tsx ./server/index.ts",
     "docker": "docker-compose up --build",
     "docker:dev": "docker-compose -f docker-compose.dev.yml up --build",
     "docker:publish": "docker build -t adalfonso/chill:latest . && docker push adalfonso/chill:latest",
@@ -42,12 +42,12 @@
     "react-redux": "^8.1.3",
     "redis": "^4.7.1",
     "sharp": "^0.33.5",
+    "tsx": "^4.21.0",
     "wouter-preact": "^3.7.1",
     "ws": "^8.18.3",
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@esbuild-kit/esm-loader": "^2.6.5",
     "@eslint/js": "^9.39.0",
     "@preact/preset-vite": "^2.10.2",
     "@redux-devtools/core": "^3.14.0",
@@ -72,13 +72,12 @@
     "eslint-plugin-unused-imports": "^4.3.0",
     "globals": "^15.15.0",
     "jest": "^27.5.1",
-    "nodemon": "^2.0.22",
     "prettier": "^3.6.2",
     "prisma": "^5.22.0",
     "sass": "^1.93.3",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.2",
-    "vite": "^5.4.21"
+    "vite": "^7.3.1"
   },
   "packageManager": "pnpm@10.20.0+sha512.cf9998222162dd85864d0a8102e7892e7ba4ceadebbf5a31f9c2fce48dfce317a9c53b9f6464d1ef9042cba2e02ae02a9f7c143a2b438cd93c91840f0192b9dd"
 }

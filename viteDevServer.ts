@@ -29,7 +29,16 @@ export async function createServer(options: ConfigOptions) {
   const app = express();
 
   const vite = await createViteServer({
-    server: { middlewareMode: true },
+    server: {
+      middlewareMode: true,
+      watch: {
+        // ignore server source and generated Prisma client
+        ignored: [
+          "../server/**", // all server source outside client
+          "**/server/generated/**", // Prisma generated
+        ],
+      },
+    },
     appType: "custom",
   });
 
