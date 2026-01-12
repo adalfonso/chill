@@ -59,7 +59,7 @@ export const AlbumView = ({ album_id }: AlbumViewProps) => {
         { sort: sort_clauses.album, limit, page },
       );
 
-      if (!batch.length || batch.length < limit) {
+      if (!batch.length) {
         break; // stop if no more tracks
       }
 
@@ -67,6 +67,10 @@ export const AlbumView = ({ album_id }: AlbumViewProps) => {
       tracks.value = [...tracks.value, ...batch];
 
       page++;
+
+      if (batch.length < limit) {
+        break; // stop if no more tracks
+      }
 
       // Yield to the event loop so the UI can update
       await new Promise((resolve) => setTimeout(resolve, 0));
