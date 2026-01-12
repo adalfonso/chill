@@ -171,8 +171,8 @@ h2 {
   height: 2.5rem;
   width: 2.5rem;
   position: absolute;
-  top: calc(50% - 1.25rem);
-  left: calc(50% - 1.25rem);
+  top: calc(50%);
+  left: calc(50%);
   transform: translate3d(-50%, -50%, 0);
   will-change: transform;
 }

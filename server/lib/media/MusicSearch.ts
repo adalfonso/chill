@@ -9,9 +9,9 @@ export const rebuildMusicSearchIndex = async () => {
   console.info("Rebuilding music search index...");
 
   try {
-    console.log("Deleting existing music index...");
+    console.info("Deleting existing music index...");
     await Search.instance().indices.delete({ index: "music" });
-    console.log("Existing music index deleted.");
+    console.info("Existing music index deleted.");
   } catch (e: unknown) {
     if (e instanceof errors.ResponseError && e.meta.statusCode === 404) {
       // index didn't exist — safe to ignore

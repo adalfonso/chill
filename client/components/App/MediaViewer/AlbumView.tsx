@@ -40,16 +40,37 @@ export const AlbumView = ({ album_id }: AlbumViewProps) => {
   );
 
   const loadInfo = useCallback(() => {
+    is_busy.value = true;
     Promise.all(
       [
         api.album.get.query({ id: album_id }).then(setAlbum),
-        getTracks(
-          { album_id },
-          // Make sure all tracks are loaded because we only do this once
-          { sort: sort_clauses.album, limit: 999 },
-        ).then((value) => (tracks.value = value)),
+        loadTracks(),
       ].filter(Boolean),
     ).finally(() => (is_busy.value = false));
+  }, [album_id]);
+
+  const loadTracks = useCallback(async () => {
+    let page = 0;
+    const limit = 24;
+
+    while (true) {
+      const batch = await getTracks(
+        { album_id },
+        { sort: sort_clauses.album, limit, page },
+      );
+
+      if (!batch.length || batch.length < limit) {
+        break; // stop if no more tracks
+      }
+
+      // Append new tracks and trigger rerender
+      tracks.value = [...tracks.value, ...batch];
+
+      page++;
+
+      // Yield to the event loop so the UI can update
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
   }, [album_id]);
 
   useEffect(loadInfo, [loadInfo]);

@@ -5,7 +5,7 @@
   "type": "module",
   "author": "Anthony Dalfonso <anthonyjdalfonso@gmail.com>",
   "scripts": {
-    "dev": "pnpm prisma:build && tsx watch ./server/index.dev.ts",
+    "dev": "pnpm prisma:build && tsx watch --inspect=0.0.0.0:9229 ./server/index.dev.ts",
     "build": "pnpm prisma:build && pnpm prisma migrate deploy && vite build && pnpm build-receiver",
     "build-receiver": "vite build --config receiver.vite.config.js",
     "start": "pnpm build && tsx ./server/index.ts",

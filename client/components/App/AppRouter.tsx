@@ -13,7 +13,7 @@ import { setUser } from "@reducers/user";
 import { useAppState } from "@hooks/index";
 
 export const AppRouter = () => {
-  const { is_busy, view } = useAppState();
+  const { is_busy } = useAppState();
   const dispatch = useDispatch();
   // Let's load the user once and expect that any updates to the user through
   // the UI will return updated user bits that we will merge into the state
