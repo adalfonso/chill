@@ -8,6 +8,10 @@
   flex-direction: column;
   align-items: center;
 
+  .chevron-left-icon {
+    align-self: flex-start;
+  }
+
   .search-input {
     background-color: $dm-background-2;
     height: 2.75rem;
@@ -59,6 +63,20 @@
       margin-bottom: 0rem;
       padding-bottom: 0.25rem;
       border-bottom: 1px solid $dm-font-5;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      &.more {
+        cursor: pointer;
+
+        &::after {
+          content: "›";
+          font-size: 1.25rem;
+          font-weight: 400;
+          margin-right: 0.5rem;
+        }
+      }
     }
 
     .result {

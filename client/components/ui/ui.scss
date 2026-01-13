@@ -151,26 +151,36 @@ button {
 .icon-xxs {
   height: 1rem;
   width: 1rem;
+  min-height: 1rem;
+  min-width: 1rem;
 }
 
 .icon-xs {
   height: 1.25rem;
   width: 1.25rem;
+  min-height: 1.25rem;
+  min-width: 1.25rem;
 }
 
 .icon-sm {
   height: 1.5rem;
   width: 1.5rem;
+  min-height: 1.5rem;
+  min-width: 1.5rem;
 }
 
 .icon-md {
   height: 1.75rem;
   width: 1.75rem;
+  min-height: 1.75rem;
+  min-width: 1.75rem;
 }
 
 .icon-lg {
   height: 2rem;
   width: 2rem;
+  min-height: 2rem;
+  min-width: 2rem;
 }
 
 @media screen and (min-width: 844px) {

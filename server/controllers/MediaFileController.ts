@@ -5,11 +5,22 @@ import { AudioType } from "@server/lib/media/types";
 import { MediaCrawler } from "@server/lib/media/MediaCrawler";
 import { Request } from "@server/trpc";
 import { Search } from "@server/lib/data/Search";
-import { SearchResult } from "@common/types";
+import { SearchResult, SearchResultType } from "@common/types";
 import { db } from "@server/lib/data/db";
 
 export const schema = {
-  search: z.object({ query: z.string() }),
+  search: z.object({
+    query: z.string(),
+    limit: z.number().int().positive().max(100).default(20),
+    types: z
+      .array(z.nativeEnum(SearchResultType))
+      .default([
+        "artist",
+        "album",
+        "track",
+        "genre",
+      ] as Array<SearchResultType>),
+  }),
 };
 
 export const MediaFileController = {
@@ -49,13 +60,13 @@ export const MediaFileController = {
     }
   },
 
-  search: async ({ input: { query } }: Request<typeof schema.search>) => {
-    const TYPES = ["artist", "album", "track", "genre"];
-
-    const queries = TYPES.flatMap((type) => [
+  search: async ({
+    input: { query, types, limit },
+  }: Request<typeof schema.search>) => {
+    const queries = types.flatMap((type) => [
       { index: "music" },
       {
-        size: 5,
+        size: limit,
         query: {
           bool: {
             must: [{ term: { type } }],

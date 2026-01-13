@@ -6,8 +6,17 @@ export type ObjectValues<T> = T[keyof T];
 export type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 
+export const SearchResultType = {
+  Artist: "artist",
+  Album: "album",
+  Genre: "genre",
+  Track: "track",
+};
+
+export type SearchResultType = ObjectValues<typeof SearchResultType>;
+
 export type SearchResult = {
-  type: MediaTileType;
+  type: SearchResultType;
   value: string;
   displayAs: string[];
   path: string;

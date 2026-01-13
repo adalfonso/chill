@@ -1,11 +1,11 @@
-import { SearchResult as Result } from "@common/types";
+import { SearchResult } from "@common/types";
 
 type SearchResultProps = {
-  result: Result;
-  onVisit: (file: Result) => void;
+  result: SearchResult;
+  onVisit: (file: SearchResult) => void;
 };
 
-export const SearchResult = ({ result, onVisit }: SearchResultProps) => {
+export const SearchResultRow = ({ result, onVisit }: SearchResultProps) => {
   const handleClick = () => onVisit(result);
 
   const [primary, secondary, ternary] = result.displayAs;
@@ -14,7 +14,10 @@ export const SearchResult = ({ result, onVisit }: SearchResultProps) => {
   const hasTernary = ternary !== undefined;
 
   return (
-    <div className={`result ${!hasSecondary && !hasTernary ? 'single' : ''}`} onClick={handleClick}>
+    <div
+      className={`result ${!hasSecondary && !hasTernary ? "single" : ""}`}
+      onClick={handleClick}
+    >
       {primary}
       {hasSecondary && <div className="secondary">{secondary}</div>}
       {hasTernary && <div className="ternary">{ternary}</div>}
