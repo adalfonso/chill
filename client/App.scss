@@ -74,7 +74,7 @@ h2 {
   flex-direction: column;
 
   &:not(.view-library) #library,
-  &:not(.view-search) .search,
+  &:not(.view-search) #main-search,
   &:not(.view-settings) #app-settings {
     visibility: hidden;
     pointer-events: none;

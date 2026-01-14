@@ -1,8 +1,9 @@
+import { useSignal } from "@preact/signals";
+
 import { api } from "@client/client";
-import { useAppState } from "@hooks/useAppState";
 
 export const LibraryScan = () => {
-  const { is_busy } = useAppState();
+  const is_busy = useSignal(false);
 
   // Cause file scanner to run
   // TODO: can this be refactored to use useFetch?

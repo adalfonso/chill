@@ -14,7 +14,7 @@ type GenreViewProps = {
 };
 
 export const GenreView = ({ genre_id }: GenreViewProps) => {
-  const { is_busy } = useAppState();
+  const { is_loading } = useAppState();
   const [genre, setGenre] = useState<Maybe<Raw<Genre>>>(null);
 
   useEffect(() => {
@@ -22,12 +22,14 @@ export const GenreView = ({ genre_id }: GenreViewProps) => {
   }, []);
 
   const loadGenreArtists = async (page: number) => {
-    is_busy.value = true;
+    is_loading.value = true;
 
-    return api.artist.getArtistTilesByGenre.query({
-      options: paginate({ page }),
-      genre_id: genre_id,
-    });
+    return api.artist.getArtistTilesByGenre
+      .query({
+        options: paginate({ page }),
+        genre_id: genre_id,
+      })
+      .finally(() => (is_loading.value = false));
   };
 
   return (

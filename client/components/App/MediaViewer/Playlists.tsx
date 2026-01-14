@@ -10,17 +10,17 @@ import { getPlaylistTracks } from "@client/lib/TrackLoaders";
 import { useAppState, useInfiniteScroll, usePlay } from "@hooks/index";
 
 export const Playlists = () => {
-  const { is_busy } = useAppState();
+  const { is_loading } = useAppState();
   const observedElement = useRef<HTMLDivElement>(null);
   const play = usePlay();
   const [, navigate] = useLocation();
 
   const loadPlaylists = (page: number) => {
-    is_busy.value = true;
+    is_loading.value = true;
 
     return api.playlist.index
       .query({ options: paginate({ page }) })
-      .finally(() => (is_busy.value = false));
+      .finally(() => (is_loading.value = false));
   };
 
   const { items: playlists } = useInfiniteScroll<Raw<PlaylistWithCount>>({

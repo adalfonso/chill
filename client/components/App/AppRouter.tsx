@@ -13,7 +13,7 @@ import { setUser } from "@reducers/user";
 import { useAppState } from "@hooks/index";
 
 export const AppRouter = () => {
-  const { is_busy } = useAppState();
+  const { is_loading } = useAppState();
   const dispatch = useDispatch();
   // Let's load the user once and expect that any updates to the user through
   // the UI will return updated user bits that we will merge into the state
@@ -23,7 +23,7 @@ export const AppRouter = () => {
 
   return (
     <>
-      {is_busy.value === true && <div className="loading"></div>}
+      {is_loading.value === true && <div className="loading"></div>}
       <Switch>
         {/* These routes are overridden by local state management */}
         {VirtualRoute("/", "/library")}

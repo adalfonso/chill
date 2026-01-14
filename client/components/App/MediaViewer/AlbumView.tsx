@@ -26,7 +26,7 @@ type AlbumViewProps = {
 };
 
 export const AlbumView = ({ album_id }: AlbumViewProps) => {
-  const { is_busy } = useAppState();
+  const { is_loading } = useAppState();
   const player = useSelector(getPlayerState);
   const [album, setAlbum] =
     useState<Maybe<Raw<Album & AlbumRelationalData>>>(null);
@@ -40,13 +40,13 @@ export const AlbumView = ({ album_id }: AlbumViewProps) => {
   );
 
   const loadInfo = useCallback(() => {
-    is_busy.value = true;
+    is_loading.value = true;
     Promise.all(
       [
         api.album.get.query({ id: album_id }).then(setAlbum),
         loadTracks(),
       ].filter(Boolean),
-    ).finally(() => (is_busy.value = false));
+    ).finally(() => (is_loading.value = false));
   }, [album_id]);
 
   const loadTracks = useCallback(async () => {

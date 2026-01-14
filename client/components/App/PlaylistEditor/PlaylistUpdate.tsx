@@ -1,5 +1,6 @@
 import { useSelector } from "react-redux";
 import { useState } from "preact/hooks";
+import { useSignal } from "@preact/signals";
 
 import { PlaylistWithCount, Raw } from "@common/types";
 import { api } from "@client/client";
@@ -11,43 +12,42 @@ type PlaylistUpdateProps = {
 
 export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
   const [_input, setInput] = useState("");
-  const [busy, setBusy] = useState(false);
+  const is_busy = useSignal(false);
+
   const [results, setResults] = useState<Array<Raw<PlaylistWithCount>>>([]);
   const [selected, setSelected] = useState<Raw<PlaylistWithCount>>();
   const playlistEditor = useSelector(getPlaylistEditorState);
 
   const submit = (selected: Raw<PlaylistWithCount>) => () => {
-    if (busy) {
+    if (is_busy.value) {
       return;
     }
 
-    setBusy(true);
-
+    is_busy.value = true;
     const track_ids = playlistEditor.track_ids;
 
     api.playlist.update
       .mutate({ id: selected.id, track_ids: track_ids })
       .then(onDone)
       .catch()
-      .finally(() => setBusy(false));
+      .finally(() => (is_busy.value = false));
   };
 
   const search = (value: string) => {
     setInput(value);
 
-    if (busy) {
+    if (is_busy.value) {
       return;
     }
 
-    setBusy(true);
-
+    is_busy.value = true;
     api.playlist.search
       .query({ query: value })
       .then(setResults)
       .catch(({ message }) =>
         console.error("Failed to search playlist:", message),
       )
-      .finally(() => setBusy(false));
+      .finally(() => (is_busy.value = false));
   };
 
   const choosePlaylist = (playlist: Raw<PlaylistWithCount>) => () => {

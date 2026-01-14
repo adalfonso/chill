@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useState } from "preact/hooks";
+import { useSignal } from "@preact/signals";
 
 import { PlayMode, PlayableTrack } from "@common/types";
 import { api } from "@client/client";
@@ -15,7 +15,7 @@ type PlayModeIterceptorProps = {
 
 export const PlayModeIterceptor = ({ children }: PlayModeIterceptorProps) => {
   const { outgoing_connection } = useAppState();
-  const [busy, setBusy] = useState(false);
+  const is_busy = useSignal(false);
   const addToQueue = useAddToQueue();
   const player = useSelector(getPlayerState);
   const dispatch = useDispatch();
@@ -25,12 +25,11 @@ export const PlayModeIterceptor = ({ children }: PlayModeIterceptorProps) => {
     getTracks: () => Promise<Array<PlayableTrack>>,
   ) => {
     // Source should not queue more; target will handle
-    if (busy || is_source) {
+    if (is_busy.value || is_source) {
       return;
     }
 
-    setBusy(true);
-
+    is_busy.value = true;
     try {
       const tracks = await getTracks();
 
@@ -66,7 +65,7 @@ export const PlayModeIterceptor = ({ children }: PlayModeIterceptorProps) => {
       );
     }
 
-    setBusy(false);
+    is_busy.value = false;
   };
 
   const next_batch_offset = 6;

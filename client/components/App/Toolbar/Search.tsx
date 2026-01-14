@@ -97,7 +97,7 @@ export const Search = () => {
   switch (mode.value.kind) {
     case "compact":
       return (
-        <div className="search">
+        <div id="main-search" className="search">
           <div className="search-input">
             <div className="search-icon">
               <MagnifyingGlassIcon className="icon-xs" />

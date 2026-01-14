@@ -1,5 +1,6 @@
 import { useState } from "preact/hooks";
 import { useSelector } from "react-redux";
+import { useSignal } from "@preact/signals";
 
 import { api } from "@client/client";
 import { getPlaylistEditorState } from "@reducers/store";
@@ -9,18 +10,18 @@ type PlaylistCreateProps = {
 };
 
 export const PlaylistCreate = ({ onDone }: PlaylistCreateProps) => {
+  const is_busy = useSignal(false);
   const [playlist_title, setPlaylistTitle] = useState("");
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
+
   const playlistEditor = useSelector(getPlaylistEditorState);
 
   const submit = () => {
-    if (busy) {
+    if (is_busy.value) {
       return;
     }
 
-    setBusy(true);
-
+    is_busy.value = true;
     api.playlist.create
       .mutate({
         title: playlist_title,
@@ -28,7 +29,7 @@ export const PlaylistCreate = ({ onDone }: PlaylistCreateProps) => {
       })
       .then(onDone)
       .catch(({ message }) => message && setError(message))
-      .finally(() => setBusy(false));
+      .finally(() => (is_busy.value = false));
   };
 
   return (

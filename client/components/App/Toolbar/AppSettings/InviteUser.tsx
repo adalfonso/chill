@@ -1,13 +1,14 @@
 import { useState } from "preact/hooks";
 
 import { api } from "@client/client";
+import { useSignal } from "@preact/signals";
 
 export const InviteUser = () => {
   const [email, setEmail] = useState("");
-  const [busy, setBusy] = useState(false);
+  const is_busy = useSignal(false);
 
   const sendInvite = async () => {
-    if (busy) {
+    if (is_busy.value) {
       return;
     }
 
@@ -15,7 +16,7 @@ export const InviteUser = () => {
       return;
     }
 
-    setBusy(true);
+    is_busy.value = true;
 
     try {
       const response = await api.admin.invite_user.mutate(email);
@@ -25,7 +26,7 @@ export const InviteUser = () => {
     } catch (e) {
       alert(`Failed in invite user: ${(e as Error)?.message}`);
     } finally {
-      setBusy(false);
+      is_busy.value = false;
     }
   };
 

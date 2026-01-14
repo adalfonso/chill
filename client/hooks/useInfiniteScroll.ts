@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "preact/hooks";
+import { useSignal } from "@preact/signals";
 
 import { useAppState } from "./useAppState";
 
@@ -24,7 +25,10 @@ type UseInfiniteScrollResult<T> = {
 export const useInfiniteScroll = <T>(
   args: UseInfiniteScrollOptions<T>,
 ): UseInfiniteScrollResult<T> => {
-  const { is_busy } = useAppState();
+  // We use is_loading to cause a spinner to load, and is_busy to block multiple
+  // calls to fetchMoreData.
+  const { is_loading } = useAppState();
+  const is_busy = useSignal(false);
   const { onScroll, observedElement, dependencies = [], options } = args;
   const [has_more, setHasMore] = useState(true);
   const [items, setItems] = useState<Array<T>>([]);
@@ -32,6 +36,7 @@ export const useInfiniteScroll = <T>(
 
   const fetchMoreData = useCallback(
     async (page: number) => {
+      is_loading.value = true;
       is_busy.value = true;
 
       try {
@@ -47,6 +52,7 @@ export const useInfiniteScroll = <T>(
         setHasMore(false);
         console.error("Error fetching data:", error);
       } finally {
+        is_loading.value = false;
         is_busy.value = false;
       }
     },
@@ -57,6 +63,7 @@ export const useInfiniteScroll = <T>(
     setPage(0);
     setItems([]);
     setHasMore(true);
+    is_loading.value = false;
     is_busy.value = false;
     fetchMoreData(0);
   }, [...dependencies]);
@@ -79,7 +86,14 @@ export const useInfiniteScroll = <T>(
         observer.unobserve(observedElement.current);
       }
     };
-  }, [observedElement, fetchMoreData, has_more, is_busy.value, options]);
+  }, [
+    observedElement,
+    fetchMoreData,
+    has_more,
+    is_loading.value,
+    is_busy.value,
+    options,
+  ]);
 
   return { has_more, page, items };
 };

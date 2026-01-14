@@ -15,19 +15,19 @@ type DevicesProps = {
 };
 
 export const Devices = ({ onClose }: DevicesProps) => {
-  const { outgoing_connection, is_busy, ws } = useAppState();
+  const { outgoing_connection, is_loading, ws } = useAppState();
 
   const devices = useSignal<Array<DeviceClient>>([]);
   const selected_device = useSignal<Maybe<DeviceClient>>(null);
 
   useEffect(() => {
-    is_busy.value = true;
+    is_loading.value = true;
     api.cast.getAppClients
       .query()
       .then((data) => {
         devices.value = data;
       })
-      .finally(() => (is_busy.value = false));
+      .finally(() => (is_loading.value = false));
   }, []);
 
   const selectDevice = (device: DeviceClient) =>

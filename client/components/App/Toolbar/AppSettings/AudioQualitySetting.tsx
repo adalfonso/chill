@@ -1,16 +1,16 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "preact/hooks";
+import { useSignal } from "@preact/signals";
 
 import { Select } from "@client/components/ui/Select";
 import { updateUserSettings } from "@reducers/user";
 import { AudioQuality, AudioQualityBitrate } from "@common/types";
 import { api } from "@client/client";
-import { useAppState } from "@hooks/useAppState";
 import { getUserState } from "@reducers/store";
 
 export const AudioQualitySetting = () => {
   const user = useSelector(getUserState);
-  const { is_busy } = useAppState();
+  const is_busy = useSignal(false);
   const [input, setInput] = useState(
     user?.settings?.audio_quality ?? AudioQuality.Original,
   );

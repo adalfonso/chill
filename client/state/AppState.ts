@@ -28,7 +28,7 @@ export const CoreViewState = {
 export type CoreViewState = (typeof CoreViewState)[keyof typeof CoreViewState];
 
 export const createAppState = () => {
-  const is_busy = signal(false);
+  const is_loading = signal(false);
   const progress = signal(0);
   const current_app_setting = signal<AppSettingType>(AppSettingType.None);
   const view_path = signal<string>("");
@@ -43,7 +43,7 @@ export const createAppState = () => {
   return {
     current_app_setting,
     incoming_connections,
-    is_busy,
+    is_loading,
     outgoing_connection,
     progress,
     progress_s,
