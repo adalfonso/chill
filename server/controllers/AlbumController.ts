@@ -1,10 +1,11 @@
+import { Prisma } from "@prisma/client";
 import { Request } from "@server/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { pagination_schema } from "@common/schema";
 import { db } from "@server/lib/data/db";
-import { SortOrder } from "@common/types";
+import { MediaTileData, SortOrder } from "@common/types";
 
 export const schema = {
   get: z.object({ id: z.number().int() }),
@@ -15,6 +16,10 @@ export const schema = {
         artist_id: z.number().int().optional(),
       })
       .optional(),
+    options: pagination_schema,
+  }),
+  getAlbumTilesByGenre: z.object({
+    genre_id: z.number().int(),
     options: pagination_schema,
   }),
 };
@@ -96,5 +101,28 @@ export const AlbumController = {
 
       ...(getMetadata ? { data: { year } } : {}),
     }));
+  },
+
+  getAlbumTilesByGenre: async ({
+    input: { options, genre_id },
+  }: Request<typeof schema.getAlbumTilesByGenre>) => {
+    const { limit, page } = options;
+
+    const sort_order = Prisma.sql([SortOrder.asc]);
+
+    return (await db.$queryRaw`
+      SELECT DISTINCT
+        album.id,
+        album.title AS name,
+        album_art.filename AS image
+      FROM public."Track" track
+      JOIN public."Album" album
+        ON track.album_id = album.id
+      LEFT JOIN public."AlbumArt" album_art
+        ON album.id = album_art.album_id
+      WHERE track.genre_id = ${genre_id}
+      ORDER BY name ${sort_order}
+      OFFSET ${page * limit}
+      LIMIT ${limit}`) as Array<MediaTileData>;
   },
 };

@@ -26,7 +26,7 @@ export const PlayRandom = () => {
   };
 
   return (
-    <div className="play-random" onClick={playRandomTracks}>
+    <div className="scroller-header" onClick={playRandomTracks}>
       <ShuffleIcon className="icon-sm" />
     </div>
   );

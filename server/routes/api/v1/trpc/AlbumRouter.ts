@@ -8,4 +8,7 @@ export const AlbumRouter = (routes: typeof router) =>
     getTiles: procedure
       .input(schema.getAlbumTiles)
       .query(AlbumController.getAlbumTiles),
+    getAlbumTilesByGenre: procedure
+      .input(schema.getAlbumTilesByGenre)
+      .query(AlbumController.getAlbumTilesByGenre),
   });

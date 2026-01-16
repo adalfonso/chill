@@ -96,7 +96,8 @@ h2 {
 
     > div {
       position: absolute;
-      overflow-y: scroll;
+
+      overflow-y: hidden;
       top: 0;
       left: 0;
       width: 100%;
