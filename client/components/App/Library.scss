@@ -99,6 +99,7 @@
     color: $primary-very-light;
     cursor: pointer;
     font-weight: 500;
+    height: 3.2rem;
 
     > div {
       padding: 1rem;
@@ -111,6 +112,10 @@
     svg {
       box-sizing: content-box;
       padding: 1rem;
+    }
+
+    & + #media-viewer {
+      height: calc(100% - 3.2rem);
     }
   }
 
