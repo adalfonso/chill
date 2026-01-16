@@ -63,7 +63,10 @@ export const AlbumController = {
     if (filter?.artist_id) {
       const trackAlbums = await db.track.findMany({
         where: {
-          artist_id: filter.artist_id,
+          OR: [
+            { artist_id: filter.artist_id },
+            { album_artist_id: filter.artist_id },
+          ],
           album_id: { not: null },
         },
         select: { album_id: true },
