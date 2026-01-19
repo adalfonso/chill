@@ -59,7 +59,7 @@ export const ExtendedSearch = ({
   };
 
   return (
-    <div className="search">
+    <div id="main-search" className="search">
       <ChevronLeftIcon onClick={localClose} className="icon-xs" />
 
       {results.value.length > 0 && (
