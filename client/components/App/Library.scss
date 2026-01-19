@@ -93,24 +93,26 @@
 
   .scroller-header {
     display: flex;
-    justify-content: space-around;
+    justify-content: flex-start;
     align-items: center;
     background: rgba(255, 255, 255, 0.03);
     color: $primary-very-light;
     cursor: pointer;
     font-weight: 500;
-    height: 3.2rem;
+    height: 3.5rem;
 
     > div {
       padding: 1rem;
-
+      height: 3.5rem;
       &.active {
         background: rgba(255, 255, 255, 0.1);
         color: $primary-light;
       }
     }
+
     svg {
       box-sizing: content-box;
+
       padding: 1rem;
     }
 
