@@ -7,7 +7,7 @@ import {
 import { api } from "@client/client";
 import { PlayerState } from "@reducers/player";
 import { SortClause } from "@common/schema";
-import { PlayMode, SortOrder } from "@common/types";
+import { PlayMode, RandomPlayOptions, SortOrder } from "@common/types";
 
 /**
  * Get more tracks for the various player modes
@@ -20,6 +20,7 @@ export const getMoreTracks = (player: PlayerState) => {
     case PlayMode.Random: {
       return getRandomTracks({
         exclusions: player.playlist.map((file) => file.id),
+        filter: (player.play_options as RandomPlayOptions).filter,
       });
     }
 
@@ -74,16 +75,17 @@ export const getMoreTracks = (player: PlayerState) => {
  */
 export const getRandomTracks = (
   options: {
+    filter?: {
+      artist_id?: number;
+      genre_id?: number;
+    };
     exclusions?: Array<number>;
     limit?: number;
   } = {},
 ) => {
-  const { exclusions = [], limit = DEFAULT_LIMIT } = options;
+  const { filter = {}, exclusions = [], limit = DEFAULT_LIMIT } = options;
 
-  return api.track.getRandomTracks.query({
-    limit,
-    exclusions,
-  });
+  return api.track.getRandomTracks.query({ filter, limit, exclusions });
 };
 
 /**

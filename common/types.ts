@@ -173,9 +173,13 @@ export const PlayMode = {
 
 export type PlayMode = ObjectValues<typeof PlayMode>;
 
-type RandomPlayOptions = {
+export type RandomPlayOptions = {
   mode: typeof PlayMode.Random;
   more: boolean;
+  filter?: {
+    artist_id?: number;
+    genre_id?: number;
+  };
 };
 
 type NonePlayOptions = {

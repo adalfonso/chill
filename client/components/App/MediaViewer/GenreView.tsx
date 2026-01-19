@@ -1,14 +1,15 @@
 import { Genre } from "@prisma/client";
 import { useEffect, useState } from "preact/hooks";
+import { useSignal } from "@preact/signals";
 
 import { Maybe, MediaTileData, MediaTileType, Raw } from "@common/types";
 import { MediaTile } from "./MusicLibrary/MediaTile";
+import { PlayRandom } from "../Library/PlayRandom";
 import { SmartScroller } from "./SmartScroller";
 import { albumUrl, artistUrl } from "@client/lib/Url";
 import { api } from "@client/client";
 import { paginate } from "@common/pagination";
 import { useAppState } from "@hooks/index";
-import { useSignal } from "@preact/signals";
 
 type GenreViewProps = {
   genre_id: number;
@@ -71,6 +72,8 @@ export const GenreView = ({ genre_id }: GenreViewProps) => {
           >
             By Album
           </div>
+
+          <PlayRandom filter={{ genre_id }} />
         </section>
       )}
 

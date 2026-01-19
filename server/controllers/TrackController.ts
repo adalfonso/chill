@@ -31,6 +31,12 @@ export const schema = {
   }),
   getRandomTracks: z.object({
     limit: z.number().int(),
+    filter: z
+      .object({
+        artist_id: z.number().int().optional(),
+        genre_id: z.number().int().optional(),
+      })
+      .optional(),
     exclusions: z.array(z.number().int()),
   }),
 };
@@ -224,16 +230,32 @@ export const TrackController = {
   },
 
   getRandomTracks: async ({
-    input: { limit, exclusions },
+    input: { filter, limit, exclusions },
   }: Request<typeof schema.getRandomTracks>): Promise<Array<PlayableTrack>> => {
     // Ensure exclusions is not empty to avoid SQL syntax errors
     exclusions.push(9e16);
+
+    const whereFilters: Prisma.Sql[] = [];
+
+    if (filter?.artist_id) {
+      whereFilters.push(Prisma.sql`track.artist_id = ${filter.artist_id}`);
+    }
+
+    if (filter?.genre_id) {
+      whereFilters.push(Prisma.sql`track.genre_id = ${filter.genre_id}`);
+    }
+
+    let filterSql = Prisma.sql``;
+    if (whereFilters.length > 0) {
+      filterSql = Prisma.sql`AND ${Prisma.join(whereFilters, ` AND `)}`;
+    }
 
     return (await db.$queryRaw`
       WITH random_tracks AS (
         SELECT id
         FROM public."Track" track
         WHERE id NOT IN (${Prisma.join(exclusions)})
+        ${filterSql}
         ORDER BY RANDOM()
       )
       SELECT

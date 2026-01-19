@@ -7,12 +7,19 @@ import { getPlayerState } from "@reducers/store";
 import { getRandomTracks } from "@client/lib/TrackLoaders";
 import { usePlay } from "@hooks/usePlay";
 
-export const PlayRandom = () => {
+type PlayRandomProps = {
+  filter?: {
+    artist_id?: number;
+    genre_id?: number;
+  };
+};
+
+export const PlayRandom = ({ filter }: PlayRandomProps) => {
   const player = useSelector(getPlayerState);
   const play = usePlay();
 
   const playRandomTracks = async () => {
-    const tracks = await getRandomTracks();
+    const tracks = await getRandomTracks({ filter });
 
     const cast_info = player.is_casting
       ? await api.track.castInfo.query({
@@ -20,14 +27,10 @@ export const PlayRandom = () => {
         })
       : null;
 
-    const play_options = { mode: PlayMode.Random, more: true };
+    const play_options = { mode: PlayMode.Random, more: true, filter };
 
     play({ tracks, play_options, cast_info, index: 0 });
   };
 
-  return (
-    <div className="scroller-header" onClick={playRandomTracks}>
-      <ShuffleIcon className="icon-sm" />
-    </div>
-  );
+  return <ShuffleIcon className="icon-sm" onClick={playRandomTracks} />;
 };

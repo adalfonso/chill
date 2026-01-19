@@ -101,7 +101,10 @@ const routes: Route[] = [
     pattern: /^\/library\/tracks$/,
     render: () => (
       <div className="tracks-view">
-        <PlayRandom />
+        <div className="scroller-header">
+          <PlayRandom />
+        </div>
+
         <MediaTileFetcher type="track" key="track-list" />
       </div>
     ),
