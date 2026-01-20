@@ -148,6 +148,11 @@ button {
   }
 }
 
+.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
 .icon-xxs {
   height: 1rem;
   width: 1rem;
