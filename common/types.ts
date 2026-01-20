@@ -134,6 +134,7 @@ export type Raw<T> = {
 export type DeviceClient = {
   user_id: number;
   session_id: string;
+  device_name: string;
   is_this_device: boolean;
   displayAs: string;
 };
@@ -142,6 +143,7 @@ export type DeviceInfo = {
   type: string;
   browser: string;
   os: string;
+  device_name: string;
 };
 
 export type PlayPayload = {
@@ -195,6 +197,9 @@ export type PlayOptions =
       id: number;
       page: number;
       limit: number;
+      // Only used for Track mode
+      // Allows us to click track "n" from track view and start from there
+      offset?: number;
       more: boolean;
     };
 

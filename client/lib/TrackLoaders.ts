@@ -55,6 +55,7 @@ export const getMoreTracks = (player: PlayerState) => {
 
     case PlayMode.Track: {
       const { limit, offset, page } = player.play_options;
+
       return getTracks(
         {},
         { limit, page: page + 1, offset, sort: sort_clauses.track },

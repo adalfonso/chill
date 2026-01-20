@@ -10,7 +10,6 @@ import { Devices } from "./Toolbar/Devices";
 import { getCasterState } from "@client/state/reducers/store";
 import { noPropagate } from "@client/lib/Event";
 import { useAppState } from "@hooks/useAppState";
-import { PlaylistIcon } from "../ui/icons/PlaylistIcon";
 import { DottedListIcon } from "../ui/icons/DottedListIcon";
 
 type SettingsMenu = "devices";

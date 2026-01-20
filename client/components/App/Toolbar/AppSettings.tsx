@@ -1,28 +1,30 @@
 import { useSelector } from "react-redux";
 
 import "./AppSettings.scss";
+import { AccountSettings } from "./AppSettings/AccountSettings";
+import { AmbiguousArtistGenre } from "./AppSettings/AmbiguousArtistGenre";
+import { AppSetting } from "./AppSetting";
+import { AppSettingType as SettingType } from "@client/types";
 import { AudioQualitySetting } from "./AppSettings/AudioQualitySetting";
 import { Close } from "@client/components/ui/Close";
-import { InviteUser } from "./AppSettings/InviteUser";
-import { UserType } from "@common/types";
-import { getUserState } from "@reducers/store";
-import { AppSetting } from "./AppSetting";
-import { noPropagate } from "@client/lib/Event";
 import { FileTypeCounts } from "./AppSettings/FileTypeCounts";
-import { AmbiguousArtistGenre } from "./AppSettings/AmbiguousArtistGenre";
+import { InviteUser } from "./AppSettings/InviteUser";
 import { LibraryScan } from "./AppSettings/LibraryScan";
-import { AppSettingType as SettingType } from "@client/types";
-import { useAppState } from "@hooks/useAppState";
-import { screen_breakpoint_px } from "@client/lib/constants";
-import { useViewport } from "@hooks/useViewport";
-import { AccountSettings } from "./AppSettings/AccountSettings";
-import { useEffect } from "preact/hooks";
 import { LibraryStats } from "./AppSettings/LibraryStats";
 import { LowQualityAlbums } from "./AppSettings/LowQualityAlbums";
+import { NameDevice } from "./AppSettings/NameDevice";
+import { UserType } from "@common/types";
+import { getUserState } from "@reducers/store";
+import { noPropagate } from "@client/lib/Event";
+import { screen_breakpoint_px } from "@client/lib/constants";
+import { useAppState } from "@hooks/useAppState";
+import { useEffect } from "preact/hooks";
+import { useViewport } from "@hooks/useViewport";
 
 const settingsContent = {
   [SettingType.None]: <></>,
   [SettingType.Account]: <AccountSettings />,
+  [SettingType.NameDevice]: <NameDevice />,
   [SettingType.MusicQuality]: <AudioQualitySetting />,
   [SettingType.InviteUser]: <InviteUser />,
   [SettingType.LibraryScan]: <LibraryScan />,
@@ -68,6 +70,14 @@ export const AppSettings = () => {
             <AppSetting
               id={SettingType.MusicQuality}
               title="Audio quality"
+            ></AppSetting>
+          </div>
+
+          <h3>Device</h3>
+          <div className="settings-group">
+            <AppSetting
+              id={SettingType.NameDevice}
+              title="Name device"
             ></AppSetting>
           </div>
 

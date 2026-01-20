@@ -5,6 +5,7 @@ import {
   TargetEvent,
   TargetSocketData,
 } from "./CommonEvent";
+import { DeviceInfo } from "./types";
 
 export const ClientSocketEvent = Object.assign({}, DuplexEvent, TargetEvent, {
   AcceptConnection: "AcceptConnection",
@@ -25,7 +26,7 @@ export type ClientSocketData = DuplexSocketData &
     Connect: { to: string };
     DenyConnection: { to: string; reason: string };
     Disconnect: { to: string };
-    Identify: { type: string; browser: string; os: string };
+    Identify: DeviceInfo;
     PlayerReconnect: undefined | { to: string; payload: PlayerState };
     Pong: undefined;
   };
