@@ -99,6 +99,7 @@ export class SocketServer<
     ws.device_info.browser = data.browser ?? ws.device_info.browser;
     ws.device_info.os = data.os ?? ws.device_info.os;
     ws.device_info.type = data.type ?? ws.device_info.type;
+    ws.device_info.device_name = data.device_name ?? ws.device_info.device_name;
   }
 
   public getClientBySessionId(session_id: string) {
@@ -138,6 +139,7 @@ export class SocketServer<
         user_id: client.user_id,
         session_id: client.session_id,
         is_this_device: session_id === client.session_id,
+        device_name: client.device_info.device_name,
         displayAs: `${client.device_info.type} ${client.device_info.browser} on ${client.device_info.os}`,
       }));
   };
@@ -147,7 +149,12 @@ export class SocketServer<
 
     ws.user_id = user.id;
     ws.session_id = session_id;
-    ws.device_info = { type: "pending", browser: "pending", os: "pending" };
+    ws.device_info = {
+      type: "pending",
+      browser: "pending",
+      os: "pending",
+      device_name: "",
+    };
     ws.is_alive = true;
 
     ws.on("pong", () => {

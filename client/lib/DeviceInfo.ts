@@ -19,5 +19,7 @@ export const getDeviceInfo = (): DeviceInfo => {
 
   const type = isTouch ? "Mobile" : "Desktop";
 
-  return { type, browser, os };
+  const device_name = localStorage.getItem("device_name") || "";
+
+  return { type, browser, os, device_name };
 };

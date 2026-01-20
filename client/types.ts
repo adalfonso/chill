@@ -5,6 +5,7 @@ export const AppSettingType = {
   LibraryInsights: "LibraryInsights",
   LibraryScan: "LibraryScan",
   MusicQuality: "MusicQuality",
+  NameDevice: "NameDevice",
 } as const;
 
 export type AppSettingType =

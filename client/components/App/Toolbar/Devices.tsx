@@ -81,7 +81,7 @@ export const Devices = ({ onClose }: DevicesProps) => {
                   <WifiIcon stroke="rgb(139, 195, 255)" strokeWidth={2} />
                 </div>
                 <div className="device-info">
-                  {device.session_id}
+                  {device.device_name || device.session_id}
                   <div className="device-display-as">
                     {device.displayAs}
                     {device.is_this_device && " (this device)"}
