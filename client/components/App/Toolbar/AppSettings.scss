@@ -56,6 +56,11 @@
 
       > .setting {
         margin-bottom: 3rem;
+        padding: 0 1rem;
+
+        input {
+          width: 100%;
+        }
       }
     }
   }
@@ -70,6 +75,15 @@
   .setting-artist-ambiguous-genre {
     .ambiguous-genre {
       margin: 0.5rem 1rem;
+    }
+  }
+
+  .setting-invite-user {
+    display: flex;
+    flex-direction: column;
+
+    input {
+      margin-bottom: 0.75rem;
     }
   }
 
@@ -143,6 +157,28 @@
         flex: 1;
         background-color: $dm-shadow;
         position: static;
+
+        > .setting {
+          .ui-select,
+          button,
+          input {
+            width: 18rem;
+          }
+        }
+
+        .setting-invite-user {
+          input[type="submit"] {
+            width: 8rem;
+          }
+        }
+      }
+    }
+
+    .setting-invite-user {
+      display: block;
+
+      input {
+        margin: 0 0.5rem 0 0;
       }
     }
   }
