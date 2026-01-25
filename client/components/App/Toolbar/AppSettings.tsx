@@ -1,4 +1,5 @@
 import { useSelector } from "react-redux";
+import { useEffect } from "preact/hooks";
 
 import "./AppSettings.scss";
 import { AccountSettings } from "./AppSettings/AccountSettings";
@@ -13,12 +14,12 @@ import { LibraryScan } from "./AppSettings/LibraryScan";
 import { LibraryStats } from "./AppSettings/LibraryStats";
 import { LowQualityAlbums } from "./AppSettings/LowQualityAlbums";
 import { NameDevice } from "./AppSettings/NameDevice";
+import { TrackCountByYear } from "./TrackCountByYear";
 import { UserType } from "@common/types";
 import { getUserState } from "@reducers/store";
 import { noPropagate } from "@client/lib/Event";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import { useAppState } from "@hooks/useAppState";
-import { useEffect } from "preact/hooks";
 import { useViewport } from "@hooks/useViewport";
 
 const settingsContent = {
@@ -31,6 +32,7 @@ const settingsContent = {
   [SettingType.LibraryInsights]: (
     <>
       <FileTypeCounts />
+      <TrackCountByYear />
       <LibraryStats />
       <AmbiguousArtistGenre />
       <LowQualityAlbums />

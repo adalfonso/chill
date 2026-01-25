@@ -87,4 +87,17 @@ export const LibraryHealthController = {
         AND COUNT(t.id) > 1
       ORDER BY avg_bitrate_kbps ASC`;
   },
+
+  trackCountByYear: async () => {
+    return await db.$queryRaw<Array<{ year: number; count: number }>>`
+      SELECT
+        al.year AS year,
+        COUNT(t.id)::int AS count
+      FROM "Track" t
+      JOIN "Album" al ON t.album_id = al.id
+      WHERE al.year IS NOT NULL
+      AND al.year > 0
+      GROUP BY al.year
+      ORDER BY al.year ASC`;
+  },
 };

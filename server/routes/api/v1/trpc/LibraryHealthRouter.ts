@@ -9,4 +9,5 @@ export const LibraryHealthRouter = (routes: typeof router) =>
     libraryCounts: procedure.query(LibraryHealthController.libraryCounts),
     librarySize: procedure.query(LibraryHealthController.librarySize),
     lowQualityAlbums: procedure.query(LibraryHealthController.lowQualityAlbums),
+    trackCountByYear: procedure.query(LibraryHealthController.trackCountByYear),
   });

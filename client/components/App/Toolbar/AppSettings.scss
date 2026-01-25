@@ -72,6 +72,15 @@
     }
   }
 
+  .setting-track-count-by-year {
+    > div {
+      background-color: gray;
+      padding: 0.25rem 0.5rem;
+      border: 1px solid $dm-background;
+      white-space: nowrap;
+    }
+  }
+
   .setting-artist-ambiguous-genre {
     .ambiguous-genre {
       margin: 0.5rem 1rem;
