@@ -3,13 +3,10 @@ services:
     image: adalfonso/chill
     container_name: chill-app
     restart: unless-stopped
-    ports:
-      - 3201:3201
     env_file:
       - .env
     volumes:
       - ${MEDIA_PATH}:/opt/app/media
-
       # Map work dir paths to (shared) named volumes
       - public_html:/usr/src/app/dist/client
       - app_data:/opt/app/data
@@ -22,8 +19,6 @@ services:
     image: postgres:16-alpine
     container_name: chill-database
     restart: unless-stopped
-    ports:
-      - 5432:5432
     volumes:
       - postgres:/var/lib/postgresql/data
     environment:
@@ -51,8 +46,6 @@ services:
       ELASTIC_PASSWORD: ${SEARCH_ENGINE_PASSWORD}
     volumes:
       - elastic_search:/usr/share/elasticsearch/data
-    ports:
-      - 9200:9200
 
   nginx:
     image: nginx:mainline-alpine
