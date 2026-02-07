@@ -35,7 +35,7 @@ export const init = async (app: Express) => {
   initRouter(app, wss);
 
   await Promise.all([
-    Cache.connect(env.REDIS_HOST),
+    Cache.connect(env.REDIS_HOST, env.REDIS_PASSWORD),
     Search.connect({
       node: env.SEARCH_ENGINE_URL,
       username: env.SEARCH_ENGINE_USERNAME,
@@ -61,6 +61,7 @@ const required_vars = [
   "NODE_PORT",
   "RECEIVER_SOURCE_DIR",
   "REDIS_HOST",
+  "REDIS_PASSWORD",
   "SEARCH_ENGINE_PASSWORD",
   "SEARCH_ENGINE_URL",
   "SEARCH_ENGINE_USERNAME",

@@ -36,11 +36,9 @@ services:
     image: redis:7.0-alpine
     container_name: chill-cache
     restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD} --rename-command FLUSHDB "" --rename-command FLUSHALL "" --rename-command CONFIG ""
     environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL,CONFIG
-    ports:
-      - 6379:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     volumes:
       - redis:/data/cache
 

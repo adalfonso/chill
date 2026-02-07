@@ -12,13 +12,16 @@ export class Cache {
 
    * @throws when cache is already connected or fails to connect
    */
-  static async connect(host: string) {
+  static async connect(host: string, password?: string) {
     if (Cache._instance) {
       throw new Error("Cache is already connected");
     }
 
     try {
-      const client = createClient({ url: `redis://${host}:6379` });
+      const client = createClient({
+        url: `redis://${host}:6379`,
+        password: password,
+      });
 
       client.on("error", (err) => {
         console.error(`Unable to connect to redis: ${err}`);
