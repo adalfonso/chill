@@ -22,7 +22,9 @@ export const GenreController = {
   }: Request<typeof schema.getGenreTiles>) => {
     const { limit, page } = options;
 
-    const sort_order = Prisma.sql([SortOrder.asc]);
+    // Safe: Use conditional to build SQL fragment instead of Prisma.sql with array
+    const sort_order =
+      SortOrder.asc === "asc" ? Prisma.sql`ASC` : Prisma.sql`DESC`;
 
     return (await db.$queryRaw`
       WITH random_album_art AS (

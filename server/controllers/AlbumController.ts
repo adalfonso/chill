@@ -111,7 +111,9 @@ export const AlbumController = {
   }: Request<typeof schema.getAlbumTilesByGenre>) => {
     const { limit, page } = options;
 
-    const sort_order = Prisma.sql([SortOrder.asc]);
+    // Safe: Use conditional to build SQL fragment instead of Prisma.sql with array
+    const sort_order =
+      SortOrder.asc === "asc" ? Prisma.sql`ASC` : Prisma.sql`DESC`;
 
     return (await db.$queryRaw`
       SELECT DISTINCT
