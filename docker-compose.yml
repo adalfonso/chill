@@ -8,8 +8,7 @@ services:
     env_file:
       - .env
     volumes:
-      # TODO: Provide path to media
-      - /path/to/media:/opt/app/media
+      - ${MEDIA_PATH}:/opt/app/media
 
       # Map work dir paths to (shared) named volumes
       - public_html:/usr/src/app/dist/client
@@ -51,7 +50,7 @@ services:
       ES_JAVA_OPTS: -Xms512m -Xmx512m
       ELASTIC_PASSWORD: ${SEARCH_ENGINE_PASSWORD}
     volumes:
-      - elastic-search:/usr/share/elasticsearch/data
+      - elastic_search:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
 
@@ -65,10 +64,9 @@ services:
       - public_html:/var/www/html:ro
       - app_data:/etc/nginx/html/images
 
-      # TODO: Provide paths to SSL cert and key
-      - /path/to/chill/certs/chill.crt:/etc/ssl/chill.crt
-      - /path/to/chill/certs/chill.key:/etc/ssl/chill.key
-      - /path/to/nginx/config:/etc/nginx/conf.d
+      - ${SSL_PATH}/chill.crt:/etc/ssl/chill.crt:ro
+      - ${SSL_PATH}/chill.key:/etc/ssl/chill.key:ro
+      - ${NGINX_CONFIG_PATH}:/etc/nginx/conf.d
     depends_on:
       - app
 
