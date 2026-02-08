@@ -1,4 +1,4 @@
-@import "@client/variables.scss";
+@use "@client/variables.scss" as *;
 
 #devices {
   background: $dm-background-2;

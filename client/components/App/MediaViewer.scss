@@ -1,5 +1,5 @@
-@import "@client/variables.scss";
-@import "@client/components/App/MediaViewer/FileMenu.scss";
+@use "@client/variables.scss" as *;
+@use "@client/components/App/MediaViewer/FileMenu.scss";
 
 #media-viewer {
   display: flex;

@@ -1,4 +1,4 @@
-@import "@client/variables.scss";
+@use "@client/variables.scss" as *;
 
 #mobile-volume {
   touch-action: none;

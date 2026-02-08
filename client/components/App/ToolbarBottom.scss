@@ -1,4 +1,4 @@
-@import "@client/variables.scss";
+@use "@client/variables.scss" as *;
 
 #toolbar-bottom {
   background-color: $dm-background-2;
