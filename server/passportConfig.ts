@@ -52,7 +52,10 @@ async function verifyGoogleAuth(
   try {
     const email = profile.emails[0].value as string;
 
-    const existing_user = await db.user.findUnique({ where: { email } });
+    const existing_user = await db.user.findUnique({
+      where: { email },
+      include: { settings: true },
+    });
 
     if (existing_user) {
       return done(null, existing_user);
@@ -75,6 +78,7 @@ async function verifyGoogleAuth(
         type: UserType.User,
         settings: { create: {} },
       },
+      include: { settings: true },
     });
 
     return done(null, new_user);
@@ -96,7 +100,10 @@ async function verifyJwtUser(
 ) {
   try {
     const payload = access_token_payload_schema.parse(unverified_payload);
-    const user = await db.user.findUnique({ where: { id: payload.user.id } });
+    const user = await db.user.findUnique({
+      where: { id: payload.user.id },
+      include: { settings: true },
+    });
 
     if (user) {
       return done(null, user);
