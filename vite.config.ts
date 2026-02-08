@@ -15,6 +15,10 @@ export default defineConfig({
       "@server": path.resolve(__dirname, "./server"),
       "@client": path.resolve(__dirname, "./client"),
       "@common": path.resolve(__dirname, "./common"),
+      "@prisma/client": path.resolve(
+        __dirname,
+        "./prisma/generated/prisma/client",
+      ),
     },
   },
 });

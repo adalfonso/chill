@@ -233,7 +233,7 @@ export const TrackController = {
     input: { filter, limit, exclusions },
   }: Request<typeof schema.getRandomTracks>): Promise<Array<PlayableTrack>> => {
     // Ensure exclusions is not empty to avoid SQL syntax errors
-    exclusions.push(9e16);
+    exclusions.push(-1);
 
     const whereFilters: Prisma.Sql[] = [];
 
