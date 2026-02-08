@@ -69,7 +69,18 @@ export const TrackController = {
             ? track.file_type
             : "mp3";
 
-        const content_type = `audio/${file_type}`;
+        const MIME_TYPES: Record<string, string> = {
+          mp3: "audio/mpeg",
+          flac: "audio/flac",
+          m4a: "audio/mp4",
+          aac: "audio/aac",
+          ogg: "audio/ogg",
+          opus: "audio/opus",
+          wav: "audio/wav",
+        };
+
+        const content_type =
+          MIME_TYPES[file_type.toLowerCase()] ?? `audio/${file_type}`;
         const url = `${env.HOST}:${env.APP_PORT}/cast/media/${id}.${file_type}`;
 
         const token = jwt.sign(
