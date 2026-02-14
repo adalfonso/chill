@@ -8,11 +8,15 @@ import { FileMenu, FileMenuHandler } from "../FileMenu";
 import { Maybe, MediaTileData, MediaTileType } from "@common/types";
 import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
 import { albumUrl, artistUrl, matchUrl } from "@client/lib/Url";
-import { api } from "@client/client";
 import { getPlayerState } from "@client/state/reducers/store";
 import { noPropagate } from "@client/lib/Event";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import { setMenu } from "@client/state/reducers/mediaMenu";
+import {
+  fetchTracksWithCastInfo,
+  fetchTrackIds,
+  playModeForTileType,
+} from "@client/lib/MediaTileApi";
 import {
   useBackNavigate,
   useId,
@@ -26,11 +30,6 @@ import {
   DEFAULT_OFFSET,
   DEFAULT_PAGE,
 } from "@common/pagination";
-import {
-  getTrackIds,
-  getTracks as loadTracks,
-  sort_clauses,
-} from "@client/lib/TrackLoaders";
 
 type MediaTileProps<T extends Record<string, unknown>> = {
   tile_type: MediaTileType;
@@ -110,7 +109,7 @@ export const MediaTile = <T extends Record<string, unknown>>({
           ? (index ?? DEFAULT_OFFSET)
           : DEFAULT_OFFSET;
 
-      const { tracks, cast_info } = await getTracksForMediaTile(
+      const { tracks, cast_info } = await fetchTracksWithCastInfo(
         tile_type,
         tile_data,
         DEFAULT_LIMIT,
@@ -122,26 +121,8 @@ export const MediaTile = <T extends Record<string, unknown>>({
         return;
       }
 
-      const getMode = (type: MediaTileType) => {
-        switch (type) {
-          case MediaTileType.Artist:
-            return MediaTileType.Artist;
-
-          case MediaTileType.Album:
-          case MediaTileType.Compilation:
-          case MediaTileType.Split:
-            return MediaTileType.Album;
-
-          case MediaTileType.Genre:
-            return MediaTileType.Genre;
-
-          case MediaTileType.Track:
-            return MediaTileType.Track;
-        }
-      };
-
       const play_options = {
-        mode: getMode(tile_type),
+        mode: playModeForTileType(tile_type),
         id: tile_data.id,
         limit: DEFAULT_LIMIT,
         offset,
@@ -151,10 +132,10 @@ export const MediaTile = <T extends Record<string, unknown>>({
 
       play({ tracks, cast_info, index: 0, play_options });
     },
-    getTracks: getTracksForMediaTile(tile_type, tile_data),
+    getTracks: fetchTracksWithCastInfo(tile_type, tile_data),
 
     getTrackIds: () =>
-      TrackIdApi(
+      fetchTrackIds(
         tile_type,
         tile_data,
         // Used for "Add to playlist"
@@ -261,88 +242,4 @@ export const MediaTile = <T extends Record<string, unknown>>({
       {is_mobile && contextMenu}
     </div>
   );
-};
-
-const getTracksForMediaTile =
-  <T extends Record<string, unknown>>(
-    tile_tile: MediaTileType,
-    tile: MediaTileData<T>,
-    limit?: number,
-    offset?: number,
-  ) =>
-  async (is_casting = false) => {
-    const tracks = await TrackApi(tile_tile, tile, limit, offset);
-
-    if (!is_casting) {
-      return { tracks, cast_info: null };
-    }
-
-    const cast_info = await api.track.castInfo.query({
-      track_ids: tracks.map((file) => file.id),
-    });
-
-    return { tracks, cast_info };
-  };
-
-const TrackApi = async <T extends Record<string, unknown>>(
-  tile_type: MediaTileType,
-  tile: MediaTileData<T>,
-  limit?: number,
-  offset?: number,
-) => {
-  switch (tile_type) {
-    case MediaTileType.Artist:
-      return loadTracks(
-        { artist_id: tile.id },
-        { limit, offset, sort: sort_clauses.artist },
-      );
-
-    case MediaTileType.Album:
-    case MediaTileType.Compilation:
-    case MediaTileType.Split:
-      return loadTracks(
-        { album_id: tile.id },
-        { limit, offset, sort: sort_clauses.album },
-      );
-
-    case MediaTileType.Genre:
-      return loadTracks(
-        { genre_id: tile.id },
-        { limit, offset, sort: sort_clauses.genre },
-      );
-
-    case MediaTileType.Track:
-      return loadTracks({}, { limit, offset, sort: sort_clauses.track });
-  }
-};
-
-const TrackIdApi = async <T extends Record<string, unknown>>(
-  tile_type: MediaTileType,
-  tile: MediaTileData<T>,
-  limit?: number,
-) => {
-  switch (tile_type) {
-    case MediaTileType.Artist:
-      return getTrackIds(
-        { artist_id: tile.id },
-        { limit, sort: sort_clauses.artist },
-      );
-
-    case MediaTileType.Album:
-    case MediaTileType.Compilation:
-    case MediaTileType.Split:
-      return getTrackIds(
-        { album_id: tile.id },
-        { limit, sort: sort_clauses.album },
-      );
-
-    case MediaTileType.Genre:
-      return getTrackIds(
-        { genre_id: tile.id },
-        { limit, sort: sort_clauses.genre },
-      );
-
-    case MediaTileType.Track:
-      return getTrackIds({}, { limit, sort: sort_clauses.track });
-  }
 };
