@@ -1,10 +1,10 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "preact/hooks";
 
 import { Maybe, PlayableTrack } from "@common/types";
 import { PreCastPayload } from "@client/lib/cast/types";
 import { VerticalEllipsisIcon } from "@client/components/ui/icons/VerticalEllipsisIcon";
-import { getMediaMenuState, getPlayerState } from "@reducers/store";
+import { getPlayerState } from "@reducers/store";
+import { effect } from "@preact/signals";
 import { noPropagate } from "@client/lib/Event";
 import { toggle } from "@reducers/playlistEditor";
 import { useAddToQueue, useMenu, usePlayNext } from "@hooks/index";
@@ -39,18 +39,14 @@ export const FileMenu = ({
   const player = useSelector(getPlayerState);
   const playNext = usePlayNext();
   const addToQueue = useAddToQueue();
-  const mediaMenu = useSelector(getMediaMenuState);
-  const active = menu_id === mediaMenu.menu_id;
   const dispatch = useDispatch();
   const menu = useMenu(menu_id);
 
-  useEffect(() => {
-    if (active) {
-      return;
+  effect(() => {
+    if (!menu.is_active) {
+      handler?.toggle?.(false);
     }
-
-    handler?.toggle?.(false);
-  }, [mediaMenu.menu_id]);
+  });
 
   const onEntryClick = noPropagate(() => {
     handler?.toggle?.(!menu.is_active);
@@ -81,14 +77,14 @@ export const FileMenu = ({
   return (
     <>
       <div
-        className={"file-menu-entry" + (active ? " active" : "")}
+        className={"file-menu-entry" + (menu.is_active ? " active" : "")}
         onClick={onEntryClick}
       >
         {(icon_orientation === "vertical" && (
           <VerticalEllipsisIcon className="icon-xs" />
         )) || <EllipsisIcon className="icon-xs" />}
       </div>
-      {active && (
+      {menu.is_active && (
         <section className="file-menu">
           <div className="title">{title}</div>
 

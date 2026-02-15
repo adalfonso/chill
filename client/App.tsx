@@ -13,14 +13,14 @@ import { api } from "./client";
 import { effect } from "@preact/signals";
 import { getPlayerState, getPlaylistEditorState } from "@reducers/store";
 import { setCastAppId } from "./state/reducers/caster";
-import { setMenu } from "@reducers/mediaMenu";
+import { setMenu } from "@client/state/mediaMenuStore";
 import { useAppState } from "@hooks/useAppState";
 
 export const App = () => {
   const { view, view_path } = useAppState();
   const prev_view_path = useRef("");
   const dispatch = useDispatch();
-  const clearActiveFileMenu = () => dispatch(setMenu(null));
+  const clearActiveFileMenu = () => setMenu(null);
   const player = useSelector(getPlayerState);
   const playlistEditor = useSelector(getPlaylistEditorState);
   useEffect(() => {

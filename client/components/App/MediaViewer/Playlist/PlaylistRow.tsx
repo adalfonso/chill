@@ -1,18 +1,16 @@
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useLocation } from "wouter-preact";
 
 import { Equalizer } from "@client/components/ui/Equalizer";
 import { FileMenu, FileMenuHandler } from "../FileMenu";
 import { PlayableTrack } from "@common/types";
 import { artistAlbumUrl, artistUrl } from "@client/lib/Url";
-import { getMediaMenuState, getPlayerState } from "@reducers/store";
+import { getPlayerState } from "@reducers/store";
 import { getPlayPayload } from "@client/state/reducers/player";
 import { noPropagate } from "@client/lib/Event";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import { secondsToMinutes } from "@client/lib/AudioProgress";
-import { setMenu } from "@client/state/reducers/mediaMenu";
-import { useBackNavigate } from "@hooks/index";
-import { useId, useViewport } from "@hooks/index";
+import { useBackNavigate, useId, useMenu, useViewport } from "@hooks/index";
 
 type PlaylistRowProps = {
   track: PlayableTrack;
@@ -22,21 +20,19 @@ type PlaylistRowProps = {
 
 export const PlaylistRow = ({ track, index, playAll }: PlaylistRowProps) => {
   const player = useSelector(getPlayerState);
-  const mediaMenu = useSelector(getMediaMenuState);
   const menu_id = useId();
+  const menu = useMenu(menu_id);
   const [, navigate] = useLocation();
-  const dispatch = useDispatch();
   const { width } = useViewport();
 
   const is_mobile = width < screen_breakpoint_px;
-  const menu_visible = mediaMenu.menu_id === menu_id;
 
   const { artist_id, album_id, album_art_filename } = track;
 
   // Minimize the context menu on back navigation
   useBackNavigate(
-    () => is_mobile && menu_visible,
-    () => dispatch(setMenu(null)),
+    () => is_mobile && menu.is_active,
+    menu.clear,
   );
 
   const menuHandler: FileMenuHandler = {
