@@ -4,12 +4,12 @@ import { useEffect, useRef } from "preact/hooks";
 import * as Player from "@client/state/reducers/player";
 import { Maybe } from "@common/types";
 import { api } from "@client/client";
-import { getCasterState, getPlayerState } from "@client/state/reducers/store";
+import { getPlayerState } from "@client/state/reducers/store";
+import * as casterStore from "@client/state/casterStore";
 import { useAppState, usePlay, useSeek } from "@hooks/index";
 
 export const CastPlayer = () => {
   const { progress } = useAppState();
-  const caster = useSelector(getCasterState);
   const player = useSelector(getPlayerState);
 
   const cast_context = useRef<Maybe<cast.framework.CastContext>>(null);
@@ -81,7 +81,7 @@ export const CastPlayer = () => {
   ]);
 
   useEffect(() => {
-    if (!caster.ready || caster.app_id === null) {
+    if (!casterStore.ready.value || casterStore.app_id.value === null) {
       return;
     }
 
@@ -134,7 +134,7 @@ export const CastPlayer = () => {
     };
 
     ctx.setOptions({
-      receiverApplicationId: caster.app_id,
+      receiverApplicationId: casterStore.app_id.value,
       autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
     });
 
@@ -143,7 +143,7 @@ export const CastPlayer = () => {
     cast_context.current = ctx;
 
     return () => ctx.removeEventListener(SESSION_CHANGED, onSessionChanged);
-  }, [caster.ready]);
+  }, [casterStore.ready.value]);
 
   return <div id="cast-player"></div>;
 };

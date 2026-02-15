@@ -1,4 +1,4 @@
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useEffect, useRef } from "preact/hooks";
 
 import "./App.scss";
@@ -12,20 +12,19 @@ import { ToolbarTop } from "./components/App/ToolbarTop";
 import { api } from "./client";
 import { effect } from "@preact/signals";
 import { getPlayerState, getPlaylistEditorState } from "@reducers/store";
-import { setCastAppId } from "./state/reducers/caster";
+import { setCastAppId } from "@client/state/casterStore";
 import { setMenu } from "@client/state/mediaMenuStore";
 import { useAppState } from "@hooks/useAppState";
 
 export const App = () => {
   const { view, view_path } = useAppState();
   const prev_view_path = useRef("");
-  const dispatch = useDispatch();
   const clearActiveFileMenu = () => setMenu(null);
   const player = useSelector(getPlayerState);
   const playlistEditor = useSelector(getPlaylistEditorState);
   useEffect(() => {
     unlockAudio();
-    api.cast.getCastId.query().then((id) => dispatch(setCastAppId(id)));
+    api.cast.getCastId.query().then(setCastAppId);
   }, []);
 
   effect(() => {
