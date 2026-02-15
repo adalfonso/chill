@@ -11,9 +11,10 @@ import { ToolbarBottom } from "./components/App/ToolbarBottom";
 import { ToolbarTop } from "./components/App/ToolbarTop";
 import { api } from "./client";
 import { effect } from "@preact/signals";
-import { getPlayerState, getPlaylistEditorState } from "@reducers/store";
+import { getPlayerState } from "@reducers/store";
 import { setCastAppId } from "@client/state/casterStore";
 import { setMenu } from "@client/state/mediaMenuStore";
+import * as playlistEditorStore from "@client/state/playlistEditorStore";
 import { useAppState } from "@hooks/useAppState";
 
 export const App = () => {
@@ -21,7 +22,6 @@ export const App = () => {
   const prev_view_path = useRef("");
   const clearActiveFileMenu = () => setMenu(null);
   const player = useSelector(getPlayerState);
-  const playlistEditor = useSelector(getPlaylistEditorState);
   useEffect(() => {
     unlockAudio();
     api.cast.getCastId.query().then(setCastAppId);
@@ -56,7 +56,7 @@ export const App = () => {
       </PlayModeIterceptor>
 
       {player.playlist?.length > 0 && <PlayControls />}
-      {playlistEditor.active && <PlaylistEditor />}
+      {playlistEditorStore.active.value && <PlaylistEditor />}
       <ToolbarBottom />
     </div>
   );
