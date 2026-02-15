@@ -1,21 +1,16 @@
-import { useDispatch, useSelector } from "react-redux";
 import { useState } from "preact/hooks";
 import { useSignal } from "@preact/signals";
 
 import { Select } from "@client/components/ui/Select";
-import { updateUserSettings } from "@reducers/user";
 import { AudioQuality, AudioQualityBitrate } from "@common/types";
 import { api } from "@client/client";
-import { getUserState } from "@reducers/store";
+import * as userStore from "@client/state/userStore";
 
 export const AudioQualitySetting = () => {
-  const user = useSelector(getUserState);
   const is_busy = useSignal(false);
   const [input, setInput] = useState(
-    user?.settings?.audio_quality ?? AudioQuality.Original,
+    userStore.settings.value?.audio_quality ?? AudioQuality.Original,
   );
-
-  const dispatch = useDispatch();
 
   const changeQuality = async (quality: AudioQuality) => {
     if (is_busy.value) {
@@ -29,13 +24,13 @@ export const AudioQualitySetting = () => {
         audio_quality: quality,
       });
 
-      dispatch(updateUserSettings({ settings }));
+      userStore.updateUserSettings(settings);
     } catch (e) {
       // TODO: show a toast here
       console.error("Failed to change audio quality:", e);
 
       // Reset on failure
-      setInput(user?.settings?.audio_quality ?? AudioQuality.Original);
+      setInput(userStore.settings.value?.audio_quality ?? AudioQuality.Original);
     } finally {
       is_busy.value = false;
     }

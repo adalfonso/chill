@@ -1,5 +1,4 @@
 import { useEffect } from "preact/hooks";
-import { useDispatch } from "react-redux";
 
 import "./MediaViewer.scss";
 import { AppSettings } from "./Toolbar/AppSettings";
@@ -9,16 +8,15 @@ import { Playlists } from "./MediaViewer/Playlists";
 import { Route, Switch } from "wouter-preact";
 import { Search } from "./Toolbar/Search";
 import { api } from "@client/client";
-import { setUser } from "@reducers/user";
+import { setUser } from "@client/state/userStore";
 import { useAppState } from "@hooks/index";
 
 export const AppRouter = () => {
   const { is_loading } = useAppState();
-  const dispatch = useDispatch();
   // Let's load the user once and expect that any updates to the user through
   // the UI will return updated user bits that we will merge into the state
   useEffect(() => {
-    api.user.get.query().then((user) => dispatch(setUser(user)));
+    api.user.get.query().then(setUser);
   }, []);
 
   return (

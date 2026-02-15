@@ -1,4 +1,3 @@
-import { useSelector } from "react-redux";
 import { useEffect } from "preact/hooks";
 
 import "./AppSettings.scss";
@@ -16,8 +15,8 @@ import { LowQualityAlbums } from "./AppSettings/LowQualityAlbums";
 import { NameDevice } from "./AppSettings/NameDevice";
 import { TrackCountByYear } from "./TrackCountByYear";
 import { UserType } from "@common/types";
-import { getUserState } from "@reducers/store";
 import { noPropagate } from "@client/lib/Event";
+import * as userStore from "@client/state/userStore";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import { useAppState } from "@hooks/useAppState";
 import { useViewport } from "@hooks/useViewport";
@@ -42,7 +41,7 @@ const settingsContent = {
 
 export const AppSettings = () => {
   const { current_app_setting } = useAppState();
-  const user = useSelector(getUserState);
+
   const { width } = useViewport();
   const is_mobile = width < screen_breakpoint_px;
 
@@ -85,7 +84,7 @@ export const AppSettings = () => {
 
           <h3>Library</h3>
           <div className="settings-group">
-            {user.type === UserType.Admin && (
+            {userStore.type.value === UserType.Admin && (
               <>
                 <AppSetting id={SettingType.InviteUser} title="Invite a user" />
                 <AppSetting
