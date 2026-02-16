@@ -1,6 +1,6 @@
 import { useLocation } from "wouter-preact";
-import { computed, useSignal } from "@preact/signals";
-import { useEffect, useRef } from "preact/hooks";
+import { computed, effect, useSignal } from "@preact/signals";
+import { useRef } from "preact/hooks";
 
 import "./Search.scss";
 import { Close } from "@client/components/ui/Close";
@@ -72,11 +72,11 @@ export const Search = () => {
     300,
   );
 
-  useEffect(() => {
+  effect(() => {
     if (view.value === CoreViewState.Search) {
       inputRef.current?.focus();
     }
-  }, [view.value]);
+  });
 
   // Visit page for search result
   const visitMedia = async (file: SearchResult) => {
