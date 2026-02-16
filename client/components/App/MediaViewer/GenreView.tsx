@@ -25,7 +25,7 @@ export const GenreView = ({ genre_id }: GenreViewProps) => {
 
   useEffect(() => {
     api.genre.get.query({ id: genre_id }).then(setGenre);
-  }, []);
+  }, [genre_id]);
 
   const loadGenreArtists = async (page: number) => {
     is_loading.value = true;
