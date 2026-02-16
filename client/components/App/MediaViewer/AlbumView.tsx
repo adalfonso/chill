@@ -1,5 +1,4 @@
 import { Album } from "@prisma/client";
-import { useSelector } from "react-redux";
 import { useState, useEffect, useCallback } from "preact/hooks";
 import { useComputed, useSignal } from "@preact/signals";
 
@@ -15,7 +14,7 @@ import { AlbumViewRow } from "./AlbumView/AlbumViewRow";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@common/pagination";
 import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
 import { api } from "@client/client";
-import { getPlayerState } from "@client/state/reducers/store";
+import * as playerStore from "@client/state/playerStore";
 import { getTracks, sort_clauses } from "@client/lib/TrackLoaders";
 import { truncate } from "@common/commonUtils";
 import { useAppState, usePlay } from "@hooks/index";
@@ -27,7 +26,6 @@ type AlbumViewProps = {
 
 export const AlbumView = ({ album_id }: AlbumViewProps) => {
   const { is_loading } = useAppState();
-  const player = useSelector(getPlayerState);
   const [album, setAlbum] =
     useState<Maybe<Raw<Album & AlbumRelationalData>>>(null);
   const tracks = useSignal<Array<PlayableTrack>>([]);
@@ -60,19 +58,17 @@ export const AlbumView = ({ album_id }: AlbumViewProps) => {
       );
 
       if (!batch.length) {
-        break; // stop if no more tracks
+        break;
       }
 
-      // Append new tracks and trigger rerender
       tracks.value = [...tracks.value, ...batch];
 
       page++;
 
       if (batch.length < limit) {
-        break; // stop if no more tracks
+        break;
       }
 
-      // Yield to the event loop so the UI can update
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
   }, [album_id]);
@@ -86,14 +82,13 @@ export const AlbumView = ({ album_id }: AlbumViewProps) => {
         return;
       }
 
-      const is_casting = player.is_casting;
-      const cast_info = is_casting
+      const casting = playerStore.is_casting.value;
+      const cast_info = casting
         ? await api.track.castInfo.query({
             track_ids: tracks.value.map((track) => track.id),
           })
         : null;
 
-      // TODO: incorporate artist_id in here when necessary
       const play_options = {
         mode: PlayMode.Album,
         id: album_id,
@@ -107,11 +102,8 @@ export const AlbumView = ({ album_id }: AlbumViewProps) => {
 
   const getArtistName = () => {
     return (
-      // Loaded album and there are multiple artists
       (artist_names.value.length > 1 && "Various Artists") ||
-      // Loaded album but there is a single artist
       album?.artist?.name ||
-      // Fallback
       "Unknown Artist"
     );
   };
@@ -130,7 +122,6 @@ export const AlbumView = ({ album_id }: AlbumViewProps) => {
       value.sort((a, b) => (a.number ?? 0) - (b.number ?? 0)),
     );
 
-  // Allows albums with multiple discs to have continuous track numbering
   let total_index = -1;
 
   return (

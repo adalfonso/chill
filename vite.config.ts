@@ -10,7 +10,6 @@ export default defineConfig({
     alias: {
       react: "preact/compat",
       "react-dom": "preact/compat",
-      "@reducers": path.resolve(__dirname, "./client/state/reducers/"),
       "@hooks": path.resolve(__dirname, "./client/hooks"),
       "@server": path.resolve(__dirname, "./server"),
       "@client": path.resolve(__dirname, "./client"),

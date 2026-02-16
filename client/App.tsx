@@ -1,4 +1,3 @@
-import { useSelector } from "react-redux";
 import { useEffect, useRef } from "preact/hooks";
 
 import "./App.scss";
@@ -11,17 +10,16 @@ import { ToolbarBottom } from "./components/App/ToolbarBottom";
 import { ToolbarTop } from "./components/App/ToolbarTop";
 import { api } from "./client";
 import { effect } from "@preact/signals";
-import { getPlayerState } from "@reducers/store";
 import { setCastAppId } from "@client/state/casterStore";
 import { setMenu } from "@client/state/mediaMenuStore";
 import * as playlistEditorStore from "@client/state/playlistEditorStore";
+import * as playerStore from "@client/state/playerStore";
 import { useAppState } from "@hooks/useAppState";
 
 export const App = () => {
   const { view, view_path } = useAppState();
   const prev_view_path = useRef("");
   const clearActiveFileMenu = () => setMenu(null);
-  const player = useSelector(getPlayerState);
   useEffect(() => {
     unlockAudio();
     api.cast.getCastId.query().then(setCastAppId);
@@ -55,7 +53,7 @@ export const App = () => {
         <AppRouter />
       </PlayModeIterceptor>
 
-      {player.playlist?.length > 0 && <PlayControls />}
+      {playerStore.playlist.value?.length > 0 && <PlayControls />}
       {playlistEditorStore.active.value && <PlaylistEditor />}
       <ToolbarBottom />
     </div>

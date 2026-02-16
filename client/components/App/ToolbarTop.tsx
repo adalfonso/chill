@@ -51,7 +51,9 @@ export const ToolbarTop = () => {
       </div>
 
       <div className="tools">
-        {casterStore.ready.value && <google-cast-launcher></google-cast-launcher>}
+        {casterStore.ready.value && (
+          <google-cast-launcher></google-cast-launcher>
+        )}
 
         {/* Invisible, just used to mediate between redux stores */}
         <CastPlayer></CastPlayer>

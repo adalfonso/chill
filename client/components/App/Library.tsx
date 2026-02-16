@@ -1,3 +1,4 @@
+import type { JSX } from "preact";
 import { ComponentChildren } from "preact";
 import { useRef } from "preact/compat";
 import { effect, useSignal } from "@preact/signals";
