@@ -1,13 +1,9 @@
-import { useDispatch } from "react-redux";
-
+import * as player from "@client/state/playerStore";
 import { ClientSocketEvent } from "@common/SocketClientEvent";
 import { SenderType } from "@common/CommonEvent";
 import { getAppState } from "@client/state/AppState";
-import { pause } from "@reducers/player";
 
 export const usePause = () => {
-  const dispatch = useDispatch();
-
   return () => {
     const { outgoing_connection, incoming_connections, ws } = getAppState();
 
@@ -21,7 +17,7 @@ export const usePause = () => {
     }
 
     if (!is_source) {
-      dispatch(pause());
+      player.pause();
     }
   };
 };

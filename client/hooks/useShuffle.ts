@@ -1,14 +1,10 @@
-import { getAppState } from "@client/state/AppState";
-import { SenderType } from "@common/CommonEvent";
+import * as player from "@client/state/playerStore";
 import { ClientSocketEvent } from "@common/SocketClientEvent";
 import { PlayableTrackWithIndex } from "@common/types";
-import { shuffle } from "@reducers/player";
-import store, { getPlayerState } from "@reducers/store";
-import { useDispatch } from "react-redux";
+import { SenderType } from "@common/CommonEvent";
+import { getAppState } from "@client/state/AppState";
 
 export const useShuffle = () => {
-  const dispatch = useDispatch();
-
   return () => {
     const { outgoing_connection, incoming_connections, ws } = getAppState();
 
@@ -16,17 +12,16 @@ export const useShuffle = () => {
     const is_source = Boolean(outgoing_connection.value);
 
     if (!is_source) {
-      dispatch(shuffle());
+      player.shuffle();
     }
 
     if (is_source || is_target) {
-      const player = getPlayerState(store.getState());
       let payload: Array<PlayableTrackWithIndex> = [];
 
       // Only send (shuffled) tracks in payload if the target took this action
       // Otherwise the target will do this in registerClientSocket
-      if (is_target && player.is_shuffled) {
-        payload = player.playlist;
+      if (is_target && player.is_shuffled.value) {
+        payload = player.playlist.value;
       }
 
       ws.emit(ClientSocketEvent.PlayerShuffle, {

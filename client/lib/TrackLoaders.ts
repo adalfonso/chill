@@ -1,36 +1,46 @@
+import { api } from "@client/client";
+import { SortClause } from "@common/schema";
 import {
   DEFAULT_LIMIT,
   DEFAULT_OFFSET,
   DEFAULT_PAGE,
   paginate,
 } from "@common/pagination";
-import { api } from "@client/client";
-import { PlayerState } from "@reducers/player";
-import { SortClause } from "@common/schema";
-import { PlayMode, RandomPlayOptions, SortOrder } from "@common/types";
+import {
+  PlayMode,
+  PlayOptions,
+  PlayableTrackWithIndex,
+  RandomPlayOptions,
+  SortOrder,
+} from "@common/types";
+
+type GetMoreTracksInput = {
+  play_options: PlayOptions;
+  playlist: Array<PlayableTrackWithIndex>;
+};
 
 /**
  * Get more tracks for the various player modes
  *
- * @param player - player state
+ * @param options - player state
  * @returns tracks
  */
-export const getMoreTracks = (player: PlayerState) => {
-  switch (player.play_options.mode) {
+export const getMoreTracks = (options: GetMoreTracksInput) => {
+  switch (options.play_options.mode) {
     case PlayMode.Random: {
       return getRandomTracks({
-        exclusions: player.playlist.map((file) => file.id),
-        filter: (player.play_options as RandomPlayOptions).filter,
+        exclusions: options.playlist.map((file) => file.id),
+        filter: (options.play_options as RandomPlayOptions).filter,
       });
     }
 
     case PlayMode.UserPlaylist: {
-      const { id, limit, page } = player.play_options;
+      const { id, limit, page } = options.play_options;
       return getPlaylistTracks({ playlist_id: id }, { limit, page: page + 1 });
     }
 
     case PlayMode.Artist: {
-      const { id, limit, page } = player.play_options;
+      const { id, limit, page } = options.play_options;
       return getTracks(
         { artist_id: id },
         { limit, page: page + 1, sort: sort_clauses.artist },
@@ -38,7 +48,7 @@ export const getMoreTracks = (player: PlayerState) => {
     }
 
     case PlayMode.Album: {
-      const { id, limit, page } = player.play_options;
+      const { id, limit, page } = options.play_options;
       return getTracks(
         { album_id: id },
         { limit, page: page + 1, sort: sort_clauses.album },
@@ -46,7 +56,7 @@ export const getMoreTracks = (player: PlayerState) => {
     }
 
     case PlayMode.Genre: {
-      const { id, limit, page } = player.play_options;
+      const { id, limit, page } = options.play_options;
       return getTracks(
         { genre_id: id },
         { limit, page: page + 1, sort: sort_clauses.genre },
@@ -54,7 +64,7 @@ export const getMoreTracks = (player: PlayerState) => {
     }
 
     case PlayMode.Track: {
-      const { limit, offset, page } = player.play_options;
+      const { limit, offset, page } = options.play_options;
 
       return getTracks(
         {},

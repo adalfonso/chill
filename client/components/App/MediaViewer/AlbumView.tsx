@@ -1,9 +1,16 @@
 import { Album } from "@prisma/client";
-import { useSelector } from "react-redux";
 import { useState, useEffect, useCallback } from "preact/hooks";
 import { useComputed, useSignal } from "@preact/signals";
 
 import "./AlbumView.scss";
+import * as player from "@client/state/playerStore";
+import { AlbumViewRow } from "./AlbumView/AlbumViewRow";
+import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@common/pagination";
+import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
+import { api } from "@client/client";
+import { getTracks, sort_clauses } from "@client/lib/TrackLoaders";
+import { truncate } from "@common/commonUtils";
+import { useAppState, usePlay } from "@hooks/index";
 import {
   AlbumRelationalData,
   Maybe,
@@ -11,14 +18,6 @@ import {
   PlayMode,
   Raw,
 } from "@common/types";
-import { AlbumViewRow } from "./AlbumView/AlbumViewRow";
-import { DEFAULT_LIMIT, DEFAULT_PAGE } from "@common/pagination";
-import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
-import { api } from "@client/client";
-import { getPlayerState } from "@client/state/reducers/store";
-import { getTracks, sort_clauses } from "@client/lib/TrackLoaders";
-import { truncate } from "@common/commonUtils";
-import { useAppState, usePlay } from "@hooks/index";
 
 type AlbumViewProps = {
   artist_id?: number;
@@ -27,7 +26,6 @@ type AlbumViewProps = {
 
 export const AlbumView = ({ album_id }: AlbumViewProps) => {
   const { is_loading } = useAppState();
-  const player = useSelector(getPlayerState);
   const [album, setAlbum] =
     useState<Maybe<Raw<Album & AlbumRelationalData>>>(null);
   const tracks = useSignal<Array<PlayableTrack>>([]);
@@ -60,7 +58,8 @@ export const AlbumView = ({ album_id }: AlbumViewProps) => {
       );
 
       if (!batch.length) {
-        break; // stop if no more tracks
+        // stop if no more tracks
+        break;
       }
 
       // Append new tracks and trigger rerender
@@ -69,10 +68,10 @@ export const AlbumView = ({ album_id }: AlbumViewProps) => {
       page++;
 
       if (batch.length < limit) {
-        break; // stop if no more tracks
+        // stop if no more tracks
+        break;
       }
 
-      // Yield to the event loop so the UI can update
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
   }, [album_id]);
@@ -86,8 +85,8 @@ export const AlbumView = ({ album_id }: AlbumViewProps) => {
         return;
       }
 
-      const is_casting = player.is_casting;
-      const cast_info = is_casting
+      const casting = player.is_casting.value;
+      const cast_info = casting
         ? await api.track.castInfo.query({
             track_ids: tracks.value.map((track) => track.id),
           })

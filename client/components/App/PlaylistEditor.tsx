@@ -1,4 +1,3 @@
-import { useDispatch } from "react-redux";
 import { useState } from "preact/hooks";
 
 import "./PlaylistEditor.scss";
@@ -6,7 +5,7 @@ import { Close } from "../ui/Close";
 import { PlaylistCreate } from "./PlaylistEditor/PlaylistCreate";
 import { PlaylistUpdate } from "./PlaylistEditor/PlaylistUpdate";
 import { Radio } from "../ui/Radio";
-import { toggle } from "@reducers/playlistEditor";
+import { toggle } from "@client/state/playlistEditorStore";
 
 const modes = [
   { name: "Create New", value: "new" },
@@ -17,9 +16,8 @@ const default_mode = "new";
 
 export const PlaylistEditor = () => {
   const [mode, setMode] = useState(default_mode);
-  const dispatch = useDispatch();
   const onPlaylistTypeChange = (value: string) => setMode(value);
-  const onClose = () => dispatch(toggle({ track_ids: [] }));
+  const onClose = () => toggle({ track_ids: [] });
 
   return (
     <div className="playlist-editor">

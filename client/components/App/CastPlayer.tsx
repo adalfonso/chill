@@ -1,27 +1,20 @@
-import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef } from "preact/hooks";
 
-import * as Player from "@client/state/reducers/player";
+import * as caster from "@client/state/casterStore";
+import * as player from "@client/state/playerStore";
 import { Maybe } from "@common/types";
 import { api } from "@client/client";
-import { getCasterState, getPlayerState } from "@client/state/reducers/store";
 import { useAppState, usePlay, useSeek } from "@hooks/index";
 
 export const CastPlayer = () => {
   const { progress } = useAppState();
-  const caster = useSelector(getCasterState);
-  const player = useSelector(getPlayerState);
 
   const cast_context = useRef<Maybe<cast.framework.CastContext>>(null);
-  const player_ref = useRef(player);
   const play = usePlay();
   const seek = useSeek();
-  const dispatch = useDispatch();
-
-  player_ref.current = player;
 
   useEffect(() => {
-    if (!player.is_casting) {
+    if (!player.is_casting.value) {
       return;
     }
 
@@ -39,7 +32,7 @@ export const CastPlayer = () => {
 
       const media = event.value as chrome.cast.media.MediaInfo;
       const { _index: cast_index } = media.metadata;
-      const { now_playing } = player;
+      const now_playing = player.now_playing.value;
 
       if (cast_index === undefined) {
         return;
@@ -57,7 +50,7 @@ export const CastPlayer = () => {
       const track_has_changed = cast_index > current_index;
 
       if (track_has_changed) {
-        dispatch(Player.next({ auto: true }));
+        player.next({ auto: true });
       }
     };
 
@@ -73,15 +66,15 @@ export const CastPlayer = () => {
       );
     };
   }, [
-    player.now_playing,
-    player.is_casting,
-    player.playlist.length,
+    player.now_playing.value,
+    player.is_casting.value,
+    player.playlist.value.length,
     cast_context.current, // is this needed
     cast_context.current?.getCurrentSession()?.getSessionId(),
   ]);
 
   useEffect(() => {
-    if (!caster.ready || caster.app_id === null) {
+    if (!caster.ready.value || caster.app_id.value === null) {
       return;
     }
 
@@ -92,7 +85,7 @@ export const CastPlayer = () => {
     const onSessionChanged = async (
       event: cast.framework.SessionStateEventData,
     ) => {
-      const { playlist, index } = player_ref.current;
+      const playlist = player.playlist.value;
 
       switch (event.sessionState) {
         case cast.framework.SessionState.SESSION_RESUMED:
@@ -104,8 +97,8 @@ export const CastPlayer = () => {
             : null;
 
           // Pause currently playing HTML Audio
-          dispatch(Player.pause());
-          dispatch(Player.setPlayerIsCasting(true));
+          player.pause();
+          player.setPlayerIsCasting(true);
 
           if (
             event.sessionState ===
@@ -116,7 +109,7 @@ export const CastPlayer = () => {
             play({
               tracks: playlist,
               cast_info,
-              index,
+              index: player.index.value,
               progress: progress.value,
             });
           }
@@ -124,7 +117,7 @@ export const CastPlayer = () => {
           break;
         }
         case cast.framework.SessionState.SESSION_ENDED:
-          dispatch(Player.setPlayerIsCasting(false));
+          player.setPlayerIsCasting(false);
           seek(progress.value);
           break;
 
@@ -134,7 +127,7 @@ export const CastPlayer = () => {
     };
 
     ctx.setOptions({
-      receiverApplicationId: caster.app_id,
+      receiverApplicationId: caster.app_id.value,
       autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
     });
 
@@ -143,7 +136,7 @@ export const CastPlayer = () => {
     cast_context.current = ctx;
 
     return () => ctx.removeEventListener(SESSION_CHANGED, onSessionChanged);
-  }, [caster.ready]);
+  }, [caster.ready.value]);
 
   return <div id="cast-player"></div>;
 };

@@ -1,25 +1,12 @@
 import { effect } from "@preact/signals";
 
-import store, { getPlayerState } from "@reducers/store";
+import * as player from "@client/state/playerStore";
 import { ClientSocketData, ClientSocketEvent } from "@common/SocketClientEvent";
 import { PlayableTrackWithIndex } from "@common/types";
 import { SenderType } from "@common/CommonEvent";
 import { SocketClient } from "./SocketClient";
 import { getAppState } from "@client/state/AppState";
 import { getDeviceInfo } from "./DeviceInfo";
-import {
-  addToQueue,
-  changeVolume,
-  next,
-  pause,
-  play,
-  playNext,
-  previous,
-  replaceState,
-  seek,
-  setIsPlaying,
-  shuffle,
-} from "@reducers/player";
 import {
   ConnectionDirection,
   ServerSocketData,
@@ -102,7 +89,7 @@ export const registerClientSocket = (
   ws.on(ServerSocketEvent.PlayerPause, () => {
     const { incoming_connections } = getAppState();
 
-    store.dispatch(pause());
+    player.pause();
 
     const is_target = incoming_connections.value.length > 0;
 
@@ -116,7 +103,7 @@ export const registerClientSocket = (
     const is_target = incoming_connections.value.length > 0;
 
     // Make playback virtual for the source device
-    store.dispatch(play({ ...data.payload, is_virtual: !is_target }));
+    player.play({ ...data.payload, is_virtual: !is_target });
 
     if (is_target) {
       ws.emit(ServerSocketEvent.PlayerPlay, {
@@ -130,14 +117,14 @@ export const registerClientSocket = (
     const { incoming_connections } = getAppState();
     const is_target = incoming_connections.value.length > 0;
 
-    store.dispatch(previous({ is_virtual: !is_target }));
+    player.previous({ is_virtual: !is_target });
 
     if (is_target) {
       ws.emit(ServerSocketEvent.PlayerPrevious, {
         sender: SenderType.Target,
       });
     } else {
-      store.dispatch(setIsPlaying());
+      player.setIsPlaying();
     }
   });
 
@@ -145,7 +132,7 @@ export const registerClientSocket = (
     const { incoming_connections } = getAppState();
     const is_target = incoming_connections.value.length > 0;
 
-    store.dispatch(next({ ...data.payload, is_virtual: !is_target }));
+    player.next({ ...data.payload, is_virtual: !is_target });
 
     if (is_target) {
       ws.emit(ServerSocketEvent.PlayerNext, {
@@ -153,7 +140,7 @@ export const registerClientSocket = (
         sender: SenderType.Target,
       });
     } else {
-      store.dispatch(setIsPlaying());
+      player.setIsPlaying();
     }
   });
 
@@ -161,7 +148,7 @@ export const registerClientSocket = (
     const { incoming_connections } = getAppState();
     const is_target = incoming_connections.value.length > 0;
 
-    store.dispatch(playNext({ tracks: data.payload, cast_info: null }));
+    player.playNext({ tracks: data.payload, cast_info: null });
 
     if (is_target) {
       ws.emit(ServerSocketEvent.PlayerPlayNext, {
@@ -175,7 +162,7 @@ export const registerClientSocket = (
     const { incoming_connections } = getAppState();
     const is_target = incoming_connections.value.length > 0;
 
-    store.dispatch(addToQueue({ tracks: data.payload, cast_info: null }));
+    player.addToQueue({ tracks: data.payload, cast_info: null });
 
     if (is_target) {
       ws.emit(ServerSocketEvent.PlayerAddToQueue, {
@@ -189,24 +176,20 @@ export const registerClientSocket = (
     const { incoming_connections, outgoing_connection } = getAppState();
     const is_target = incoming_connections.value.length > 0;
     const is_source = outgoing_connection.value;
-    let player = getPlayerState(store.getState());
 
     let tracks: Array<PlayableTrackWithIndex> = [];
 
     // Only set (shuffled) tracks in payload if the target took this action
     // Otherwise the target will do this in registerClientSocket
-    if (is_source && !player.is_shuffled) {
+    if (is_source && !player.is_shuffled.value) {
       tracks = data.payload;
     }
 
-    store.dispatch(shuffle(tracks));
+    player.shuffle(tracks);
 
     if (is_target) {
-      // Refresh player state
-      player = getPlayerState(store.getState());
-
       ws.emit(ServerSocketEvent.PlayerShuffle, {
-        payload: player.playlist,
+        payload: player.playlist.value,
         sender: SenderType.Target,
       });
     }
@@ -217,7 +200,7 @@ export const registerClientSocket = (
     const is_target = incoming_connections.value.length > 0;
 
     if (is_target) {
-      store.dispatch(seek(data.payload));
+      player.seek(data.payload);
     }
 
     // Do not propagate because target already emites progress update
@@ -227,7 +210,7 @@ export const registerClientSocket = (
     const { incoming_connections } = getAppState();
     const is_target = incoming_connections.value.length > 0;
 
-    store.dispatch(changeVolume(data.payload));
+    player.changeVolume(data.payload);
 
     if (is_target) {
       ws.emit(ServerSocketEvent.PlayerChangeVolume, {
@@ -243,16 +226,14 @@ export const registerClientSocket = (
     const is_source = outgoing_connection.value;
 
     if (is_target && "from" in data) {
-      const player = getPlayerState(store.getState());
-
       ws.emit(ServerSocketEvent.PlayerReconnect, {
-        payload: player,
+        payload: player.getSnapshot(),
         to: data.from,
       });
     }
 
     if (is_source && "payload" in data) {
-      store.dispatch(replaceState(data.payload));
+      player.replaceState(data.payload);
     }
   });
 

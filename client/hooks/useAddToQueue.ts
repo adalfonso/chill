@@ -1,15 +1,11 @@
-import { useDispatch } from "react-redux";
-
+import * as player from "@client/state/playerStore";
 import { ClientSocketEvent } from "@common/SocketClientEvent";
 import { Maybe, PlayableTrack } from "@common/types";
 import { PreCastPayload } from "@client/lib/cast/types";
 import { SenderType } from "@common/CommonEvent";
-import { addToQueue } from "@reducers/player";
 import { getAppState } from "@client/state/AppState";
 
 export const useAddToQueue = () => {
-  const dispatch = useDispatch();
-
   return (payload: {
     tracks: Array<PlayableTrack>;
     cast_info: Maybe<PreCastPayload>;
@@ -27,7 +23,7 @@ export const useAddToQueue = () => {
     }
 
     if (!is_source) {
-      dispatch(addToQueue(payload));
+      player.addToQueue(payload);
     }
   };
 };

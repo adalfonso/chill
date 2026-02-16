@@ -1,13 +1,9 @@
-import { useDispatch } from "react-redux";
-
+import * as player from "@client/state/playerStore";
 import { ClientSocketEvent } from "@common/SocketClientEvent";
 import { SenderType } from "@common/CommonEvent";
 import { getAppState } from "@client/state/AppState";
-import { next } from "@reducers/player";
 
 export const useNext = () => {
-  const dispatch = useDispatch();
-
   return (payload: { auto?: boolean }) => {
     const { outgoing_connection, incoming_connections, ws } = getAppState();
 
@@ -22,7 +18,7 @@ export const useNext = () => {
     }
 
     if (!is_source) {
-      dispatch(next(payload));
+      player.next(payload);
     }
   };
 };

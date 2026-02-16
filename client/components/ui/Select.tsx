@@ -1,3 +1,4 @@
+import type { JSX } from "preact";
 import { useState } from "preact/hooks";
 
 import "./ui.scss";

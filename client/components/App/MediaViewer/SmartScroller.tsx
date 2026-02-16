@@ -1,8 +1,9 @@
+import type { JSX } from "preact";
 import { cloneElement } from "preact";
+import { signal } from "@preact/signals";
 import { useRef, useMemo, useCallback } from "preact/hooks";
 
 import { useScroll, useInfiniteScroll } from "@hooks/index";
-import { signal } from "@preact/signals";
 
 type SmartScrollProps<T> = {
   // Header text

@@ -1,15 +1,11 @@
-import { useDispatch } from "react-redux";
-
+import * as player from "@client/state/playerStore";
 import { ClientSocketEvent } from "@common/SocketClientEvent";
-import { SenderType } from "@common/CommonEvent";
-import { getAppState } from "@client/state/AppState";
-import { playNext } from "@reducers/player";
 import { Maybe, PlayableTrack } from "@common/types";
 import { PreCastPayload } from "@client/lib/cast/types";
+import { SenderType } from "@common/CommonEvent";
+import { getAppState } from "@client/state/AppState";
 
 export const usePlayNext = () => {
-  const dispatch = useDispatch();
-
   return (payload: {
     tracks: Array<PlayableTrack>;
     cast_info: Maybe<PreCastPayload>;
@@ -27,7 +23,7 @@ export const usePlayNext = () => {
     }
 
     if (!is_source) {
-      dispatch(playNext(payload));
+      player.playNext(payload);
     }
   };
 };

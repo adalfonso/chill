@@ -1,7 +1,7 @@
-import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "wouter-preact";
 
 import "./PlayControls.scss";
+import * as player from "@client/state/playerStore";
 import { AudioType } from "@server/lib/media/types";
 import { BackwardIcon } from "../ui/icons/BackwardIcon";
 import { ChevronDownIcon } from "../ui/icons/ChevronDownIcon";
@@ -9,7 +9,8 @@ import { Close } from "../ui/Close";
 import { FileInfo } from "./MediaViewer/FileInfo";
 import { FileMenu } from "./MediaViewer/FileMenu";
 import { ForwardIcon } from "../ui/icons/ForwardIcon";
-import { MobileDisplayMode } from "@reducers/player.types";
+import { MobileDisplayMode } from "@client/state/playerStore";
+import { MobileVolumeControl } from "./PlayControls/MobileVolumeControl";
 import { PauseIcon } from "../ui/icons/PauseIcon";
 import { PlayIcon } from "../ui/icons/PlayIcon";
 import { PlayableTrack } from "@common/types";
@@ -18,8 +19,6 @@ import { Scrubber } from "./PlayControls/Scrubber";
 import { Shuffle } from "./PlayControls/Shuffle";
 import { VolumeControl } from "./PlayControls/VolumeControl";
 import { artistAlbumUrl, artistUrl } from "@client/lib/Url";
-import { clear, setMobileDisplayMode } from "@reducers/player";
-import { getPlayerState } from "@reducers/store";
 import { noPropagate } from "@client/lib/Event";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import {
@@ -32,7 +31,6 @@ import {
   usePrevious,
   useViewport,
 } from "@hooks/index";
-import { MobileVolumeControl } from "./PlayControls/MobileVolumeControl";
 
 const default_now_playing = "";
 
@@ -60,20 +58,19 @@ export const PlayControls = () => {
   const pause = usePause();
   const next = useNext();
   const previous = usePrevious();
-  const dispatch = useDispatch();
   const [, navigate] = useLocation();
   const file_menu_id = useId();
   const file_info_id = useId();
   const file_info_menu = useMenu(file_info_id);
-  const player = useSelector(getPlayerState);
   const { width } = useViewport();
   const is_mobile = width < screen_breakpoint_px;
   const is_fullscreen =
-    is_mobile && player.mobile_display_mode === MobileDisplayMode.Fullscreen;
+    is_mobile &&
+    player.mobile_display_mode.value === MobileDisplayMode.Fullscreen;
 
   // Helper that gets the "now playing" section
   const getNowPlaying = () => {
-    const track = player.now_playing;
+    const track = player.now_playing.value;
     if (!track) {
       return default_now_playing;
     }
@@ -100,26 +97,26 @@ export const PlayControls = () => {
   };
 
   // Toggle audio play / pause
-  const togglePlayer = async () => (player.is_playing ? pause() : play({}));
+  const togglePlayer = async () =>
+    player.is_playing.value ? pause() : play({});
 
   // Stop all audio from playing
   const stop = () => {
-    dispatch(setMobileDisplayMode(MobileDisplayMode.None));
-
-    dispatch(clear());
+    player.setMobileDisplayMode(MobileDisplayMode.None);
+    player.clear();
   };
 
   // Minimize the fullscreen player on mobile
   const minimize = () =>
-    dispatch(setMobileDisplayMode(MobileDisplayMode.Minimized));
+    player.setMobileDisplayMode(MobileDisplayMode.Minimized);
 
   // Fullscreen the mobile player
   const goFullscreen = () => {
-    dispatch(setMobileDisplayMode(MobileDisplayMode.Fullscreen));
+    player.setMobileDisplayMode(MobileDisplayMode.Fullscreen);
   };
 
-  const now_playing = player.now_playing;
-  const { artist_id, album_id } = player.now_playing ?? {};
+  const now_playing = player.now_playing.value;
+  const { artist_id, album_id } = player.now_playing.value ?? {};
 
   // Minimize the player on back navigation when fullscreen
   useBackNavigate(() => is_fullscreen, minimize);
@@ -128,11 +125,13 @@ export const PlayControls = () => {
     <>
       <div
         id="play-controls"
-        className={player.mobile_display_mode + (is_mobile ? " mobile" : "")}
+        className={
+          player.mobile_display_mode.value + (is_mobile ? " mobile" : "")
+        }
         style={{
           "--bg-image":
-            is_mobile && player.now_playing?.album_art_filename
-              ? `url(/api/v1/media/cover/${player.now_playing.album_art_filename}?size=500)`
+            is_mobile && player.now_playing.value?.album_art_filename
+              ? `url(/api/v1/media/cover/${player.now_playing.value.album_art_filename}?size=500)`
               : "none",
         }}
       >
@@ -143,9 +142,9 @@ export const PlayControls = () => {
           </div>
           <div className="cover-wrapper">
             <div className="cover">
-              {player.now_playing?.album_art_filename && (
+              {player.now_playing.value?.album_art_filename && (
                 <img
-                  src={`/api/v1/media/cover/${player.now_playing?.album_art_filename}?size=500`}
+                  src={`/api/v1/media/cover/${player.now_playing.value?.album_art_filename}?size=500`}
                   loading="lazy"
                 />
               )}
@@ -163,7 +162,7 @@ export const PlayControls = () => {
                 <BackwardIcon className="icon-md" />
               </div>
               <div className="circle-button play" onClick={togglePlayer}>
-                {player.is_playing ? (
+                {player.is_playing.value ? (
                   <PauseIcon className="icon-lg" />
                 ) : (
                   <PlayIcon className="icon-lg" />
@@ -198,9 +197,10 @@ export const PlayControls = () => {
                       {artist_id ? (
                         <div
                           key="artist"
-                          onClick={() =>
-                            minimize() && navigate(artistUrl(artist_id))
-                          }
+                          onClick={() => {
+                            minimize();
+                            navigate(artistUrl(artist_id));
+                          }}
                         >
                           Go to Artist
                           <div className="dim file-menu-subtext">
@@ -214,10 +214,10 @@ export const PlayControls = () => {
                       {artist_id && album_id ? (
                         <div
                           key="album"
-                          onClick={() =>
-                            minimize() &&
-                            navigate(artistAlbumUrl(artist_id, album_id))
-                          }
+                          onClick={() => {
+                            minimize();
+                            navigate(artistAlbumUrl(artist_id, album_id));
+                          }}
                         >
                           Go to Album
                           <div className="dim file-menu-subtext">
@@ -250,16 +250,16 @@ export const PlayControls = () => {
         </div>
       </div>
 
-      {player.mobile_display_mode === MobileDisplayMode.Minimized && (
+      {player.mobile_display_mode.value === MobileDisplayMode.Minimized && (
         <div id="play-controls-minimized" onClick={noPropagate(goFullscreen)}>
           <div>
-            {player?.now_playing?.title}
-            <div className="dim">{player?.now_playing?.artist}</div>
+            {player.now_playing.value?.title}
+            <div className="dim">{player.now_playing.value?.artist}</div>
           </div>
 
           <div className="controls">
             <div onClick={noPropagate(togglePlayer)}>
-              {player.is_playing ? (
+              {player.is_playing.value ? (
                 <PauseIcon className="icon-sm" />
               ) : (
                 <PlayIcon className="icon-sm" />

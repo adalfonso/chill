@@ -1,10 +1,9 @@
-import { useSelector } from "react-redux";
-import { useState } from "preact/hooks";
 import { useSignal } from "@preact/signals";
+import { useState } from "preact/hooks";
 
+import * as playlistEditor from "@client/state/playlistEditorStore";
 import { PlaylistWithCount, Raw } from "@common/types";
 import { api } from "@client/client";
-import { getPlaylistEditorState } from "@reducers/store";
 
 type PlaylistUpdateProps = {
   onDone: () => void;
@@ -16,15 +15,13 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
 
   const [results, setResults] = useState<Array<Raw<PlaylistWithCount>>>([]);
   const [selected, setSelected] = useState<Raw<PlaylistWithCount>>();
-  const playlistEditor = useSelector(getPlaylistEditorState);
-
   const submit = (selected: Raw<PlaylistWithCount>) => () => {
     if (is_busy.value) {
       return;
     }
 
     is_busy.value = true;
-    const track_ids = playlistEditor.track_ids;
+    const track_ids = playlistEditor.track_ids.value;
 
     api.playlist.update
       .mutate({ id: selected.id, track_ids: track_ids })
@@ -79,7 +76,7 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
         <>
           <div className="selected-playlist">
             {selected.title} - {selected.track_count} items (+
-            {playlistEditor.track_ids.length} new)
+            {playlistEditor.track_ids.value.length} new)
           </div>
           <button onClick={submit(selected)}>Update</button>
         </>

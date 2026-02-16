@@ -1,15 +1,15 @@
-import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "preact/hooks";
+import type { JSX } from "preact";
+import { ComponentChildren } from "preact";
+import { effect } from "@preact/signals";
 
+import * as player from "@client/state/playerStore";
+import { EllipsisIcon } from "@client/components/ui/icons/EllipsisIcon";
 import { Maybe, PlayableTrack } from "@common/types";
 import { PreCastPayload } from "@client/lib/cast/types";
 import { VerticalEllipsisIcon } from "@client/components/ui/icons/VerticalEllipsisIcon";
-import { getMediaMenuState, getPlayerState } from "@reducers/store";
 import { noPropagate } from "@client/lib/Event";
-import { toggle } from "@reducers/playlistEditor";
+import { toggle } from "@client/state/playlistEditorStore";
 import { useAddToQueue, useMenu, usePlayNext } from "@hooks/index";
-import { EllipsisIcon } from "@client/components/ui/icons/EllipsisIcon";
-import { ComponentChildren } from "preact";
 
 export type FileMenuHandler = {
   play: (e?: UIEvent) => void;
@@ -36,21 +36,15 @@ export const FileMenu = ({
   children,
   icon_orientation = "vertical",
 }: FileMenuProps) => {
-  const player = useSelector(getPlayerState);
   const playNext = usePlayNext();
   const addToQueue = useAddToQueue();
-  const mediaMenu = useSelector(getMediaMenuState);
-  const active = menu_id === mediaMenu.menu_id;
-  const dispatch = useDispatch();
   const menu = useMenu(menu_id);
 
-  useEffect(() => {
-    if (active) {
-      return;
+  effect(() => {
+    if (!menu.is_active) {
+      handler?.toggle?.(false);
     }
-
-    handler?.toggle?.(false);
-  }, [mediaMenu.menu_id]);
+  });
 
   const onEntryClick = noPropagate(() => {
     handler?.toggle?.(!menu.is_active);
@@ -66,29 +60,27 @@ export const FileMenu = ({
 
   const local = {
     playNext: async () =>
-      handler && playNext(await handler.getTracks(player.is_casting)),
+      handler && playNext(await handler.getTracks(player.is_casting.value)),
     addToQueue: async () =>
-      handler && addToQueue(await handler.getTracks(player.is_casting)),
+      handler && addToQueue(await handler.getTracks(player.is_casting.value)),
     addToPlaylist: async () =>
       handler &&
-      dispatch(
-        toggle({
-          track_ids: await handler.getTrackIds(),
-        }),
-      ),
+      toggle({
+        track_ids: await handler.getTrackIds(),
+      }),
   };
 
   return (
     <>
       <div
-        className={"file-menu-entry" + (active ? " active" : "")}
+        className={"file-menu-entry" + (menu.is_active ? " active" : "")}
         onClick={onEntryClick}
       >
         {(icon_orientation === "vertical" && (
           <VerticalEllipsisIcon className="icon-xs" />
         )) || <EllipsisIcon className="icon-xs" />}
       </div>
-      {active && (
+      {menu.is_active && (
         <section className="file-menu">
           <div className="title">{title}</div>
 
