@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "preact/hooks";
+import { useEffect } from "preact/hooks";
 
 import "./Scrubber.scss";
 import * as AudioProgress from "@client/lib/AudioProgress";
@@ -25,18 +25,11 @@ export const Scrubber = () => {
     seek,
   );
 
-  const is_casting = useRef(player.is_casting.value);
-
-  // TODO: Hack - can this be done some other way?
-  useEffect(() => {
-    is_casting.current = player.is_casting.value;
-  }, [player.is_casting.value]);
-
   useEffect(() => {
     AudioProgress.startAnimationLoop(() => {
       const audio_progress = getAudioProgress(
         player.now_playing.value,
-        is_casting.current,
+        player.is_casting.value,
       );
 
       // Skip if progress is being read from some target device, or if the
@@ -65,10 +58,10 @@ export const Scrubber = () => {
     const onCrossover = () =>
       audio.duration - audio.currentTime < gap_offset && next({ auto: true });
 
-    // Copy of this value in case it changes before this effect is cleaned up
-    const is_casting_local_var = is_casting.current;
+    // Capture the casting state at effect setup time for proper cleanup
+    const is_casting_at_setup = player.is_casting.value;
 
-    if (!is_casting_local_var) {
+    if (!is_casting_at_setup) {
       audio.addEventListener("timeupdate", onCrossover);
       crossover.addEventListener("timeupdate", onCrossover);
     }
@@ -76,12 +69,12 @@ export const Scrubber = () => {
     return () => {
       AudioProgress.cancelAnimationFrames();
 
-      if (!is_casting_local_var) {
+      if (!is_casting_at_setup) {
         audio.removeEventListener("timeupdate", onCrossover);
         crossover.removeEventListener("timeupdate", onCrossover);
       }
     };
-  }, [is_casting.current, player.now_playing.value]);
+  }, [player.is_casting.value, player.now_playing.value]);
 
   return (
     <>
