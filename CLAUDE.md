@@ -64,7 +64,7 @@ npx prisma migrate dev --name migration_name
 
 ### Monorepo Structure
 
-- **`client/`** - Preact frontend with Redux Toolkit state management
+- **`client/`** - Preact frontend with Preact Signals for state management
 - **`server/`** - Express backend with tRPC API layer
 - **`common/`** - Shared types and utilities between frontend/backend
 - **`receiver/`** - Chromecast receiver application (separate Vite build)
@@ -73,7 +73,7 @@ npx prisma migrate dev --name migration_name
 
 ### Technology Stack
 
-**Frontend**: Preact, Redux Toolkit, Preact Signals, tRPC client, Wouter (routing), WebSockets
+**Frontend**: Preact, Preact Signals, tRPC client, Wouter (routing), WebSockets
 **Backend**: Express, tRPC, Prisma ORM, Passport.js (Google OAuth + JWT), WebSockets (ws)
 **Infrastructure**: PostgreSQL, Redis (JWT blacklist), Elasticsearch (search), Nginx (reverse proxy)
 
