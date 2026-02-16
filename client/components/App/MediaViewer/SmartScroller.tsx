@@ -1,3 +1,4 @@
+import type { JSX } from "preact";
 import { cloneElement } from "preact";
 import { useRef, useMemo, useCallback } from "preact/hooks";
 

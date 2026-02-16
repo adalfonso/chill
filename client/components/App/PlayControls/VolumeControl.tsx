@@ -1,11 +1,8 @@
-import { useSelector } from "react-redux";
-
 import "./VolumeControl.scss";
-import { getPlayerState } from "@reducers/store";
+import * as player from "@client/state/playerStore";
 import { DragOrientation, useChangeVolume, useDrag } from "@hooks/index";
 
 export const VolumeControl = () => {
-  const player = useSelector(getPlayerState);
   const changeVolume = useChangeVolume();
 
   const { startDrag, cancelDrag, updateDrag } = useDrag(
@@ -13,7 +10,7 @@ export const VolumeControl = () => {
     (percent: number) => {
       percent = Math.round(percent * 100) / 100;
 
-      if (percent - player.volume === 0) {
+      if (percent - player.volume.value === 0) {
         return;
       }
 
@@ -32,14 +29,14 @@ export const VolumeControl = () => {
       <div
         className="slider"
         style={{
-          left: `${player.volume * 100}%`,
+          left: `${player.volume.value * 100}%`,
         }}
       ></div>
       <div className="shell"></div>
       <div
         className="volume-level"
         style={{
-          width: `${player.volume * 100}%`,
+          width: `${player.volume.value * 100}%`,
         }}
       ></div>
     </div>

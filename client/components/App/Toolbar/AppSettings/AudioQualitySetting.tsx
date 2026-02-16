@@ -30,7 +30,9 @@ export const AudioQualitySetting = () => {
       console.error("Failed to change audio quality:", e);
 
       // Reset on failure
-      setInput(userStore.settings.value?.audio_quality ?? AudioQuality.Original);
+      setInput(
+        userStore.settings.value?.audio_quality ?? AudioQuality.Original,
+      );
     } finally {
       is_busy.value = false;
     }

@@ -1,15 +1,14 @@
-import { useSelector } from "react-redux";
-
+import type { JSX } from "preact";
+import { ComponentChildren } from "preact";
 import { Maybe, PlayableTrack } from "@common/types";
 import { PreCastPayload } from "@client/lib/cast/types";
 import { VerticalEllipsisIcon } from "@client/components/ui/icons/VerticalEllipsisIcon";
-import { getPlayerState } from "@reducers/store";
+import * as player from "@client/state/playerStore";
 import { effect } from "@preact/signals";
 import { noPropagate } from "@client/lib/Event";
 import { toggle } from "@client/state/playlistEditorStore";
 import { useAddToQueue, useMenu, usePlayNext } from "@hooks/index";
 import { EllipsisIcon } from "@client/components/ui/icons/EllipsisIcon";
-import { ComponentChildren } from "preact";
 
 export type FileMenuHandler = {
   play: (e?: UIEvent) => void;
@@ -36,7 +35,6 @@ export const FileMenu = ({
   children,
   icon_orientation = "vertical",
 }: FileMenuProps) => {
-  const player = useSelector(getPlayerState);
   const playNext = usePlayNext();
   const addToQueue = useAddToQueue();
   const menu = useMenu(menu_id);
@@ -61,9 +59,11 @@ export const FileMenu = ({
 
   const local = {
     playNext: async () =>
-      handler && playNext(await handler.getTracks(player.is_casting)),
+      handler &&
+      playNext(await handler.getTracks(player.is_casting.value)),
     addToQueue: async () =>
-      handler && addToQueue(await handler.getTracks(player.is_casting)),
+      handler &&
+      addToQueue(await handler.getTracks(player.is_casting.value)),
     addToPlaylist: async () =>
       handler &&
       toggle({

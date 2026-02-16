@@ -8,9 +8,6 @@ import unusedImports from "eslint-plugin-unused-imports";
 export default [
   {
     files: ["**/*.{mjs,cjs,ts,tsx}"],
-    plugins: {
-      "unused-imports": unusedImports,
-    },
     settings: {
       react: {
         version: "detect", // React version. "detect" automatically picks the version you have installed.
@@ -23,6 +20,9 @@ export default [
   pluginReact.configs.flat.recommended,
   eslintPluginPrettierRecommended,
   {
+    plugins: {
+      "unused-imports": unusedImports,
+    },
     rules: {
       "react/react-in-jsx-scope": "off",
       "no-async-promise-executor": "off",

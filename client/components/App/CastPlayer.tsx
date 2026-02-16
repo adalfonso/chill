@@ -1,27 +1,20 @@
-import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef } from "preact/hooks";
 
-import * as Player from "@client/state/reducers/player";
+import * as player from "@client/state/playerStore";
 import { Maybe } from "@common/types";
 import { api } from "@client/client";
-import { getPlayerState } from "@client/state/reducers/store";
 import * as casterStore from "@client/state/casterStore";
 import { useAppState, usePlay, useSeek } from "@hooks/index";
 
 export const CastPlayer = () => {
   const { progress } = useAppState();
-  const player = useSelector(getPlayerState);
 
   const cast_context = useRef<Maybe<cast.framework.CastContext>>(null);
-  const player_ref = useRef(player);
   const play = usePlay();
   const seek = useSeek();
-  const dispatch = useDispatch();
-
-  player_ref.current = player;
 
   useEffect(() => {
-    if (!player.is_casting) {
+    if (!player.is_casting.value) {
       return;
     }
 
@@ -39,13 +32,13 @@ export const CastPlayer = () => {
 
       const media = event.value as chrome.cast.media.MediaInfo;
       const { _index: cast_index } = media.metadata;
-      const { now_playing } = player;
+      const np = player.now_playing.value;
 
       if (cast_index === undefined) {
         return;
       }
 
-      if (!now_playing) {
+      if (!np) {
         console.error(
           `Media info changed but there is no now playing. Is this possible, not sure?`,
         );
@@ -53,11 +46,11 @@ export const CastPlayer = () => {
         return;
       }
 
-      const current_index = now_playing._index;
+      const current_index = np._index;
       const track_has_changed = cast_index > current_index;
 
       if (track_has_changed) {
-        dispatch(Player.next({ auto: true }));
+        player.next({ auto: true });
       }
     };
 
@@ -73,9 +66,9 @@ export const CastPlayer = () => {
       );
     };
   }, [
-    player.now_playing,
-    player.is_casting,
-    player.playlist.length,
+    player.now_playing.value,
+    player.is_casting.value,
+    player.playlist.value.length,
     cast_context.current, // is this needed
     cast_context.current?.getCurrentSession()?.getSessionId(),
   ]);
@@ -92,31 +85,32 @@ export const CastPlayer = () => {
     const onSessionChanged = async (
       event: cast.framework.SessionStateEventData,
     ) => {
-      const { playlist, index } = player_ref.current;
+      const pl = player.playlist.value;
+      const idx = player.index.value;
 
       switch (event.sessionState) {
         case cast.framework.SessionState.SESSION_RESUMED:
         case cast.framework.SessionState.SESSION_STARTED: {
-          const cast_info = playlist.length
+          const cast_info = pl.length
             ? await api.track.castInfo.query({
-                track_ids: playlist.map((track) => track.id),
+                track_ids: pl.map((track) => track.id),
               })
             : null;
 
           // Pause currently playing HTML Audio
-          dispatch(Player.pause());
-          dispatch(Player.setPlayerIsCasting(true));
+          player.pause();
+          player.setPlayerIsCasting(true);
 
           if (
             event.sessionState ===
               cast.framework.SessionState.SESSION_STARTED &&
-            playlist.length
+            pl.length
           ) {
             // Immediately play when starting a cast session
             play({
-              tracks: playlist,
+              tracks: pl,
               cast_info,
-              index,
+              index: idx,
               progress: progress.value,
             });
           }
@@ -124,7 +118,7 @@ export const CastPlayer = () => {
           break;
         }
         case cast.framework.SessionState.SESSION_ENDED:
-          dispatch(Player.setPlayerIsCasting(false));
+          player.setPlayerIsCasting(false);
           seek(progress.value);
           break;
 

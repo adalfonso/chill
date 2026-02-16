@@ -1,4 +1,4 @@
-import { PlayerState } from "@reducers/player";
+import { PlayerState } from "./types";
 import {
   DuplexEvent,
   DuplexSocketData,
