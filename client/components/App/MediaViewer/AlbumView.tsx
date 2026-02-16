@@ -1,5 +1,5 @@
 import { Album } from "@prisma/client";
-import { useEffect, useCallback } from "preact/hooks";
+import { useState, useEffect, useCallback } from "preact/hooks";
 import { useComputed, useSignal } from "@preact/signals";
 
 import "./AlbumView.scss";
@@ -26,7 +26,8 @@ type AlbumViewProps = {
 
 export const AlbumView = ({ album_id }: AlbumViewProps) => {
   const { is_loading } = useAppState();
-  const album = useSignal<Maybe<Raw<Album & AlbumRelationalData>>>(null);
+  const [album, setAlbum] =
+    useState<Maybe<Raw<Album & AlbumRelationalData>>>(null);
   const tracks = useSignal<Array<PlayableTrack>>([]);
   const play = usePlay();
 
@@ -40,7 +41,7 @@ export const AlbumView = ({ album_id }: AlbumViewProps) => {
     is_loading.value = true;
     Promise.all(
       [
-        api.album.get.query({ id: album_id }).then((data) => (album.value = data)),
+        api.album.get.query({ id: album_id }).then(setAlbum),
         loadTracks(),
       ].filter(Boolean),
     ).finally(() => (is_loading.value = false));
@@ -108,7 +109,7 @@ export const AlbumView = ({ album_id }: AlbumViewProps) => {
       // Loaded album and there are multiple artists
       (artist_names.value.length > 1 && "Various Artists") ||
       // Loaded album but there is a single artist
-      album.value?.artist?.name ||
+      album?.artist?.name ||
       // Fallback
       "Unknown Artist"
     );
@@ -136,9 +137,9 @@ export const AlbumView = ({ album_id }: AlbumViewProps) => {
       <div className="album-view wide">
         <div className="details">
           <div className="album-art">
-            {album.value?.album_art?.filename && (
+            {album?.album_art?.filename && (
               <img
-                src={`/api/v1/media/cover/${album.value?.album_art?.filename}?size=160`}
+                src={`/api/v1/media/cover/${album?.album_art?.filename}?size=160`}
                 loading="lazy"
               />
             )}
@@ -153,8 +154,8 @@ export const AlbumView = ({ album_id }: AlbumViewProps) => {
                 })}
               </h4>
             )}
-            <h4>{truncate(album.value?.title ?? "", { length: 50 })}</h4>
-            <h4>{album.value?.year || ""}</h4>
+            <h4>{truncate(album?.title ?? "", { length: 50 })}</h4>
+            <h4>{album?.year || ""}</h4>
             <div className="play-button" onClick={() => playAll()()}>
               <PlayCircleIcon className="icon-xxs" />
               Play

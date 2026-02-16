@@ -1,5 +1,3 @@
-import { useEffect } from "preact/hooks";
-
 import "./AppSettings.scss";
 import * as user from "@client/state/userStore";
 import { AccountSettings } from "./AppSettings/AccountSettings";
@@ -17,9 +15,7 @@ import { NameDevice } from "./AppSettings/NameDevice";
 import { TrackCountByYear } from "./TrackCountByYear";
 import { UserType } from "@common/types";
 import { noPropagate } from "@client/lib/Event";
-import { screen_breakpoint_px } from "@client/lib/constants";
 import { useAppState } from "@hooks/useAppState";
-import { useViewport } from "@hooks/useViewport";
 
 const settingsContent = {
   [SettingType.None]: <></>,
@@ -41,17 +37,6 @@ const settingsContent = {
 
 export const AppSettings = () => {
   const { current_app_setting } = useAppState();
-
-  const { width } = useViewport();
-  const is_mobile = width < screen_breakpoint_px;
-
-  useEffect(() => {
-    if (is_mobile) {
-      current_app_setting.value = SettingType.None;
-    } else if (current_app_setting.value === SettingType.None) {
-      current_app_setting.value = SettingType.Account;
-    }
-  }, [is_mobile]);
 
   return (
     <div id="app-settings">

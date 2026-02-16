@@ -1,5 +1,4 @@
-import { useSignal } from "@preact/signals";
-import { useEffect } from "preact/hooks";
+import { effect, useSignal } from "@preact/signals";
 
 import "./Devices.scss";
 import { ClientSocketEvent } from "@common/SocketClientEvent";
@@ -20,7 +19,8 @@ export const Devices = ({ onClose }: DevicesProps) => {
   const devices = useSignal<Array<DeviceClient>>([]);
   const selected_device = useSignal<Maybe<DeviceClient>>(null);
 
-  useEffect(() => {
+  // Load devices on mount
+  effect(() => {
     is_loading.value = true;
     api.cast.getAppClients
       .query()
@@ -28,7 +28,7 @@ export const Devices = ({ onClose }: DevicesProps) => {
         devices.value = data;
       })
       .finally(() => (is_loading.value = false));
-  }, []);
+  });
 
   const selectDevice = (device: DeviceClient) =>
     noPropagate(() => {

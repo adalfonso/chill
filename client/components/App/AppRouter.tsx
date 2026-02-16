@@ -1,4 +1,4 @@
-import { useEffect } from "preact/hooks";
+import { effect } from "@preact/signals";
 
 import "./MediaViewer.scss";
 import { AppSettings } from "./Toolbar/AppSettings";
@@ -13,11 +13,12 @@ import { useAppState } from "@hooks/index";
 
 export const AppRouter = () => {
   const { is_loading } = useAppState();
-  // Let's load the user once and expect that any updates to the user through
-  // the UI will return updated user bits that we will merge into the state
-  useEffect(() => {
+
+  // Load the user once on mount. Updates to the user through the UI
+  // will return updated user bits that we will merge into the state
+  effect(() => {
     api.user.get.query().then(setUser);
-  }, []);
+  });
 
   return (
     <>

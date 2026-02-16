@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "preact/hooks";
+import { effect } from "@preact/signals";
+import { useRef } from "preact/hooks";
 
 import "./App.scss";
 import * as player from "@client/state/playerStore";
@@ -11,7 +12,6 @@ import { PlaylistEditor } from "./components/App/PlaylistEditor";
 import { ToolbarBottom } from "./components/App/ToolbarBottom";
 import { ToolbarTop } from "./components/App/ToolbarTop";
 import { api } from "./client";
-import { effect } from "@preact/signals";
 import { setCastAppId } from "@client/state/casterStore";
 import { setMenu } from "@client/state/mediaMenuStore";
 import { useAppState } from "@hooks/useAppState";
@@ -20,10 +20,11 @@ export const App = () => {
   const { view, view_path } = useAppState();
   const prev_view_path = useRef("");
   const clearActiveFileMenu = () => setMenu(null);
-  useEffect(() => {
+  // One-time initialization on mount
+  effect(() => {
     unlockAudio();
     api.cast.getCastId.query().then(setCastAppId);
-  }, []);
+  });
 
   effect(() => {
     const prev = prev_view_path.current;

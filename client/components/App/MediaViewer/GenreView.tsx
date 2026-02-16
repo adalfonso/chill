@@ -1,6 +1,5 @@
 import { Genre } from "@prisma/client";
-import { useEffect, useState } from "preact/hooks";
-import { useSignal } from "@preact/signals";
+import { effect, useSignal } from "@preact/signals";
 
 import { Maybe, MediaTileData, MediaTileType, Raw } from "@common/types";
 import { MediaTile } from "./MusicLibrary/MediaTile";
@@ -18,14 +17,15 @@ type GenreViewProps = {
 export const GenreView = ({ genre_id }: GenreViewProps) => {
   const { is_loading } = useAppState();
   const { view_path } = useAppState();
-  const [genre, setGenre] = useState<Maybe<Raw<Genre>>>(null);
+  const genre = useSignal<Maybe<Raw<Genre>>>(null);
   const category = useSignal<"artist" | "album">("artist");
 
   const is_genre_view = /^\/library\/genre\/\d+/.test(view_path.value);
 
-  useEffect(() => {
-    api.genre.get.query({ id: genre_id }).then(setGenre);
-  }, [genre_id]);
+  // Load genre info when genre_id changes
+  effect(() => {
+    api.genre.get.query({ id: genre_id }).then((data) => (genre.value = data));
+  });
 
   const loadGenreArtists = async (page: number) => {
     is_loading.value = true;
@@ -79,7 +79,7 @@ export const GenreView = ({ genre_id }: GenreViewProps) => {
 
       <SmartScroller
         className="genre-view"
-        header={genre?.name ?? ""}
+        header={genre.value?.name ?? ""}
         dependencies={[genre_id.toString(), category.value]}
         onScroll={loadItems}
         makeItems={makeItems}
