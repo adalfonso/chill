@@ -5,9 +5,19 @@ import {
   paginate,
 } from "@common/pagination";
 import { api } from "@client/client";
-import { PlayerState } from "@reducers/player";
 import { SortClause } from "@common/schema";
-import { PlayMode, RandomPlayOptions, SortOrder } from "@common/types";
+import {
+  PlayMode,
+  PlayOptions,
+  PlayableTrackWithIndex,
+  RandomPlayOptions,
+  SortOrder,
+} from "@common/types";
+
+type GetMoreTracksInput = {
+  play_options: PlayOptions;
+  playlist: Array<PlayableTrackWithIndex>;
+};
 
 /**
  * Get more tracks for the various player modes
@@ -15,7 +25,7 @@ import { PlayMode, RandomPlayOptions, SortOrder } from "@common/types";
  * @param player - player state
  * @returns tracks
  */
-export const getMoreTracks = (player: PlayerState) => {
+export const getMoreTracks = (player: GetMoreTracksInput) => {
   switch (player.play_options.mode) {
     case PlayMode.Random: {
       return getRandomTracks({

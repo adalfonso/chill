@@ -1,12 +1,11 @@
 import { useEffect, useRef } from "preact/hooks";
-import { useSelector } from "react-redux";
 
 import "./Scrubber.scss";
 import * as AudioProgress from "@client/lib/AudioProgress";
 import { CastSdk } from "@client/lib/cast/CastSdk";
 import { Maybe, PlayableTrackWithIndex } from "@common/types";
-import { audio, crossover } from "@reducers/player";
-import { getPlayerState } from "@reducers/store";
+import { audio, crossover } from "@client/state/playerStore";
+import * as playerStore from "@client/state/playerStore";
 import {
   useDrag,
   useAppState,
@@ -21,23 +20,22 @@ export const Scrubber = () => {
   const { progress, progress_s, outgoing_connection } = useAppState();
   const seek = useSeek();
   const next = useNext();
-  const player = useSelector(getPlayerState);
   const { startDrag, cancelDrag, updateDrag, dragging } = useDrag(
     DragOrientation.Horizontal,
     seek,
   );
 
-  const is_casting = useRef(player.is_casting);
+  const is_casting = useRef(playerStore.is_casting.value);
 
   // TODO: Hack - can this be done some other way?
   useEffect(() => {
-    is_casting.current = player.is_casting;
-  }, [player.is_casting]);
+    is_casting.current = playerStore.is_casting.value;
+  }, [playerStore.is_casting.value]);
 
   useEffect(() => {
     AudioProgress.startAnimationLoop(() => {
       const audio_progress = getAudioProgress(
-        player.now_playing,
+        playerStore.now_playing.value,
         is_casting.current,
       );
 
@@ -49,21 +47,12 @@ export const Scrubber = () => {
 
       progress.value = audio_progress;
 
-      if (player.now_playing) {
+      if (playerStore.now_playing.value) {
         progress_s.value = Math.floor(
-          progress.value * player.now_playing.duration,
+          progress.value * playerStore.now_playing.value.duration,
         );
       }
     }, 20);
-
-    /**
-     * We will automatically dispatch the next track when the current track has
-     * 200ms or less to go. This is a hack to simulate gapless playback.
-     * Additionally both the audio and the crossover audio's closure will
-     * reference "audio". That's because either fixture may be playing at a
-     * given time, but the only the one currently playing will be referenced as
-     * "audio" due to the swapping nature of the crossover.
-     */
 
     const onCrossover = () =>
       audio.duration - audio.currentTime < gap_offset && next({ auto: true });
@@ -84,7 +73,7 @@ export const Scrubber = () => {
         crossover.removeEventListener("timeupdate", onCrossover);
       }
     };
-  }, [is_casting.current, player.now_playing]);
+  }, [is_casting.current, playerStore.now_playing.value]);
 
   return (
     <>
@@ -107,27 +96,22 @@ export const Scrubber = () => {
 
       <div className="time-tracking">
         <div className="current-time">
-          {player.now_playing &&
+          {playerStore.now_playing.value &&
             AudioProgress.getTimeTracking(
-              progress.value * player.now_playing.duration,
+              progress.value * playerStore.now_playing.value.duration,
             )}
         </div>
         <div className="end-time">
-          {player.now_playing &&
-            AudioProgress.getTimeTracking(player.now_playing.duration)}
+          {playerStore.now_playing.value &&
+            AudioProgress.getTimeTracking(
+              playerStore.now_playing.value.duration,
+            )}
         </div>
       </div>
     </>
   );
 };
 
-/**
- * Get the audio progress for a playing track
- *
- * @param media - media that is playing
- * @param is_casting - if the media is playing on chromecast
- * @returns progress percentage 0-1
- */
 const getAudioProgress = (
   media: Maybe<PlayableTrackWithIndex>,
   is_casting = false,
