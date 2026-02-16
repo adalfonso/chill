@@ -48,7 +48,7 @@ services:
       - elastic_search:/usr/share/elasticsearch/data
 
   nginx:
-    image: nginx:mainline-alpine
+    image: fholzer/nginx-brotli:latest
     container_name: chill-gateway
     restart: unless-stopped
     ports:
