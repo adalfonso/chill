@@ -1,15 +1,13 @@
-import { useEffect, useRef } from "preact/hooks";
+import { useEffect } from "preact/hooks";
 
 import * as caster from "@client/state/casterStore";
 import * as player from "@client/state/playerStore";
-import { Maybe } from "@common/types";
 import { api } from "@client/client";
 import { useAppState, usePlay, useSeek } from "@hooks/index";
 
 export const CastPlayer = () => {
   const { progress } = useAppState();
 
-  const cast_context = useRef<Maybe<cast.framework.CastContext>>(null);
   const play = usePlay();
   const seek = useSeek();
 
@@ -65,13 +63,7 @@ export const CastPlayer = () => {
         monitorTrackChange,
       );
     };
-  }, [
-    player.now_playing.value,
-    player.is_casting.value,
-    player.playlist.value.length,
-    cast_context.current, // is this needed
-    cast_context.current?.getCurrentSession()?.getSessionId(),
-  ]);
+  }, [player.is_casting.value]);
 
   useEffect(() => {
     if (!caster.ready.value || caster.app_id.value === null) {
@@ -133,10 +125,8 @@ export const CastPlayer = () => {
 
     ctx.addEventListener(SESSION_CHANGED, onSessionChanged);
 
-    cast_context.current = ctx;
-
     return () => ctx.removeEventListener(SESSION_CHANGED, onSessionChanged);
-  }, [caster.ready.value]);
+  }, [caster.ready.value, caster.app_id.value]);
 
   return <div id="cast-player"></div>;
 };
