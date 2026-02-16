@@ -1,8 +1,8 @@
-import { useState } from "preact/hooks";
 import { useSignal } from "@preact/signals";
+import { useState } from "preact/hooks";
 
+import * as playlistEditor from "@client/state/playlistEditorStore";
 import { api } from "@client/client";
-import * as playlistEditorStore from "@client/state/playlistEditorStore";
 
 type PlaylistCreateProps = {
   onDone: () => void;
@@ -22,7 +22,7 @@ export const PlaylistCreate = ({ onDone }: PlaylistCreateProps) => {
     api.playlist.create
       .mutate({
         title: playlist_title,
-        track_ids: playlistEditorStore.track_ids.value,
+        track_ids: playlistEditor.track_ids.value,
       })
       .then(onDone)
       .catch(({ message }) => message && setError(message))

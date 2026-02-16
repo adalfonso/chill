@@ -22,9 +22,7 @@ export const setCastAppId = (id: Maybe<string>) => {
 
   // TODO: Gracefully handle this situation
   if (!window.__chill_app.cast_ready) {
-    console.error(
-      "Tried to initialize caster but the SDK hasn't loaded yet",
-    );
+    console.error("Tried to initialize caster but the SDK hasn't loaded yet");
     return;
   }
 

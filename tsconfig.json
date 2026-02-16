@@ -19,7 +19,6 @@
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
     "paths": {
-      "@reducers/*": ["./client/state/reducers/*"],
       "@hooks/*": ["./client/hooks/*"],
       "@client/*": ["./client/*"],
 

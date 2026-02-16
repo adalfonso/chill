@@ -1,14 +1,11 @@
-import { useSelector } from "react-redux";
-import { getPlayerState } from "@reducers/store";
-
 import "./MobileVolumeControl.scss";
-import { useChangeVolume } from "@hooks/useChangeVolume";
+import * as player from "@client/state/playerStore";
 import { DragOrientation, useDrag } from "@hooks/useDrag";
+import { useChangeVolume } from "@hooks/useChangeVolume";
 import { useLongPress } from "@hooks/useLongPress";
 import { useSignal } from "@preact/signals";
 
 export const MobileVolumeControl = () => {
-  const player = useSelector(getPlayerState);
   const changeVolume = useChangeVolume();
   const visible = useSignal(false);
 
@@ -17,7 +14,7 @@ export const MobileVolumeControl = () => {
     (percent: number) => {
       percent = Math.round(percent * 100) / 100;
 
-      if (percent - player.volume === 0) {
+      if (percent - player.volume.value === 0) {
         return;
       }
 
@@ -69,7 +66,7 @@ export const MobileVolumeControl = () => {
     >
       <div
         className="volume-level"
-        style={{ height: `${player.volume * 100}%` }}
+        style={{ height: `${player.volume.value * 100}%` }}
       ></div>
     </div>
   );

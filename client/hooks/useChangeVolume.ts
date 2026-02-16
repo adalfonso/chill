@@ -1,13 +1,10 @@
-import { useDispatch } from "react-redux";
-
-import { getAppState } from "@client/state/AppState";
-import { SenderType } from "@common/CommonEvent";
+import * as player from "@client/state/playerStore";
 import { ClientSocketEvent } from "@common/SocketClientEvent";
-import { changeVolume } from "@reducers/player";
+import { SenderType } from "@common/CommonEvent";
+import { getAppState } from "@client/state/AppState";
 import { useRef } from "preact/hooks";
 
 export const useChangeVolume = () => {
-  const dispatch = useDispatch();
   const lastEmit = useRef(0);
 
   return (percent: number) => {
@@ -25,7 +22,7 @@ export const useChangeVolume = () => {
     lastEmit.current = now;
 
     if (!is_source) {
-      dispatch(changeVolume(percent));
+      player.changeVolume(percent);
     }
 
     return ws.emit(ClientSocketEvent.PlayerChangeVolume, {

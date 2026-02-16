@@ -1,7 +1,5 @@
-import { Provider } from "react-redux";
 import { render } from "preact";
 
-import store from "@reducers/store";
 import { App } from "./App";
 import { AppContext, getAppState } from "./state/AppState";
 
@@ -17,9 +15,7 @@ window.__chill_app = {
 
 render(
   <AppContext.Provider value={getAppState()}>
-    <Provider store={store}>
-      <App />
-    </Provider>
+    <App />
   </AppContext.Provider>,
   element,
 );

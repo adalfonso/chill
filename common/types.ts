@@ -219,4 +219,27 @@ export type AlbumBitrateStats = {
   avg_bitrate_kbps: number;
 };
 
+export const MobileDisplayMode = {
+  Fullscreen: "fullscreen",
+  Minimized: "minimized",
+  None: "none",
+} as const;
+
+export type MobileDisplayMode = ObjectValues<typeof MobileDisplayMode>;
+
+export type PlayerState = {
+  is_casting: boolean;
+  is_playing: boolean;
+  is_shuffled: boolean;
+  now_playing: Maybe<PlayableTrackWithIndex>;
+  next_playing: Maybe<PlayableTrackWithIndex>;
+  original_playlist: Array<PlayableTrackWithIndex>;
+  playlist: Array<PlayableTrackWithIndex>;
+  cast_info: Maybe<unknown[]>;
+  index: number;
+  volume: number;
+  mobile_display_mode: MobileDisplayMode;
+  play_options: PlayOptions;
+};
+
 // TODO: Remove some of these to apiTypes.ts

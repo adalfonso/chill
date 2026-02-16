@@ -1,14 +1,14 @@
+import type { JSX } from "preact";
 import { Signal } from "@preact/signals";
-import { useSelector } from "react-redux";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { useLocation } from "wouter-preact";
 
 import "./MediaTile.scss";
+import * as player from "@client/state/playerStore";
 import { FileMenu, FileMenuHandler } from "../FileMenu";
 import { Maybe, MediaTileData, MediaTileType } from "@common/types";
 import { PlayCircleIcon } from "@client/components/ui/icons/PlayCircleIcon";
 import { albumUrl, artistUrl, matchUrl } from "@client/lib/Url";
-import { getPlayerState } from "@client/state/reducers/store";
 import { noPropagate } from "@client/lib/Event";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import {
@@ -50,7 +50,6 @@ export const MediaTile = <T extends Record<string, unknown>>({
   parent_scroll_position,
 }: MediaTileProps<T>) => {
   const [, navigate] = useLocation();
-  const player = useSelector(getPlayerState);
   const menu_id = useId();
   const previous_position = useRef(parent_scroll_position?.peek());
   const play = usePlay();
@@ -112,7 +111,7 @@ export const MediaTile = <T extends Record<string, unknown>>({
         tile_data,
         DEFAULT_LIMIT,
         offset,
-      )(player.is_casting);
+      )(player.is_casting.value);
 
       if (!tracks.length) {
         console.error("No tracks found for media tile", tile_type, tile_data);

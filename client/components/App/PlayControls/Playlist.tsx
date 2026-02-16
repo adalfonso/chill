@@ -1,15 +1,13 @@
 import { useState } from "preact/hooks";
-import { useSelector } from "react-redux";
 
 import "./Playlist.scss";
+import * as player from "@client/state/playerStore";
 import { Close } from "@client/components/ui/Close";
 import { DottedListIcon } from "@client/components/ui/icons/DottedListIcon";
 import { Equalizer } from "../../ui/Equalizer";
-import { getPlayerState } from "@reducers/store";
 import { useBackNavigate, usePlay } from "@hooks/index";
 
 export const Playlist = () => {
-  const player = useSelector(getPlayerState);
   const play = usePlay();
   const [playlist_visible, setPlaylistVisible] = useState(false);
 
@@ -31,15 +29,15 @@ export const Playlist = () => {
     <>
       <div className={playlistClassName}>
         <Close onClose={togglePlaylist} />
-        {player.playlist.map((track, index) => (
+        {player.playlist.value.map((track, index) => (
           <div
             className="playlist-item"
             onClick={() =>
               play({
                 // No new tracks are added
                 tracks: [],
-                cast_info: player.cast_info,
-                play_options: { ...player.play_options },
+                cast_info: player.cast_info.value,
+                play_options: { ...player.play_options.value },
                 skip_reload: true,
                 index,
               })
@@ -60,7 +58,9 @@ export const Playlist = () => {
               <div className="artist">{track.artist}</div>
             </div>
 
-            {player.now_playing === track && player.is_playing && <Equalizer />}
+            {player.now_playing.value === track && player.is_playing.value && (
+              <Equalizer />
+            )}
           </div>
         ))}
       </div>

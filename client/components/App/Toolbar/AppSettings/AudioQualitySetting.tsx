@@ -1,21 +1,22 @@
-import { useState } from "preact/hooks";
 import { useSignal } from "@preact/signals";
+import { useState } from "preact/hooks";
 
-import { Select } from "@client/components/ui/Select";
+import * as user from "@client/state/userStore";
 import { AudioQuality, AudioQualityBitrate } from "@common/types";
+import { Select } from "@client/components/ui/Select";
 import { api } from "@client/client";
-import * as userStore from "@client/state/userStore";
 
 export const AudioQualitySetting = () => {
   const is_busy = useSignal(false);
   const [input, setInput] = useState(
-    userStore.settings.value?.audio_quality ?? AudioQuality.Original,
+    user.settings.value?.audio_quality ?? AudioQuality.Original,
   );
 
   const changeQuality = async (quality: AudioQuality) => {
     if (is_busy.value) {
       return;
     }
+
     is_busy.value = true;
     setInput(quality);
 
@@ -24,13 +25,13 @@ export const AudioQualitySetting = () => {
         audio_quality: quality,
       });
 
-      userStore.updateUserSettings(settings);
+      user.updateUserSettings(settings);
     } catch (e) {
       // TODO: show a toast here
       console.error("Failed to change audio quality:", e);
 
       // Reset on failure
-      setInput(userStore.settings.value?.audio_quality ?? AudioQuality.Original);
+      setInput(user.settings.value?.audio_quality ?? AudioQuality.Original);
     } finally {
       is_busy.value = false;
     }

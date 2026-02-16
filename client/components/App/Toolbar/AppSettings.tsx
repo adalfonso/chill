@@ -1,6 +1,7 @@
 import { useEffect } from "preact/hooks";
 
 import "./AppSettings.scss";
+import * as user from "@client/state/userStore";
 import { AccountSettings } from "./AppSettings/AccountSettings";
 import { AmbiguousArtistGenre } from "./AppSettings/AmbiguousArtistGenre";
 import { AppSetting } from "./AppSetting";
@@ -16,7 +17,6 @@ import { NameDevice } from "./AppSettings/NameDevice";
 import { TrackCountByYear } from "./TrackCountByYear";
 import { UserType } from "@common/types";
 import { noPropagate } from "@client/lib/Event";
-import * as userStore from "@client/state/userStore";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import { useAppState } from "@hooks/useAppState";
 import { useViewport } from "@hooks/useViewport";
@@ -84,7 +84,7 @@ export const AppSettings = () => {
 
           <h3>Library</h3>
           <div className="settings-group">
-            {userStore.type.value === UserType.Admin && (
+            {user.type.value === UserType.Admin && (
               <>
                 <AppSetting id={SettingType.InviteUser} title="Invite a user" />
                 <AppSetting

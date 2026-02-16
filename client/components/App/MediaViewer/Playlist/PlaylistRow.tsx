@@ -1,12 +1,10 @@
-import { useSelector } from "react-redux";
 import { useLocation } from "wouter-preact";
 
+import * as player from "@client/state/playerStore";
 import { Equalizer } from "@client/components/ui/Equalizer";
 import { FileMenu, FileMenuHandler } from "../FileMenu";
 import { PlayableTrack } from "@common/types";
 import { artistAlbumUrl, artistUrl } from "@client/lib/Url";
-import { getPlayerState } from "@reducers/store";
-import { getPlayPayload } from "@client/state/reducers/player";
 import { noPropagate } from "@client/lib/Event";
 import { screen_breakpoint_px } from "@client/lib/constants";
 import { secondsToMinutes } from "@client/lib/AudioProgress";
@@ -19,7 +17,6 @@ type PlaylistRowProps = {
 };
 
 export const PlaylistRow = ({ track, index, playAll }: PlaylistRowProps) => {
-  const player = useSelector(getPlayerState);
   const menu_id = useId();
   const menu = useMenu(menu_id);
   const [, navigate] = useLocation();
@@ -30,14 +27,11 @@ export const PlaylistRow = ({ track, index, playAll }: PlaylistRowProps) => {
   const { artist_id, album_id, album_art_filename } = track;
 
   // Minimize the context menu on back navigation
-  useBackNavigate(
-    () => is_mobile && menu.is_active,
-    menu.clear,
-  );
+  useBackNavigate(() => is_mobile && menu.is_active, menu.clear);
 
   const menuHandler: FileMenuHandler = {
     play: () => playAll(index)(),
-    getTracks: getPlayPayload(player.is_casting, [track]),
+    getTracks: player.getPlayPayload(player.is_casting.value, [track]),
     getTrackIds: async () => [track.id],
   };
 
@@ -45,9 +39,8 @@ export const PlaylistRow = ({ track, index, playAll }: PlaylistRowProps) => {
     <div className="row" onClick={playAll(index)}>
       <div className="track">
         {index + 1}
-        {player.now_playing?.path === track.path && player.is_playing && (
-          <Equalizer />
-        )}
+        {player.now_playing.value?.path === track.path &&
+          player.is_playing.value && <Equalizer />}
       </div>
       <div>
         {album_art_filename && (

@@ -1,11 +1,10 @@
-import { PlayerState } from "@reducers/player";
+import { PlayerState, DeviceInfo } from "./types";
 import {
   DuplexEvent,
   DuplexSocketData,
   TargetEvent,
   TargetSocketData,
 } from "./CommonEvent";
-import { DeviceInfo } from "./types";
 
 export const ClientSocketEvent = Object.assign({}, DuplexEvent, TargetEvent, {
   AcceptConnection: "AcceptConnection",

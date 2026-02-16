@@ -1,9 +1,9 @@
-import { useState } from "preact/hooks";
 import { useSignal } from "@preact/signals";
+import { useState } from "preact/hooks";
 
+import * as playlistEditor from "@client/state/playlistEditorStore";
 import { PlaylistWithCount, Raw } from "@common/types";
 import { api } from "@client/client";
-import * as playlistEditorStore from "@client/state/playlistEditorStore";
 
 type PlaylistUpdateProps = {
   onDone: () => void;
@@ -21,7 +21,7 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
     }
 
     is_busy.value = true;
-    const track_ids = playlistEditorStore.track_ids.value;
+    const track_ids = playlistEditor.track_ids.value;
 
     api.playlist.update
       .mutate({ id: selected.id, track_ids: track_ids })
@@ -76,7 +76,7 @@ export const PlaylistUpdate = ({ onDone }: PlaylistUpdateProps) => {
         <>
           <div className="selected-playlist">
             {selected.title} - {selected.track_count} items (+
-            {playlistEditorStore.track_ids.value.length} new)
+            {playlistEditor.track_ids.value.length} new)
           </div>
           <button onClick={submit(selected)}>Update</button>
         </>

@@ -1,4 +1,4 @@
-import * as mediaMenuStore from "@client/state/mediaMenuStore";
+import * as mediaMenu from "@client/state/mediaMenuStore";
 
 /**
  * Handles menu control
@@ -7,9 +7,9 @@ import * as mediaMenuStore from "@client/state/mediaMenuStore";
  * @returns functions to control the menu
  */
 export const useMenu = (menu_id: string) => {
-  const is_active = mediaMenuStore.menu_id.value === menu_id;
-  const set = () => mediaMenuStore.setMenu(menu_id);
-  const clear = () => mediaMenuStore.setMenu(null);
+  const is_active = mediaMenu.menu_id.value === menu_id;
+  const set = () => mediaMenu.setMenu(menu_id);
+  const clear = () => mediaMenu.setMenu(null);
   const toggle = is_active ? clear : set;
 
   return { is_active, set, clear, toggle };

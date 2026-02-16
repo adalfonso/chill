@@ -1,20 +1,17 @@
-import { getAppState } from "@client/state/AppState";
-import { SenderType } from "@common/CommonEvent";
+import * as player from "@client/state/playerStore";
 import { ClientSocketEvent } from "@common/SocketClientEvent";
-import { play, PlayLoad } from "@reducers/player";
-import { useDispatch } from "react-redux";
+import { SenderType } from "@common/CommonEvent";
+import { getAppState } from "@client/state/AppState";
 
 export const usePlay = () => {
-  const dispatch = useDispatch();
-
-  return (payload: PlayLoad) => {
+  return (payload: player.PlayLoad) => {
     const { outgoing_connection, incoming_connections, ws } = getAppState();
 
     const is_target = incoming_connections.value.length > 0;
     const is_source = Boolean(outgoing_connection.value);
 
     if (!is_source) {
-      dispatch(play(payload));
+      player.play(payload);
     }
 
     if (is_source || is_target) {

@@ -2,14 +2,14 @@ import { useLocation } from "wouter-preact";
 import { useState } from "preact/hooks";
 
 import "./ToolbarTop.scss";
+import * as caster from "@client/state/casterStore";
 import { CastPlayer } from "./CastPlayer";
 import { CoreViewState } from "@client/state/AppState";
 import { DeviceIcon } from "../ui/icons/DeviceIcon";
 import { Devices } from "./Toolbar/Devices";
-import * as casterStore from "@client/state/casterStore";
+import { DottedListIcon } from "../ui/icons/DottedListIcon";
 import { noPropagate } from "@client/lib/Event";
 import { useAppState } from "@hooks/useAppState";
-import { DottedListIcon } from "../ui/icons/DottedListIcon";
 
 type SettingsMenu = "devices";
 
@@ -51,7 +51,7 @@ export const ToolbarTop = () => {
       </div>
 
       <div className="tools">
-        {casterStore.ready.value && <google-cast-launcher></google-cast-launcher>}
+        {caster.ready.value && <google-cast-launcher></google-cast-launcher>}
 
         {/* Invisible, just used to mediate between redux stores */}
         <CastPlayer></CastPlayer>
