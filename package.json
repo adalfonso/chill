@@ -16,6 +16,9 @@
     "lint": "eslint ./{server,client,common}/**/*.{mts,ts,tsx} --quiet",
     "test": "jest --coverage --watchAll",
     "viz": "npx vite-bundle-visualizer",
+    "cap:build": "vite build && cap sync android",
+    "cap:open": "cap open android",
+    "cap:run": "cap run android",
     "prisma:build": "npx prisma format && npx prisma generate"
   },
   "dependencies": {
@@ -47,6 +50,9 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/cli": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
     "@eslint/js": "^9.39.5",
     "@preact/preset-vite": "^2.10.6",
     "@redux-devtools/core": "^3.14.0",

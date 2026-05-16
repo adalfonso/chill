@@ -8,6 +8,7 @@ import {
 import { observable } from "@trpc/server/observable";
 
 import { refresh } from "@client/lib/auth/refresh";
+import { apiUrl } from "./lib/serverUrl";
 
 // isAuthenticatedApi rejects a dead access token before the request ever
 // reaches a procedure, so httpBatchLink batches N operations into one dead
@@ -61,6 +62,9 @@ export const api = createTRPCProxyClient<ApiRouter>({
         (opts.direction === "down" && opts.result instanceof Error),
     }),
     refreshRetryLink,
-    httpBatchLink({ url: "/api/v1/trpc" }),
+    httpBatchLink({
+      url: apiUrl("/api/v1/trpc"),
+      fetch: (input, init) => fetch(input, { ...init, credentials: "include" }),
+    }),
   ],
 });
