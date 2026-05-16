@@ -1,3 +1,5 @@
+import { websocketUrl } from "./serverUrl";
+
 /**
  * WebSocket client for the frontend.
  *
@@ -62,10 +64,7 @@ export class SocketClient<
    * Sets up message, open, close, and error handlers.
    */
   private connect() {
-    const host = window.location.host;
-    const protocol = window.location.protocol === "http:" ? "ws" : "wss";
-
-    this.#ws = new WebSocket(`${protocol}://${host}/ws`);
+    this.#ws = new WebSocket(websocketUrl("/ws"));
 
     this.#ws.onopen = (event) => {
       console.info("Connected to WebSocket", { event });

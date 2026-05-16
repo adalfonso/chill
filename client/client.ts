@@ -1,4 +1,5 @@
 import type { ApiRouter } from "../server/trpc";
+import { apiUrl } from "./lib/serverUrl";
 import { createTRPCProxyClient, httpBatchLink, loggerLink } from "@trpc/client";
 
 export const api = createTRPCProxyClient<ApiRouter>({
@@ -8,6 +9,9 @@ export const api = createTRPCProxyClient<ApiRouter>({
         process.env.NODE_ENV === "development" ||
         (opts.direction === "down" && opts.result instanceof Error),
     }),
-    httpBatchLink({ url: "/api/v1/trpc" }),
+    httpBatchLink({
+      url: apiUrl("/api/v1/trpc"),
+      fetch: (input, init) => fetch(input, { ...init, credentials: "include" }),
+    }),
   ],
 });
