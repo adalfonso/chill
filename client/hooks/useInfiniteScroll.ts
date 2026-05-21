@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "preact/hooks";
 import { useSignal } from "@preact/signals";
+import type { Dispatch, StateUpdater } from "preact/hooks";
 
 import { useAppState } from "./useAppState";
 
@@ -20,6 +21,10 @@ type UseInfiniteScrollResult<T> = {
   has_more: boolean;
   page: number;
   items: Array<T>;
+  // Lets callers mutate the loaded list directly (e.g. optimistic
+  // reordering/removal) without waiting for a refetch. New pages are still
+  // appended on scroll.
+  setItems: Dispatch<StateUpdater<Array<T>>>;
 };
 
 export const useInfiniteScroll = <T>(
@@ -95,5 +100,5 @@ export const useInfiniteScroll = <T>(
     options,
   ]);
 
-  return { has_more, page, items };
+  return { has_more, page, items, setItems };
 };
