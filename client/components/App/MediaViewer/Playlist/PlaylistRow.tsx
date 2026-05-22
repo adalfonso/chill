@@ -3,6 +3,7 @@ import { useLocation } from "wouter-preact";
 import * as player from "@client/state/playerStore";
 import { Equalizer } from "@client/components/ui/Equalizer";
 import { FileMenu, FileMenuHandler } from "../FileMenu";
+import { GripVerticalIcon } from "@client/components/ui/icons/GripVerticalIcon";
 import { PlayableTrack } from "@common/types";
 import { artistAlbumUrl, artistUrl } from "@client/lib/Url";
 import { noPropagate } from "@client/lib/Event";
@@ -14,9 +15,15 @@ type PlaylistRowProps = {
   track: PlayableTrack;
   index: number;
   playAll: (index: number) => () => void;
+  dragged?: boolean;
 };
 
-export const PlaylistRow = ({ track, index, playAll }: PlaylistRowProps) => {
+export const PlaylistRow = ({
+  track,
+  index,
+  playAll,
+  dragged = false,
+}: PlaylistRowProps) => {
   const menu_id = useId();
   const menu = useMenu(menu_id);
   const [, navigate] = useLocation();
@@ -36,7 +43,14 @@ export const PlaylistRow = ({ track, index, playAll }: PlaylistRowProps) => {
   };
 
   return (
-    <div className="row" onClick={playAll(index)}>
+    <div
+      className={`row${dragged ? " dragged" : ""}`}
+      onClick={playAll(index)}
+      data-row-index={index}
+    >
+      <div className="drag-handle" onClick={noPropagate(() => {})}>
+        <GripVerticalIcon />
+      </div>
       <div className="track">
         {index + 1}
         {player.now_playing.value?.path === track.path &&

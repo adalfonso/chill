@@ -27,6 +27,7 @@ export const schema = {
 
   update: z.object({
     id: z.number().int(),
+    mode: z.enum(["append", "replace"]).default("append"),
     track_ids: z.array(z.number().int()),
   }),
 };
@@ -155,13 +156,34 @@ export const PlaylistController = {
     }
   },
 
+  /**
+   * Mutate a playlist's tracks.
+   *
+   * - `append`: tack `track_ids` onto the end of the current playlist.
+   * - `replace`: set the playlist to exactly `track_ids` in the given order.
+   *   Used for reorder / remove / duplicate / clear.
+   */
   update: async ({
-    input: { id, track_ids = [] },
+    input: { id, mode, track_ids = [] },
   }: Request<typeof schema.update>) => {
     const playlist = await db.playlist.findUnique({ where: { id } });
 
     if (!playlist) {
       throw new TRPCError({ code: "NOT_FOUND" });
+    }
+
+    if (mode === "replace") {
+      await db.$transaction([
+        db.playlistTrack.deleteMany({ where: { playlist_id: id } }),
+        db.playlistTrack.createMany({
+          data: track_ids.map((track_id, index) => ({
+            playlist_id: id,
+            index,
+            track_id,
+          })),
+        }),
+      ]);
+      return;
     }
 
     const playlist_tail = await db.playlistTrack.findFirst({
