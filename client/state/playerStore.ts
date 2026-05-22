@@ -20,6 +20,19 @@ import { shuffle as _shuffle, findIndex } from "@common/commonUtils";
 export let audio = new Audio();
 export let crossover = new Audio();
 
+// iOS requires a user gesture to unlock each Audio element individually.
+// We silently play+pause crossover during the first real play call so both
+// elements are unlocked in the same gesture, allowing gapless swapping later.
+let crossover_unlocked = false;
+const unlockCrossover = () => {
+  if (crossover_unlocked) {
+    return;
+  }
+  crossover_unlocked = true;
+  crossover.play().catch(() => {});
+  crossover.pause();
+};
+
 export type PlayLoad = PlayPayload & {
   cast_info?: Maybe<PreCastPayload>;
 };
@@ -167,6 +180,7 @@ export const play = (payload: PlayLoad) => {
       CastSdk.ResumePlay();
     }
   } else {
+    unlockCrossover();
     audio.play();
   }
 
