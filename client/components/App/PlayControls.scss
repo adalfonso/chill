@@ -76,13 +76,16 @@
       flex-direction: column;
       align-items: center;
       flex-grow: 1;
-      justify-content: top;
-      padding-top: 10vh;
+      justify-content: center;
+      min-height: 0;
 
       .cover {
         border-radius: 0.25rem;
-        width: calc(100vw - 4rem);
-        height: calc(100vw - 4rem);
+        aspect-ratio: 1;
+        width: auto;
+        height: 100%;
+        max-width: calc(100vw - 4rem);
+        max-height: calc(100vw - 4rem);
         background-color: $dm-background;
         box-shadow:
           rgba(0, 0, 0, 0.25) 0px 54px 55px,
@@ -216,78 +219,6 @@
   }
 }
 
-@media screen and (min-width: 844px) {
-  #play-controls-minimized {
-    display: none;
-  }
-
-  #play-controls {
-    position: static;
-    top: auto;
-    right: auto;
-    left: auto;
-    bottom: auto;
-    padding: 0 0 1rem 0;
-    border-top: 1px solid $dm-shadow;
-
-    &.none,
-    &.minimized {
-      display: flex;
-    }
-
-    > .content {
-      display: none;
-    }
-
-    .circle-button {
-      height: 2.5rem;
-      width: 2.5rem;
-      font-size: 1.25rem;
-    }
-
-    .controls-panel {
-      flex-direction: row;
-
-      > div {
-        margin: 0 2rem;
-        width: 20%;
-      }
-
-      .now-playing {
-        margin: 0 0 0.5rem 0;
-
-        .title {
-          margin: auto;
-          margin-top: -1rem;
-
-          .sub-title {
-            .file-type,
-            .quality {
-              min-width: 3.5rem;
-            }
-          }
-        }
-      }
-    }
-
-    .icons {
-      svg {
-        font-size: 1rem;
-      }
-    }
-
-    .play {
-      height: 3.5rem;
-      width: 3.5rem;
-      font-size: 1.75rem;
-    }
-
-    .file-menu {
-      top: auto;
-      bottom: 2.25rem;
-    }
-  }
-}
 
 @media screen and (max-width: 844px) {
   #play-controls {

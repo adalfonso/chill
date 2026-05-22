@@ -125,17 +125,14 @@ export const PlayControls = () => {
     <>
       <div
         id="play-controls"
-        className={
-          player.mobile_display_mode.value + (is_mobile ? " mobile" : "")
-        }
+        className={player.mobile_display_mode.value + " mobile"}
         style={{
-          "--bg-image":
-            is_mobile && player.now_playing.value?.album_art_filename
-              ? `url(/api/v1/media/cover/${player.now_playing.value.album_art_filename}?size=500)`
-              : "none",
+          "--bg-image": player.now_playing.value?.album_art_filename
+            ? `url(/api/v1/media/cover/${player.now_playing.value.album_art_filename}?size=500)`
+            : "none",
         }}
       >
-        {is_mobile && <MobileVolumeControl />}
+        <MobileVolumeControl />
         <div className="content">
           <div className="controls">
             <ChevronDownIcon onClick={minimize} className="icon-sm" />

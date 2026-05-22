@@ -168,6 +168,10 @@ Search results include navigation paths (e.g., `/artist/123/album/456`) for deep
 
 **Docker Volume Names**: Use underscores in `docker-compose.yml` volume definitions (e.g., `elastic_search`, not `elastic-search`) to match volume mount references consistently.
 
+## Code Conventions
+
+**Conditional Blocks**: Always use curly braces — never write one-liner `if`/`else` statements without braces.
+
 ## Production Deployment
 
 The Docker Compose setup supports environment-based configuration via `.env`:
