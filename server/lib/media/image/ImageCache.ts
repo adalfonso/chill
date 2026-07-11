@@ -36,7 +36,41 @@ export const getAlbumFromFs = async (filename: string, size: number) => {
   }
 };
 
-// Cache all album art to the file system
+/**
+ * Determine which cached sizes are missing or stale for an album art record
+ *
+ * A cached file is stale when the art row is newer than the file — changed
+ * art is recreated by the crawler, refreshing the row's updated_at.
+ *
+ * @param art - album art record
+ * @returns sizes that need to be (re)rendered
+ */
+const getStaleSizes = async (art: {
+  album_id: number;
+  format: string;
+  updated_at: Date;
+}) => {
+  const checks = await Promise.all(
+    common_album_art_sizes.map(async (size) => {
+      const file_path = path.join(
+        album_art_dir,
+        size.toString(),
+        `${art.album_id}.${art.format.split("/").at(1)}`,
+      );
+
+      try {
+        const stat = await fs.stat(file_path);
+        return stat.mtime >= art.updated_at ? null : size;
+      } catch (_e) {
+        return size;
+      }
+    }),
+  );
+
+  return checks.filter((size): size is number => size !== null);
+};
+
+// Cache album art to the file system for any art that is missing or stale
 export const cacheAlbumArt = async () => {
   const start = new Date();
   console.info("Caching album art...");
@@ -52,61 +86,64 @@ export const cacheAlbumArt = async () => {
     ),
   );
 
-  const chunk_size = 25;
-  let chunk = 0;
-  let more_results = true;
+  // Metadata only — blobs are fetched individually for stale records
+  const all_art = await db.albumArt.findMany({
+    select: {
+      id: true,
+      album_id: true,
+      format: true,
+      updated_at: true,
+    },
+    orderBy: {
+      id: "asc",
+    },
+  });
+
   let records_processed = 0;
 
-  while (more_results) {
-    console.info(`Caching chunk ${chunk} of album art...`);
-    const album_art = await db.albumArt.findMany({
-      select: {
-        album_id: true,
-        format: true,
-        data: true,
-      },
+  for (const art of all_art) {
+    const stale_sizes = await getStaleSizes(art);
 
-      orderBy: {
-        id: "asc",
-      },
-      skip: chunk * chunk_size,
-      take: chunk_size,
+    if (stale_sizes.length === 0) {
+      continue;
+    }
+
+    const blob = await db.albumArt.findUnique({
+      where: { id: art.id },
+      select: { data: true },
     });
 
-    chunk++;
-    records_processed += album_art.length;
-
-    if (!album_art.length) {
-      more_results = false;
+    if (blob === null) {
+      continue;
     }
 
-    for (const art of album_art) {
-      await Promise.all(
-        common_album_art_sizes.map(async (size) => {
-          try {
-            return fs.writeFile(
-              path.join(
-                album_art_dir,
-                size.toString(),
-                `${art.album_id}.${art.format.split("/").at(1)}`,
-              ),
-              await adjustImage(art.data, { size, quality: 90 }),
-            );
-          } catch (error) {
-            console.error(`Failed to cache album art:`, {
-              id: art.album_id,
-              size,
-              error,
-            });
-          }
-        }),
-      );
-    }
+    records_processed++;
+
+    await Promise.all(
+      stale_sizes.map(async (size) => {
+        try {
+          return fs.writeFile(
+            path.join(
+              album_art_dir,
+              size.toString(),
+              `${art.album_id}.${art.format.split("/").at(1)}`,
+            ),
+            await adjustImage(blob.data, { size, quality: 90 }),
+          );
+        } catch (error) {
+          console.error(`Failed to cache album art:`, {
+            id: art.album_id,
+            size,
+            error,
+          });
+        }
+      }),
+    );
   }
 
   console.info(
     `Album art cached. Took ${
       (new Date().valueOf() - start?.valueOf()) / 1000
-    } seconds for ${records_processed} records`,
+    } seconds for ${records_processed} of ${all_art.length} records`,
   );
 };
