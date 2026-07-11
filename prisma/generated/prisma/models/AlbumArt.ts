@@ -224,7 +224,7 @@ export type AlbumArtGroupByOutputType = {
   _max: AlbumArtMaxAggregateOutputType | null
 }
 
-type GetAlbumArtGroupByPayload<T extends AlbumArtGroupByArgs> = Prisma.PrismaPromise<
+export type GetAlbumArtGroupByPayload<T extends AlbumArtGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<AlbumArtGroupByOutputType, T['by']> &
       {
@@ -1249,6 +1249,11 @@ export type AlbumArtFindManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Skip the first `n` AlbumArts.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of AlbumArts.
+   */
   distinct?: Prisma.AlbumArtScalarFieldEnum | Prisma.AlbumArtScalarFieldEnum[]
 }
 

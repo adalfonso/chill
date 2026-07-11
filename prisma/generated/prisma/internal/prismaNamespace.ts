@@ -80,12 +80,12 @@ export type PrismaVersion = {
 }
 
 /**
- * Prisma Client JS version: 7.3.0
- * Query Engine version: 9d6ad21cbbceab97458517b147a6a09ff43aa735
+ * Prisma Client JS version: 7.7.0
+ * Query Engine version: 75cbdc1eb7150937890ad5465d861175c6624711
  */
 export const prismaVersion: PrismaVersion = {
-  client: "7.3.0",
-  engine: "9d6ad21cbbceab97458517b147a6a09ff43aa735"
+  client: "7.7.0",
+  engine: "75cbdc1eb7150937890ad5465d861175c6624711"
 }
 
 /**
@@ -1324,6 +1324,7 @@ export const TrackScalarFieldEnum = {
   file_size: 'file_size',
   file_type: 'file_type',
   file_modified: 'file_modified',
+  audio_checksum: 'audio_checksum',
   bitrate: 'bitrate',
   sample_rate: 'sample_rate',
   bits_per_sample: 'bits_per_sample',

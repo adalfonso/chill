@@ -2,7 +2,7 @@ import { RawMediaPayload } from "../MediaCrawler";
 import { db } from "../../data/db";
 import { getAlbumLookupKey } from "./albumMapper";
 
-export const insertTracks = async (
+export const upsertTracks = async (
   records: Array<RawMediaPayload>,
   maps: {
     album: Record<string, number>;
@@ -23,6 +23,7 @@ export const insertTracks = async (
       artist_id: record.artist === null ? null : maps.artist[record.artist],
       album_artist_id:
         record.album_artist === null ? null : maps.artist[record.album_artist],
+      audio_checksum: record.audio_checksum,
       bitrate: record.bitrate,
       bits_per_sample: record.bits_per_sample,
       duration: record.duration,
@@ -38,5 +39,13 @@ export const insertTracks = async (
     };
   });
 
-  await db.track.createMany({ data: tracks });
+  await db.$transaction(
+    tracks.map((track) =>
+      db.track.upsert({
+        where: { path: track.path },
+        create: track,
+        update: track,
+      }),
+    ),
+  );
 };

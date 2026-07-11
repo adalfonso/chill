@@ -1,5 +1,7 @@
 import fs from "node:fs/promises";
 import crypto from "node:crypto";
+import { createReadStream, Stats } from "node:fs";
+import { pipeline } from "node:stream/promises";
 import * as mm from "music-metadata";
 import { extname, join } from "node:path";
 import { Scan, ScanStatus } from "@prisma/client";
@@ -9,7 +11,7 @@ import { Maybe } from "@common/types";
 import { db } from "../data/db";
 import { rebuildMusicSearchIndex } from "./MusicSearch";
 import { cacheAlbumArt } from "./image/ImageCache";
-import { deleteOrphans } from "./deleteOrphans";
+import { deleteOrphans, deleteOrphanTracks } from "./deleteOrphans";
 
 /** Config options used by the crawler */
 type MediaCrawlerConfig = {
@@ -33,6 +35,7 @@ export type RawMediaPayload = {
   file_modified: Date;
   file_size: number;
   file_type: string;
+  audio_checksum: string;
   bitrate: number;
   sample_rate: number;
   bits_per_sample: number;
@@ -52,6 +55,12 @@ export class MediaCrawler {
 
   /** Fully processed file data */
   private _processed: Array<RawMediaPayload> = [];
+
+  /** Paths of all valid media files seen during the scan */
+  private _seen_paths: Set<string> = new Set();
+
+  /** Number of files skipped because they were unchanged since the last scan */
+  private _skipped = 0;
 
   /** Number of available workers */
   private _available_workers = 10;
@@ -84,10 +93,8 @@ export class MediaCrawler {
     console.info("Crawling starting... 🐛");
 
     this._start_time = new Date();
-
-    await db.playlistTrack.deleteMany();
-    await db.playlist.deleteMany();
-    await db.track.deleteMany();
+    this._seen_paths = new Set();
+    this._skipped = 0;
 
     this._scan = await db.scan.create({ data: {} });
     this._available_workers = this._config.workers;
@@ -144,7 +151,7 @@ export class MediaCrawler {
       if (stats.isDirectory()) {
         this._crawl(file_path);
       } else {
-        this._processFile(file_path);
+        this._processFile(file_path, stats);
       }
     }
 
@@ -158,8 +165,9 @@ export class MediaCrawler {
    * Process a file's metadata
    *
    * @param file_path file path
+   * @param stats file stats from the queue traversal
    */
-  private async _processFile(file_path: string) {
+  private async _processFile(file_path: string, stats: Stats) {
     const file_type = extname(file_path).replace(".", "").toLowerCase();
 
     // Not a valid file
@@ -168,8 +176,14 @@ export class MediaCrawler {
       return this._tick();
     }
 
+    this._seen_paths.add(file_path);
+
     try {
-      this._processed.push(await this._getMetadata(file_path));
+      if (await this._hasChanged(file_path, stats)) {
+        this._processed.push(await this._getMetadata(file_path, stats));
+      } else {
+        this._skipped++;
+      }
     } catch (e) {
       console.error(e);
       // don't relinquish the worker
@@ -185,17 +199,47 @@ export class MediaCrawler {
   }
 
   /**
+   * Determine if a file is new or has changed since the last scan
+   *
+   * Compares (file_modified, file_size) against the stored track. A track
+   * without an audio_checksum is treated as changed so its checksum gets
+   * backfilled.
+   *
+   * @param file_path file path
+   * @param stats file stats
+   * @returns whether the file needs (re)processing
+   */
+  private async _hasChanged(file_path: string, stats: Stats) {
+    const existing = await db.track.findUnique({
+      where: { path: file_path },
+      select: { file_modified: true, file_size: true, audio_checksum: true },
+    });
+
+    if (existing === null || existing.audio_checksum === null) {
+      return true;
+    }
+
+    return (
+      existing.file_modified.getTime() !== stats.ctime.getTime() ||
+      existing.file_size !== stats.size
+    );
+  }
+
+  /**
    * Get meta data from a file path
    *
    * @param file_path file path
+   * @param stat file stats
    * @returns meta data
    */
-  private async _getMetadata(file_path: string): Promise<RawMediaPayload> {
+  private async _getMetadata(
+    file_path: string,
+    stat: Stats,
+  ): Promise<RawMediaPayload> {
     const result = await mm.parseFile(file_path, { duration: true });
     const { common, format } = result;
 
     const cover = await getCoverData(common.picture);
-    const stat = await fs.stat(file_path);
 
     return {
       path: file_path,
@@ -211,7 +255,7 @@ export class MediaCrawler {
       year: common.year ?? null,
       bitrate: Math.floor(format.bitrate ?? 0 / 1000) || 0,
       sample_rate: Math.floor(format.sampleRate ?? 0 / 1000) || 0,
-      bits_per_sample: await getBitsPerSample(file_path, format),
+      bits_per_sample: getBitsPerSample(stat, format),
       cover: cover
         ? {
             format: cover.format,
@@ -222,6 +266,7 @@ export class MediaCrawler {
         : null,
       file_modified: stat.ctime,
       file_size: stat.size,
+      audio_checksum: await computeFileChecksum(file_path),
     };
   }
 
@@ -250,7 +295,7 @@ export class MediaCrawler {
 
         const album_map = await mappers.upsertAlbums(records, artist_map);
 
-        await mappers.insertTracks(records, {
+        await mappers.upsertTracks(records, {
           genre: genre_map,
           album: album_map,
           artist: artist_map,
@@ -282,7 +327,13 @@ export class MediaCrawler {
     this._queue = [];
 
     await this._write();
-    await deleteOrphans();
+
+    // Only prune on a fully completed scan — a partial traversal would
+    // misidentify unseen tracks as orphans
+    if (status === ScanStatus.Completed) {
+      await deleteOrphanTracks(this._seen_paths);
+      await deleteOrphans();
+    }
 
     if (this._scan === null) {
       throw new Error("Tried to complete scan but it was null");
@@ -302,6 +353,7 @@ export class MediaCrawler {
     const start = this._start_time ?? new Date();
 
     console.info(`Crawling ${status.toLowerCase()}... 🐛`);
+    console.info(`Skipped ${this._skipped} unchanged files`);
     console.info(
       `Took ${(new Date().valueOf() - start?.valueOf()) / 1000} seconds`,
     );
@@ -323,14 +375,12 @@ export class MediaCrawler {
   }
 }
 
-const getBitsPerSample = async (file_path: string, format: mm.IFormat) => {
+const getBitsPerSample = (stats: Stats, format: mm.IFormat) => {
   if (format.bitsPerSample) {
     return format.bitsPerSample;
   }
 
   if (format.numberOfSamples) {
-    const stats = await fs.stat(file_path);
-
     return (
       (8 * stats.size) /
       (format.numberOfSamples * (format.numberOfChannels ?? 2))
@@ -345,6 +395,20 @@ const getBitsPerSample = async (file_path: string, format: mm.IFormat) => {
  */
 const computeCoverDataChecksum = (buffer: Buffer) =>
   crypto.createHash("sha256").update(buffer).digest("hex");
+
+/**
+ * Compute a SHA-256 checksum of a file's full contents
+ *
+ * Streams the file so large audio files are not buffered into memory.
+ *
+ * @param file_path file path
+ * @returns hex-encoded checksum
+ */
+const computeFileChecksum = async (file_path: string) => {
+  const hash = crypto.createHash("sha256");
+  await pipeline(createReadStream(file_path), hash);
+  return hash.digest("hex");
+};
 
 /**
  * Extracts, normalizes, and encodes cover art data from a parsed audio file.

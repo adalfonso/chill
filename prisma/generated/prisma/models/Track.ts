@@ -66,6 +66,7 @@ export type TrackMinAggregateOutputType = {
   file_size: number | null
   file_type: string | null
   file_modified: Date | null
+  audio_checksum: string | null
   bitrate: number | null
   sample_rate: number | null
   bits_per_sample: number | null
@@ -87,6 +88,7 @@ export type TrackMaxAggregateOutputType = {
   file_size: number | null
   file_type: string | null
   file_modified: Date | null
+  audio_checksum: string | null
   bitrate: number | null
   sample_rate: number | null
   bits_per_sample: number | null
@@ -108,6 +110,7 @@ export type TrackCountAggregateOutputType = {
   file_size: number
   file_type: number
   file_modified: number
+  audio_checksum: number
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -161,6 +164,7 @@ export type TrackMinAggregateInputType = {
   file_size?: true
   file_type?: true
   file_modified?: true
+  audio_checksum?: true
   bitrate?: true
   sample_rate?: true
   bits_per_sample?: true
@@ -182,6 +186,7 @@ export type TrackMaxAggregateInputType = {
   file_size?: true
   file_type?: true
   file_modified?: true
+  audio_checksum?: true
   bitrate?: true
   sample_rate?: true
   bits_per_sample?: true
@@ -203,6 +208,7 @@ export type TrackCountAggregateInputType = {
   file_size?: true
   file_type?: true
   file_modified?: true
+  audio_checksum?: true
   bitrate?: true
   sample_rate?: true
   bits_per_sample?: true
@@ -311,6 +317,7 @@ export type TrackGroupByOutputType = {
   file_size: number
   file_type: string
   file_modified: Date
+  audio_checksum: string | null
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -327,7 +334,7 @@ export type TrackGroupByOutputType = {
   _max: TrackMaxAggregateOutputType | null
 }
 
-type GetTrackGroupByPayload<T extends TrackGroupByArgs> = Prisma.PrismaPromise<
+export type GetTrackGroupByPayload<T extends TrackGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<TrackGroupByOutputType, T['by']> &
       {
@@ -355,6 +362,7 @@ export type TrackWhereInput = {
   file_size?: Prisma.IntFilter<"Track"> | number
   file_type?: Prisma.StringFilter<"Track"> | string
   file_modified?: Prisma.DateTimeFilter<"Track"> | Date | string
+  audio_checksum?: Prisma.StringNullableFilter<"Track"> | string | null
   bitrate?: Prisma.IntFilter<"Track"> | number
   sample_rate?: Prisma.IntFilter<"Track"> | number
   bits_per_sample?: Prisma.IntFilter<"Track"> | number
@@ -381,6 +389,7 @@ export type TrackOrderByWithRelationInput = {
   file_size?: Prisma.SortOrder
   file_type?: Prisma.SortOrder
   file_modified?: Prisma.SortOrder
+  audio_checksum?: Prisma.SortOrderInput | Prisma.SortOrder
   bitrate?: Prisma.SortOrder
   sample_rate?: Prisma.SortOrder
   bits_per_sample?: Prisma.SortOrder
@@ -410,6 +419,7 @@ export type TrackWhereUniqueInput = Prisma.AtLeast<{
   file_size?: Prisma.IntFilter<"Track"> | number
   file_type?: Prisma.StringFilter<"Track"> | string
   file_modified?: Prisma.DateTimeFilter<"Track"> | Date | string
+  audio_checksum?: Prisma.StringNullableFilter<"Track"> | string | null
   bitrate?: Prisma.IntFilter<"Track"> | number
   sample_rate?: Prisma.IntFilter<"Track"> | number
   bits_per_sample?: Prisma.IntFilter<"Track"> | number
@@ -436,6 +446,7 @@ export type TrackOrderByWithAggregationInput = {
   file_size?: Prisma.SortOrder
   file_type?: Prisma.SortOrder
   file_modified?: Prisma.SortOrder
+  audio_checksum?: Prisma.SortOrderInput | Prisma.SortOrder
   bitrate?: Prisma.SortOrder
   sample_rate?: Prisma.SortOrder
   bits_per_sample?: Prisma.SortOrder
@@ -465,6 +476,7 @@ export type TrackScalarWhereWithAggregatesInput = {
   file_size?: Prisma.IntWithAggregatesFilter<"Track"> | number
   file_type?: Prisma.StringWithAggregatesFilter<"Track"> | string
   file_modified?: Prisma.DateTimeWithAggregatesFilter<"Track"> | Date | string
+  audio_checksum?: Prisma.StringNullableWithAggregatesFilter<"Track"> | string | null
   bitrate?: Prisma.IntWithAggregatesFilter<"Track"> | number
   sample_rate?: Prisma.IntWithAggregatesFilter<"Track"> | number
   bits_per_sample?: Prisma.IntWithAggregatesFilter<"Track"> | number
@@ -485,6 +497,7 @@ export type TrackCreateInput = {
   file_size: number
   file_type: string
   file_modified: Date | string
+  audio_checksum?: string | null
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -507,6 +520,7 @@ export type TrackUncheckedCreateInput = {
   file_size: number
   file_type: string
   file_modified: Date | string
+  audio_checksum?: string | null
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -528,6 +542,7 @@ export type TrackUpdateInput = {
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
   file_type?: Prisma.StringFieldUpdateOperationsInput | string
   file_modified?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audio_checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bitrate?: Prisma.IntFieldUpdateOperationsInput | number
   sample_rate?: Prisma.IntFieldUpdateOperationsInput | number
   bits_per_sample?: Prisma.IntFieldUpdateOperationsInput | number
@@ -550,6 +565,7 @@ export type TrackUncheckedUpdateInput = {
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
   file_type?: Prisma.StringFieldUpdateOperationsInput | string
   file_modified?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audio_checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bitrate?: Prisma.IntFieldUpdateOperationsInput | number
   sample_rate?: Prisma.IntFieldUpdateOperationsInput | number
   bits_per_sample?: Prisma.IntFieldUpdateOperationsInput | number
@@ -572,6 +588,7 @@ export type TrackCreateManyInput = {
   file_size: number
   file_type: string
   file_modified: Date | string
+  audio_checksum?: string | null
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -592,6 +609,7 @@ export type TrackUpdateManyMutationInput = {
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
   file_type?: Prisma.StringFieldUpdateOperationsInput | string
   file_modified?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audio_checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bitrate?: Prisma.IntFieldUpdateOperationsInput | number
   sample_rate?: Prisma.IntFieldUpdateOperationsInput | number
   bits_per_sample?: Prisma.IntFieldUpdateOperationsInput | number
@@ -609,6 +627,7 @@ export type TrackUncheckedUpdateManyInput = {
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
   file_type?: Prisma.StringFieldUpdateOperationsInput | string
   file_modified?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audio_checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bitrate?: Prisma.IntFieldUpdateOperationsInput | number
   sample_rate?: Prisma.IntFieldUpdateOperationsInput | number
   bits_per_sample?: Prisma.IntFieldUpdateOperationsInput | number
@@ -640,6 +659,7 @@ export type TrackCountOrderByAggregateInput = {
   file_size?: Prisma.SortOrder
   file_type?: Prisma.SortOrder
   file_modified?: Prisma.SortOrder
+  audio_checksum?: Prisma.SortOrder
   bitrate?: Prisma.SortOrder
   sample_rate?: Prisma.SortOrder
   bits_per_sample?: Prisma.SortOrder
@@ -676,6 +696,7 @@ export type TrackMaxOrderByAggregateInput = {
   file_size?: Prisma.SortOrder
   file_type?: Prisma.SortOrder
   file_modified?: Prisma.SortOrder
+  audio_checksum?: Prisma.SortOrder
   bitrate?: Prisma.SortOrder
   sample_rate?: Prisma.SortOrder
   bits_per_sample?: Prisma.SortOrder
@@ -697,6 +718,7 @@ export type TrackMinOrderByAggregateInput = {
   file_size?: Prisma.SortOrder
   file_type?: Prisma.SortOrder
   file_modified?: Prisma.SortOrder
+  audio_checksum?: Prisma.SortOrder
   bitrate?: Prisma.SortOrder
   sample_rate?: Prisma.SortOrder
   bits_per_sample?: Prisma.SortOrder
@@ -904,6 +926,10 @@ export type DecimalFieldUpdateOperationsInput = {
   divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
 export type TrackCreateNestedOneWithoutPlaylist_itemsInput = {
   create?: Prisma.XOR<Prisma.TrackCreateWithoutPlaylist_itemsInput, Prisma.TrackUncheckedCreateWithoutPlaylist_itemsInput>
   connectOrCreate?: Prisma.TrackCreateOrConnectWithoutPlaylist_itemsInput
@@ -927,6 +953,7 @@ export type TrackCreateWithoutGenreInput = {
   file_size: number
   file_type: string
   file_modified: Date | string
+  audio_checksum?: string | null
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -948,6 +975,7 @@ export type TrackUncheckedCreateWithoutGenreInput = {
   file_size: number
   file_type: string
   file_modified: Date | string
+  audio_checksum?: string | null
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -998,6 +1026,7 @@ export type TrackScalarWhereInput = {
   file_size?: Prisma.IntFilter<"Track"> | number
   file_type?: Prisma.StringFilter<"Track"> | string
   file_modified?: Prisma.DateTimeFilter<"Track"> | Date | string
+  audio_checksum?: Prisma.StringNullableFilter<"Track"> | string | null
   bitrate?: Prisma.IntFilter<"Track"> | number
   sample_rate?: Prisma.IntFilter<"Track"> | number
   bits_per_sample?: Prisma.IntFilter<"Track"> | number
@@ -1018,6 +1047,7 @@ export type TrackCreateWithoutAlbumInput = {
   file_size: number
   file_type: string
   file_modified: Date | string
+  audio_checksum?: string | null
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -1039,6 +1069,7 @@ export type TrackUncheckedCreateWithoutAlbumInput = {
   file_size: number
   file_type: string
   file_modified: Date | string
+  audio_checksum?: string | null
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -1085,6 +1116,7 @@ export type TrackCreateWithoutArtistInput = {
   file_size: number
   file_type: string
   file_modified: Date | string
+  audio_checksum?: string | null
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -1106,6 +1138,7 @@ export type TrackUncheckedCreateWithoutArtistInput = {
   file_size: number
   file_type: string
   file_modified: Date | string
+  audio_checksum?: string | null
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -1136,6 +1169,7 @@ export type TrackCreateWithoutAlbum_artistInput = {
   file_size: number
   file_type: string
   file_modified: Date | string
+  audio_checksum?: string | null
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -1157,6 +1191,7 @@ export type TrackUncheckedCreateWithoutAlbum_artistInput = {
   file_size: number
   file_type: string
   file_modified: Date | string
+  audio_checksum?: string | null
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -1219,6 +1254,7 @@ export type TrackCreateWithoutPlaylist_itemsInput = {
   file_size: number
   file_type: string
   file_modified: Date | string
+  audio_checksum?: string | null
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -1240,6 +1276,7 @@ export type TrackUncheckedCreateWithoutPlaylist_itemsInput = {
   file_size: number
   file_type: string
   file_modified: Date | string
+  audio_checksum?: string | null
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -1276,6 +1313,7 @@ export type TrackUpdateWithoutPlaylist_itemsInput = {
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
   file_type?: Prisma.StringFieldUpdateOperationsInput | string
   file_modified?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audio_checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bitrate?: Prisma.IntFieldUpdateOperationsInput | number
   sample_rate?: Prisma.IntFieldUpdateOperationsInput | number
   bits_per_sample?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1297,6 +1335,7 @@ export type TrackUncheckedUpdateWithoutPlaylist_itemsInput = {
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
   file_type?: Prisma.StringFieldUpdateOperationsInput | string
   file_modified?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audio_checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bitrate?: Prisma.IntFieldUpdateOperationsInput | number
   sample_rate?: Prisma.IntFieldUpdateOperationsInput | number
   bits_per_sample?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1318,6 +1357,7 @@ export type TrackCreateManyGenreInput = {
   file_size: number
   file_type: string
   file_modified: Date | string
+  audio_checksum?: string | null
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -1337,6 +1377,7 @@ export type TrackUpdateWithoutGenreInput = {
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
   file_type?: Prisma.StringFieldUpdateOperationsInput | string
   file_modified?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audio_checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bitrate?: Prisma.IntFieldUpdateOperationsInput | number
   sample_rate?: Prisma.IntFieldUpdateOperationsInput | number
   bits_per_sample?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1358,6 +1399,7 @@ export type TrackUncheckedUpdateWithoutGenreInput = {
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
   file_type?: Prisma.StringFieldUpdateOperationsInput | string
   file_modified?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audio_checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bitrate?: Prisma.IntFieldUpdateOperationsInput | number
   sample_rate?: Prisma.IntFieldUpdateOperationsInput | number
   bits_per_sample?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1379,6 +1421,7 @@ export type TrackUncheckedUpdateManyWithoutGenreInput = {
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
   file_type?: Prisma.StringFieldUpdateOperationsInput | string
   file_modified?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audio_checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bitrate?: Prisma.IntFieldUpdateOperationsInput | number
   sample_rate?: Prisma.IntFieldUpdateOperationsInput | number
   bits_per_sample?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1399,6 +1442,7 @@ export type TrackCreateManyAlbumInput = {
   file_size: number
   file_type: string
   file_modified: Date | string
+  audio_checksum?: string | null
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -1418,6 +1462,7 @@ export type TrackUpdateWithoutAlbumInput = {
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
   file_type?: Prisma.StringFieldUpdateOperationsInput | string
   file_modified?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audio_checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bitrate?: Prisma.IntFieldUpdateOperationsInput | number
   sample_rate?: Prisma.IntFieldUpdateOperationsInput | number
   bits_per_sample?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1439,6 +1484,7 @@ export type TrackUncheckedUpdateWithoutAlbumInput = {
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
   file_type?: Prisma.StringFieldUpdateOperationsInput | string
   file_modified?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audio_checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bitrate?: Prisma.IntFieldUpdateOperationsInput | number
   sample_rate?: Prisma.IntFieldUpdateOperationsInput | number
   bits_per_sample?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1460,6 +1506,7 @@ export type TrackUncheckedUpdateManyWithoutAlbumInput = {
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
   file_type?: Prisma.StringFieldUpdateOperationsInput | string
   file_modified?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audio_checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bitrate?: Prisma.IntFieldUpdateOperationsInput | number
   sample_rate?: Prisma.IntFieldUpdateOperationsInput | number
   bits_per_sample?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1480,6 +1527,7 @@ export type TrackCreateManyArtistInput = {
   file_size: number
   file_type: string
   file_modified: Date | string
+  audio_checksum?: string | null
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -1500,6 +1548,7 @@ export type TrackCreateManyAlbum_artistInput = {
   file_size: number
   file_type: string
   file_modified: Date | string
+  audio_checksum?: string | null
   bitrate: number
   sample_rate: number
   bits_per_sample: number
@@ -1519,6 +1568,7 @@ export type TrackUpdateWithoutArtistInput = {
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
   file_type?: Prisma.StringFieldUpdateOperationsInput | string
   file_modified?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audio_checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bitrate?: Prisma.IntFieldUpdateOperationsInput | number
   sample_rate?: Prisma.IntFieldUpdateOperationsInput | number
   bits_per_sample?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1540,6 +1590,7 @@ export type TrackUncheckedUpdateWithoutArtistInput = {
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
   file_type?: Prisma.StringFieldUpdateOperationsInput | string
   file_modified?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audio_checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bitrate?: Prisma.IntFieldUpdateOperationsInput | number
   sample_rate?: Prisma.IntFieldUpdateOperationsInput | number
   bits_per_sample?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1561,6 +1612,7 @@ export type TrackUncheckedUpdateManyWithoutArtistInput = {
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
   file_type?: Prisma.StringFieldUpdateOperationsInput | string
   file_modified?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audio_checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bitrate?: Prisma.IntFieldUpdateOperationsInput | number
   sample_rate?: Prisma.IntFieldUpdateOperationsInput | number
   bits_per_sample?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1580,6 +1632,7 @@ export type TrackUpdateWithoutAlbum_artistInput = {
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
   file_type?: Prisma.StringFieldUpdateOperationsInput | string
   file_modified?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audio_checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bitrate?: Prisma.IntFieldUpdateOperationsInput | number
   sample_rate?: Prisma.IntFieldUpdateOperationsInput | number
   bits_per_sample?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1601,6 +1654,7 @@ export type TrackUncheckedUpdateWithoutAlbum_artistInput = {
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
   file_type?: Prisma.StringFieldUpdateOperationsInput | string
   file_modified?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audio_checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bitrate?: Prisma.IntFieldUpdateOperationsInput | number
   sample_rate?: Prisma.IntFieldUpdateOperationsInput | number
   bits_per_sample?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1622,6 +1676,7 @@ export type TrackUncheckedUpdateManyWithoutAlbum_artistInput = {
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
   file_type?: Prisma.StringFieldUpdateOperationsInput | string
   file_modified?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audio_checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   bitrate?: Prisma.IntFieldUpdateOperationsInput | number
   sample_rate?: Prisma.IntFieldUpdateOperationsInput | number
   bits_per_sample?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1673,6 +1728,7 @@ export type TrackSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   file_size?: boolean
   file_type?: boolean
   file_modified?: boolean
+  audio_checksum?: boolean
   bitrate?: boolean
   sample_rate?: boolean
   bits_per_sample?: boolean
@@ -1700,6 +1756,7 @@ export type TrackSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   file_size?: boolean
   file_type?: boolean
   file_modified?: boolean
+  audio_checksum?: boolean
   bitrate?: boolean
   sample_rate?: boolean
   bits_per_sample?: boolean
@@ -1725,6 +1782,7 @@ export type TrackSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   file_size?: boolean
   file_type?: boolean
   file_modified?: boolean
+  audio_checksum?: boolean
   bitrate?: boolean
   sample_rate?: boolean
   bits_per_sample?: boolean
@@ -1750,6 +1808,7 @@ export type TrackSelectScalar = {
   file_size?: boolean
   file_type?: boolean
   file_modified?: boolean
+  audio_checksum?: boolean
   bitrate?: boolean
   sample_rate?: boolean
   bits_per_sample?: boolean
@@ -1761,7 +1820,7 @@ export type TrackSelectScalar = {
   updated_at?: boolean
 }
 
-export type TrackOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "path" | "number" | "disc_number" | "duration" | "file_size" | "file_type" | "file_modified" | "bitrate" | "sample_rate" | "bits_per_sample" | "genre_id" | "artist_id" | "album_artist_id" | "album_id" | "created_at" | "updated_at", ExtArgs["result"]["track"]>
+export type TrackOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "path" | "number" | "disc_number" | "duration" | "file_size" | "file_type" | "file_modified" | "audio_checksum" | "bitrate" | "sample_rate" | "bits_per_sample" | "genre_id" | "artist_id" | "album_artist_id" | "album_id" | "created_at" | "updated_at", ExtArgs["result"]["track"]>
 export type TrackInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   genre?: boolean | Prisma.Track$genreArgs<ExtArgs>
   artist?: boolean | Prisma.Track$artistArgs<ExtArgs>
@@ -1802,6 +1861,7 @@ export type $TrackPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     file_size: number
     file_type: string
     file_modified: Date
+    audio_checksum: string | null
     bitrate: number
     sample_rate: number
     bits_per_sample: number
@@ -2248,6 +2308,7 @@ export interface TrackFieldRefs {
   readonly file_size: Prisma.FieldRef<"Track", 'Int'>
   readonly file_type: Prisma.FieldRef<"Track", 'String'>
   readonly file_modified: Prisma.FieldRef<"Track", 'DateTime'>
+  readonly audio_checksum: Prisma.FieldRef<"Track", 'String'>
   readonly bitrate: Prisma.FieldRef<"Track", 'Int'>
   readonly sample_rate: Prisma.FieldRef<"Track", 'Int'>
   readonly bits_per_sample: Prisma.FieldRef<"Track", 'Int'>
@@ -2453,6 +2514,11 @@ export type TrackFindManyArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Skip the first `n` Tracks.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Tracks.
+   */
   distinct?: Prisma.TrackScalarFieldEnum | Prisma.TrackScalarFieldEnum[]
 }
 

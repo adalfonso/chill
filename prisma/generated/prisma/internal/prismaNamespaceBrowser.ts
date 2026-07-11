@@ -137,6 +137,7 @@ export const TrackScalarFieldEnum = {
   file_size: 'file_size',
   file_type: 'file_type',
   file_modified: 'file_modified',
+  audio_checksum: 'audio_checksum',
   bitrate: 'bitrate',
   sample_rate: 'sample_rate',
   bits_per_sample: 'bits_per_sample',

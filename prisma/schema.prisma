@@ -65,6 +65,7 @@ model Track {
   file_size       Int
   file_type       String
   file_modified   DateTime
+  audio_checksum  String?
   bitrate         Int
   sample_rate     Int
   bits_per_sample Int
@@ -90,6 +91,7 @@ model Track {
   @@index([artist_id])
   @@index([album_artist_id])
   @@index([genre_id])
+  @@index([audio_checksum])
 }
 
 model Playlist {
