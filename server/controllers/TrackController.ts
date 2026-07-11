@@ -328,11 +328,15 @@ export const TrackController = {
           );
           const stats = await fs.stat(tmp_file);
 
-          await streamAudioTrack(res, {
-            path: tmp_file,
-            type: "mp3",
-            size: stats.size.toString(),
-          });
+          await streamAudioTrack(
+            res,
+            {
+              path: tmp_file,
+              type: "mp3",
+              size: stats.size,
+            },
+            req.headers.range,
+          );
         } catch (error) {
           console.error(`Failed to convert audio file.`, {
             id: req.params.id,
@@ -341,11 +345,15 @@ export const TrackController = {
           });
         }
       } else {
-        await streamAudioTrack(res, {
-          path: track.path,
-          type: track.file_type,
-          size: stats.size.toString(),
-        });
+        await streamAudioTrack(
+          res,
+          {
+            path: track.path,
+            type: track.file_type,
+            size: stats.size,
+          },
+          req.headers.range,
+        );
       }
     } catch (e) {
       console.error(e);
