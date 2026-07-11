@@ -30,9 +30,20 @@ but no content hash. Every track is therefore "new" on every crawl.
 4. **Crawler becomes incremental.** Stop the table-wipe in `crawl()`. Upsert tracks by `path`;
    delete only true orphans (paths no longer on disk), which `deleteOrphans()` already models.
 
-5. **v1 hashes the whole file.** Simpler than hashing just the decoded audio stream. Consequence:
-   editing a tag changes the file and re-triggers a transcode. Acceptable — tag edits are rare.
-   Hashing only the audio stream (so tag edits don't invalidate renditions) is a deferred
+5. **v1 fingerprints head + tail + size.** The checksum is a SHA-256 over the file size plus the
+   first and last 256KB of content (whole file when smaller than 512KB). Originally v1 hashed
+   the whole file, but the backfill scan saturated gigabit NAS throughput (~70MB/s) reading
+   every byte of the library; the fingerprint reads at most 512KB per file — around the point
+   where per-file round-trip latency, not transfer, dominates, so smaller windows would not be
+   faster. Tag edits and truncation land in the head/tail or change the size, so change
+   detection is preserved. Note that stale-metadata protection does not rest on the fingerprint
+   at all: the (mtime,size) gate triggers a full re-parse on any edit. The fingerprint's job is
+   content identity for renditions. Consequence: a modification confined to the middle bytes
+   that also preserves file size goes undetected — contrived for audio files. Consequence: a
+   tag edit within the head/tail windows changes the fingerprint and re-triggers a transcode;
+   one hidden behind large embedded art (outside the windows, size preserved by tag padding)
+   leaves the fingerprint unchanged and existing renditions are correctly reused. Hashing only
+   the decoded audio stream (so no tag edit ever invalidates renditions) remains a deferred
    refinement.
 
 ## Consequences

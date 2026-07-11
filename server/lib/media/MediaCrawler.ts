@@ -1,7 +1,6 @@
 import fs from "node:fs/promises";
 import crypto from "node:crypto";
 import { createReadStream, Stats } from "node:fs";
-import { pipeline } from "node:stream/promises";
 import * as mm from "music-metadata";
 import { extname, join } from "node:path";
 import { Scan, ScanStatus } from "@prisma/client";
@@ -266,7 +265,7 @@ export class MediaCrawler {
         : null,
       file_modified: stat.ctime,
       file_size: stat.size,
-      audio_checksum: await computeFileChecksum(file_path),
+      audio_checksum: await computeFileChecksum(file_path, stat),
     };
   }
 
@@ -397,16 +396,44 @@ const computeCoverDataChecksum = (buffer: Buffer) =>
   crypto.createHash("sha256").update(buffer).digest("hex");
 
 /**
- * Compute a SHA-256 checksum of a file's full contents
+ * Number of bytes hashed from each end of a file for its fingerprint —
+ * sized so per-file read latency, not transfer, dominates on NAS storage.
+ * Smaller windows stop helping; larger ones just read more bytes.
+ */
+const FINGERPRINT_CHUNK_SIZE = 256 * 1024;
+
+/**
+ * Compute a SHA-256 fingerprint of a file
  *
- * Streams the file so large audio files are not buffered into memory.
+ * Hashes the file size plus the first and last 256KB of content rather than
+ * the whole file — tag edits and truncation land in the head/tail or change
+ * the size, and reading half a megabyte instead of the full file keeps
+ * backfill scans from being bottlenecked on NAS throughput. Files small
+ * enough for the head and tail to overlap are hashed in full.
  *
  * @param file_path file path
- * @returns hex-encoded checksum
+ * @param stats file stats
+ * @returns hex-encoded fingerprint
  */
-const computeFileChecksum = async (file_path: string) => {
+const computeFileChecksum = async (file_path: string, stats: Stats) => {
   const hash = crypto.createHash("sha256");
-  await pipeline(createReadStream(file_path), hash);
+
+  hash.update(String(stats.size));
+
+  const ranges =
+    stats.size <= 2 * FINGERPRINT_CHUNK_SIZE
+      ? [{}]
+      : [
+          { start: 0, end: FINGERPRINT_CHUNK_SIZE - 1 },
+          { start: stats.size - FINGERPRINT_CHUNK_SIZE },
+        ];
+
+  for (const range of ranges) {
+    for await (const chunk of createReadStream(file_path, range)) {
+      hash.update(chunk as Buffer);
+    }
+  }
+
   return hash.digest("hex");
 };
 
