@@ -272,20 +272,27 @@ export class MediaCrawler {
   /**
    * Trigger writing of a certain number of items to the DB
    *
+   * Writes are chained on the previous write's promise so concurrent
+   * callers are fully serialized — merely awaiting the lock would release
+   * every stacked caller at once when it resolves, running their writes
+   * concurrently.
+   *
    * @param count number of records to write
    */
-  private async _write(count = Infinity) {
-    if (this._write_lock) {
-      await this._write_lock;
-    }
+  private _write(count = Infinity) {
+    const previous = this._write_lock ?? Promise.resolve();
 
-    this._write_lock = new Promise(async (resolve, reject) => {
-      if (this._scan?.status !== ScanStatus.Active) {
-        return resolve();
-      }
+    this._write_lock = previous
+      .then(async () => {
+        if (this._scan?.status !== ScanStatus.Active) {
+          return;
+        }
 
-      try {
         const records = this._processed.splice(0, count);
+
+        if (records.length === 0) {
+          return;
+        }
 
         const [genre_map, artist_map] = await Promise.all([
           mappers.upsertGenres(records),
@@ -308,14 +315,10 @@ export class MediaCrawler {
         console.info(
           `Crawler stored ${this._scan.records_written} records... 🐛`,
         );
-        resolve();
-      } catch (e) {
-        console.error(e);
-        reject(e);
-      } finally {
-        this._write_lock = null;
-      }
-    });
+      })
+      // Log and swallow so a failed batch doesn't poison the chain for
+      // every subsequent write
+      .catch((e) => console.error(e));
 
     return this._write_lock;
   }
