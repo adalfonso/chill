@@ -4,11 +4,12 @@ import { Request as Req, Response as Res } from "express";
 import fs from "node:fs/promises";
 import jwt from "jsonwebtoken";
 
-import { AudioQualityBitrate, PlayableTrack } from "@common/types";
+import { PlayableTrack } from "@common/types";
 import { Request } from "@server/trpc";
 import { db } from "@server/lib/data/db";
 import { AudioQuality, Prisma } from "@prisma/client";
 import { convert as convertAudioTrack } from "@server/lib/conversion";
+import { resolveTier } from "@server/lib/media/resolveTier";
 import { stream_file as streamAudioTrack } from "@server/lib/io/stream";
 import { adjustImage } from "@server/lib/media/image/ImageAdjust";
 import { env } from "@server/init";
@@ -67,7 +68,7 @@ export const TrackController = {
         const file_type =
           req.user?.settings?.audio_quality === AudioQuality.Original
             ? track.file_type
-            : "mp3";
+            : "ogg";
 
         const MIME_TYPES: Record<string, string> = {
           mp3: "audio/mpeg",
@@ -311,19 +312,15 @@ export const TrackController = {
         )?.audio_quality ?? null;
 
       const stats = await fs.stat(track.path);
-      const mp3_quality_preference_kbps =
-        AudioQualityBitrate[quality_setting ?? AudioQuality.Medium];
+      const resolution = resolveTier(quality_setting ?? AudioQuality.Original, {
+        file_type: track.file_type,
+        effective_kbps: (stats.size * 8) / 1000 / track.duration.toNumber(),
+      });
 
-      const full_quality_kbps =
-        (stats.size * 8) / 1000 / track.duration.toNumber();
-      const do_convert =
-        quality_setting !== AudioQuality.Original &&
-        parseInt(mp3_quality_preference_kbps) < full_quality_kbps;
-
-      if (do_convert) {
+      if (resolution.convert) {
         try {
           const tmp_file = await convertAudioTrack(
-            mp3_quality_preference_kbps,
+            resolution.target_kbps,
             track,
           );
           const stats = await fs.stat(tmp_file);
@@ -332,7 +329,7 @@ export const TrackController = {
             res,
             {
               path: tmp_file,
-              type: "mp3",
+              type: "ogg",
               size: stats.size,
             },
             req.headers.range,
@@ -340,7 +337,7 @@ export const TrackController = {
         } catch (error) {
           console.error(`Failed to convert audio file.`, {
             id: req.params.id,
-            quality_preference_kbps: mp3_quality_preference_kbps,
+            target_kbps: resolution.target_kbps,
             error,
           });
         }

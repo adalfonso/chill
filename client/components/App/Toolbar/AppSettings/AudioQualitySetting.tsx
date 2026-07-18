@@ -2,7 +2,7 @@ import { useSignal } from "@preact/signals";
 import { useState } from "preact/hooks";
 
 import * as user from "@client/state/userStore";
-import { AudioQuality, AudioQualityBitrate } from "@common/types";
+import { AudioQuality, AUDIO_QUALITY_TARGET_KBPS } from "@common/types";
 import { Select } from "@client/components/ui/Select";
 import { api } from "@client/client";
 
@@ -42,7 +42,7 @@ export const AudioQualitySetting = () => {
       return key;
     }
 
-    return `${key} (~${AudioQualityBitrate[key]}kbps)`;
+    return `${key} (~${AUDIO_QUALITY_TARGET_KBPS[key]}kbps)`;
   };
 
   return (

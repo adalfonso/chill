@@ -28,11 +28,9 @@ export type UserType = (typeof UserType)[keyof typeof UserType]
 
 export const AudioQuality = {
   Original: 'Original',
-  Trash: 'Trash',
-  Low: 'Low',
+  High: 'High',
   Medium: 'Medium',
-  Standard: 'Standard',
-  Extreme: 'Extreme'
+  Low: 'Low'
 } as const
 
 export type AudioQuality = (typeof AudioQuality)[keyof typeof AudioQuality]
