@@ -10,6 +10,12 @@ import { db } from "@server/lib/data/db";
 import { AudioQuality, Prisma } from "@prisma/client";
 import { convert as convertAudioTrack } from "@server/lib/conversion";
 import { resolveTier } from "@server/lib/media/resolveTier";
+import { qualityToRenditionTier } from "@server/lib/media/renditionTiers";
+import {
+  findRendition,
+  moveRenditionIntoCache,
+} from "@server/lib/media/RenditionCache";
+import { markRenditionJobDone } from "@server/lib/media/RenditionQueue";
 import { stream_file as streamAudioTrack } from "@server/lib/io/stream";
 import { adjustImage } from "@server/lib/media/image/ImageAdjust";
 import { env } from "@server/init";
@@ -317,31 +323,7 @@ export const TrackController = {
         effective_kbps: (stats.size * 8) / 1000 / track.duration.toNumber(),
       });
 
-      if (resolution.convert) {
-        try {
-          const tmp_file = await convertAudioTrack(
-            resolution.target_kbps,
-            track,
-          );
-          const stats = await fs.stat(tmp_file);
-
-          await streamAudioTrack(
-            res,
-            {
-              path: tmp_file,
-              type: "ogg",
-              size: stats.size,
-            },
-            req.headers.range,
-          );
-        } catch (error) {
-          console.error(`Failed to convert audio file.`, {
-            id: req.params.id,
-            target_kbps: resolution.target_kbps,
-            error,
-          });
-        }
-      } else {
+      if (!resolution.convert) {
         await streamAudioTrack(
           res,
           {
@@ -351,6 +333,69 @@ export const TrackController = {
           },
           req.headers.range,
         );
+        return;
+      }
+
+      // Reaching here implies resolution.convert, which resolveTier only
+      // returns for a non-null, non-Original quality — so tier is set in
+      // practice; the null branch is type-level honesty, not a live path
+      const tier = quality_setting
+        ? qualityToRenditionTier(quality_setting)
+        : null;
+      const cached =
+        tier && track.audio_checksum
+          ? await findRendition(track.audio_checksum, tier)
+          : null;
+
+      if (cached) {
+        await streamAudioTrack(
+          res,
+          { path: cached.path, type: "ogg", size: cached.size },
+          req.headers.range,
+        );
+        return;
+      }
+
+      try {
+        console.info(
+          `Rendition cache miss for track=${id} tier=${tier ?? "none"}, converting on-the-fly`,
+        );
+
+        const encode_start = new Date();
+        const tmp_file = await convertAudioTrack(resolution.target_kbps, track);
+
+        let served = { path: tmp_file, size: (await fs.stat(tmp_file)).size };
+
+        if (tier && track.audio_checksum) {
+          served = await moveRenditionIntoCache(
+            track.audio_checksum,
+            tier,
+            tmp_file,
+          );
+          await markRenditionJobDone(track.audio_checksum, tier, {
+            started_at: encode_start,
+            source_codec: track.file_type,
+            source_bitrate: track.bitrate,
+            in_bytes: track.file_size,
+            out_bytes: served.size,
+          });
+        }
+
+        await streamAudioTrack(
+          res,
+          { path: served.path, type: "ogg", size: served.size },
+          req.headers.range,
+        );
+      } catch (error) {
+        console.error(`Failed to convert audio file.`, {
+          id: req.params.id,
+          target_kbps: resolution.target_kbps,
+          error,
+        });
+
+        if (!res.headersSent) {
+          res.status(500).send("Failed to convert audio file.");
+        }
       }
     } catch (e) {
       console.error(e);

@@ -34,3 +34,22 @@ export const AudioQuality = {
 } as const
 
 export type AudioQuality = (typeof AudioQuality)[keyof typeof AudioQuality]
+
+
+export const RenditionTier = {
+  High: 'High',
+  Medium: 'Medium',
+  Low: 'Low'
+} as const
+
+export type RenditionTier = (typeof RenditionTier)[keyof typeof RenditionTier]
+
+
+export const RenditionJobStatus = {
+  Pending: 'Pending',
+  Running: 'Running',
+  Done: 'Done',
+  Failed: 'Failed'
+} as const
+
+export type RenditionJobStatus = (typeof RenditionJobStatus)[keyof typeof RenditionJobStatus]

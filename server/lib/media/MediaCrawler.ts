@@ -10,7 +10,12 @@ import { Maybe } from "@common/types";
 import { db } from "../data/db";
 import { rebuildMusicSearchIndex } from "./MusicSearch";
 import { cacheAlbumArt } from "./image/ImageCache";
-import { deleteOrphans, deleteOrphanTracks } from "./deleteOrphans";
+import {
+  deleteOrphans,
+  deleteOrphanTracks,
+  deleteOrphanRenditions,
+} from "./deleteOrphans";
+import { enqueueEligibleRenditions } from "./RenditionQueue";
 
 /** Config options used by the crawler */
 type MediaCrawlerConfig = {
@@ -335,6 +340,7 @@ export class MediaCrawler {
     if (status === ScanStatus.Completed) {
       await deleteOrphanTracks(this._seen_paths);
       await deleteOrphans();
+      await deleteOrphanRenditions();
     }
 
     if (this._scan === null) {
@@ -362,6 +368,10 @@ export class MediaCrawler {
 
     await rebuildMusicSearchIndex();
     await cacheAlbumArt();
+
+    if (status === ScanStatus.Completed) {
+      await enqueueEligibleRenditions();
+    }
   }
 
   /**

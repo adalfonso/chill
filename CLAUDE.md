@@ -172,6 +172,17 @@ Search results include navigation paths (e.g., `/artist/123/album/456`) for deep
 
 **Conditional Blocks**: Always use curly braces — never write one-liner `if`/`else` statements without braces.
 
+**Documentation**:
+- Every function must have a complete docblock: summary, description, `@param` for each parameter, `@returns`, and `@throws` where applicable.
+- Avoid long blocks of procedural code. When a procedural block is unavoidable, comment each distinct step.
+- Document bespoke or non-obvious logic explicitly enough that a reader unfamiliar with the code can follow how it works from the comments alone.
+- When touching code, verify that existing comments/docblocks are still accurate — for the code itself and for its callers — and update any that have gone stale.
+
+**Style**:
+- Prefer functional programming patterns.
+- Prefer curried functions where currying makes them more composable.
+- Prefer higher-order array functions (`map`, `filter`, `reduce`, etc.) over manual loops when performance is not a concern.
+
 ## Production Deployment
 
 The Docker Compose setup supports environment-based configuration via `.env`:

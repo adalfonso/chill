@@ -170,3 +170,46 @@ enum AudioQuality {
   Medium
   Low
 }
+
+enum RenditionTier {
+  High
+  Medium
+  Low
+}
+
+enum RenditionJobStatus {
+  Pending
+  Running
+  Done
+  Failed
+}
+
+model Rendition {
+  id             Int           @id @default(autoincrement())
+  audio_checksum String
+  tier           RenditionTier
+  file_size      Int
+  created_at     DateTime      @default(now())
+
+  @@unique([audio_checksum, tier])
+  @@index([audio_checksum])
+}
+
+model RenditionJob {
+  id             Int                @id @default(autoincrement())
+  audio_checksum String
+  tier           RenditionTier
+  status         RenditionJobStatus @default(Pending)
+  priority       Int                @default(0)
+  enqueued_at    DateTime           @default(now())
+  started_at     DateTime?
+  finished_at    DateTime?
+  error          String?
+  source_codec   String?
+  source_bitrate Int?
+  in_bytes       Int?
+  out_bytes      Int?
+
+  @@unique([audio_checksum, tier])
+  @@index([status, priority, enqueued_at])
+}
