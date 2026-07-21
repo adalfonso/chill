@@ -14,8 +14,9 @@ import { renditionPath } from "@server/lib/media/RenditionCache";
  * *and its file is still on disk* — per ADR-0006 the cache directory is a
  * disposable, wipeable cache, so a surviving DB row with no backing file
  * must still be rebuilt. A job is also skipped if a pending/running job
- * already covers it — running/done/failed jobs are left alone so this never
- * clobbers in-progress or finished work.
+ * already covers it — pending/running jobs are left alone so this never
+ * clobbers in-progress work, but a failed job is reset to pending so a
+ * transient failure doesn't permanently block that tier.
  *
  * @param checksum - source track's audio checksum
  * @param tier - rendition quality tier
@@ -48,6 +49,23 @@ export const enqueueRendition = async (
   if (!existing_job) {
     await db.renditionJob.create({
       data: { audio_checksum: checksum, tier, priority },
+    });
+    return;
+  }
+
+  // A Failed job matches neither of the branches below, so without this it
+  // would be a permanent dead end — the unique (checksum, tier) constraint
+  // blocks recreating it, and nothing would ever reset it to Pending.
+  if (existing_job.status === RenditionJobStatus.Failed) {
+    await db.renditionJob.update({
+      where: { id: existing_job.id },
+      data: {
+        status: RenditionJobStatus.Pending,
+        priority: Math.max(priority, existing_job.priority),
+        error: null,
+        started_at: null,
+        finished_at: null,
+      },
     });
     return;
   }
