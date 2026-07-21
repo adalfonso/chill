@@ -1,15 +1,21 @@
+import fs from "node:fs/promises";
+
 import { RenditionTier, RenditionJobStatus } from "@prisma/client";
 
 import { db } from "@server/lib/data/db";
 import { resolveTier } from "@server/lib/media/resolveTier";
 import { renditionTierToQuality } from "@server/lib/media/renditionTiers";
+import { renditionPath } from "@server/lib/media/RenditionCache";
 
 /**
  * Enqueue a rendition job if one isn't already covered
  *
- * A job is skipped if a rendition already exists for this (checksum, tier),
- * or if a pending/running job already covers it — running/done/failed jobs
- * are left alone so this never clobbers in-progress or finished work.
+ * A job is skipped if a rendition already exists for this (checksum, tier)
+ * *and its file is still on disk* — per ADR-0006 the cache directory is a
+ * disposable, wipeable cache, so a surviving DB row with no backing file
+ * must still be rebuilt. A job is also skipped if a pending/running job
+ * already covers it — running/done/failed jobs are left alone so this never
+ * clobbers in-progress or finished work.
  *
  * @param checksum - source track's audio checksum
  * @param tier - rendition quality tier
@@ -25,7 +31,14 @@ export const enqueueRendition = async (
   });
 
   if (existing_rendition) {
-    return;
+    const exists_on_disk = await fs
+      .stat(renditionPath(checksum, tier))
+      .then(() => true)
+      .catch(() => false);
+
+    if (exists_on_disk) {
+      return;
+    }
   }
 
   const existing_job = await db.renditionJob.findUnique({
