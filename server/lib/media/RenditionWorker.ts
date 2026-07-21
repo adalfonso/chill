@@ -58,6 +58,7 @@ const runJob = async (job: {
       job.audio_checksum,
       job.tier,
       tmp_file,
+      target_kbps,
     );
 
     await db.renditionJob.update({

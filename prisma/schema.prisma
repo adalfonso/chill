@@ -190,6 +190,7 @@ model Rendition {
   audio_checksum String
   tier           RenditionTier
   file_size      Int
+  target_kbps    Int?
   created_at     DateTime      @default(now())
 
   @@unique([audio_checksum, tier])

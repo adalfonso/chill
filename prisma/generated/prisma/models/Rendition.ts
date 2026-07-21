@@ -29,11 +29,13 @@ export type AggregateRendition = {
 export type RenditionAvgAggregateOutputType = {
   id: number | null
   file_size: number | null
+  target_kbps: number | null
 }
 
 export type RenditionSumAggregateOutputType = {
   id: number | null
   file_size: number | null
+  target_kbps: number | null
 }
 
 export type RenditionMinAggregateOutputType = {
@@ -41,6 +43,7 @@ export type RenditionMinAggregateOutputType = {
   audio_checksum: string | null
   tier: $Enums.RenditionTier | null
   file_size: number | null
+  target_kbps: number | null
   created_at: Date | null
 }
 
@@ -49,6 +52,7 @@ export type RenditionMaxAggregateOutputType = {
   audio_checksum: string | null
   tier: $Enums.RenditionTier | null
   file_size: number | null
+  target_kbps: number | null
   created_at: Date | null
 }
 
@@ -57,6 +61,7 @@ export type RenditionCountAggregateOutputType = {
   audio_checksum: number
   tier: number
   file_size: number
+  target_kbps: number
   created_at: number
   _all: number
 }
@@ -65,11 +70,13 @@ export type RenditionCountAggregateOutputType = {
 export type RenditionAvgAggregateInputType = {
   id?: true
   file_size?: true
+  target_kbps?: true
 }
 
 export type RenditionSumAggregateInputType = {
   id?: true
   file_size?: true
+  target_kbps?: true
 }
 
 export type RenditionMinAggregateInputType = {
@@ -77,6 +84,7 @@ export type RenditionMinAggregateInputType = {
   audio_checksum?: true
   tier?: true
   file_size?: true
+  target_kbps?: true
   created_at?: true
 }
 
@@ -85,6 +93,7 @@ export type RenditionMaxAggregateInputType = {
   audio_checksum?: true
   tier?: true
   file_size?: true
+  target_kbps?: true
   created_at?: true
 }
 
@@ -93,6 +102,7 @@ export type RenditionCountAggregateInputType = {
   audio_checksum?: true
   tier?: true
   file_size?: true
+  target_kbps?: true
   created_at?: true
   _all?: true
 }
@@ -188,6 +198,7 @@ export type RenditionGroupByOutputType = {
   audio_checksum: string
   tier: $Enums.RenditionTier
   file_size: number
+  target_kbps: number | null
   created_at: Date
   _count: RenditionCountAggregateOutputType | null
   _avg: RenditionAvgAggregateOutputType | null
@@ -219,6 +230,7 @@ export type RenditionWhereInput = {
   audio_checksum?: Prisma.StringFilter<"Rendition"> | string
   tier?: Prisma.EnumRenditionTierFilter<"Rendition"> | $Enums.RenditionTier
   file_size?: Prisma.IntFilter<"Rendition"> | number
+  target_kbps?: Prisma.IntNullableFilter<"Rendition"> | number | null
   created_at?: Prisma.DateTimeFilter<"Rendition"> | Date | string
 }
 
@@ -227,6 +239,7 @@ export type RenditionOrderByWithRelationInput = {
   audio_checksum?: Prisma.SortOrder
   tier?: Prisma.SortOrder
   file_size?: Prisma.SortOrder
+  target_kbps?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrder
 }
 
@@ -239,6 +252,7 @@ export type RenditionWhereUniqueInput = Prisma.AtLeast<{
   audio_checksum?: Prisma.StringFilter<"Rendition"> | string
   tier?: Prisma.EnumRenditionTierFilter<"Rendition"> | $Enums.RenditionTier
   file_size?: Prisma.IntFilter<"Rendition"> | number
+  target_kbps?: Prisma.IntNullableFilter<"Rendition"> | number | null
   created_at?: Prisma.DateTimeFilter<"Rendition"> | Date | string
 }, "id" | "audio_checksum_tier">
 
@@ -247,6 +261,7 @@ export type RenditionOrderByWithAggregationInput = {
   audio_checksum?: Prisma.SortOrder
   tier?: Prisma.SortOrder
   file_size?: Prisma.SortOrder
+  target_kbps?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrder
   _count?: Prisma.RenditionCountOrderByAggregateInput
   _avg?: Prisma.RenditionAvgOrderByAggregateInput
@@ -263,6 +278,7 @@ export type RenditionScalarWhereWithAggregatesInput = {
   audio_checksum?: Prisma.StringWithAggregatesFilter<"Rendition"> | string
   tier?: Prisma.EnumRenditionTierWithAggregatesFilter<"Rendition"> | $Enums.RenditionTier
   file_size?: Prisma.IntWithAggregatesFilter<"Rendition"> | number
+  target_kbps?: Prisma.IntNullableWithAggregatesFilter<"Rendition"> | number | null
   created_at?: Prisma.DateTimeWithAggregatesFilter<"Rendition"> | Date | string
 }
 
@@ -270,6 +286,7 @@ export type RenditionCreateInput = {
   audio_checksum: string
   tier: $Enums.RenditionTier
   file_size: number
+  target_kbps?: number | null
   created_at?: Date | string
 }
 
@@ -278,6 +295,7 @@ export type RenditionUncheckedCreateInput = {
   audio_checksum: string
   tier: $Enums.RenditionTier
   file_size: number
+  target_kbps?: number | null
   created_at?: Date | string
 }
 
@@ -285,6 +303,7 @@ export type RenditionUpdateInput = {
   audio_checksum?: Prisma.StringFieldUpdateOperationsInput | string
   tier?: Prisma.EnumRenditionTierFieldUpdateOperationsInput | $Enums.RenditionTier
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
+  target_kbps?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -293,6 +312,7 @@ export type RenditionUncheckedUpdateInput = {
   audio_checksum?: Prisma.StringFieldUpdateOperationsInput | string
   tier?: Prisma.EnumRenditionTierFieldUpdateOperationsInput | $Enums.RenditionTier
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
+  target_kbps?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -301,6 +321,7 @@ export type RenditionCreateManyInput = {
   audio_checksum: string
   tier: $Enums.RenditionTier
   file_size: number
+  target_kbps?: number | null
   created_at?: Date | string
 }
 
@@ -308,6 +329,7 @@ export type RenditionUpdateManyMutationInput = {
   audio_checksum?: Prisma.StringFieldUpdateOperationsInput | string
   tier?: Prisma.EnumRenditionTierFieldUpdateOperationsInput | $Enums.RenditionTier
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
+  target_kbps?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -316,6 +338,7 @@ export type RenditionUncheckedUpdateManyInput = {
   audio_checksum?: Prisma.StringFieldUpdateOperationsInput | string
   tier?: Prisma.EnumRenditionTierFieldUpdateOperationsInput | $Enums.RenditionTier
   file_size?: Prisma.IntFieldUpdateOperationsInput | number
+  target_kbps?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -329,12 +352,14 @@ export type RenditionCountOrderByAggregateInput = {
   audio_checksum?: Prisma.SortOrder
   tier?: Prisma.SortOrder
   file_size?: Prisma.SortOrder
+  target_kbps?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
 }
 
 export type RenditionAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   file_size?: Prisma.SortOrder
+  target_kbps?: Prisma.SortOrder
 }
 
 export type RenditionMaxOrderByAggregateInput = {
@@ -342,6 +367,7 @@ export type RenditionMaxOrderByAggregateInput = {
   audio_checksum?: Prisma.SortOrder
   tier?: Prisma.SortOrder
   file_size?: Prisma.SortOrder
+  target_kbps?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
 }
 
@@ -350,12 +376,14 @@ export type RenditionMinOrderByAggregateInput = {
   audio_checksum?: Prisma.SortOrder
   tier?: Prisma.SortOrder
   file_size?: Prisma.SortOrder
+  target_kbps?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
 }
 
 export type RenditionSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   file_size?: Prisma.SortOrder
+  target_kbps?: Prisma.SortOrder
 }
 
 export type EnumRenditionTierFieldUpdateOperationsInput = {
@@ -369,6 +397,7 @@ export type RenditionSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   audio_checksum?: boolean
   tier?: boolean
   file_size?: boolean
+  target_kbps?: boolean
   created_at?: boolean
 }, ExtArgs["result"]["rendition"]>
 
@@ -377,6 +406,7 @@ export type RenditionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   audio_checksum?: boolean
   tier?: boolean
   file_size?: boolean
+  target_kbps?: boolean
   created_at?: boolean
 }, ExtArgs["result"]["rendition"]>
 
@@ -385,6 +415,7 @@ export type RenditionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   audio_checksum?: boolean
   tier?: boolean
   file_size?: boolean
+  target_kbps?: boolean
   created_at?: boolean
 }, ExtArgs["result"]["rendition"]>
 
@@ -393,10 +424,11 @@ export type RenditionSelectScalar = {
   audio_checksum?: boolean
   tier?: boolean
   file_size?: boolean
+  target_kbps?: boolean
   created_at?: boolean
 }
 
-export type RenditionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "audio_checksum" | "tier" | "file_size" | "created_at", ExtArgs["result"]["rendition"]>
+export type RenditionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "audio_checksum" | "tier" | "file_size" | "target_kbps" | "created_at", ExtArgs["result"]["rendition"]>
 
 export type $RenditionPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Rendition"
@@ -406,6 +438,7 @@ export type $RenditionPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     audio_checksum: string
     tier: $Enums.RenditionTier
     file_size: number
+    target_kbps: number | null
     created_at: Date
   }, ExtArgs["result"]["rendition"]>
   composites: {}
@@ -834,6 +867,7 @@ export interface RenditionFieldRefs {
   readonly audio_checksum: Prisma.FieldRef<"Rendition", 'String'>
   readonly tier: Prisma.FieldRef<"Rendition", 'RenditionTier'>
   readonly file_size: Prisma.FieldRef<"Rendition", 'Int'>
+  readonly target_kbps: Prisma.FieldRef<"Rendition", 'Int'>
   readonly created_at: Prisma.FieldRef<"Rendition", 'DateTime'>
 }
     

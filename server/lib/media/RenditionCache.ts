@@ -25,16 +25,25 @@ export const renditionPath = (checksum: string, tier: RenditionTier): string =>
 /**
  * Look up a cached rendition, verifying the file still exists on disk
  *
+ * A record whose stored `target_kbps` doesn't match the caller's current
+ * target is treated as stale (e.g. AUDIO_QUALITY_TARGET_KBPS changed since
+ * it was built) and reported as a cache miss so it gets rebuilt.
+ *
  * @param checksum - source track's audio checksum
  * @param tier - rendition quality tier
+ * @param target_kbps - the bitrate the caller currently expects for this tier
  * @returns file path and size, or null if no usable cache entry exists
  */
-export const findRendition = async (checksum: string, tier: RenditionTier) => {
+export const findRendition = async (
+  checksum: string,
+  tier: RenditionTier,
+  target_kbps: number,
+) => {
   const record = await db.rendition.findUnique({
     where: { audio_checksum_tier: { audio_checksum: checksum, tier } },
   });
 
-  if (!record) {
+  if (!record || record.target_kbps !== target_kbps) {
     return null;
   }
 
@@ -59,12 +68,15 @@ export const findRendition = async (checksum: string, tier: RenditionTier) => {
  * @param checksum - source track's audio checksum
  * @param tier - rendition quality tier
  * @param tmp_file_path - path of the converted file to move into the cache
+ * @param target_kbps - the bitrate this file was encoded at, stored so a
+ *   later config change can be detected as staleness
  * @returns final cached file path and size
  */
 export const moveRenditionIntoCache = async (
   checksum: string,
   tier: RenditionTier,
   tmp_file_path: string,
+  target_kbps: number,
 ) => {
   const file_path = renditionPath(checksum, tier);
 
@@ -98,9 +110,11 @@ export const moveRenditionIntoCache = async (
         audio_checksum: checksum,
         tier,
         file_size: stats.size,
+        target_kbps,
       },
       update: {
         file_size: stats.size,
+        target_kbps,
       },
     });
   } catch (error) {

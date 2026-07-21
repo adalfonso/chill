@@ -344,7 +344,11 @@ export const TrackController = {
         : null;
       const cached =
         tier && track.audio_checksum
-          ? await findRendition(track.audio_checksum, tier)
+          ? await findRendition(
+              track.audio_checksum,
+              tier,
+              resolution.target_kbps,
+            )
           : null;
 
       if (cached) {
@@ -371,6 +375,7 @@ export const TrackController = {
             track.audio_checksum,
             tier,
             tmp_file,
+            resolution.target_kbps,
           );
           await markRenditionJobDone(track.audio_checksum, tier, {
             started_at: encode_start,

@@ -4,19 +4,24 @@ import { RenditionTier, RenditionJobStatus } from "@prisma/client";
 
 import { db } from "@server/lib/data/db";
 import { resolveTier } from "@server/lib/media/resolveTier";
-import { renditionTierToQuality } from "@server/lib/media/renditionTiers";
+import {
+  renditionTierTargetKbps,
+  renditionTierToQuality,
+} from "@server/lib/media/renditionTiers";
 import { renditionPath } from "@server/lib/media/RenditionCache";
 
 /**
  * Enqueue a rendition job if one isn't already covered
  *
- * A job is skipped if a rendition already exists for this (checksum, tier)
+ * A job is skipped if a rendition already exists for this (checksum, tier),
+ * its stored bitrate still matches the tier's currently configured target,
  * *and its file is still on disk* — per ADR-0006 the cache directory is a
- * disposable, wipeable cache, so a surviving DB row with no backing file
- * must still be rebuilt. A job is also skipped if a pending/running job
- * already covers it — pending/running jobs are left alone so this never
- * clobbers in-progress work, but a failed job is reset to pending so a
- * transient failure doesn't permanently block that tier.
+ * disposable, wipeable cache, so a surviving DB row with no backing file (or
+ * one built at a since-changed bitrate) must still be rebuilt. A job is also
+ * skipped if a pending/running job already covers it — pending/running jobs
+ * are left alone so this never clobbers in-progress work, but a failed job
+ * is reset to pending so a transient failure doesn't permanently block that
+ * tier.
  *
  * @param checksum - source track's audio checksum
  * @param tier - rendition quality tier
@@ -31,7 +36,7 @@ export const enqueueRendition = async (
     where: { audio_checksum_tier: { audio_checksum: checksum, tier } },
   });
 
-  if (existing_rendition) {
+  if (existing_rendition?.target_kbps === renditionTierTargetKbps(tier)) {
     const exists_on_disk = await fs
       .stat(renditionPath(checksum, tier))
       .then(() => true)

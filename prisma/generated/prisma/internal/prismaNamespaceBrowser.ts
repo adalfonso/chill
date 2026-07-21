@@ -225,6 +225,7 @@ export const RenditionScalarFieldEnum = {
   audio_checksum: 'audio_checksum',
   tier: 'tier',
   file_size: 'file_size',
+  target_kbps: 'target_kbps',
   created_at: 'created_at'
 } as const
 
