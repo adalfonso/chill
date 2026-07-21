@@ -2,7 +2,6 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import { RenditionTier } from "@prisma/client";
-import { makeDirIfNotExists } from "@server/lib/file";
 import { db } from "@server/lib/data/db";
 
 const rendition_dir = "/opt/app/data/transcoded";
@@ -80,9 +79,9 @@ export const moveRenditionIntoCache = async (
 ) => {
   const file_path = renditionPath(checksum, tier);
 
-  await makeDirIfNotExists(rendition_dir);
-  await makeDirIfNotExists(path.dirname(path.dirname(file_path)));
-  await makeDirIfNotExists(path.dirname(file_path));
+  // A real failure here (permissions, disk full) should surface, not be
+  // swallowed — the EXDEV-vs-real-error check below depends on it.
+  await fs.mkdir(path.dirname(file_path), { recursive: true });
 
   try {
     await fs.rename(tmp_file_path, file_path);

@@ -1,10 +1,14 @@
 import fs from "node:fs/promises";
 
 /**
- * Makes a directory if id doesn't already exists
+ * Makes a directory if it doesn't already exist
+ *
+ * Best-effort: a failed `mkdir` is logged and swallowed rather than thrown,
+ * so callers that need to know creation actually succeeded (e.g. before
+ * writing into that directory) shouldn't rely on this — verify some other
+ * way, or create the directory themselves.
  *
  * @param dir - directory path
- * @throws if it fails to create the directory
  */
 export const makeDirIfNotExists = async (dir: string) => {
   try {
