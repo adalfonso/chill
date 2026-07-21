@@ -391,6 +391,18 @@ export const TrackController = {
           { path: served.path, type: "ogg", size: served.size },
           req.headers.range,
         );
+
+        if (served.path === tmp_file) {
+          // No cache key was available (missing checksum, or an unresolved
+          // tier), so moveRenditionIntoCache never ran to relocate this file
+          // — clean it up ourselves instead of leaking it in /tmp forever.
+          await fs.unlink(tmp_file).catch((error) =>
+            console.error("Failed to clean up temp transcode file", {
+              tmp_file,
+              error,
+            }),
+          );
+        }
       } catch (error) {
         console.error(`Failed to convert audio file.`, {
           id: req.params.id,
