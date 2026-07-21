@@ -28,6 +28,18 @@ const resetStaleRunningJobs = async () => {
   }
 };
 
+/**
+ * Transcode and cache a single claimed rendition job
+ *
+ * Looks up the job's source track by checksum (the job itself only stores
+ * `audio_checksum` + `tier`, not a track FK — see deleteOrphans.ts). Marks
+ * the job Failed immediately if no matching track exists (e.g. the track
+ * was removed since the job was enqueued); otherwise transcodes, moves the
+ * result into the rendition cache, and marks the job Done with encode
+ * telemetry, or Failed with the error message if any step throws.
+ *
+ * @param job - the claimed job's id, source checksum, and target tier
+ */
 const runJob = async (job: {
   id: number;
   audio_checksum: string;
@@ -93,6 +105,14 @@ const runJob = async (job: {
   }
 };
 
+/**
+ * Claim up to CONCURRENCY pending jobs and run them
+ *
+ * Selects the highest-priority, oldest-enqueued Pending jobs, flips them to
+ * Running up front (before any transcoding starts) so a concurrent caller
+ * — or this same function on its next poll tick — won't also pick them up,
+ * then runs them concurrently and waits for all to settle.
+ */
 const drainOnce = async () => {
   const claimable = await db.renditionJob.findMany({
     where: { status: RenditionJobStatus.Pending },
