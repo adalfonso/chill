@@ -74,8 +74,14 @@ export const moveRenditionIntoCache = async (
 
   try {
     await fs.rename(tmp_file_path, file_path);
-  } catch (_e) {
-    // Cross-device rename (EXDEV) — fall back to copy + unlink
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "EXDEV") {
+      // Not a cross-device rename — a real failure (missing dir, EACCES,
+      // ENOSPC). Don't mask it behind a misleading copy attempt.
+      throw error;
+    }
+
+    // Cross-device rename — fall back to copy + unlink
     console.info(
       `Rendition cache: cross-device rename for checksum=${checksum} tier=${tier}, falling back to copy`,
     );
