@@ -155,7 +155,7 @@ Search results include navigation paths (e.g., `/artist/123/album/456`) for deep
 **Database URL Switching**: Prisma migrations require changing `DATABASE_URL` from `postgres` (Docker service name) to `localhost`, running the migration, then reverting. This is because migrations run from the host, not inside Docker.
 
 **Media Serving**:
-- Audio streams: `/api/v1/media/:id/load` (transcodes based on user quality setting)
+- Audio streams: `/api/v1/media/:id/load` (transcodes based on user quality setting, serving from — and writing to — a rendition cache on disk keyed by audio checksum + tier; see `server/lib/media/RenditionCache.ts`)
 - Album art: `/api/v1/media/cover/:filename?size=256` (Sharp resizes on-demand)
 - Chromecast: `/cast/media/:id.mp3` (JWT token authentication)
 

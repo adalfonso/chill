@@ -292,7 +292,16 @@ export const TrackController = {
       WHERE track.id IN (SELECT id FROM random_tracks LIMIT ${limit})`) as Array<PlayableTrack>;
   },
 
-  /** Load a media file from is ID */
+  /**
+   * Load a track's audio for streaming, by ID
+   *
+   * Serves the original file as-is when the user's quality setting doesn't
+   * require conversion. Otherwise resolves the setting to a rendition tier
+   * and looks up a cached rendition for it; on a cache hit streams that file
+   * directly. On a miss, transcodes on the fly, moves the result into the
+   * rendition cache for future requests, records completion telemetry on
+   * its RenditionJob, and streams the freshly-built file.
+   */
   load: async (req: Req, res: Res) => {
     try {
       // Handles both /media/[123]/load and /media/[123.mp3]
