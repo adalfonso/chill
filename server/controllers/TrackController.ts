@@ -352,12 +352,22 @@ export const TrackController = {
           : null;
 
       if (cached) {
-        await streamAudioTrack(
-          res,
-          { path: cached.path, type: "ogg", size: cached.size },
-          req.headers.range,
-        );
-        return;
+        try {
+          await streamAudioTrack(
+            res,
+            { path: cached.path, type: "ogg", size: cached.size },
+            req.headers.range,
+          );
+          return;
+        } catch (error) {
+          // The cached file vanished between findRendition's check and this
+          // actually opening it (e.g. a concurrent orphan sweep) — fall
+          // through to a live transcode instead of failing the request.
+          console.error(
+            `Cached rendition read failed for track=${id} tier=${tier}, falling back to on-the-fly conversion`,
+            error,
+          );
+        }
       }
 
       try {

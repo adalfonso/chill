@@ -79,9 +79,16 @@ export const parseRange = (header: string, size: number): Maybe<ByteRange> => {
  * Content` with only the requested_range byte window; otherwise the whole file is sent
  * as `200`. Piping the read stream preserves backpressure.
  *
+ * A read error that happens before any bytes are sent (e.g. the file
+ * vanished between the caller checking for it and this actually opening it)
+ * rejects the returned promise instead of responding, so a caller can catch
+ * it and fall back to another source. Once headers are already sent we're
+ * committed to the response — a later error just ends the stream.
+ *
  * @param res - HTTP response
  * @param file - file data
  * @param range - raw `Range` request header, if any
+ * @throws if the file can't be read and no response has been sent yet
  */
 export const stream_file = async (
   res: Response,
@@ -112,13 +119,18 @@ export const stream_file = async (
 
   const stream = createReadStream(file.path, { start, end });
 
-  stream.on("error", () => {
-    if (!res.headersSent) {
-      res.sendStatus(500);
-    } else {
-      res.end();
-    }
-  });
+  await new Promise<void>((resolve, reject) => {
+    stream.on("error", (error) => {
+      if (res.headersSent) {
+        res.end();
+        resolve();
+        return;
+      }
 
-  stream.pipe(res);
+      reject(error);
+    });
+
+    stream.on("close", resolve);
+    stream.pipe(res);
+  });
 };
