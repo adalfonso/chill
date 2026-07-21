@@ -47,7 +47,7 @@ export type RawMediaPayload = {
 
 export type AlbumCover = {
   format: string;
-  data: Buffer;
+  data: Buffer<ArrayBuffer>;
   checksum: string;
   type: string;
 };
@@ -526,7 +526,7 @@ const getCoverData = async (
   input: Array<mm.IPicture> | undefined,
 ): Promise<
   Maybe<{
-    data: Buffer;
+    data: Buffer<ArrayBuffer>;
     checksum: string;
     format: string;
     type: string | undefined;
