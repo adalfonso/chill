@@ -78,6 +78,18 @@ export class MediaCrawler {
   /** Time/data the scan started */
   private _start_time: Maybe<Date> = null;
 
+  /** True while _complete() is finalizing this scan, to prevent re-entry */
+  private _completing = false;
+
+  /**
+   * The crawler instance for the scan currently in progress, if any.
+   *
+   * Each `scan()` call constructs a fresh `MediaCrawler`, so this is what lets
+   * a new crawl find and abort a still-running one instead of both crawling
+   * concurrently.
+   */
+  private static _active: Maybe<MediaCrawler> = null;
+
   /**
    * @param _config crawler config
    */
@@ -86,6 +98,9 @@ export class MediaCrawler {
   /**
    * Crawl a directory, get file meta data, and store in the DB
    *
+   * If another crawl is currently active, it is aborted first — only one
+   * scan runs at a time.
+   *
    * @param dir directory to start from
    * @returns crawler results
    */
@@ -93,6 +108,14 @@ export class MediaCrawler {
     if (this._scan !== null) {
       return this._scan;
     }
+
+    const previous = MediaCrawler._active;
+
+    if (previous && previous !== this) {
+      await previous.abort();
+    }
+
+    MediaCrawler._active = this;
 
     console.info("Crawling starting... 🐛");
 
@@ -328,8 +351,42 @@ export class MediaCrawler {
     return this._write_lock;
   }
 
+  /**
+   * Abort this crawl in progress
+   *
+   * Called on the previously-active crawler when a new scan starts. Finalizes
+   * immediately as `Aborted` instead of waiting for the queue to drain —
+   * `_tick()` and `_write()` both stop picking up new work as soon as the
+   * scan's status leaves `Active`, and `Aborted` skips orphan-cleanup and
+   * rendition-enqueue the same way `Failed` already does.
+   *
+   * No-ops if this crawl already finished, or is already finalizing (e.g. it
+   * reached natural completion in the same instant a new scan started) — in
+   * that narrow window the new scan simply runs after it, rather than
+   * corrupting the in-flight `_complete()` call.
+   */
+  public async abort() {
+    if (
+      this._scan === null ||
+      this._scan.status !== ScanStatus.Active ||
+      this._completing
+    ) {
+      return;
+    }
+
+    console.info("Crawl aborted — superseded by a newer scan 🐛");
+
+    await this._complete(ScanStatus.Aborted);
+  }
+
   /** Complete crawling */
   private async _complete(status: ScanStatus = ScanStatus.Completed) {
+    if (this._completing) {
+      return;
+    }
+
+    this._completing = true;
+
     this._available_workers = this._config.workers;
     this._queue = [];
 
@@ -357,6 +414,10 @@ export class MediaCrawler {
     await this._saveScan(this._scan);
 
     this._scan = null;
+
+    if (MediaCrawler._active === this) {
+      MediaCrawler._active = null;
+    }
 
     const start = this._start_time ?? new Date();
 

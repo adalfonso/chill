@@ -12,7 +12,8 @@
 export const ScanStatus = {
   Active: 'Active',
   Failed: 'Failed',
-  Completed: 'Completed'
+  Completed: 'Completed',
+  Aborted: 'Aborted'
 } as const
 
 export type ScanStatus = (typeof ScanStatus)[keyof typeof ScanStatus]

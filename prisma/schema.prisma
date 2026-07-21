@@ -130,6 +130,7 @@ enum ScanStatus {
   Active
   Failed
   Completed
+  Aborted
 }
 
 model Invitation {
