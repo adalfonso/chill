@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 
-import { RenditionTier, RenditionJobStatus } from "@prisma/client";
+import { RenditionTier, RenditionJobStatus, Prisma } from "@prisma/client";
 
 import { db } from "@server/lib/data/db";
 import { resolveTier } from "@server/lib/media/resolveTier";
@@ -52,9 +52,25 @@ export const enqueueRendition = async (
   });
 
   if (!existing_job) {
-    await db.renditionJob.create({
-      data: { audio_checksum: checksum, tier, priority },
-    });
+    try {
+      await db.renditionJob.create({
+        data: { audio_checksum: checksum, tier, priority },
+      });
+    } catch (error) {
+      // This check-then-create isn't transactional, so two enqueue calls
+      // for the same (checksum, tier) — e.g. two scans racing before scan
+      // coordination catches one of them — can both pass the check above
+      // and both attempt to create. The one that loses the unique
+      // constraint has nothing left to do: the winner's row already covers
+      // this job.
+      const is_duplicate =
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002";
+
+      if (!is_duplicate) {
+        throw error;
+      }
+    }
     return;
   }
 
