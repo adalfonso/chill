@@ -91,17 +91,26 @@ export const moveRenditionIntoCache = async (
 
   const stats = await fs.stat(file_path);
 
-  await db.rendition.upsert({
-    where: { audio_checksum_tier: { audio_checksum: checksum, tier } },
-    create: {
-      audio_checksum: checksum,
-      tier,
-      file_size: stats.size,
-    },
-    update: {
-      file_size: stats.size,
-    },
-  });
+  try {
+    await db.rendition.upsert({
+      where: { audio_checksum_tier: { audio_checksum: checksum, tier } },
+      create: {
+        audio_checksum: checksum,
+        tier,
+        file_size: stats.size,
+      },
+      update: {
+        file_size: stats.size,
+      },
+    });
+  } catch (error) {
+    // The file is already in place, but with no DB row it's invisible to
+    // findRendition and to deleteOrphanRenditions' DB-driven sweep, so it
+    // would otherwise leak on disk forever. Clean it up and surface the
+    // failure instead.
+    await fs.unlink(file_path).catch(() => {});
+    throw error;
+  }
 
   console.info(
     `Rendition cache: wrote checksum=${checksum} tier=${tier} size=${stats.size} path=${file_path}`,
