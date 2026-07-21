@@ -106,8 +106,13 @@ const drainOnce = async () => {
 
   const claimed_ids = claimable.map((job) => job.id);
 
+  // Guard the claim on status still being Pending — a defensive check
+  // against a job's status changing between the findMany above and this
+  // update (only meaningful if this ever runs as more than one process;
+  // today's single-process/single-interval design makes it unreachable in
+  // practice, but it's cheap insurance against that assumption changing).
   await db.renditionJob.updateMany({
-    where: { id: { in: claimed_ids } },
+    where: { id: { in: claimed_ids }, status: RenditionJobStatus.Pending },
     data: { status: RenditionJobStatus.Running, started_at: new Date() },
   });
 
