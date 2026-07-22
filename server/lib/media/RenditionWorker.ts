@@ -1,3 +1,5 @@
+import os from "node:os";
+
 import { RenditionTier, RenditionJobStatus } from "@prisma/client";
 
 import { db } from "@server/lib/data/db";
@@ -5,8 +7,27 @@ import { renditionTierTargetKbps } from "@server/lib/media/renditionTiers";
 import { convert as convertAudioTrack } from "@server/lib/conversion";
 import { moveRenditionIntoCache } from "@server/lib/media/RenditionCache";
 
-const CONCURRENCY = 4;
+const MAX_CONCURRENCY = Math.max(1, os.cpus().length - 1);
 const POLL_INTERVAL_MS = 3000;
+
+/**
+ * Pick how many rendition jobs to claim on this tick
+ *
+ * This host also runs Plex, a file server, and other containers outside
+ * this process's control, so a flat concurrency cap either wastes idle
+ * cores or piles ffmpeg on top of an already-busy machine. Instead, this
+ * checks the 1-minute load average (host-wide on Linux, not just this
+ * container's cgroup share) and backs off as load approaches one job per
+ * core, down to a floor of 1 so the queue never fully stalls.
+ *
+ * @returns number of jobs to claim this tick, between 1 and MAX_CONCURRENCY
+ */
+const currentConcurrencyBudget = (): number => {
+  const [load_1m] = os.loadavg();
+  const headroom = os.cpus().length - load_1m;
+
+  return Math.min(MAX_CONCURRENCY, Math.max(1, Math.floor(headroom)));
+};
 
 /**
  * Reset jobs stuck in `running` back to `pending`
@@ -106,18 +127,20 @@ const runJob = async (job: {
 };
 
 /**
- * Claim up to CONCURRENCY pending jobs and run them
+ * Claim up to the current concurrency budget's worth of pending jobs and run them
  *
  * Selects the highest-priority, oldest-enqueued Pending jobs, flips them to
  * Running up front (before any transcoding starts) so a concurrent caller
  * — or this same function on its next poll tick — won't also pick them up,
- * then runs them concurrently and waits for all to settle.
+ * then runs them concurrently and waits for all to settle. How many jobs
+ * are claimed is decided fresh each tick by `currentConcurrencyBudget`, so
+ * a busy tick backs off without needing to cancel already-running jobs.
  */
 const drainOnce = async () => {
   const claimable = await db.renditionJob.findMany({
     where: { status: RenditionJobStatus.Pending },
     orderBy: [{ priority: "desc" }, { enqueued_at: "asc" }],
-    take: CONCURRENCY,
+    take: currentConcurrencyBudget(),
   });
 
   if (claimable.length === 0) {
@@ -146,15 +169,17 @@ const drainOnce = async () => {
 /**
  * Start the background rendition drain loop
  *
- * Polls for pending RenditionJob rows and transcodes up to CONCURRENCY of
- * them at a time. Deliberately modest concurrency relative to the crawler's
- * worker pool — this is CPU-bound (ffmpeg) where the crawler is I/O-bound,
- * so a flat cap avoids starving crawl throughput without needing explicit
- * coordination between the two.
+ * Polls for pending RenditionJob rows and transcodes up to the current
+ * load-based concurrency budget of them at a time (see
+ * `currentConcurrencyBudget`), capped at MAX_CONCURRENCY. This is CPU-bound
+ * (ffmpeg) work sharing the host with other processes — Plex, a file
+ * server, the crawler's I/O-bound worker pool, etc — so the budget backs
+ * off under load instead of relying on a flat cap tuned for this process
+ * alone.
  */
 export const startRenditionWorker = () => {
   console.info(
-    `Rendition worker: starting (concurrency=${CONCURRENCY}, poll_interval_ms=${POLL_INTERVAL_MS})`,
+    `Rendition worker: starting (max_concurrency=${MAX_CONCURRENCY}, poll_interval_ms=${POLL_INTERVAL_MS})`,
   );
 
   resetStaleRunningJobs().catch((error) =>
