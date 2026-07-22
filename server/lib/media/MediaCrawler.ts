@@ -360,10 +360,15 @@ export class MediaCrawler {
    * scan's status leaves `Active`, and `Aborted` skips orphan-cleanup and
    * rendition-enqueue the same way `Failed` already does.
    *
-   * No-ops if this crawl already finished, or is already finalizing (e.g. it
-   * reached natural completion in the same instant a new scan started) — in
-   * that narrow window the new scan simply runs after it, rather than
-   * corrupting the in-flight `_complete()` call.
+   * No-ops if this crawl already finished, or is already finalizing — the
+   * `_completing` flag stays true for `_complete()`'s entire tail (final
+   * write, orphan cleanup, saving the scan, search reindex, album art
+   * caching), so this is a real window, not an instant: any new scan
+   * started while a previous one is finalizing simply runs after it, rather
+   * than corrupting the in-flight `_complete()` call. `enqueueRendition`'s
+   * duplicate-key handling exists to cover the consequence of that window —
+   * both crawlers can reach `enqueueEligibleRenditions()` for the same
+   * (checksum, tier).
    */
   public async abort() {
     if (
