@@ -40,7 +40,12 @@ export const Select = <T,>({
               className={value === child.props.value ? "selected" : ""}
               key={child.props.value}
             >
-              {child}
+              {/* `<option>` is only valid inside a native <select>/<datalist>;
+                  rendered standalone like this it's invalid markup, and iOS
+                  WebKit applies its native menu-widget rendering to it even
+                  outside that context, which was making the label invisible.
+                  A plain <span> carries no such special-cased behavior. */}
+              <span>{child.props.children}</span>
             </div>
           );
         })}
