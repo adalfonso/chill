@@ -11,25 +11,6 @@ const MAX_CONCURRENCY = Math.max(1, os.cpus().length - 1);
 const POLL_INTERVAL_MS = 3000;
 
 /**
- * Pick how many rendition jobs to claim on this tick
- *
- * This host also runs Plex, a file server, and other containers outside
- * this process's control, so a flat concurrency cap either wastes idle
- * cores or piles ffmpeg on top of an already-busy machine. Instead, this
- * checks the 1-minute load average (host-wide on Linux, not just this
- * container's cgroup share) and backs off as load approaches one job per
- * core, down to a floor of 1 so the queue never fully stalls.
- *
- * @returns number of jobs to claim this tick, between 1 and MAX_CONCURRENCY
- */
-const currentConcurrencyBudget = (): number => {
-  const [load_1m] = os.loadavg();
-  const headroom = os.cpus().length - load_1m;
-
-  return Math.min(MAX_CONCURRENCY, Math.max(1, Math.floor(headroom)));
-};
-
-/**
  * Reset jobs stuck in `running` back to `pending`
  *
  * v1 restart-safety: a process crash/restart mid-job leaves no heartbeat, so
@@ -127,55 +108,97 @@ const runJob = async (job: {
 };
 
 /**
- * Claim up to the current concurrency budget's worth of pending jobs and run them
+ * Atomically claim the single highest-priority, oldest-enqueued Pending job
  *
- * Selects the highest-priority, oldest-enqueued Pending jobs, flips them to
- * Running up front (before any transcoding starts) so a concurrent caller
- * — or this same function on its next poll tick — won't also pick them up,
- * then runs them concurrently and waits for all to settle. How many jobs
- * are claimed is decided fresh each tick by `currentConcurrencyBudget`, so
- * a busy tick backs off without needing to cancel already-running jobs.
+ * Uses `updateMany` filtered on `status: Pending` as the atomic compare-and-set:
+ * concurrent slots racing this at the same moment can each only flip a row
+ * that's still Pending, so two slots can never claim the same job. The
+ * candidate row is picked first via `findFirst` (cheap, no lock held across
+ * it), then the update re-checks its id + Pending status. With many slots
+ * racing this against the same "oldest pending" row (e.g. all `MAX_CONCURRENCY`
+ * slots starting together on a fresh `tick`), only one wins per candidate —
+ * the rest come back `"contended"` and must retry against a new candidate
+ * rather than give up, or the pool collapses to however many won their
+ * *first* race instead of settling at full concurrency.
+ *
+ * @returns the claimed job, `"contended"` if another slot won the race (retry),
+ *   or `"empty"` if there is truly nothing Pending
  */
-const drainOnce = async () => {
-  const claimable = await db.renditionJob.findMany({
+const claimNextJob = async (): Promise<
+  | { id: number; audio_checksum: string; tier: RenditionTier }
+  | "contended"
+  | "empty"
+> => {
+  const candidate = await db.renditionJob.findFirst({
     where: { status: RenditionJobStatus.Pending },
     orderBy: [{ priority: "desc" }, { enqueued_at: "asc" }],
-    take: currentConcurrencyBudget(),
   });
 
-  if (claimable.length === 0) {
-    return;
+  if (!candidate) {
+    return "empty";
   }
 
-  const claimed_ids = claimable.map((job) => job.id);
-
-  // Guard the claim on status still being Pending — a defensive check
-  // against a job's status changing between the findMany above and this
-  // update (only meaningful if this ever runs as more than one process;
-  // today's single-process/single-interval design makes it unreachable in
-  // practice, but it's cheap insurance against that assumption changing).
-  await db.renditionJob.updateMany({
-    where: { id: { in: claimed_ids }, status: RenditionJobStatus.Pending },
+  const { count } = await db.renditionJob.updateMany({
+    where: { id: candidate.id, status: RenditionJobStatus.Pending },
     data: { status: RenditionJobStatus.Running, started_at: new Date() },
   });
 
-  console.info(
-    `Rendition worker: claimed ${claimable.length} job(s): ${claimed_ids.join(", ")}`,
-  );
+  if (count === 0) {
+    return "contended";
+  }
 
-  await Promise.all(claimable.map(runJob));
+  return candidate;
+};
+
+/**
+ * Run one worker slot: claim a job, run it, and repeat until the queue is empty
+ *
+ * Each slot is a persistent loop rather than a one-shot batch member — as
+ * soon as this slot's job finishes it immediately claims the next one, so a
+ * fast job never sits idle waiting on a slower sibling in the same batch to
+ * finish (the old batch-claim/`Promise.all`/rebatch design stalled every
+ * slot until the whole batch settled). A `"contended"` claim (lost a race
+ * against a sibling slot for the same candidate row) retries immediately
+ * rather than exiting — otherwise most of the pool would drop out on the
+ * first `tick` whenever many slots start together, collapsing concurrency
+ * down to whoever happened to win their first race. Only returns once
+ * `claimNextJob` reports the queue genuinely `"empty"`; the caller
+ * re-invokes all slots together on the next poll tick to pick up newly
+ * enqueued work.
+ */
+const runSlot = async (): Promise<void> => {
+  for (;;) {
+    const claim = await claimNextJob();
+
+    if (claim === "empty") {
+      return;
+    }
+
+    if (claim === "contended") {
+      continue;
+    }
+
+    await runJob(claim);
+  }
 };
 
 /**
  * Start the background rendition drain loop
  *
- * Polls for pending RenditionJob rows and transcodes up to the current
- * load-based concurrency budget of them at a time (see
- * `currentConcurrencyBudget`), capped at MAX_CONCURRENCY. This is CPU-bound
- * (ffmpeg) work sharing the host with other processes — Plex, a file
- * server, the crawler's I/O-bound worker pool, etc — so the budget backs
- * off under load instead of relying on a flat cap tuned for this process
- * alone.
+ * Runs MAX_CONCURRENCY persistent worker slots (see `runSlot`), each
+ * independently claiming and running one RenditionJob at a time until the
+ * queue is empty. This is CPU-bound (ffmpeg) work and intentionally runs at
+ * full tilt to drain the backlog as fast as possible — it does not back off
+ * for other processes sharing the host (Plex, a file server, the crawler's
+ * I/O-bound worker pool, etc), so expect CPU contention with them while
+ * jobs are queued.
+ *
+ * All slots run out once the queue empties, so POLL_INTERVAL_MS paces
+ * re-checking for newly enqueued work — it's an idle poll, not a per-job
+ * wait, since each slot already moves to its next job the instant it's free.
+ * Each idle tick does one cheap existence check before spinning up the pool,
+ * so a quiet queue costs a single query per tick rather than MAX_CONCURRENCY
+ * slots each independently finding nothing to claim.
  */
 export const startRenditionWorker = () => {
   console.info(
@@ -188,17 +211,31 @@ export const startRenditionWorker = () => {
 
   let draining = false;
 
-  setInterval(() => {
+  const tick = async () => {
     if (draining) {
+      return;
+    }
+
+    // Cheap up-front check so an idle queue costs one query per tick instead
+    // of spinning up all MAX_CONCURRENCY slots just to have each of them
+    // independently discover there's nothing to claim.
+    const has_pending = await db.renditionJob.findFirst({
+      where: { status: RenditionJobStatus.Pending },
+      select: { id: true },
+    });
+
+    if (!has_pending) {
       return;
     }
 
     draining = true;
 
-    drainOnce()
+    Promise.all(Array.from({ length: MAX_CONCURRENCY }, runSlot))
       .catch((error) => console.error("Rendition worker drain failed", error))
       .finally(() => {
         draining = false;
       });
-  }, POLL_INTERVAL_MS);
+  };
+
+  setInterval(tick, POLL_INTERVAL_MS);
 };
