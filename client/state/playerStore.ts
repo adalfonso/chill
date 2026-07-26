@@ -20,6 +20,29 @@ import { shuffle as _shuffle, findIndex } from "@common/commonUtils";
 export let audio = new Audio();
 export let crossover = new Audio();
 
+/**
+ * Whether this browser engine can decode Opus inside an Ogg container
+ *
+ * WebKit (desktop Safari, and every iOS browser — Chrome/Firefox/Edge on iOS
+ * are all WebKit under Apple's platform engine mandate) decodes Opus but
+ * never inside Ogg. Probed once so `mediaLoadUrl` can request a CAF remux
+ * from the server instead.
+ */
+const supports_ogg_opus = audio.canPlayType('audio/ogg; codecs="opus"') !== "";
+
+/**
+ * Build the `/load` URL for a track's audio
+ *
+ * Appends `?container=caf` when this browser can't decode Opus in an Ogg
+ * container, so the server remuxes the cached/transcoded rendition instead
+ * of serving Ogg to a client that will silently fail to play it.
+ *
+ * @param id - track id
+ * @returns media load URL
+ */
+const mediaLoadUrl = (id: number | undefined) =>
+  `/api/v1/media/${id}/load${supports_ogg_opus ? "" : "?container=caf"}`;
+
 // iOS requires a user gesture to unlock each Audio element individually.
 // We silently play+pause crossover during the first real play call so both
 // elements are unlocked in the same gesture, allowing gapless swapping later.
@@ -455,11 +478,11 @@ const load = (use_crossover = false) => {
    * already been set as the current audio.
    */
   if (!use_crossover) {
-    audio.src = `/api/v1/media/${now_playing.value?.id}/load`;
+    audio.src = mediaLoadUrl(now_playing.value?.id);
   }
 
   if (next_playing.value) {
-    crossover.src = `/api/v1/media/${next_playing.value?.id}/load`;
+    crossover.src = mediaLoadUrl(next_playing.value?.id);
   }
 };
 
@@ -475,6 +498,6 @@ const loadNextTrack = () => {
   next_playing.value = playlist.value[index.value + 1] ?? null;
 
   crossover.src = next_playing.value
-    ? `/api/v1/media/${next_playing.value?.id}/load`
+    ? mediaLoadUrl(next_playing.value?.id)
     : "";
 };

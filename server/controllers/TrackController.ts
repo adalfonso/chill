@@ -8,7 +8,10 @@ import { PlayableTrack } from "@common/types";
 import { Request } from "@server/trpc";
 import { db } from "@server/lib/data/db";
 import { AudioQuality, Prisma } from "@prisma/client";
-import { convert as convertAudioTrack } from "@server/lib/conversion";
+import {
+  convert as convertAudioTrack,
+  remuxToCaf,
+} from "@server/lib/conversion";
 import { resolveTier } from "@server/lib/media/resolveTier";
 import { qualityToRenditionTier } from "@server/lib/media/renditionTiers";
 import {
@@ -46,6 +49,53 @@ export const schema = {
       .optional(),
     exclusions: z.array(z.number().int()),
   }),
+};
+
+/**
+ * Stream a produced Opus/Ogg rendition, remuxing to CAF first if the
+ * requesting client declared it can't decode Opus inside an Ogg container
+ * (every WebKit-based browser — desktop Safari and all iOS browsers, which
+ * are all WebKit under Apple's platform engine mandate).
+ *
+ * The remux is a lossless stream copy (no re-encode), so it's done
+ * per-request rather than added as a cache dimension.
+ *
+ * @param res - HTTP response
+ * @param file - cached or freshly transcoded Ogg/Opus file
+ * @param wants_caf - true when the client can't play Ogg/Opus
+ * @param range - raw Range request header, if any
+ * @throws if the source file can't be read (propagates to the caller's
+ *   cache-miss fallback)
+ */
+const streamOpusRendition = async (
+  res: Res,
+  file: { path: string; size: number },
+  wants_caf: boolean,
+  range: string | undefined,
+) => {
+  if (!wants_caf) {
+    await streamAudioTrack(res, { ...file, type: "ogg" }, range);
+    return;
+  }
+
+  const caf_path = await remuxToCaf(file.path);
+
+  try {
+    const caf_size = (await fs.stat(caf_path)).size;
+
+    await streamAudioTrack(
+      res,
+      { path: caf_path, type: "caf", size: caf_size },
+      range,
+    );
+  } finally {
+    await fs.unlink(caf_path).catch((error) =>
+      console.error("Failed to clean up temp CAF remux file", {
+        caf_path,
+        error,
+      }),
+    );
+  }
 };
 
 export const TrackController = {
@@ -301,6 +351,11 @@ export const TrackController = {
    * directly. On a miss, transcodes on the fly, moves the result into the
    * rendition cache for future requests, records completion telemetry on
    * its RenditionJob, and streams the freshly-built file.
+   *
+   * Ogg/Opus renditions are remuxed to CAF on the way out when the request
+   * carries `?container=caf` — WebKit clients (desktop Safari, all iOS
+   * browsers) declare this because they can decode Opus but not inside Ogg.
+   * The cache itself always stores Ogg; the remux happens per-request.
    */
   load: async (req: Req, res: Res) => {
     try {
@@ -345,6 +400,10 @@ export const TrackController = {
         return;
       }
 
+      // WebKit (desktop Safari, all iOS browsers) can decode Opus but never
+      // inside an Ogg container — the client probes this itself and asks.
+      const wants_caf = req.query.container === "caf";
+
       // Reaching here implies resolution.convert, which resolveTier only
       // returns for a non-null, non-Original quality — so tier is set in
       // practice; the null branch is type-level honesty, not a live path
@@ -362,11 +421,7 @@ export const TrackController = {
 
       if (cached) {
         try {
-          await streamAudioTrack(
-            res,
-            { path: cached.path, type: "ogg", size: cached.size },
-            req.headers.range,
-          );
+          await streamOpusRendition(res, cached, wants_caf, req.headers.range);
           return;
         } catch (error) {
           // The cached file vanished between findRendition's check and this
@@ -405,11 +460,7 @@ export const TrackController = {
           });
         }
 
-        await streamAudioTrack(
-          res,
-          { path: served.path, type: "ogg", size: served.size },
-          req.headers.range,
-        );
+        await streamOpusRendition(res, served, wants_caf, req.headers.range);
 
         if (served.path === tmp_file) {
           // No cache key was available (missing checksum, or an unresolved

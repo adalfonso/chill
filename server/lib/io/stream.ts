@@ -18,6 +18,7 @@ const MIME_TYPES: Record<string, string> = {
   ogg: "audio/ogg",
   opus: "audio/opus",
   wav: "audio/wav",
+  caf: "audio/x-caf",
 };
 
 type ByteRange = { start: number; end: number };
