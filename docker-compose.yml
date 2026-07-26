@@ -13,7 +13,7 @@ services:
       # Transcoded renditions live on their own path (e.g. a larger/cheaper
       # disk), separate from the SSD-backed app_data volume above. Mounted
       # outside /opt/app/data rather than nested under it — see ADR-0008.
-      - ${TRANSCODED_PATH}:/opt/app/transcoded
+      - ${TRANSCODED_PATH:?TRANSCODED_PATH must be set — see .env.example}:/opt/app/transcoded
     depends_on:
       - postgres
       - redis
