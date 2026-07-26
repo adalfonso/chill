@@ -70,6 +70,7 @@ const required_vars = [
   "SEARCH_ENGINE_USERNAME",
   "SIGNING_KEY",
   "SOURCE_DIR",
+  "TRANSCODED_PATH",
 ] as const;
 
 const defaults: Record<string, string> = {
@@ -99,7 +100,7 @@ const initEnvVars = () => {
 
   // Check for required env vars
   required_vars.map((key) => {
-    const value = process.env[key] ?? defaults[key];
+    const value = process.env[key] || defaults[key];
 
     if (value === undefined) {
       throw new Error(`Missing env value for ${key}`);

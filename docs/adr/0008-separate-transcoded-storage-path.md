@@ -54,10 +54,12 @@ for space that's better spent elsewhere.
   (`app_data`-backed) location. Both the DB (`Rendition`/`RenditionJob`) and both candidate
   directories were wiped to guarantee a clean slate rather than trying to reconcile which of two
   locations was authoritative.
-- Deploying this requires setting `TRANSCODED_PATH` in prod `.env` before first boot. Rather than
-  leave that as an implicit assumption, `docker-compose.yml` uses Compose's required-variable
-  interpolation (`${TRANSCODED_PATH:?…}`) so `docker compose up`/`config` fails immediately with a
-  clear message if it's unset or empty, instead of silently attempting to mount an empty path.
+- Deploying this requires setting `TRANSCODED_PATH` in prod `.env` before first boot. Unlike
+  `MEDIA_PATH`/`SSL_PATH`/`NGINX_CONFIG_PATH` — host-path-only vars the Node app never reads —
+  `TRANSCODED_PATH` is also added to [`server/init.ts`](../../server/init.ts)'s `required_vars`, so
+  Express itself refuses to start if it's missing or blank. The app still never uses the value for
+  anything (the container-internal path stays `/opt/app/transcoded` regardless); this is a
+  presence check only, not a case of the app needing the host path.
 - General lesson: a nested bind mount (mounting a path under an already-mounted directory) isn't
   reliable enough to assume silently — verify with `/proc/mounts` and inode comparison inside the
   actual running container, not just `docker inspect`'s reported config, before trusting it.
