@@ -10,6 +10,10 @@ services:
       # Map work dir paths to (shared) named volumes
       - public_html:/usr/src/app/dist/client
       - app_data:/opt/app/data
+      # Transcoded renditions live on their own path (e.g. a larger/cheaper
+      # disk), separate from the SSD-backed app_data volume above. Mounted
+      # outside /opt/app/data rather than nested under it — see ADR-0008.
+      - ${TRANSCODED_PATH}:/opt/app/transcoded
     depends_on:
       - postgres
       - redis

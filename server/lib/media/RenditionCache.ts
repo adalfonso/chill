@@ -4,7 +4,13 @@ import path from "node:path";
 import { RenditionTier } from "@prisma/client";
 import { db } from "@server/lib/data/db";
 
-const rendition_dir = "/opt/app/data/transcoded";
+// Container-internal path only — what's mounted here is configured at the
+// Docker layer (TRANSCODED_PATH in prod, hardcoded in docker-compose.dev.yml)
+// and deliberately separate from the app_data volume (see ADR-0008). Lives
+// outside /opt/app/data (rather than nested under it) because a bind mount
+// nested under an already-bind-mounted parent was observed to silently not
+// apply under Tilt — see ADR-0008.
+const rendition_dir = "/opt/app/transcoded";
 
 /**
  * Build the on-disk path for a rendition, sharded by checksum prefix

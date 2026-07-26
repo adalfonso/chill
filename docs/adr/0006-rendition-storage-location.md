@@ -1,6 +1,7 @@
 # ADR-0006: Where transcoded renditions are stored
 
-- **Status:** Accepted
+- **Status:** Accepted (storage path amended by [[0008-separate-transcoded-storage-path]] —
+  renditions no longer share the `app_data` volume with album art)
 - **Date:** 2026-06-27
 - **Deciders:** Anthony
 
