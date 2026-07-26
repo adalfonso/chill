@@ -14,7 +14,6 @@ describe("resolveTier", () => {
   describe("lossless sources always convert", () => {
     it.each([
       [AudioQuality.Low, 64],
-      [AudioQuality.Medium, 96],
       [AudioQuality.High, 160],
     ])("%s -> target %ikbps", (requested, target_kbps) => {
       expect(
@@ -27,10 +26,8 @@ describe("resolveTier", () => {
     it.each([
       // [source kbps, requested tier, expected]
       [128, AudioQuality.Low, { convert: false }],
-      [128, AudioQuality.Medium, { convert: false }],
       [128, AudioQuality.High, { convert: false }],
       [320, AudioQuality.Low, { convert: true, target_kbps: 64 }],
-      [320, AudioQuality.Medium, { convert: true, target_kbps: 96 }],
       [320, AudioQuality.High, { convert: false }],
     ])(
       "%ikbps mp3 requesting %s -> %o",
@@ -44,10 +41,10 @@ describe("resolveTier", () => {
 
   it("applies the same threshold regardless of lossy codec", () => {
     expect(
-      resolveTier(AudioQuality.Medium, {
+      resolveTier(AudioQuality.Low, {
         file_type: "aac",
         effective_kbps: 256,
       }),
-    ).toEqual({ convert: true, target_kbps: 96 });
+    ).toEqual({ convert: true, target_kbps: 64 });
   });
 });

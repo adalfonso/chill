@@ -5,7 +5,7 @@ const LOSSLESS_TYPES = new Set(["flac", "wav", "aiff", "alac"]);
 /**
  * No-tandem rule: skip re-encoding a lossy source once it's already at/near
  * the target tier's data cost. Reproduces ADR-0002's examples exactly (128k
- * mp3 skips low/medium/high; 320k mp3 skips only high).
+ * mp3 skips low/high; 320k mp3 skips only high).
  */
 const NO_TANDEM_MULTIPLIER = 2;
 

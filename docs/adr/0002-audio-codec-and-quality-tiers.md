@@ -1,6 +1,7 @@
 # ADR-0002: Audio codec, quality tiers, and the no-tandem rule
 
-- **Status:** Accepted
+- **Status:** Accepted (tier table amended by [[0007-collapse-to-two-lossy-tiers]] — `medium` was
+  dropped)
 - **Date:** 2026-06-27
 - **Deciders:** Anthony
 

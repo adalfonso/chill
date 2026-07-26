@@ -108,8 +108,8 @@ export const enqueueRendition = async (
  * Called when a rendition is produced synchronously (a live cache-miss
  * transcode in `load`) rather than by the background worker. Upserts on
  * (checksum, tier): flips an existing eager job to Done, or creates a Done
- * row when none was ever enqueued — e.g. lazily-built high/low tiers, which
- * are never eagerly queued. Keeps every produced rendition represented in
+ * row when none was ever enqueued — e.g. a lazily-built high tier, which
+ * is never eagerly queued. Keeps every produced rendition represented in
  * queue telemetry regardless of who built it.
  *
  * @param checksum - source track's audio checksum
@@ -153,13 +153,15 @@ export const markRenditionJobDone = async (
 };
 
 /**
- * Enqueue eager `medium` rendition jobs for every no-tandem-eligible track
+ * Enqueue eager `low` rendition jobs for every no-tandem-eligible track
  *
- * Called after a fully completed scan. v1 only ships `medium` eagerly per
- * ADR-0003 — `high`/`low` are generated lazily via cache-miss fallback only.
+ * Called after a fully completed scan. Per ADR-0007, `low` ships eagerly
+ * (it's the tier most listeners will pick for the car/cellular use case
+ * driving this feature) — `high` is generated lazily via cache-miss
+ * fallback only.
  */
 export const enqueueEligibleRenditions = async () => {
-  const tier = RenditionTier.Medium;
+  const tier = RenditionTier.Low;
 
   console.info(`Enqueuing eligible ${tier} renditions...`);
 

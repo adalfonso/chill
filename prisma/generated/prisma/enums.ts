@@ -30,7 +30,6 @@ export type UserType = (typeof UserType)[keyof typeof UserType]
 export const AudioQuality = {
   Original: 'Original',
   High: 'High',
-  Medium: 'Medium',
   Low: 'Low'
 } as const
 
@@ -39,7 +38,6 @@ export type AudioQuality = (typeof AudioQuality)[keyof typeof AudioQuality]
 
 export const RenditionTier = {
   High: 'High',
-  Medium: 'Medium',
   Low: 'Low'
 } as const
 

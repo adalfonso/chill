@@ -95,7 +95,6 @@ export type PaginationOptions = {
 export const AudioQuality = {
   Original: "Original",
   High: "High",
-  Medium: "Medium",
   Low: "Low",
 } as const;
 
@@ -106,7 +105,6 @@ export const AUDIO_QUALITY_TARGET_KBPS: Record<
   number
 > = {
   Low: 64,
-  Medium: 96,
   High: 160,
 };
 

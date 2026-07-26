@@ -168,13 +168,11 @@ model UserSettings {
 enum AudioQuality {
   Original
   High
-  Medium
   Low
 }
 
 enum RenditionTier {
   High
-  Medium
   Low
 }
 

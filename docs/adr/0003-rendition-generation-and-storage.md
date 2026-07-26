@@ -1,6 +1,7 @@
 # ADR-0003: Rendition generation, storage, and the job queue
 
-- **Status:** Accepted
+- **Status:** Accepted (eager tier amended by [[0007-collapse-to-two-lossy-tiers]] — `low` ships
+  eagerly, not `medium`)
 - **Date:** 2026-06-27
 - **Deciders:** Anthony
 

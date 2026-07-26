@@ -120,7 +120,7 @@ export const TrackController = {
         const track = map[id];
 
         // TODO: What happens if the user queues a playlist with original flac
-        // audio, then sets the audio quality to medium after?
+        // audio, then sets the audio quality to high after?
         const file_type =
           req.user?.settings?.audio_quality === AudioQuality.Original
             ? track.file_type
