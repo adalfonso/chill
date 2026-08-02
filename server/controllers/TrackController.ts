@@ -4,11 +4,21 @@ import { Request as Req, Response as Res } from "express";
 import fs from "node:fs/promises";
 import jwt from "jsonwebtoken";
 
-import { AudioQualityBitrate, PlayableTrack } from "@common/types";
+import { PlayableTrack } from "@common/types";
 import { Request } from "@server/trpc";
 import { db } from "@server/lib/data/db";
 import { AudioQuality, Prisma } from "@prisma/client";
-import { convert as convertAudioTrack } from "@server/lib/conversion";
+import {
+  convert as convertAudioTrack,
+  remuxToCaf,
+} from "@server/lib/conversion";
+import { resolveTier } from "@server/lib/media/resolveTier";
+import { qualityToRenditionTier } from "@server/lib/media/renditionTiers";
+import {
+  findRendition,
+  moveRenditionIntoCache,
+} from "@server/lib/media/RenditionCache";
+import { markRenditionJobDone } from "@server/lib/media/RenditionQueue";
 import { stream_file as streamAudioTrack } from "@server/lib/io/stream";
 import { adjustImage } from "@server/lib/media/image/ImageAdjust";
 import { env } from "@server/init";
@@ -41,6 +51,53 @@ export const schema = {
   }),
 };
 
+/**
+ * Stream a produced Opus/Ogg rendition, remuxing to CAF first if the
+ * requesting client declared it can't decode Opus inside an Ogg container
+ * (every WebKit-based browser — desktop Safari and all iOS browsers, which
+ * are all WebKit under Apple's platform engine mandate).
+ *
+ * The remux is a lossless stream copy (no re-encode), so it's done
+ * per-request rather than added as a cache dimension.
+ *
+ * @param res - HTTP response
+ * @param file - cached or freshly transcoded Ogg/Opus file
+ * @param wants_caf - true when the client can't play Ogg/Opus
+ * @param range - raw Range request header, if any
+ * @throws if the source file can't be read (propagates to the caller's
+ *   cache-miss fallback)
+ */
+const streamOpusRendition = async (
+  res: Res,
+  file: { path: string; size: number },
+  wants_caf: boolean,
+  range: string | undefined,
+) => {
+  if (!wants_caf) {
+    await streamAudioTrack(res, { ...file, type: "ogg" }, range);
+    return;
+  }
+
+  const caf_path = await remuxToCaf(file.path);
+
+  try {
+    const caf_size = (await fs.stat(caf_path)).size;
+
+    await streamAudioTrack(
+      res,
+      { path: caf_path, type: "caf", size: caf_size },
+      range,
+    );
+  } finally {
+    await fs.unlink(caf_path).catch((error) =>
+      console.error("Failed to clean up temp CAF remux file", {
+        caf_path,
+        error,
+      }),
+    );
+  }
+};
+
 export const TrackController = {
   castInfo: async ({
     ctx: { req },
@@ -63,11 +120,11 @@ export const TrackController = {
         const track = map[id];
 
         // TODO: What happens if the user queues a playlist with original flac
-        // audio, then sets the audio quality to medium after?
+        // audio, then sets the audio quality to high after?
         const file_type =
           req.user?.settings?.audio_quality === AudioQuality.Original
             ? track.file_type
-            : "mp3";
+            : "ogg";
 
         const MIME_TYPES: Record<string, string> = {
           mp3: "audio/mpeg",
@@ -285,7 +342,21 @@ export const TrackController = {
       WHERE track.id IN (SELECT id FROM random_tracks LIMIT ${limit})`) as Array<PlayableTrack>;
   },
 
-  /** Load a media file from is ID */
+  /**
+   * Load a track's audio for streaming, by ID
+   *
+   * Serves the original file as-is when the user's quality setting doesn't
+   * require conversion. Otherwise resolves the setting to a rendition tier
+   * and looks up a cached rendition for it; on a cache hit streams that file
+   * directly. On a miss, transcodes on the fly, moves the result into the
+   * rendition cache for future requests, records completion telemetry on
+   * its RenditionJob, and streams the freshly-built file.
+   *
+   * Ogg/Opus renditions are remuxed to CAF on the way out when the request
+   * carries `?container=caf` — WebKit clients (desktop Safari, all iOS
+   * browsers) declare this because they can decode Opus but not inside Ogg.
+   * The cache itself always stores Ogg; the remux happens per-request.
+   */
   load: async (req: Req, res: Res) => {
     try {
       // Handles both /media/[123]/load and /media/[123.mp3]
@@ -311,40 +382,12 @@ export const TrackController = {
         )?.audio_quality ?? null;
 
       const stats = await fs.stat(track.path);
-      const mp3_quality_preference_kbps =
-        AudioQualityBitrate[quality_setting ?? AudioQuality.Medium];
+      const resolution = resolveTier(quality_setting ?? AudioQuality.Original, {
+        file_type: track.file_type,
+        effective_kbps: (stats.size * 8) / 1000 / track.duration.toNumber(),
+      });
 
-      const full_quality_kbps =
-        (stats.size * 8) / 1000 / track.duration.toNumber();
-      const do_convert =
-        quality_setting !== AudioQuality.Original &&
-        parseInt(mp3_quality_preference_kbps) < full_quality_kbps;
-
-      if (do_convert) {
-        try {
-          const tmp_file = await convertAudioTrack(
-            mp3_quality_preference_kbps,
-            track,
-          );
-          const stats = await fs.stat(tmp_file);
-
-          await streamAudioTrack(
-            res,
-            {
-              path: tmp_file,
-              type: "mp3",
-              size: stats.size,
-            },
-            req.headers.range,
-          );
-        } catch (error) {
-          console.error(`Failed to convert audio file.`, {
-            id: req.params.id,
-            quality_preference_kbps: mp3_quality_preference_kbps,
-            error,
-          });
-        }
-      } else {
+      if (!resolution.convert) {
         await streamAudioTrack(
           res,
           {
@@ -354,6 +397,92 @@ export const TrackController = {
           },
           req.headers.range,
         );
+        return;
+      }
+
+      // WebKit (desktop Safari, all iOS browsers) can decode Opus but never
+      // inside an Ogg container — the client probes this itself and asks.
+      const wants_caf = req.query.container === "caf";
+
+      // Reaching here implies resolution.convert, which resolveTier only
+      // returns for a non-null, non-Original quality — so tier is set in
+      // practice; the null branch is type-level honesty, not a live path
+      const tier = quality_setting
+        ? qualityToRenditionTier(quality_setting)
+        : null;
+      const cached =
+        tier && track.audio_checksum
+          ? await findRendition(
+              track.audio_checksum,
+              tier,
+              resolution.target_kbps,
+            )
+          : null;
+
+      if (cached) {
+        try {
+          await streamOpusRendition(res, cached, wants_caf, req.headers.range);
+          return;
+        } catch (error) {
+          // The cached file vanished between findRendition's check and this
+          // actually opening it (e.g. a concurrent orphan sweep) — fall
+          // through to a live transcode instead of failing the request.
+          console.error(
+            `Cached rendition read failed for track=${id} tier=${tier}, falling back to on-the-fly conversion`,
+            error,
+          );
+        }
+      }
+
+      try {
+        console.info(
+          `Rendition cache miss for track=${id} tier=${tier ?? "none"}, converting on-the-fly`,
+        );
+
+        const encode_start = new Date();
+        const tmp_file = await convertAudioTrack(resolution.target_kbps, track);
+
+        let served = { path: tmp_file, size: (await fs.stat(tmp_file)).size };
+
+        if (tier && track.audio_checksum) {
+          served = await moveRenditionIntoCache(
+            track.audio_checksum,
+            tier,
+            tmp_file,
+            resolution.target_kbps,
+          );
+          await markRenditionJobDone(track.audio_checksum, tier, {
+            started_at: encode_start,
+            source_codec: track.file_type,
+            source_bitrate: track.bitrate,
+            in_bytes: track.file_size,
+            out_bytes: served.size,
+          });
+        }
+
+        await streamOpusRendition(res, served, wants_caf, req.headers.range);
+
+        if (served.path === tmp_file) {
+          // No cache key was available (missing checksum, or an unresolved
+          // tier), so moveRenditionIntoCache never ran to relocate this file
+          // — clean it up ourselves instead of leaking it in /tmp forever.
+          await fs.unlink(tmp_file).catch((error) =>
+            console.error("Failed to clean up temp transcode file", {
+              tmp_file,
+              error,
+            }),
+          );
+        }
+      } catch (error) {
+        console.error(`Failed to convert audio file.`, {
+          id: req.params.id,
+          target_kbps: resolution.target_kbps,
+          error,
+        });
+
+        if (!res.headersSent) {
+          res.status(500).send("Failed to convert audio file.");
+        }
       }
     } catch (e) {
       console.error(e);

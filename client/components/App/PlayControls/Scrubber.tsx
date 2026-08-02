@@ -54,9 +54,16 @@ export const Scrubber = () => {
      * reference "audio". That's because either fixture may be playing at a
      * given time, but the only the one currently playing will be referenced as
      * "audio" due to the swapping nature of the crossover.
+     *
+     * Duration comes from track metadata, not audio.duration: for a streamed
+     * transcode, the browser's live duration estimate can transiently read
+     * close to currentTime before the real total is known, firing this early.
      */
-    const onCrossover = () =>
-      audio.duration - audio.currentTime < gap_offset && next({ auto: true });
+    const onCrossover = () => {
+      const duration = player.now_playing.value?.duration ?? audio.duration;
+
+      return duration - audio.currentTime < gap_offset && next({ auto: true });
+    };
 
     // Capture the casting state at effect setup time for proper cleanup
     const is_casting_at_setup = player.is_casting.value;

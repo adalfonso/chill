@@ -1,6 +1,7 @@
 # ADR-0002: Audio codec, quality tiers, and the no-tandem rule
 
-- **Status:** Accepted
+- **Status:** Accepted (tier table amended by [[0007-collapse-to-two-lossy-tiers]] — `medium` was
+  dropped)
 - **Date:** 2026-06-27
 - **Deciders:** Anthony
 
@@ -54,3 +55,16 @@ on that link. Target phone is **Android** (Opus fully supported).
 - Bluetooth caps the top end, so `high` matters only under a future native + Android Auto client
   ([[0005-offline-sync-deferred-to-native-client]]). Data savings (the primary goal) are unaffected by that cap.
 - Worth adding the **MediaSession API** client-side for car head-unit metadata/controls over BT — cheap, independent of this codec work.
+
+## Implementation notes (v1, encoder + tier collapse)
+
+- **No-tandem formula:** `effective_kbps = file_size * 8 / 1000 / duration` (measured
+  bytes-on-disk density, not a format tag — codec-agnostic and correct for VBR by
+  construction). Skip conversion for a lossy source when `effective_kbps <= 2 *
+  target_kbps` for the requested tier; lossless sources always convert. The 2x multiplier
+  was reverse-engineered from this doc's own examples (128k mp3 skips low/medium/high;
+  320k mp3 skips only high) and applied uniformly across lossy codecs — no per-codec
+  tuning (e.g. AAC vs mp3) since there's no data yet to justify one. See
+  [`resolveTier`](../../server/lib/media/resolveTier.ts).
+- `TrackController.load` still converts on-the-fly per request — no rendition storage yet
+  (deferred to [[0003-rendition-generation-and-storage]]).

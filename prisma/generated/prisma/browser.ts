@@ -72,3 +72,13 @@ export type User = Prisma.UserModel
  * 
  */
 export type UserSettings = Prisma.UserSettingsModel
+/**
+ * Model Rendition
+ * 
+ */
+export type Rendition = Prisma.RenditionModel
+/**
+ * Model RenditionJob
+ * 
+ */
+export type RenditionJob = Prisma.RenditionJobModel

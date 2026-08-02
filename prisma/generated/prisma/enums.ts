@@ -12,7 +12,8 @@
 export const ScanStatus = {
   Active: 'Active',
   Failed: 'Failed',
-  Completed: 'Completed'
+  Completed: 'Completed',
+  Aborted: 'Aborted'
 } as const
 
 export type ScanStatus = (typeof ScanStatus)[keyof typeof ScanStatus]
@@ -28,11 +29,26 @@ export type UserType = (typeof UserType)[keyof typeof UserType]
 
 export const AudioQuality = {
   Original: 'Original',
-  Trash: 'Trash',
-  Low: 'Low',
-  Medium: 'Medium',
-  Standard: 'Standard',
-  Extreme: 'Extreme'
+  High: 'High',
+  Low: 'Low'
 } as const
 
 export type AudioQuality = (typeof AudioQuality)[keyof typeof AudioQuality]
+
+
+export const RenditionTier = {
+  High: 'High',
+  Low: 'Low'
+} as const
+
+export type RenditionTier = (typeof RenditionTier)[keyof typeof RenditionTier]
+
+
+export const RenditionJobStatus = {
+  Pending: 'Pending',
+  Running: 'Running',
+  Done: 'Done',
+  Failed: 'Failed'
+} as const
+
+export type RenditionJobStatus = (typeof RenditionJobStatus)[keyof typeof RenditionJobStatus]

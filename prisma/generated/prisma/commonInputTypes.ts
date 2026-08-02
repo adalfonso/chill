@@ -284,6 +284,40 @@ export type EnumAudioQualityWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumAudioQualityFilter<$PrismaModel>
 }
 
+export type EnumRenditionTierFilter<$PrismaModel = never> = {
+  equals?: $Enums.RenditionTier | Prisma.EnumRenditionTierFieldRefInput<$PrismaModel>
+  in?: $Enums.RenditionTier[] | Prisma.ListEnumRenditionTierFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RenditionTier[] | Prisma.ListEnumRenditionTierFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRenditionTierFilter<$PrismaModel> | $Enums.RenditionTier
+}
+
+export type EnumRenditionTierWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RenditionTier | Prisma.EnumRenditionTierFieldRefInput<$PrismaModel>
+  in?: $Enums.RenditionTier[] | Prisma.ListEnumRenditionTierFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RenditionTier[] | Prisma.ListEnumRenditionTierFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRenditionTierWithAggregatesFilter<$PrismaModel> | $Enums.RenditionTier
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRenditionTierFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRenditionTierFilter<$PrismaModel>
+}
+
+export type EnumRenditionJobStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.RenditionJobStatus | Prisma.EnumRenditionJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.RenditionJobStatus[] | Prisma.ListEnumRenditionJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RenditionJobStatus[] | Prisma.ListEnumRenditionJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRenditionJobStatusFilter<$PrismaModel> | $Enums.RenditionJobStatus
+}
+
+export type EnumRenditionJobStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RenditionJobStatus | Prisma.EnumRenditionJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.RenditionJobStatus[] | Prisma.ListEnumRenditionJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RenditionJobStatus[] | Prisma.ListEnumRenditionJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRenditionJobStatusWithAggregatesFilter<$PrismaModel> | $Enums.RenditionJobStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRenditionJobStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRenditionJobStatusFilter<$PrismaModel>
+}
+
 export type NestedIntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>
@@ -565,6 +599,40 @@ export type NestedEnumAudioQualityWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumAudioQualityFilter<$PrismaModel>
   _max?: Prisma.NestedEnumAudioQualityFilter<$PrismaModel>
+}
+
+export type NestedEnumRenditionTierFilter<$PrismaModel = never> = {
+  equals?: $Enums.RenditionTier | Prisma.EnumRenditionTierFieldRefInput<$PrismaModel>
+  in?: $Enums.RenditionTier[] | Prisma.ListEnumRenditionTierFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RenditionTier[] | Prisma.ListEnumRenditionTierFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRenditionTierFilter<$PrismaModel> | $Enums.RenditionTier
+}
+
+export type NestedEnumRenditionTierWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RenditionTier | Prisma.EnumRenditionTierFieldRefInput<$PrismaModel>
+  in?: $Enums.RenditionTier[] | Prisma.ListEnumRenditionTierFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RenditionTier[] | Prisma.ListEnumRenditionTierFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRenditionTierWithAggregatesFilter<$PrismaModel> | $Enums.RenditionTier
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRenditionTierFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRenditionTierFilter<$PrismaModel>
+}
+
+export type NestedEnumRenditionJobStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.RenditionJobStatus | Prisma.EnumRenditionJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.RenditionJobStatus[] | Prisma.ListEnumRenditionJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RenditionJobStatus[] | Prisma.ListEnumRenditionJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRenditionJobStatusFilter<$PrismaModel> | $Enums.RenditionJobStatus
+}
+
+export type NestedEnumRenditionJobStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RenditionJobStatus | Prisma.EnumRenditionJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.RenditionJobStatus[] | Prisma.ListEnumRenditionJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RenditionJobStatus[] | Prisma.ListEnumRenditionJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRenditionJobStatusWithAggregatesFilter<$PrismaModel> | $Enums.RenditionJobStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRenditionJobStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRenditionJobStatusFilter<$PrismaModel>
 }
 
 

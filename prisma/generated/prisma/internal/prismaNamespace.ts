@@ -394,7 +394,9 @@ export const ModelName = {
   Scan: 'Scan',
   Invitation: 'Invitation',
   User: 'User',
-  UserSettings: 'UserSettings'
+  UserSettings: 'UserSettings',
+  Rendition: 'Rendition',
+  RenditionJob: 'RenditionJob'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -410,7 +412,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "genre" | "album" | "albumArt" | "artist" | "track" | "playlist" | "playlistTrack" | "scan" | "invitation" | "user" | "userSettings"
+    modelProps: "genre" | "album" | "albumArt" | "artist" | "track" | "playlist" | "playlistTrack" | "scan" | "invitation" | "user" | "userSettings" | "rendition" | "renditionJob"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1228,6 +1230,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Rendition: {
+      payload: Prisma.$RenditionPayload<ExtArgs>
+      fields: Prisma.RenditionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.RenditionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.RenditionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionPayload>
+        }
+        findFirst: {
+          args: Prisma.RenditionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.RenditionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionPayload>
+        }
+        findMany: {
+          args: Prisma.RenditionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionPayload>[]
+        }
+        create: {
+          args: Prisma.RenditionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionPayload>
+        }
+        createMany: {
+          args: Prisma.RenditionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.RenditionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionPayload>[]
+        }
+        delete: {
+          args: Prisma.RenditionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionPayload>
+        }
+        update: {
+          args: Prisma.RenditionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionPayload>
+        }
+        deleteMany: {
+          args: Prisma.RenditionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.RenditionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.RenditionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionPayload>[]
+        }
+        upsert: {
+          args: Prisma.RenditionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionPayload>
+        }
+        aggregate: {
+          args: Prisma.RenditionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateRendition>
+        }
+        groupBy: {
+          args: Prisma.RenditionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RenditionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.RenditionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RenditionCountAggregateOutputType> | number
+        }
+      }
+    }
+    RenditionJob: {
+      payload: Prisma.$RenditionJobPayload<ExtArgs>
+      fields: Prisma.RenditionJobFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.RenditionJobFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionJobPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.RenditionJobFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionJobPayload>
+        }
+        findFirst: {
+          args: Prisma.RenditionJobFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionJobPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.RenditionJobFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionJobPayload>
+        }
+        findMany: {
+          args: Prisma.RenditionJobFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionJobPayload>[]
+        }
+        create: {
+          args: Prisma.RenditionJobCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionJobPayload>
+        }
+        createMany: {
+          args: Prisma.RenditionJobCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.RenditionJobCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionJobPayload>[]
+        }
+        delete: {
+          args: Prisma.RenditionJobDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionJobPayload>
+        }
+        update: {
+          args: Prisma.RenditionJobUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionJobPayload>
+        }
+        deleteMany: {
+          args: Prisma.RenditionJobDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.RenditionJobUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.RenditionJobUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionJobPayload>[]
+        }
+        upsert: {
+          args: Prisma.RenditionJobUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RenditionJobPayload>
+        }
+        aggregate: {
+          args: Prisma.RenditionJobAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateRenditionJob>
+        }
+        groupBy: {
+          args: Prisma.RenditionJobGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RenditionJobGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.RenditionJobCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RenditionJobCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1405,6 +1555,37 @@ export const UserSettingsScalarFieldEnum = {
 export type UserSettingsScalarFieldEnum = (typeof UserSettingsScalarFieldEnum)[keyof typeof UserSettingsScalarFieldEnum]
 
 
+export const RenditionScalarFieldEnum = {
+  id: 'id',
+  audio_checksum: 'audio_checksum',
+  tier: 'tier',
+  file_size: 'file_size',
+  target_kbps: 'target_kbps',
+  created_at: 'created_at'
+} as const
+
+export type RenditionScalarFieldEnum = (typeof RenditionScalarFieldEnum)[keyof typeof RenditionScalarFieldEnum]
+
+
+export const RenditionJobScalarFieldEnum = {
+  id: 'id',
+  audio_checksum: 'audio_checksum',
+  tier: 'tier',
+  status: 'status',
+  priority: 'priority',
+  enqueued_at: 'enqueued_at',
+  started_at: 'started_at',
+  finished_at: 'finished_at',
+  error: 'error',
+  source_codec: 'source_codec',
+  source_bitrate: 'source_bitrate',
+  in_bytes: 'in_bytes',
+  out_bytes: 'out_bytes'
+} as const
+
+export type RenditionJobScalarFieldEnum = (typeof RenditionJobScalarFieldEnum)[keyof typeof RenditionJobScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1548,6 +1729,34 @@ export type ListEnumAudioQualityFieldRefInput<$PrismaModel> = FieldRefInputType<
 
 
 /**
+ * Reference to a field of type 'RenditionTier'
+ */
+export type EnumRenditionTierFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RenditionTier'>
+    
+
+
+/**
+ * Reference to a field of type 'RenditionTier[]'
+ */
+export type ListEnumRenditionTierFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RenditionTier[]'>
+    
+
+
+/**
+ * Reference to a field of type 'RenditionJobStatus'
+ */
+export type EnumRenditionJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RenditionJobStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'RenditionJobStatus[]'
+ */
+export type ListEnumRenditionJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RenditionJobStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -1666,6 +1875,8 @@ export type GlobalOmitConfig = {
   invitation?: Prisma.InvitationOmit
   user?: Prisma.UserOmit
   userSettings?: Prisma.UserSettingsOmit
+  rendition?: Prisma.RenditionOmit
+  renditionJob?: Prisma.RenditionJobOmit
 }
 
 /* Types for Logging */

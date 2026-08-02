@@ -91,28 +91,22 @@ export type PaginationOptions = {
   sort: Array<SortClause>;
 };
 
-export const AudioQualityBitrate = {
-  Original: "original",
-  Trash: "85",
-  Low: "115",
-  Medium: "165",
-  Standard: "190",
-  Extreme: "245",
-} as const;
-
-export type AudioQualityBitrate = ObjectValues<typeof AudioQualityBitrate>;
-
 // TODO: Importing prisma enum breaks prod bundle
 export const AudioQuality = {
   Original: "Original",
-  Trash: "Trash",
+  High: "High",
   Low: "Low",
-  Medium: "Medium",
-  Standard: "Standard",
-  Extreme: "Extreme",
 } as const;
 
 export type AudioQuality = ObjectValues<typeof AudioQuality>;
+
+export const AUDIO_QUALITY_TARGET_KBPS: Record<
+  Exclude<AudioQuality, "Original">,
+  number
+> = {
+  Low: 64,
+  High: 160,
+};
 
 // TODO: Importing prisma enum breaks prod bundle
 export const UserType = {

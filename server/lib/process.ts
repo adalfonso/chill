@@ -23,6 +23,7 @@ export const spawnChild = async (command: string, args: string[] = []) =>
       result.stdout.on("data", (d) => (data += d.toString()));
       result.stderr.on("data", (e) => (error += e.toString()));
       result.on("close", (code) => resolve({ data, error, code }));
+      result.on("error", reject);
     } catch (e) {
       reject(e);
     }

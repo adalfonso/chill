@@ -10,7 +10,12 @@ import { Maybe } from "@common/types";
 import { db } from "../data/db";
 import { rebuildMusicSearchIndex } from "./MusicSearch";
 import { cacheAlbumArt } from "./image/ImageCache";
-import { deleteOrphans, deleteOrphanTracks } from "./deleteOrphans";
+import {
+  deleteOrphans,
+  deleteOrphanTracks,
+  deleteOrphanRenditions,
+} from "./deleteOrphans";
+import { enqueueEligibleRenditions } from "./RenditionQueue";
 
 /** Config options used by the crawler */
 type MediaCrawlerConfig = {
@@ -42,7 +47,7 @@ export type RawMediaPayload = {
 
 export type AlbumCover = {
   format: string;
-  data: Buffer;
+  data: Buffer<ArrayBuffer>;
   checksum: string;
   type: string;
 };
@@ -73,6 +78,18 @@ export class MediaCrawler {
   /** Time/data the scan started */
   private _start_time: Maybe<Date> = null;
 
+  /** True while _complete() is finalizing this scan, to prevent re-entry */
+  private _completing = false;
+
+  /**
+   * The crawler instance for the scan currently in progress, if any.
+   *
+   * Each `scan()` call constructs a fresh `MediaCrawler`, so this is what lets
+   * a new crawl find and abort a still-running one instead of both crawling
+   * concurrently.
+   */
+  private static _active: Maybe<MediaCrawler> = null;
+
   /**
    * @param _config crawler config
    */
@@ -81,6 +98,9 @@ export class MediaCrawler {
   /**
    * Crawl a directory, get file meta data, and store in the DB
    *
+   * If another crawl is currently active, it is aborted first — only one
+   * scan runs at a time.
+   *
    * @param dir directory to start from
    * @returns crawler results
    */
@@ -88,6 +108,14 @@ export class MediaCrawler {
     if (this._scan !== null) {
       return this._scan;
     }
+
+    const previous = MediaCrawler._active;
+
+    if (previous && previous !== this) {
+      await previous.abort();
+    }
+
+    MediaCrawler._active = this;
 
     console.info("Crawling starting... 🐛");
 
@@ -252,8 +280,8 @@ export class MediaCrawler {
       album: common.album ?? null,
       genre: common.genre?.[0] ?? null,
       year: common.year ?? null,
-      bitrate: Math.floor(format.bitrate ?? 0 / 1000) || 0,
-      sample_rate: Math.floor(format.sampleRate ?? 0 / 1000) || 0,
+      bitrate: Math.floor(format.bitrate ?? 0) || 0,
+      sample_rate: Math.floor(format.sampleRate ?? 0) || 0,
       bits_per_sample: getBitsPerSample(stat, format),
       cover: cover
         ? {
@@ -323,8 +351,47 @@ export class MediaCrawler {
     return this._write_lock;
   }
 
+  /**
+   * Abort this crawl in progress
+   *
+   * Called on the previously-active crawler when a new scan starts. Finalizes
+   * immediately as `Aborted` instead of waiting for the queue to drain —
+   * `_tick()` and `_write()` both stop picking up new work as soon as the
+   * scan's status leaves `Active`, and `Aborted` skips orphan-cleanup and
+   * rendition-enqueue the same way `Failed` already does.
+   *
+   * No-ops if this crawl already finished, or is already finalizing — the
+   * `_completing` flag stays true for `_complete()`'s entire tail (final
+   * write, orphan cleanup, saving the scan, search reindex, album art
+   * caching), so this is a real window, not an instant: any new scan
+   * started while a previous one is finalizing simply runs after it, rather
+   * than corrupting the in-flight `_complete()` call. `enqueueRendition`'s
+   * duplicate-key handling exists to cover the consequence of that window —
+   * both crawlers can reach `enqueueEligibleRenditions()` for the same
+   * (checksum, tier).
+   */
+  public async abort() {
+    if (
+      this._scan === null ||
+      this._scan.status !== ScanStatus.Active ||
+      this._completing
+    ) {
+      return;
+    }
+
+    console.info("Crawl aborted — superseded by a newer scan 🐛");
+
+    await this._complete(ScanStatus.Aborted);
+  }
+
   /** Complete crawling */
   private async _complete(status: ScanStatus = ScanStatus.Completed) {
+    if (this._completing) {
+      return;
+    }
+
+    this._completing = true;
+
     this._available_workers = this._config.workers;
     this._queue = [];
 
@@ -335,6 +402,7 @@ export class MediaCrawler {
     if (status === ScanStatus.Completed) {
       await deleteOrphanTracks(this._seen_paths);
       await deleteOrphans();
+      await deleteOrphanRenditions();
     }
 
     if (this._scan === null) {
@@ -352,6 +420,10 @@ export class MediaCrawler {
 
     this._scan = null;
 
+    if (MediaCrawler._active === this) {
+      MediaCrawler._active = null;
+    }
+
     const start = this._start_time ?? new Date();
 
     console.info(`Crawling ${status.toLowerCase()}... 🐛`);
@@ -362,6 +434,10 @@ export class MediaCrawler {
 
     await rebuildMusicSearchIndex();
     await cacheAlbumArt();
+
+    if (status === ScanStatus.Completed) {
+      await enqueueEligibleRenditions();
+    }
   }
 
   /**
@@ -455,7 +531,7 @@ const getCoverData = async (
   input: Array<mm.IPicture> | undefined,
 ): Promise<
   Maybe<{
-    data: Buffer;
+    data: Buffer<ArrayBuffer>;
     checksum: string;
     format: string;
     type: string | undefined;

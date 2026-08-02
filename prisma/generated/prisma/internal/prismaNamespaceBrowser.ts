@@ -61,7 +61,9 @@ export const ModelName = {
   Scan: 'Scan',
   Invitation: 'Invitation',
   User: 'User',
-  UserSettings: 'UserSettings'
+  UserSettings: 'UserSettings',
+  Rendition: 'Rendition',
+  RenditionJob: 'RenditionJob'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -216,6 +218,37 @@ export const UserSettingsScalarFieldEnum = {
 } as const
 
 export type UserSettingsScalarFieldEnum = (typeof UserSettingsScalarFieldEnum)[keyof typeof UserSettingsScalarFieldEnum]
+
+
+export const RenditionScalarFieldEnum = {
+  id: 'id',
+  audio_checksum: 'audio_checksum',
+  tier: 'tier',
+  file_size: 'file_size',
+  target_kbps: 'target_kbps',
+  created_at: 'created_at'
+} as const
+
+export type RenditionScalarFieldEnum = (typeof RenditionScalarFieldEnum)[keyof typeof RenditionScalarFieldEnum]
+
+
+export const RenditionJobScalarFieldEnum = {
+  id: 'id',
+  audio_checksum: 'audio_checksum',
+  tier: 'tier',
+  status: 'status',
+  priority: 'priority',
+  enqueued_at: 'enqueued_at',
+  started_at: 'started_at',
+  finished_at: 'finished_at',
+  error: 'error',
+  source_codec: 'source_codec',
+  source_bitrate: 'source_bitrate',
+  in_bytes: 'in_bytes',
+  out_bytes: 'out_bytes'
+} as const
+
+export type RenditionJobScalarFieldEnum = (typeof RenditionJobScalarFieldEnum)[keyof typeof RenditionJobScalarFieldEnum]
 
 
 export const SortOrder = {
