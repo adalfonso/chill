@@ -75,6 +75,8 @@ export const deleteOrphans = async () => {
  * orphan cleanup in this file.
  */
 export const deleteOrphanRenditions = async () => {
+  // Every checksum still backed by a track in the library — the set we
+  // anti-join renditions and jobs against to find orphans.
   const live_checksums = new Set(
     (
       await db.track.findMany({
@@ -85,29 +87,36 @@ export const deleteOrphanRenditions = async () => {
     ).map((track) => track.audio_checksum as string),
   );
 
+  // Cache entries whose source checksum no longer exists in the library.
   const renditions = await db.rendition.findMany({
     select: { id: true, audio_checksum: true, tier: true },
   });
-  const orphan_rendition_ids = renditions
-    .filter((r) => !live_checksums.has(r.audio_checksum))
-    .map((r) => r.id);
 
-  await Promise.all(
-    renditions
-      .filter((r) => !live_checksums.has(r.audio_checksum))
-      .map((r) =>
-        fs.unlink(renditionPath(r.audio_checksum, r.tier)).catch((error) =>
-          console.error("Failed to delete orphaned rendition file", {
-            rendition: r,
-            error,
-          }),
-        ),
-      ),
+  const orphans = renditions.filter(
+    (r) => !live_checksums.has(r.audio_checksum),
   );
 
+  const orphan_rendition_ids = orphans.map((r) => r.id);
+
+  // Remove the orphaned files from disk. Best-effort: a failed unlink is
+  // logged rather than thrown, so one bad file doesn't abort the rest of
+  // the sweep or the DB cleanup below.
+  await Promise.all(
+    orphans.map((r) =>
+      fs.unlink(renditionPath(r.audio_checksum, r.tier)).catch((error) =>
+        console.error("Failed to delete orphaned rendition file", {
+          rendition: r,
+          error,
+        }),
+      ),
+    ),
+  );
+
+  // Queued/completed conversion jobs tied to the same dead checksums.
   const jobs = await db.renditionJob.findMany({
     select: { id: true, audio_checksum: true },
   });
+
   const orphan_job_ids = jobs
     .filter((j) => !live_checksums.has(j.audio_checksum))
     .map((j) => j.id);
@@ -115,6 +124,7 @@ export const deleteOrphanRenditions = async () => {
   let renditions_deleted = 0;
   let jobs_deleted = 0;
 
+  // Delete in chunks to stay under Postgres' bind parameter limit.
   for (let i = 0; i < orphan_rendition_ids.length; i += DELETE_CHUNK_SIZE) {
     const chunk = orphan_rendition_ids.slice(i, i + DELETE_CHUNK_SIZE);
     const result = await db.rendition.deleteMany({
