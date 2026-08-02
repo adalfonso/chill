@@ -20,8 +20,7 @@ const searchGroupSortOrder: Partial<Record<SearchResultType, number>> = {
 };
 
 type SearchMode =
-  | { kind: "compact" }
-  | { kind: "extended"; type: SearchResultType };
+  { kind: "compact" } | { kind: "extended"; type: SearchResultType };
 
 const unknownSearchOrder = 10;
 
