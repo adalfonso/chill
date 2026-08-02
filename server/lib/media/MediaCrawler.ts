@@ -280,8 +280,8 @@ export class MediaCrawler {
       album: common.album ?? null,
       genre: common.genre?.[0] ?? null,
       year: common.year ?? null,
-      bitrate: Math.floor(format.bitrate ?? 0 / 1000) || 0,
-      sample_rate: Math.floor(format.sampleRate ?? 0 / 1000) || 0,
+      bitrate: Math.floor(format.bitrate ?? 0) || 0,
+      sample_rate: Math.floor(format.sampleRate ?? 0) || 0,
       bits_per_sample: getBitsPerSample(stat, format),
       cover: cover
         ? {
