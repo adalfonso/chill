@@ -45,6 +45,41 @@ const readOrCreateDeviceId = (req: Request, res: Response): string => {
 };
 
 /**
+ * Recover the device (socket-routing) session id from the expiring access token
+ *
+ * `session_id` is not a secret and carries no authority (see
+ * docs/glossary.md) -- it only tags which WebSocket connection belongs to
+ * this device. Decoded structurally, without verifying the token's
+ * signature or expiry, since by the time refresh runs the old access token
+ * has often just expired. A live socket connection stays tagged with the
+ * value it connected with regardless of later refreshes, so preserving it
+ * here (rather than minting a new one) is what keeps `wss.drop` and the
+ * device picker's "this device" comparison working after a refresh. Falls
+ * back to a fresh id when there's no old token to recover one from (e.g.
+ * the very first refresh of a session).
+ *
+ * @param req - express request
+ * @returns the recovered or freshly minted device session id
+ */
+const recoverOrCreateSessionId = (req: Request): string => {
+  const old_token = req.cookies?.[ACCESS_TOKEN_COOKIE];
+
+  if (typeof old_token === "string") {
+    const decoded = jwt.decode(old_token);
+
+    if (
+      decoded !== null &&
+      typeof decoded === "object" &&
+      typeof decoded.session_id === "string"
+    ) {
+      return decoded.session_id;
+    }
+  }
+
+  return nanoid(4);
+};
+
+/**
  * Sign an access token
  *
  * @param identity - the payload to sign
@@ -169,10 +204,7 @@ export const AuthController = {
     }
 
     const { user } = login_session;
-    const session_id =
-      typeof req.body?.session_id === "string"
-        ? req.body.session_id
-        : nanoid(4);
+    const session_id = recoverOrCreateSessionId(req);
 
     try {
       const access_token = signAccessToken({
