@@ -6,7 +6,7 @@ module.exports = {
   setupFiles: ["<rootDir>/tests/__mocks__/shim.js"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
   testRegex: "/tests/.*\\.(test|spec)\\.(ts|tsx)$",
-  transformIgnorePatterns: ["/node_modules/"],
+  transformIgnorePatterns: ["/node_modules/(?!nanoid)"],
   transform: {
     "^.+\\.(ts|tsx)$": ["ts-jest", { isolatedModules: true }],
   },
@@ -14,6 +14,7 @@ module.exports = {
     "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$":
       "<rootDir>/tests/__mocks__/fileMock.js",
     "\\.(css|scss|less)$": "<rootDir>/tests/__mocks__/styleMock.js",
+    "^@prisma/client$": "<rootDir>/prisma/generated/prisma/client",
     "@client(.*)$": "<rootDir>/client$1",
     "@server(.*)$": "<rootDir>/server$1",
     "@common(.*)$": "<rootDir>/common$1",
