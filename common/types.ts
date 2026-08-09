@@ -133,6 +133,14 @@ export type DeviceClient = {
   displayAs: string;
 };
 
+export type LoginSessionDto = {
+  id: number;
+  device_label: string;
+  created_at: Date;
+  last_refreshed_at: Date;
+  is_current_session: boolean;
+};
+
 export type DeviceInfo = {
   type: string;
   browser: string;

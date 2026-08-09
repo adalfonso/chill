@@ -4,6 +4,10 @@ import {
   toLoginSessionDto,
 } from "../server/controllers/LoginSessionController";
 
+jest.mock("../server/init", () => ({
+  env: { SIGNING_KEY: "test-signing-key" },
+}));
+
 const find_many = jest.fn();
 
 jest.mock("../server/lib/data/db", () => ({
@@ -14,8 +18,8 @@ jest.mock("../server/lib/data/db", () => ({
   },
 }));
 
-jest.mock("../server/lib/auth/DenyList", () => ({
-  denyList: { instance: () => ({ deny: jest.fn() }) },
+jest.mock("../server/lib/auth/LoginSession", () => ({
+  loginSessionService: { instance: () => ({ revoke: jest.fn() }) },
 }));
 
 beforeEach(() => {

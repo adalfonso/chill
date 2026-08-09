@@ -184,16 +184,65 @@ export const createLoginSessionService = (
    * deny-key write degrades enforcement on already-issued access tokens
    * but does not fail the call, since failing it would leave the owner
    * unable to kill a stolen device exactly when the cache is down (R8).
-   * Idempotent: revoking an already-revoked session is a no-op success.
+   * Idempotent: revoking an already-revoked session is a no-op success that
+   * does not re-write the deny key -- Redis's `SET ... EX` always resets the
+   * TTL, so an unguarded repeat call would silently extend enforcement's
+   * cache lifetime on every retry.
+   *
+   * The single owner-scoping entry point for every caller: logout and reuse
+   * detection call it with no `owner_user_id` (they already trust the
+   * session id they're holding); the login-session-list revoke endpoint
+   * passes the caller's own id so a login session can never be revoked (or
+   * have its revoked state used to answer an existence question) by anyone
+   * but its owner, in the same atomic update rather than a separate
+   * look-up-then-check (that pattern is both a race and an existence
+   * oracle). Funneling every entry point through this one function is what
+   * KTD6 requires.
    *
    * @param login_session_id - the login session to revoke
-   * @returns the revoked session id, for the caller to drop live sockets with
+   * @param options.owner_user_id - if set, the update (and the disambiguation read below) are scoped to sessions owned by this user
+   * @returns `ok: false` only when `owner_user_id` was set and the session is not owned by that user (or does not exist) -- otherwise always `ok: true`
    */
-  const revoke = async (login_session_id: number): Promise<number> => {
-    await db.loginSession.updateMany({
-      where: { id: login_session_id, revoked_at: null },
+  const revoke = async (
+    login_session_id: number,
+    options: { owner_user_id?: number } = {},
+  ): Promise<{ ok: boolean; login_session_id: number }> => {
+    const owner_scope =
+      options.owner_user_id !== undefined
+        ? { user_id: options.owner_user_id }
+        : {};
+
+    const updated = await db.loginSession.updateMany({
+      where: { id: login_session_id, revoked_at: null, ...owner_scope },
       data: { revoked_at: new Date() },
     });
+
+    if (updated.count === 0) {
+      if (options.owner_user_id === undefined) {
+        // No owner scope was requested, so a miss here only ever means
+        // "already revoked" -- idempotent success, and the deny key must
+        // not be re-written (see docblock).
+        return { ok: true, login_session_id };
+      }
+
+      // Disambiguate "not owned or doesn't exist" from "owned but already
+      // revoked" with a follow-up read scoped by the same owner
+      // constraint, so it can only ever confirm rows the caller already
+      // owns -- never an existence oracle for another user's session.
+      const already_revoked_and_owned = await db.loginSession.findFirst({
+        where: {
+          id: login_session_id,
+          user_id: options.owner_user_id,
+          revoked_at: { not: null },
+        },
+        select: { id: true },
+      });
+
+      return {
+        ok: already_revoked_and_owned !== null,
+        login_session_id,
+      };
+    }
 
     try {
       await deny_list.deny(login_session_id);
@@ -204,7 +253,7 @@ export const createLoginSessionService = (
       );
     }
 
-    return login_session_id;
+    return { ok: true, login_session_id };
   };
 
   /**

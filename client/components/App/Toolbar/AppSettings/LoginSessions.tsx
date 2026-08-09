@@ -1,8 +1,7 @@
 import { effect, useSignal } from "@preact/signals";
 
 import { api } from "@client/client";
-import { Raw } from "@common/types";
-import type { LoginSessionDto } from "@server/controllers/LoginSessionController";
+import { LoginSessionDto, Raw } from "@common/types";
 
 type LoginSessionClient = Raw<LoginSessionDto>;
 

@@ -86,6 +86,7 @@ const createFakeDb = () => {
         const matches = [...sessions.values()].filter(
           (s) =>
             s.id === where.id &&
+            (where.user_id === undefined || s.user_id === where.user_id) &&
             (where.revoked_at === undefined ||
               s.revoked_at === where.revoked_at),
         );
@@ -96,6 +97,17 @@ const createFakeDb = () => {
       },
       findUnique: async ({ where }: any) => {
         return sessions.get(where.id) ?? null;
+      },
+      findFirst: async ({ where }: any) => {
+        const match = [...sessions.values()].find(
+          (s) =>
+            (where.id === undefined || s.id === where.id) &&
+            (where.user_id === undefined || s.user_id === where.user_id) &&
+            (where.revoked_at?.not === undefined ||
+              s.revoked_at !== where.revoked_at.not),
+        );
+
+        return match ?? null;
       },
       update: async ({ where, data }: any) => {
         const session = sessions.get(where.id)!;
@@ -525,9 +537,10 @@ describe("revoke", () => {
 
     deny_list.deny.mockRejectedValueOnce(new Error("redis down"));
 
-    await expect(service.revoke(login_session_id)).resolves.toEqual(
+    await expect(service.revoke(login_session_id)).resolves.toEqual({
+      ok: true,
       login_session_id,
-    );
+    });
   });
 
   it("is idempotent on an already-revoked session", async () => {
@@ -541,9 +554,88 @@ describe("revoke", () => {
 
     await service.revoke(login_session_id);
 
-    await expect(service.revoke(login_session_id)).resolves.toEqual(
+    await expect(service.revoke(login_session_id)).resolves.toEqual({
+      ok: true,
       login_session_id,
-    );
+    });
+  });
+
+  it("does not re-write the deny key on an idempotent repeat revoke", async () => {
+    const { service, deny_list } = setup();
+    const { login_session_id } = await service.create({
+      user_id: 1,
+      device_id: "device-a",
+      user_agent: CHROME_WINDOWS_UA,
+      ip: "1.2.3.4",
+    });
+
+    await service.revoke(login_session_id);
+    deny_list.deny.mockClear();
+
+    await service.revoke(login_session_id);
+
+    expect(deny_list.deny).not.toHaveBeenCalled();
+  });
+
+  describe("owner-scoped revoke", () => {
+    it("succeeds when the session belongs to the given owner", async () => {
+      const { service } = setup();
+      const { login_session_id } = await service.create({
+        user_id: 1,
+        device_id: "device-a",
+        user_agent: CHROME_WINDOWS_UA,
+        ip: "1.2.3.4",
+      });
+
+      await expect(
+        service.revoke(login_session_id, { owner_user_id: 1 }),
+      ).resolves.toEqual({ ok: true, login_session_id });
+    });
+
+    it("fails without revoking when the session belongs to a different owner", async () => {
+      const { service, db } = setup();
+      const { login_session_id } = await service.create({
+        user_id: 1,
+        device_id: "device-a",
+        user_agent: CHROME_WINDOWS_UA,
+        ip: "1.2.3.4",
+      });
+
+      await expect(
+        service.revoke(login_session_id, { owner_user_id: 2 }),
+      ).resolves.toEqual({ ok: false, login_session_id });
+
+      const session = await db.loginSession.findUnique({
+        where: { id: login_session_id },
+      });
+      expect(session!.revoked_at).toBeNull();
+    });
+
+    it("fails the same way for a nonexistent id as for someone else's session -- no existence oracle", async () => {
+      const { service } = setup();
+
+      await expect(
+        service.revoke(999_999, { owner_user_id: 1 }),
+      ).resolves.toEqual({ ok: false, login_session_id: 999_999 });
+    });
+
+    it("is idempotent when the owner repeats a revoke on their own already-revoked session", async () => {
+      const { service, deny_list } = setup();
+      const { login_session_id } = await service.create({
+        user_id: 1,
+        device_id: "device-a",
+        user_agent: CHROME_WINDOWS_UA,
+        ip: "1.2.3.4",
+      });
+
+      await service.revoke(login_session_id, { owner_user_id: 1 });
+      deny_list.deny.mockClear();
+
+      await expect(
+        service.revoke(login_session_id, { owner_user_id: 1 }),
+      ).resolves.toEqual({ ok: true, login_session_id });
+      expect(deny_list.deny).not.toHaveBeenCalled();
+    });
   });
 });
 

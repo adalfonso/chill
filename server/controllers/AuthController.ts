@@ -9,6 +9,7 @@ import { db } from "@server/lib/data/db";
 import { ACCESS_TOKEN_TTL_SECONDS } from "@server/lib/auth/constants";
 import { loginSessionService } from "@server/lib/auth/LoginSession";
 import { AccessTokenPayload } from "@server/lib/Token";
+import { isString } from "@common/commonUtils";
 import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
@@ -28,7 +29,7 @@ const DEVICE_ID_COOKIE = "device_id";
 const readOrCreateDeviceId = (req: Request, res: Response): string => {
   const existing = req.cookies?.[DEVICE_ID_COOKIE];
 
-  if (typeof existing === "string" && existing.length > 0) {
+  if (isString(existing) && existing.length > 0) {
     return existing;
   }
 
@@ -64,13 +65,13 @@ const readOrCreateDeviceId = (req: Request, res: Response): string => {
 const recoverOrCreateSessionId = (req: Request): string => {
   const old_token = req.cookies?.[ACCESS_TOKEN_COOKIE];
 
-  if (typeof old_token === "string") {
+  if (isString(old_token)) {
     const decoded = jwt.decode(old_token);
 
     if (
       decoded !== null &&
       typeof decoded === "object" &&
-      typeof decoded.session_id === "string"
+      isString(decoded.session_id)
     ) {
       return decoded.session_id;
     }

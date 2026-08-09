@@ -4,6 +4,12 @@ import {
 } from "@client/lib/DeviceInfo";
 
 const REFRESH_ENDPOINT = "/auth/refresh";
+const LOGIN_PATH = "/auth/login";
+
+/** Navigate to the login page -- a full page load, not client-side routing, since logging out (or a dead session) should reset all app state. */
+export const redirectToLogin = (): void => {
+  window.location.href = LOGIN_PATH;
+};
 
 // Mirrors server/lib/auth/constants.ts ACCESS_TOKEN_TTL_SECONDS. Client and
 // server are separate bundles with no shared constants module for this;
@@ -25,7 +31,7 @@ const doRefresh = async (): Promise<void> => {
   });
 
   if (response.status === 401) {
-    window.location.href = "/auth/login";
+    redirectToLogin();
     throw new Error("Session expired");
   }
 

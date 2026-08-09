@@ -1,5 +1,7 @@
 import { useSignal } from "@preact/signals";
 
+import { redirectToLogin } from "@client/lib/auth/refresh";
+
 export const AccountSettings = () => {
   const is_busy = useSignal(false);
   const error = useSignal("");
@@ -21,7 +23,7 @@ export const AccountSettings = () => {
           throw new Error("Failed to log out");
         }
 
-        window.location.href = "/auth/login";
+        redirectToLogin();
       })
       .catch(() => {
         error.value = "Failed to log out. Please try again.";
