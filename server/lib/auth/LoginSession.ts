@@ -70,6 +70,8 @@ type RefreshTokenWithRelations = {
   login_session_id: number;
   rotated_at: Date | null;
   expires_at: Date;
+  issued_ip: string;
+  issued_user_agent: string;
   login_session: {
     id: number;
     revoked_at: Date | null;
@@ -213,11 +215,17 @@ export const createLoginSessionService = (
    * successor has itself already been rotated) trips detection regardless
    * of timing (ADR-0009 KTD3).
    *
+   * Both outcomes are logged (KTD17): the response is a generic failure
+   * either way, so the log stream is the only channel that distinguishes a
+   * benign lost-response race from actual reuse.
+   *
    * @param token - the already-rotated token that failed the rotation CAS
+   * @param current - the presenting request's identity, logged against what was originally recorded on the token
    * @returns the graced successor, or a failure (revoking the family when reuse is detected)
    */
   const disambiguateReplay = async (
     token: RefreshTokenWithRelations,
+    current: { user_agent: string; ip: string },
   ): Promise<RotateResult> => {
     const now = Date.now();
     const is_immediate_predecessor =
@@ -230,6 +238,18 @@ export const createLoginSessionService = (
       const cached = await grace_cache.get(graceCacheKeyFor(token.token_hash));
 
       if (cached !== null) {
+        // Same IP/UA as issuance points to a client retry; a mismatch is
+        // the only signal (short of the timing already being inside the
+        // window) that this might be a timed replay instead.
+        console.info("Graced refresh-token replay", {
+          login_session_id: token.login_session_id,
+          token_id: token.id,
+          current_ip: current.ip,
+          original_ip: token.issued_ip,
+          current_user_agent: current.user_agent,
+          original_user_agent: token.issued_user_agent,
+        });
+
         return {
           ok: true,
           login_session_id: token.login_session_id,
@@ -242,6 +262,18 @@ export const createLoginSessionService = (
       // forced logout this work exists to prevent.
       return { ok: false };
     }
+
+    const family_size = await db.refreshToken.count({
+      where: { login_session_id: token.login_session_id },
+    });
+
+    console.error("Refresh token reuse detected -- revoking family", {
+      login_session_id: token.login_session_id,
+      token_id: token.id,
+      predecessor_age_ms:
+        token.rotated_at !== null ? now - token.rotated_at.getTime() : null,
+      family_size_revoked: family_size,
+    });
 
     await revoke(token.login_session_id);
     return { ok: false };
@@ -286,7 +318,7 @@ export const createLoginSessionService = (
     }
 
     if (token.rotated_at !== null) {
-      return disambiguateReplay(token);
+      return disambiguateReplay(token, { user_agent, ip });
     }
 
     const successor_token = generateRefreshToken();
@@ -331,7 +363,7 @@ export const createLoginSessionService = (
       // exactly like an ordinary replay would be.
       const fresh = await findTokenWithRelations({ id: token.id });
 
-      return disambiguateReplay(fresh!);
+      return disambiguateReplay(fresh!, { user_agent, ip });
     }
 
     await grace_cache.set(graceCacheKeyFor(token_hash), successor_token, {
@@ -403,4 +435,50 @@ export const loginSessionService = {
 
     return login_session_service_instance;
   },
+};
+
+const DEFAULT_SESSION_PRUNE_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Start the periodic login-session pruner
+ *
+ * There is no existing scheduler in this codebase to reuse -- library
+ * scanning is admin-pull only. Mirrors startRenditionWorker's setInterval
+ * shape instead, the only other periodic scaffolding here: a reentrancy
+ * flag so a slow tick can't overlap itself, and a caught/logged failure
+ * that leaves the interval running rather than crashing the process.
+ *
+ * @param interval_ms - how often to sweep; defaults to once a day
+ */
+export const startSessionPruner = (
+  interval_ms: number = DEFAULT_SESSION_PRUNE_INTERVAL_MS,
+): void => {
+  console.info(`Session pruner: starting (interval_ms=${interval_ms})`);
+
+  let pruning = false;
+
+  const tick = () => {
+    if (pruning) {
+      return;
+    }
+
+    pruning = true;
+
+    loginSessionService
+      .instance()
+      .prune()
+      .then(({ count }) => {
+        if (count > 0) {
+          console.info(
+            `Session pruner: removed ${count} expired login session(s)`,
+          );
+        }
+      })
+      .catch((error) => console.error("Session pruner tick failed", { error }))
+      .finally(() => {
+        pruning = false;
+      });
+  };
+
+  setInterval(tick, interval_ms);
 };

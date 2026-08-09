@@ -14,7 +14,10 @@ import { ChillWss, registerServerSocket } from "./registerServerSocket";
 import { accessLogs } from "./middleware/accessLogs";
 import { startRenditionWorker } from "./lib/media/RenditionWorker";
 import { denyList } from "./lib/auth/DenyList";
-import { loginSessionService } from "./lib/auth/LoginSession";
+import {
+  loginSessionService,
+  startSessionPruner,
+} from "./lib/auth/LoginSession";
 
 /**
  * Initialize the express app
@@ -58,6 +61,7 @@ export const init = async (app: Express) => {
   await createInitialAdminUser();
 
   startRenditionWorker();
+  startSessionPruner(Number(env.SESSION_PRUNE_INTERVAL_MS));
 
   return { env, wss };
 };
@@ -79,6 +83,7 @@ const required_vars = [
   "SEARCH_ENGINE_PASSWORD",
   "SEARCH_ENGINE_URL",
   "SEARCH_ENGINE_USERNAME",
+  "SESSION_PRUNE_INTERVAL_MS",
   "SIGNING_KEY",
   "SOURCE_DIR",
   "TRANSCODED_PATH",
@@ -93,6 +98,9 @@ const defaults: Record<string, string> = {
   REDIS_HOST: "redis",
   SOURCE_DIR: "dist/client",
   RECEIVER_SOURCE_DIR: "dist/receiver",
+  // Once a day -- login sessions expire on a 90-day/1-year timescale, so
+  // pruning doesn't need to run often (ADR-0009 U10).
+  SESSION_PRUNE_INTERVAL_MS: String(24 * 60 * 60 * 1000),
 } as const;
 
 export type EnvStore = {

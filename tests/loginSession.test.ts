@@ -164,6 +164,11 @@ const createFakeDb = () => {
         return { count: matches.length };
       },
       deleteMany: async () => ({ count: 0 }),
+      count: async ({ where }: any) => {
+        return [...tokens.values()].filter(
+          (t) => t.login_session_id === where.login_session_id,
+        ).length;
+      },
     },
     $transaction: async (fn: (tx: any) => Promise<unknown>) => fn(fakeDb),
   };

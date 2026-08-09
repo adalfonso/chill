@@ -74,11 +74,18 @@ performance change in this ADR.
    TTL was never the theft defence. It does **not** guarantee a token outlives a listening session:
    a session starts at an arbitrary point in the token's life, so what matters is *remaining* TTL,
    which is frequently short. Decision 8 handles that directly rather than leaning on TTL to absorb
-   it.
+   it. This is a deliberate deviation from NIST SP 800-63B's general 30-day reauthentication guidance,
+   recorded here per OWASP ASVS 7.1.1's requirement to document deviations from the token-lifetime
+   guidance it references: once the deny key is checked per request (decision 5), TTL no longer
+   bounds revocation lag, so what a shorter ceiling would actually buy is a smaller window for an
+   access-token-only leak and a smaller fallback blast radius if the deny-key cache is unavailable —
+   both already small, and both traded against `<img>`/`<audio>` requests that cannot retry on 401.
 
 3. **Refresh token: opaque, `httpOnly`, `sameSite: "strict"`, `path=/auth/refresh`**, rotated on
-   every use. Sliding 90-day expiry reset on each rotation, under a fixed one-year absolute cap from
-   login. Ordinary use means never logging in again; the cap keeps a session from living forever.
+   every use. Sliding 90-day expiry reset on each rotation (the session's *inactivity timeout* --
+   a session that goes 90 days without a refresh is treated as abandoned), under a fixed one-year
+   absolute cap from login. Ordinary use means never logging in again; the cap keeps a session from
+   living forever.
 
 4. **Strict reuse detection.** Presenting an already-rotated token revokes the entire family. The
    re-login upsert starts a *new* family, so predecessors orphaned by re-login 401 quietly instead
@@ -134,7 +141,13 @@ performance change in this ADR.
 - `device_id` is client-supplied via `localStorage` and spoofable, but scoped under an authenticated
   `user_id`. Because the row is the unit of revocation, clobbering it logs the *other* device out —
   the reported symptom — though this needs a genuinely duplicated `device_id` and so is rare.
-  `localStorage` survives PWA eviction, which the session cookie did not.
+  **Correction:** an earlier draft of this ADR justified keeping `device_id` in `localStorage` by
+  claiming it "survives PWA eviction, which the session cookie did not" — that is inverted. WebKit
+  exempts cookies from both the ITP seven-day script-storage cap and quota eviction, while
+  `localStorage` is in scope for both; if anything, the cookie is the more durable of the two. The
+  decision still holds regardless: `device_id` is read only at login, and refresh resolves the login
+  session from the presented refresh token, not from `device_id` — so `localStorage` eviction cannot
+  fork or orphan a live session, it can only cause a later login to be treated as a new device.
 - The session list is **not** the existing device picker. That shows device sessions — sockets
   connected right now, for casting. This shows logins, including a phone in a drawer.
 - Deliberately not done: periodic WebSocket re-validation. A socket whose access token expired
@@ -156,3 +169,9 @@ performance change in this ADR.
   residual gap above is wider than assumed on that platform — reachable by any listening session
   that outlasts the token's *remaining* life. Refreshing at playback start is what keeps this bounded
   on iOS regardless of the answer, since that trigger fires while the page is certainly alive.
+- Whether to split `SIGNING_KEY` per token type. It is currently triple-purposed: it signs access
+  tokens, signs cast tokens, and is the secret `cookieParser` uses to sign/verify the cookie jar
+  (`app.use(cookieParser(env.SIGNING_KEY))`). One leak invalidates all three. Decision 6's `typ`
+  claim makes token *substitution* structurally impossible, which is the part that actually mattered
+  for this ADR; separating the keys themselves is hygiene, not a security requirement this work
+  depends on, so it is deferred rather than blocking.
