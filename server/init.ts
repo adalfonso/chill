@@ -13,6 +13,7 @@ import { initRouter } from "@routes/router";
 import { ChillWss, registerServerSocket } from "./registerServerSocket";
 import { accessLogs } from "./middleware/accessLogs";
 import { startRenditionWorker } from "./lib/media/RenditionWorker";
+import { createDenyList } from "./lib/auth/DenyList";
 
 /**
  * Initialize the express app
@@ -43,6 +44,12 @@ export const init = async (app: Express) => {
       password: env.SEARCH_ENGINE_PASSWORD,
     }),
   ]);
+
+  // The deny keyspace does not survive a cache restart or container
+  // recreation, so a session revoked just inside the access-token lifetime
+  // would otherwise be silently under-enforced until its token expires on
+  // its own. Failing startup here is deliberate (ADR-0009 KTD15).
+  await createDenyList(Cache.instance()).warmUp();
 
   await createInitialAdminUser();
 

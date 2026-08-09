@@ -21,6 +21,10 @@ export class Cache {
       const client = createClient({
         url: `redis://${host}:6379`,
         password: password,
+        // A dropped socket otherwise queues commands indefinitely instead of
+        // failing, parking every authenticated request until it reconnects
+        // (ADR-0009 KTD15).
+        disableOfflineQueue: true,
       });
 
       client.on("error", (err) => {
