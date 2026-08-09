@@ -6,6 +6,7 @@ import {
 } from "@server/lib/Token";
 import { db } from "@server/lib/data/db";
 import { denyList } from "@server/lib/auth/DenyList";
+import { ACCESS_TOKEN_COOKIE } from "@server/lib/auth/cookies";
 
 const login_redirect = "/auth/login";
 
@@ -22,7 +23,7 @@ const login_redirect = "/auth/login";
  * @returns true on success (request is authenticated), false on any failure
  */
 const authenticate = async (req: Request): Promise<boolean> => {
-  const token = req.cookies?.access_token;
+  const token = req.cookies?.[ACCESS_TOKEN_COOKIE];
 
   if (typeof token !== "string") {
     return false;

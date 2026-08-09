@@ -3,6 +3,7 @@ import {
   isAuthenticatedApi,
   isAuthenticatedPage,
 } from "../server/middleware/isAuthenticated";
+import { ACCESS_TOKEN_COOKIE } from "../server/lib/auth/cookies";
 
 jest.mock("../server/init", () => ({
   env: { SIGNING_KEY: "test-signing-key" },
@@ -59,7 +60,7 @@ describe("isAuthenticatedApi", () => {
     );
     is_denied.mockResolvedValue(true);
 
-    const req = { cookies: { access_token: token } } as any;
+    const req = { cookies: { [ACCESS_TOKEN_COOKIE]: token } } as any;
     const res = makeRes();
     const next = jest.fn();
 
@@ -84,7 +85,7 @@ describe("isAuthenticatedApi", () => {
     );
     find_unique.mockResolvedValue({ id: 1, email: "user@example.com" });
 
-    const req = { cookies: { access_token: token } } as any;
+    const req = { cookies: { [ACCESS_TOKEN_COOKIE]: token } } as any;
     const res = makeRes();
     const next = jest.fn();
 
@@ -125,7 +126,7 @@ describe("isAuthenticatedPage", () => {
     );
     find_unique.mockResolvedValue({ id: 1, email: "user@example.com" });
 
-    const req = { cookies: { access_token: token } } as any;
+    const req = { cookies: { [ACCESS_TOKEN_COOKIE]: token } } as any;
     const res = makeRes();
     const next = jest.fn();
 

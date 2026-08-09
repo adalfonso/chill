@@ -3,6 +3,7 @@ import { Server } from "node:http";
 
 import { access_token_payload_schema, verifyAndDecodeJwt } from "../Token";
 import { denyList } from "../auth/DenyList";
+import { ACCESS_TOKEN_COOKIE } from "../auth/cookies";
 import { SocketServer } from "./SocketServer";
 import { ClientSocketData, ClientSocketEvent } from "@common/SocketClientEvent";
 import { ServerSocketData, ServerSocketEvent } from "@common/SocketServerEvent";
@@ -19,7 +20,9 @@ export const upgradeServer = (
   http_server.on("upgrade", async (req, socket, head) => {
     socket.on("error", console.error);
 
-    const { access_token } = cookie.parse(req.headers.cookie || "");
+    const access_token = cookie.parse(req.headers.cookie || "")[
+      ACCESS_TOKEN_COOKIE
+    ];
 
     if (!access_token) {
       socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");

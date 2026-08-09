@@ -2,10 +2,9 @@ import type { PrismaClient } from "@prisma/client";
 
 import { DenyList, DenyListClient } from "@server/lib/auth/DenyList";
 import { generateRefreshToken, hashRefreshToken } from "@server/lib/Token";
+import { ABSOLUTE_WINDOW_MS, IDLE_WINDOW_MS } from "@server/lib/auth/constants";
 
 const GRACE_WINDOW_MS = 30_000;
-const IDLE_WINDOW_MS = 90 * 24 * 60 * 60 * 1000;
-const ABSOLUTE_WINDOW_MS = 365 * 24 * 60 * 60 * 1000;
 const MAX_DEVICE_LABEL_LENGTH = 64;
 
 const graceCacheKeyFor = (predecessor_token_hash: string) =>

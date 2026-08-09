@@ -5,8 +5,17 @@ import { nanoid } from "nanoid";
 
 import { ChillWss } from "@server/registerServerSocket";
 import { env } from "@server/init";
+import { db } from "@server/lib/data/db";
 import { ACCESS_TOKEN_TTL_SECONDS } from "@server/lib/auth/constants";
 import { loginSessionService } from "@server/lib/auth/LoginSession";
+import {
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+  accessTokenCookieOptions,
+  clearAccessTokenCookieOptions,
+  clearRefreshTokenCookieOptions,
+  refreshTokenCookieOptions,
+} from "@server/lib/auth/cookies";
 
 // Client-supplied per ADR-0009 KTD5, but authCallback is reached via a
 // full-page redirect from Google's OAuth callback rather than client JS, so
@@ -32,16 +41,58 @@ const readOrCreateDeviceId = (req: Request, res: Response): string => {
   return device_id;
 };
 
+type AccessTokenIdentity = {
+  id: number;
+  email: string;
+  session_id: string;
+  login_session_id: number;
+};
+
+/**
+ * Sign an access token
+ *
+ * @param identity - the payload to sign; must satisfy `access_token_payload_schema`
+ * @returns a promise resolving to the signed JWT
+ * @throws when signing fails
+ */
+const signAccessToken = (identity: AccessTokenIdentity): Promise<string> =>
+  new Promise((resolve, reject) => {
+    jwt.sign(
+      { ...identity, typ: "access" },
+      env.SIGNING_KEY,
+      {
+        expiresIn: ACCESS_TOKEN_TTL_SECONDS,
+        header: { alg: "HS256", typ: "access" },
+      },
+      (err, token) => {
+        if (err || token === undefined) {
+          return reject(err ?? new Error("Failed to sign access token"));
+        }
+
+        resolve(token);
+      },
+    );
+  });
+
 export const AuthController = {
   login: (_req: Request, res: Response) =>
     res.sendFile(path.join(path.resolve(), "views/login.html")),
 
   logout: (wss: ChillWss) => async (req: Request, res: Response) => {
     wss.drop(req._user.session_id);
-    await loginSessionService.instance().revoke(req._user.login_session_id);
 
-    res.clearCookie("access_token");
-    res.redirect("/auth/login");
+    try {
+      await loginSessionService.instance().revoke(req._user.login_session_id);
+    } catch (err) {
+      console.error("Failed to revoke login session on logout", { err });
+      return res.status(500).json({ error: "Failed to log out" });
+    }
+
+    res
+      .clearCookie(ACCESS_TOKEN_COOKIE, clearAccessTokenCookieOptions())
+      .clearCookie(REFRESH_TOKEN_COOKIE, clearRefreshTokenCookieOptions())
+      .status(200)
+      .json({ ok: true });
   },
 
   authCallback: async (req: Request, res: Response) => {
@@ -53,50 +104,105 @@ export const AuthController = {
     const device_id = readOrCreateDeviceId(req, res);
     const session_id = nanoid(4);
 
-    // The refresh token minted here is not yet persisted to a cookie -- the
-    // refresh cookie's scheme (path scoping, attributes) is U11's job. It
-    // becomes reachable once /auth/refresh and the cookie helper land.
-    const { login_session_id } = await loginSessionService.instance().create({
-      user_id: req.user.id,
-      device_id,
-      user_agent: req.headers["user-agent"] ?? "",
-      ip: req.ip ?? "",
-    });
+    const { login_session_id, refresh_token } = await loginSessionService
+      .instance()
+      .create({
+        user_id: req.user.id,
+        device_id,
+        user_agent: req.headers["user-agent"] ?? "",
+        ip: req.ip ?? "",
+      });
 
-    const signingCallback = async (
-      err: Error | null,
-      token: string | undefined,
-    ) => {
-      if (err || token === undefined) {
-        console.error(`Failed to create JWT: ${err}`);
-        return res.redirect("/");
-      }
-
-      // No maxAge here yet -- ADR-0009 defect 1, fixed explicitly in U11
-      // alongside the rest of the cookie scheme.
-      res
-        .cookie("access_token", token, {
-          httpOnly: true,
-          sameSite: "lax",
-          secure: env.NODE_ENV === "production",
-        })
-        .redirect("/");
-    };
-
-    jwt.sign(
-      {
+    try {
+      const access_token = await signAccessToken({
         id: req.user.id,
         email: req.user.email,
         session_id,
         login_session_id,
-        typ: "access",
-      },
-      env.SIGNING_KEY,
-      {
-        expiresIn: ACCESS_TOKEN_TTL_SECONDS,
-        header: { alg: "HS256", typ: "access" },
-      },
-      signingCallback,
-    );
+      });
+
+      res
+        .cookie(ACCESS_TOKEN_COOKIE, access_token, accessTokenCookieOptions())
+        .cookie(
+          REFRESH_TOKEN_COOKIE,
+          refresh_token,
+          refreshTokenCookieOptions(),
+        )
+        .redirect("/");
+    } catch (err) {
+      console.error(`Failed to create JWT: ${err}`);
+      res.redirect("/");
+    }
+  },
+
+  /**
+   * Rotate a refresh token, minting a fresh access/refresh pair
+   *
+   * Requires a non-simple header (defense in depth alongside the refresh
+   * cookie's SameSite=Strict and scoped path) and re-reads the User row,
+   * refusing to mint if it is gone.
+   *
+   * @param req - express request
+   * @param res - express response
+   */
+  refresh: async (req: Request, res: Response) => {
+    if (typeof req.headers["x-requested-with"] !== "string") {
+      return res.status(400).json({ error: "Missing required header" });
+    }
+
+    const refresh_token = req.cookies?.[REFRESH_TOKEN_COOKIE];
+
+    if (typeof refresh_token !== "string") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const result = await loginSessionService.instance().rotate({
+      refresh_token,
+      user_agent: req.headers["user-agent"] ?? "",
+      ip: req.ip ?? "",
+    });
+
+    if (!result.ok) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const login_session = await db.loginSession.findUnique({
+      where: { id: result.login_session_id },
+      select: { user_id: true },
+    });
+    const user = login_session
+      ? await db.user.findUnique({ where: { id: login_session.user_id } })
+      : null;
+
+    if (user === null) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const session_id =
+      typeof req.body?.session_id === "string"
+        ? req.body.session_id
+        : nanoid(4);
+
+    try {
+      const access_token = await signAccessToken({
+        id: user.id,
+        email: user.email,
+        session_id,
+        login_session_id: result.login_session_id,
+      });
+
+      res
+        .cookie(ACCESS_TOKEN_COOKIE, access_token, accessTokenCookieOptions())
+        .cookie(
+          REFRESH_TOKEN_COOKIE,
+          result.refresh_token,
+          refreshTokenCookieOptions(),
+        )
+        .status(200)
+        .json({ ok: true });
+    } catch (err) {
+      console.error(`Failed to create JWT during refresh: ${err}`);
+      res.status(500).json({ error: "Failed to refresh" });
+    }
   },
 };
