@@ -3,13 +3,13 @@ import passport from "passport";
 
 import { AuthController } from "@controllers/AuthController";
 import { ChillWss } from "@server/registerServerSocket";
-import { isAuthenticated } from "@server/middleware/isAuthenticated";
+import { isAuthenticatedPage } from "@server/middleware/isAuthenticated";
 
 export default (wss: ChillWss) => {
   const router = express.Router();
 
   router.get("/login", AuthController.login);
-  router.get("/logout", isAuthenticated, AuthController.logout(wss));
+  router.get("/logout", isAuthenticatedPage, AuthController.logout(wss));
 
   router.get(
     "/google",

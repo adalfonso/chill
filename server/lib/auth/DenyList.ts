@@ -1,4 +1,4 @@
-import { jwt_expiration_seconds } from "@server/controllers/AuthController";
+import { ACCESS_TOKEN_TTL_SECONDS } from "@server/lib/auth/constants";
 import { db } from "@server/lib/data/db";
 
 const DEFAULT_READ_TIMEOUT_MS = 500;
@@ -123,7 +123,7 @@ export const createDenyList = (
    */
   const deny = async (login_session_id: number): Promise<void> => {
     await client.set(denyKeyFor(login_session_id), "1", {
-      EX: Number(jwt_expiration_seconds),
+      EX: ACCESS_TOKEN_TTL_SECONDS,
     });
   };
 
@@ -165,7 +165,7 @@ export const createDenyList = (
    * @throws when it cannot complete -- startup should fail rather than boot under-enforcing revocation
    */
   const warmUp = async (): Promise<void> => {
-    const cutoff = new Date(Date.now() - Number(jwt_expiration_seconds) * 1000);
+    const cutoff = new Date(Date.now() - ACCESS_TOKEN_TTL_SECONDS * 1000);
 
     const recently_revoked = await db.loginSession.findMany({
       where: { revoked_at: { gte: cutoff } },
@@ -178,4 +178,36 @@ export const createDenyList = (
   };
 
   return { deny, isDenied, warmUp };
+};
+
+let deny_list_instance: DenyList | undefined;
+
+/**
+ * Process-wide `DenyList` singleton, mirroring `Cache.instance()`
+ *
+ * One instance is required for the circuit breaker's failure count to mean
+ * anything across requests -- a fresh instance per call would never trip.
+ */
+export const denyList = {
+  /**
+   * Create the singleton, bound to a connected Redis client
+   *
+   * @param client - Redis client to read and write deny keys on
+   */
+  init: (client: DenyListClient): void => {
+    deny_list_instance = createDenyList(client);
+  },
+
+  /**
+   * Get the singleton
+   *
+   * @throws when accessed before `init`
+   */
+  instance: (): DenyList => {
+    if (!deny_list_instance) {
+      throw new Error("DenyList accessed before init");
+    }
+
+    return deny_list_instance;
+  },
 };

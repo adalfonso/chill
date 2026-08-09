@@ -1,12 +1,7 @@
 import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
-import { Cache, getTokenKey } from "@server/lib/data/Cache";
 import { env } from "@server/init";
 import { z, ZodType } from "zod";
-
-export const tokenIsBlacklisted = async (token: string): Promise<boolean> => {
-  return Boolean(await Cache.instance().get(getTokenKey(token)));
-};
 
 /**
  * Manually verify and parse a JWT against an expected payload schema
@@ -14,22 +9,21 @@ export const tokenIsBlacklisted = async (token: string): Promise<boolean> => {
  * The schema is a required argument rather than an afterthought so that
  * parsing is never optional at a call site -- a cast token can no longer be
  * silently accepted where an access token is expected, or vice versa
- * (ADR-0009 KTD7).
+ * (ADR-0009 KTD7). Revocation is no longer checked here: it moved to a
+ * deny-list lookup keyed on `login_session_id`, which callers run
+ * separately, since the blacklist scheme this replaced could only key on
+ * the token itself (ADR-0009 KTD6, U6).
  *
  * @param token - JWT
  * @param schema - Zod schema the decoded payload must satisfy
  * @returns the parsed, schema-validated payload
- * @throws when the token is blacklisted, fails signature/algorithm
- *   verification, or the decoded payload does not match `schema`
+ * @throws when the token fails signature/algorithm verification, or the
+ *   decoded payload does not match `schema`
  */
 export const verifyAndDecodeJwt = async <T>(
   token: string,
   schema: ZodType<T>,
 ): Promise<T> => {
-  if (await tokenIsBlacklisted(token)) {
-    throw new Error(`Unable to parse blacklisted token`);
-  }
-
   const decoded = jwt.verify(token, env.SIGNING_KEY, {
     algorithms: ["HS256"],
   });
@@ -37,13 +31,20 @@ export const verifyAndDecodeJwt = async <T>(
   return schema.parse(decoded);
 };
 
-// What we expect the JWT to contain
+// What we expect the JWT to contain. Identity is flattened (not an embedded
+// Prisma user object) and carries no privilege claim -- admin_procedure
+// reads `type` from the database at the point of use instead, so a
+// demotion takes effect immediately rather than after up to
+// ACCESS_TOKEN_TTL_SECONDS (ADR-0009 KTD16). `session_id` is the unrelated
+// low-entropy *device* session used for WebSocket routing (see
+// docs/glossary.md); `login_session_id` is the login session this token
+// belongs to, checked against the deny list on every request.
 export const access_token_payload_schema = z.object({
-  user: z.object({
-    id: z.number().int(),
-    email: z.string(),
-  }),
+  id: z.number().int(),
+  email: z.string(),
   session_id: z.string(),
+  login_session_id: z.number().int(),
+  typ: z.literal("access"),
 });
 
 export type AccessTokenPayload = z.infer<typeof access_token_payload_schema>;
@@ -51,13 +52,13 @@ export type AccessTokenPayload = z.infer<typeof access_token_payload_schema>;
 // What a cast token -- minted per track for Chromecast playback -- must
 // contain. The `typ` discriminator is what makes it structurally distinct
 // from an access token, so the two can never be substituted for one another
-// (ADR-0009 KTD7, R11). Binding a cast token to a login session
-// (`login_session_id`) lands once U4/U6 give the request a real one to bind
-// to; adding it here would have nothing genuine to populate it with.
+// (ADR-0009 KTD7, R11). `login_session_id` binds the token to a revocable
+// session, checked against the same deny list as the access-token path.
 export const cast_token_payload_schema = z.object({
   for: z.string(),
   track_id: z.number().int(),
   album_art_filename: z.string().nullable(),
+  login_session_id: z.number().int(),
   typ: z.literal("cast"),
 });
 

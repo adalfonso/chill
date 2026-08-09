@@ -8,6 +8,7 @@ import {
   cast_token_payload_schema,
   verifyAndDecodeJwt,
 } from "@server/lib/Token";
+import { denyList } from "@server/lib/auth/DenyList";
 
 const audioOrImageExtension = new RegExp(
   `\\.(${[...Object.values(AudioType), ...Object.values(ImageType)].join(
@@ -50,6 +51,15 @@ export const hasValidAudioToken =
         token,
         cast_token_payload_schema,
       );
+
+      // Neither /cast/media/* route is in the Express isAuthenticated
+      // chain, so this middleware has to run the deny-key check itself.
+      if (await denyList.instance().isDenied(decoded.login_session_id)) {
+        console.warn(
+          "User tried to access token-secured media with a token from a revoked login session",
+        );
+        return res.sendStatus(401);
+      }
 
       if (
         // Token not valid for track

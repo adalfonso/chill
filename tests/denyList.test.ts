@@ -1,10 +1,6 @@
 /** @jest-environment node */
 import { createDenyList } from "../server/lib/auth/DenyList";
 
-jest.mock("../server/controllers/AuthController", () => ({
-  jwt_expiration_seconds: 3600 * 12,
-}));
-
 const find_unique = jest.fn();
 const find_many = jest.fn();
 

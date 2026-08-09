@@ -15,6 +15,8 @@ import { UserType } from "@prisma/client";
 import { LibraryHealthRouter } from "./routes/api/v1/trpc/LibraryHealthRouter";
 import { CompilationRouter } from "./routes/api/v1/trpc/CompilationRouter";
 import { SplitRouter } from "./routes/api/v1/trpc/SplitRouter";
+import { db } from "@server/lib/data/db";
+import { AccessTokenPayload } from "@server/lib/Token";
 
 export const createContext = ({
   req,
@@ -30,8 +32,19 @@ const t = initTRPC.context<Context>().create({});
 
 export const { router, middleware, procedure } = t;
 
+// Admin privilege is read from the database at the point of use rather than
+// trusted from `req.user` (itself already a fresh per-request lookup, but
+// this keeps the check self-contained and independent of that other
+// middleware layer's behavior) or, worse, a token claim -- a demotion must
+// take effect on the very next request, not after up to
+// ACCESS_TOKEN_TTL_SECONDS (ADR-0009 KTD16, R16).
 const isAdmin = middleware(async ({ ctx: { req }, next }) => {
-  if (req?.user?.type !== UserType.Admin) {
+  const user = await db.user.findUnique({
+    where: { id: req._user.id },
+    select: { type: true },
+  });
+
+  if (user?.type !== UserType.Admin) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
@@ -39,6 +52,15 @@ const isAdmin = middleware(async ({ ctx: { req }, next }) => {
 });
 
 export const admin_procedure = procedure.use(isAdmin);
+
+// Narrows the token payload into context, so a route can take the caller's
+// identity from `ctx.token` and never from client-supplied input (ADR-0009
+// U6, used by U9's login-session routes).
+const isAuthed = middleware(async ({ ctx, next }) => {
+  return next({ ctx: { ...ctx, token: ctx.req._user } });
+});
+
+export const authed_procedure = procedure.use(isAuthed);
 
 // Initialize the tRPC router
 export const api_router = t.router({
@@ -61,4 +83,9 @@ export type ApiRouter = typeof api_router;
 export type Request<T extends ZodType = z.ZodUndefined> = {
   input: z.infer<T>;
   ctx: Context;
+};
+
+export type AuthedRequest<T extends ZodType = z.ZodUndefined> = {
+  input: z.infer<T>;
+  ctx: Context & { token: AccessTokenPayload };
 };

@@ -360,3 +360,40 @@ export const createLoginSessionService = (
 };
 
 export type LoginSessionService = ReturnType<typeof createLoginSessionService>;
+
+let login_session_service_instance: LoginSessionService | undefined;
+
+/** Process-wide `LoginSessionService` singleton, mirroring `Cache.instance()` */
+export const loginSessionService = {
+  /**
+   * Create the singleton
+   *
+   * @param db - Prisma client
+   * @param deny_list - deny list used to enforce revocation
+   * @param grace_cache - Redis-shaped client for the rotation grace entry
+   */
+  init: (
+    db: PrismaClient,
+    deny_list: DenyList,
+    grace_cache: DenyListClient,
+  ): void => {
+    login_session_service_instance = createLoginSessionService(
+      db,
+      deny_list,
+      grace_cache,
+    );
+  },
+
+  /**
+   * Get the singleton
+   *
+   * @throws when accessed before `init`
+   */
+  instance: (): LoginSessionService => {
+    if (!login_session_service_instance) {
+      throw new Error("LoginSessionService accessed before init");
+    }
+
+    return login_session_service_instance;
+  },
+};

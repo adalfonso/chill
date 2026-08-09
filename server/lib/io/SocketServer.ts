@@ -7,6 +7,7 @@ import { DeviceConnect } from "./DeviceConnect";
 interface ExtWebSocket extends WebSocket {
   user_id: number;
   session_id: string;
+  login_session_id: number;
   device_info: DeviceInfo;
   is_alive: boolean;
 }
@@ -95,6 +96,24 @@ export class SocketServer<
     this.getClientBySessionId(session_id)?.terminate();
   }
 
+  /**
+   * Drop every websocket connection held by one login session
+   *
+   * Revocation has no next request to check on a live socket, so it has to
+   * push the drop instead. `getClientBySessionId` only returns the first
+   * match keyed on the unrelated device session, which undercounts here --
+   * a login session can hold more than one live socket (ADR-0009 U6).
+   *
+   * @param login_session_id - the login session being revoked
+   */
+  public dropByLoginSession(login_session_id: number) {
+    (this.wss.clients as Set<ExtWebSocket>).forEach((client) => {
+      if (client.login_session_id === login_session_id) {
+        client.terminate();
+      }
+    });
+  }
+
   public identify(ws: ExtWebSocket, data: DeviceInfo) {
     ws.device_info.browser = data.browser ?? ws.device_info.browser;
     ws.device_info.os = data.os ?? ws.device_info.os;
@@ -145,10 +164,11 @@ export class SocketServer<
   };
 
   #onConnection(ws: ExtWebSocket, req: Request) {
-    const { user, session_id } = req._user;
+    const { id, session_id, login_session_id } = req._user;
 
-    ws.user_id = user.id;
+    ws.user_id = id;
     ws.session_id = session_id;
+    ws.login_session_id = login_session_id;
     ws.device_info = {
       type: "pending",
       browser: "pending",

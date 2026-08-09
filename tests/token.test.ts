@@ -13,22 +13,21 @@ jest.mock("../server/init", () => ({
   env: { SIGNING_KEY: "test-signing-key" },
 }));
 
-jest.mock("../server/lib/data/Cache", () => ({
-  Cache: { instance: () => ({ get: jest.fn().mockResolvedValue(null) }) },
-  getTokenKey: (token: string) => `token.blacklist.${token}`,
-}));
-
 const SIGNING_KEY = "test-signing-key";
 
 const access_payload = {
-  user: { id: 1, email: "user@example.com" },
+  id: 1,
+  email: "user@example.com",
   session_id: "abcd",
+  login_session_id: 42,
+  typ: "access" as const,
 };
 
 const cast_payload = {
   for: "user@example.com",
   track_id: 1,
   album_art_filename: "cover.jpg",
+  login_session_id: 42,
   typ: "cast" as const,
 };
 
@@ -84,8 +83,9 @@ describe("verifyAndDecodeJwt", () => {
     ).rejects.toThrow();
   });
 
-  it("rejects an access-token payload missing session_id", async () => {
-    const { session_id: _session_id, ...incomplete } = access_payload;
+  it("rejects an access-token payload missing login_session_id", async () => {
+    const { login_session_id: _login_session_id, ...incomplete } =
+      access_payload;
     const token = jwt.sign(incomplete, SIGNING_KEY);
 
     await expect(
