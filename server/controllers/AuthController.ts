@@ -8,6 +8,7 @@ import { env } from "@server/init";
 import { db } from "@server/lib/data/db";
 import { ACCESS_TOKEN_TTL_SECONDS } from "@server/lib/auth/constants";
 import { loginSessionService } from "@server/lib/auth/LoginSession";
+import { AccessTokenPayload } from "@server/lib/Token";
 import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
@@ -17,13 +18,15 @@ import {
   refreshTokenCookieOptions,
 } from "@server/lib/auth/cookies";
 
+const DEVICE_ID_COOKIE = "device_id";
+
 // Client-supplied per ADR-0009 KTD5, but authCallback is reached via a
 // full-page redirect from Google's OAuth callback rather than client JS, so
 // there is no header to read it from yet. Falling back to a cookie here
 // keeps a login working before U7 gives the client its own localStorage-
 // backed device id; a first-time visitor gets one minted and echoed back.
 const readOrCreateDeviceId = (req: Request, res: Response): string => {
-  const existing = req.cookies?.device_id;
+  const existing = req.cookies?.[DEVICE_ID_COOKIE];
 
   if (typeof existing === "string" && existing.length > 0) {
     return existing;
@@ -31,7 +34,7 @@ const readOrCreateDeviceId = (req: Request, res: Response): string => {
 
   const device_id = nanoid();
 
-  res.cookie("device_id", device_id, {
+  res.cookie(DEVICE_ID_COOKIE, device_id, {
     httpOnly: false,
     sameSite: "lax",
     secure: env.NODE_ENV === "production",
@@ -41,38 +44,35 @@ const readOrCreateDeviceId = (req: Request, res: Response): string => {
   return device_id;
 };
 
-type AccessTokenIdentity = {
-  id: number;
-  email: string;
-  session_id: string;
-  login_session_id: number;
-};
-
 /**
  * Sign an access token
  *
- * @param identity - the payload to sign; must satisfy `access_token_payload_schema`
- * @returns a promise resolving to the signed JWT
+ * @param identity - the payload to sign
+ * @returns the signed JWT
  * @throws when signing fails
  */
-const signAccessToken = (identity: AccessTokenIdentity): Promise<string> =>
-  new Promise((resolve, reject) => {
-    jwt.sign(
-      { ...identity, typ: "access" },
-      env.SIGNING_KEY,
-      {
-        expiresIn: ACCESS_TOKEN_TTL_SECONDS,
-        header: { alg: "HS256", typ: "access" },
-      },
-      (err, token) => {
-        if (err || token === undefined) {
-          return reject(err ?? new Error("Failed to sign access token"));
-        }
-
-        resolve(token);
-      },
-    );
+const signAccessToken = (identity: Omit<AccessTokenPayload, "typ">): string =>
+  jwt.sign({ ...identity, typ: "access" }, env.SIGNING_KEY, {
+    expiresIn: ACCESS_TOKEN_TTL_SECONDS,
+    header: { alg: "HS256", typ: "access" },
   });
+
+/**
+ * Set the access and refresh cookies on a response
+ *
+ * @param res - express response
+ * @param access_token - signed access token
+ * @param refresh_token - plaintext refresh token
+ * @returns `res`, for chaining a terminal call
+ */
+const setAuthCookies = (
+  res: Response,
+  access_token: string,
+  refresh_token: string,
+): Response =>
+  res
+    .cookie(ACCESS_TOKEN_COOKIE, access_token, accessTokenCookieOptions())
+    .cookie(REFRESH_TOKEN_COOKIE, refresh_token, refreshTokenCookieOptions());
 
 export const AuthController = {
   login: (_req: Request, res: Response) =>
@@ -114,21 +114,14 @@ export const AuthController = {
       });
 
     try {
-      const access_token = await signAccessToken({
+      const access_token = signAccessToken({
         id: req.user.id,
         email: req.user.email,
         session_id,
         login_session_id,
       });
 
-      res
-        .cookie(ACCESS_TOKEN_COOKIE, access_token, accessTokenCookieOptions())
-        .cookie(
-          REFRESH_TOKEN_COOKIE,
-          refresh_token,
-          refreshTokenCookieOptions(),
-        )
-        .redirect("/");
+      setAuthCookies(res, access_token, refresh_token).redirect("/");
     } catch (err) {
       console.error(`Failed to create JWT: ${err}`);
       res.redirect("/");
@@ -168,36 +161,28 @@ export const AuthController = {
 
     const login_session = await db.loginSession.findUnique({
       where: { id: result.login_session_id },
-      select: { user_id: true },
+      include: { user: true },
     });
-    const user = login_session
-      ? await db.user.findUnique({ where: { id: login_session.user_id } })
-      : null;
 
-    if (user === null) {
+    if (login_session === null) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
+    const { user } = login_session;
     const session_id =
       typeof req.body?.session_id === "string"
         ? req.body.session_id
         : nanoid(4);
 
     try {
-      const access_token = await signAccessToken({
+      const access_token = signAccessToken({
         id: user.id,
         email: user.email,
         session_id,
         login_session_id: result.login_session_id,
       });
 
-      res
-        .cookie(ACCESS_TOKEN_COOKIE, access_token, accessTokenCookieOptions())
-        .cookie(
-          REFRESH_TOKEN_COOKIE,
-          result.refresh_token,
-          refreshTokenCookieOptions(),
-        )
+      setAuthCookies(res, access_token, result.refresh_token)
         .status(200)
         .json({ ok: true });
     } catch (err) {

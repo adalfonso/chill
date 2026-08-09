@@ -231,6 +231,7 @@ model LoginSession {
 
   @@unique([user_id, device_id])
   @@index([user_id])
+  @@index([revoked_at])
 }
 
 model RefreshToken {

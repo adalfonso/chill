@@ -16,7 +16,6 @@ import { LibraryHealthRouter } from "./routes/api/v1/trpc/LibraryHealthRouter";
 import { CompilationRouter } from "./routes/api/v1/trpc/CompilationRouter";
 import { SplitRouter } from "./routes/api/v1/trpc/SplitRouter";
 import { db } from "@server/lib/data/db";
-import { AccessTokenPayload } from "@server/lib/Token";
 
 export const createContext = ({
   req,
@@ -53,15 +52,6 @@ const isAdmin = middleware(async ({ ctx: { req }, next }) => {
 
 export const admin_procedure = procedure.use(isAdmin);
 
-// Narrows the token payload into context, so a route can take the caller's
-// identity from `ctx.token` and never from client-supplied input (ADR-0009
-// U6, used by U9's login-session routes).
-const isAuthed = middleware(async ({ ctx, next }) => {
-  return next({ ctx: { ...ctx, token: ctx.req._user } });
-});
-
-export const authed_procedure = procedure.use(isAuthed);
-
 // Initialize the tRPC router
 export const api_router = t.router({
   admin: AdminRouter(router),
@@ -83,9 +73,4 @@ export type ApiRouter = typeof api_router;
 export type Request<T extends ZodType = z.ZodUndefined> = {
   input: z.infer<T>;
   ctx: Context;
-};
-
-export type AuthedRequest<T extends ZodType = z.ZodUndefined> = {
-  input: z.infer<T>;
-  ctx: Context & { token: AccessTokenPayload };
 };

@@ -35,16 +35,17 @@ const authenticate = async (req: Request): Promise<boolean> => {
       access_token_payload_schema,
     );
 
-    if (await denyList.instance().isDenied(decoded.login_session_id)) {
-      return false;
-    }
+    // Independent reads -- run concurrently rather than paying two
+    // sequential round trips on every authenticated request.
+    const [is_denied, user] = await Promise.all([
+      denyList.instance().isDenied(decoded.login_session_id),
+      db.user.findUnique({
+        where: { id: decoded.id },
+        include: { settings: true },
+      }),
+    ]);
 
-    const user = await db.user.findUnique({
-      where: { id: decoded.id },
-      include: { settings: true },
-    });
-
-    if (user === null) {
+    if (is_denied || user === null) {
       return false;
     }
 

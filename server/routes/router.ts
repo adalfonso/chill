@@ -22,10 +22,9 @@ export const initRouter = (app: Express, wss: ChillWss) => {
   app.use("/cast/media", cast_media);
 
   // Register all API routes. Mounted ahead of the SPA shell fallback below
-  // so a matched API route is fully handled (and its own isAuthenticatedApi
-  // check is the only auth check that runs) rather than also running the
-  // page-shell's isAuthenticatedPage first -- the two used to run back to
-  // back on every API request.
+  // so a matched API route is fully handled -- its own isAuthenticatedApi
+  // check is the only auth check that runs -- rather than also running the
+  // page-shell's isAuthenticatedPage first.
   app.use("/api/v1", isAuthenticatedApi, v1);
 
   app.use(

@@ -52,15 +52,6 @@ export const hasValidAudioToken =
         cast_token_payload_schema,
       );
 
-      // Neither /cast/media/* route is in the Express isAuthenticated
-      // chain, so this middleware has to run the deny-key check itself.
-      if (await denyList.instance().isDenied(decoded.login_session_id)) {
-        console.warn(
-          "User tried to access token-secured media with a token from a revoked login session",
-        );
-        return res.sendStatus(401);
-      }
-
       if (
         // Token not valid for track
         (type === "track" && decoded.track_id.toString() !== id) ||
@@ -73,10 +64,23 @@ export const hasValidAudioToken =
         return res.sendStatus(401);
       }
 
-      const user = await db.user.findUnique({
-        where: { email: decoded.for },
-        include: { settings: true },
-      });
+      // Neither /cast/media/* route is in the Express isAuthenticated
+      // chain, so this middleware has to run the deny-key check itself.
+      // Independent of the user lookup below -- run both concurrently.
+      const [is_denied, user] = await Promise.all([
+        denyList.instance().isDenied(decoded.login_session_id),
+        db.user.findUnique({
+          where: { email: decoded.for },
+          include: { settings: true },
+        }),
+      ]);
+
+      if (is_denied) {
+        console.warn(
+          "User tried to access token-secured media with a token from a revoked login session",
+        );
+        return res.sendStatus(401);
+      }
 
       // Is this even possible?
       if (user === null) {

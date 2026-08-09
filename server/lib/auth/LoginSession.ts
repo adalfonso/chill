@@ -97,6 +97,20 @@ export const createLoginSessionService = (
   grace_cache: DenyListClient,
 ) => {
   /**
+   * Look up a refresh token by hash or id, with the relations `rotate` needs
+   *
+   * @param where - `token_hash` for the initial lookup, `id` for the re-read after a lost CAS race
+   * @returns the token with its login session and successor, or null if no row matches
+   */
+  const findTokenWithRelations = (
+    where: { token_hash: string } | { id: number },
+  ) =>
+    db.refreshToken.findUnique({
+      where,
+      include: { login_session: true, rotated_to: true },
+    }) as Promise<RefreshTokenWithRelations | null>;
+
+  /**
    * Start or restart a login session on one device
    *
    * Upserts on (user_id, device_id): a re-login on the same device reuses
@@ -252,10 +266,7 @@ export const createLoginSessionService = (
     const token_hash = hashRefreshToken(refresh_token);
     const now = new Date();
 
-    const token = (await db.refreshToken.findUnique({
-      where: { token_hash },
-      include: { login_session: true, rotated_to: true },
-    })) as RefreshTokenWithRelations | null;
+    const token = await findTokenWithRelations({ token_hash });
 
     if (token === null) {
       return { ok: false };
@@ -318,12 +329,9 @@ export const createLoginSessionService = (
     if (cas_result === null) {
       // Lost the race to a concurrent rotation -- re-read and disambiguate
       // exactly like an ordinary replay would be.
-      const fresh = (await db.refreshToken.findUnique({
-        where: { id: token.id },
-        include: { login_session: true, rotated_to: true },
-      })) as RefreshTokenWithRelations;
+      const fresh = await findTokenWithRelations({ id: token.id });
 
-      return disambiguateReplay(fresh);
+      return disambiguateReplay(fresh!);
     }
 
     await grace_cache.set(graceCacheKeyFor(token_hash), successor_token, {
