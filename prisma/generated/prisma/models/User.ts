@@ -217,6 +217,7 @@ export type UserWhereInput = {
   email?: Prisma.StringFilter<"User"> | string
   type?: Prisma.EnumUserTypeFilter<"User"> | $Enums.UserType
   settings?: Prisma.XOR<Prisma.UserSettingsNullableScalarRelationFilter, Prisma.UserSettingsWhereInput> | null
+  login_sessions?: Prisma.LoginSessionListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -226,6 +227,7 @@ export type UserOrderByWithRelationInput = {
   email?: Prisma.SortOrder
   type?: Prisma.SortOrder
   settings?: Prisma.UserSettingsOrderByWithRelationInput
+  login_sessions?: Prisma.LoginSessionOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -238,6 +240,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   updated_at?: Prisma.DateTimeFilter<"User"> | Date | string
   type?: Prisma.EnumUserTypeFilter<"User"> | $Enums.UserType
   settings?: Prisma.XOR<Prisma.UserSettingsNullableScalarRelationFilter, Prisma.UserSettingsWhereInput> | null
+  login_sessions?: Prisma.LoginSessionListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -270,6 +273,7 @@ export type UserCreateInput = {
   email: string
   type: $Enums.UserType
   settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+  login_sessions?: Prisma.LoginSessionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -279,6 +283,7 @@ export type UserUncheckedCreateInput = {
   email: string
   type: $Enums.UserType
   settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+  login_sessions?: Prisma.LoginSessionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -287,6 +292,7 @@ export type UserUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumUserTypeFieldUpdateOperationsInput | $Enums.UserType
   settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+  login_sessions?: Prisma.LoginSessionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -296,6 +302,7 @@ export type UserUncheckedUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumUserTypeFieldUpdateOperationsInput | $Enums.UserType
   settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+  login_sessions?: Prisma.LoginSessionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -376,11 +383,26 @@ export type UserUpdateOneRequiredWithoutSettingsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSettingsInput, Prisma.UserUpdateWithoutSettingsInput>, Prisma.UserUncheckedUpdateWithoutSettingsInput>
 }
 
+export type UserCreateNestedOneWithoutLogin_sessionsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutLogin_sessionsInput, Prisma.UserUncheckedCreateWithoutLogin_sessionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLogin_sessionsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutLogin_sessionsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutLogin_sessionsInput, Prisma.UserUncheckedCreateWithoutLogin_sessionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLogin_sessionsInput
+  upsert?: Prisma.UserUpsertWithoutLogin_sessionsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutLogin_sessionsInput, Prisma.UserUpdateWithoutLogin_sessionsInput>, Prisma.UserUncheckedUpdateWithoutLogin_sessionsInput>
+}
+
 export type UserCreateWithoutSettingsInput = {
   created_at?: Date | string
   updated_at?: Date | string
   email: string
   type: $Enums.UserType
+  login_sessions?: Prisma.LoginSessionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSettingsInput = {
@@ -389,6 +411,7 @@ export type UserUncheckedCreateWithoutSettingsInput = {
   updated_at?: Date | string
   email: string
   type: $Enums.UserType
+  login_sessions?: Prisma.LoginSessionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSettingsInput = {
@@ -412,6 +435,7 @@ export type UserUpdateWithoutSettingsInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumUserTypeFieldUpdateOperationsInput | $Enums.UserType
+  login_sessions?: Prisma.LoginSessionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSettingsInput = {
@@ -420,8 +444,88 @@ export type UserUncheckedUpdateWithoutSettingsInput = {
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumUserTypeFieldUpdateOperationsInput | $Enums.UserType
+  login_sessions?: Prisma.LoginSessionUncheckedUpdateManyWithoutUserNestedInput
 }
 
+export type UserCreateWithoutLogin_sessionsInput = {
+  created_at?: Date | string
+  updated_at?: Date | string
+  email: string
+  type: $Enums.UserType
+  settings?: Prisma.UserSettingsCreateNestedOneWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutLogin_sessionsInput = {
+  id?: number
+  created_at?: Date | string
+  updated_at?: Date | string
+  email: string
+  type: $Enums.UserType
+  settings?: Prisma.UserSettingsUncheckedCreateNestedOneWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutLogin_sessionsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutLogin_sessionsInput, Prisma.UserUncheckedCreateWithoutLogin_sessionsInput>
+}
+
+export type UserUpsertWithoutLogin_sessionsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutLogin_sessionsInput, Prisma.UserUncheckedUpdateWithoutLogin_sessionsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutLogin_sessionsInput, Prisma.UserUncheckedCreateWithoutLogin_sessionsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutLogin_sessionsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutLogin_sessionsInput, Prisma.UserUncheckedUpdateWithoutLogin_sessionsInput>
+}
+
+export type UserUpdateWithoutLogin_sessionsInput = {
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumUserTypeFieldUpdateOperationsInput | $Enums.UserType
+  settings?: Prisma.UserSettingsUpdateOneWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutLogin_sessionsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumUserTypeFieldUpdateOperationsInput | $Enums.UserType
+  settings?: Prisma.UserSettingsUncheckedUpdateOneWithoutUserNestedInput
+}
+
+
+/**
+ * Count Type UserCountOutputType
+ */
+
+export type UserCountOutputType = {
+  login_sessions: number
+}
+
+export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  login_sessions?: boolean | UserCountOutputTypeCountLogin_sessionsArgs
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserCountOutputType
+   */
+  select?: Prisma.UserCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountLogin_sessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.LoginSessionWhereInput
+}
 
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -431,6 +535,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   email?: boolean
   type?: boolean
   settings?: boolean | Prisma.User$settingsArgs<ExtArgs>
+  login_sessions?: boolean | Prisma.User$login_sessionsArgs<ExtArgs>
+  _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -460,6 +566,8 @@ export type UserSelectScalar = {
 export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "created_at" | "updated_at" | "email" | "type", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   settings?: boolean | Prisma.User$settingsArgs<ExtArgs>
+  login_sessions?: boolean | Prisma.User$login_sessionsArgs<ExtArgs>
+  _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
 export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -468,6 +576,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   name: "User"
   objects: {
     settings: Prisma.$UserSettingsPayload<ExtArgs> | null
+    login_sessions: Prisma.$LoginSessionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -870,6 +979,7 @@ readonly fields: UserFieldRefs;
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   settings<T extends Prisma.User$settingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$settingsArgs<ExtArgs>>): Prisma.Prisma__UserSettingsClient<runtime.Types.Result.GetResult<Prisma.$UserSettingsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  login_sessions<T extends Prisma.User$login_sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$login_sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LoginSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1313,6 +1423,30 @@ export type User$settingsArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   include?: Prisma.UserSettingsInclude<ExtArgs> | null
   where?: Prisma.UserSettingsWhereInput
+}
+
+/**
+ * User.login_sessions
+ */
+export type User$login_sessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the LoginSession
+   */
+  select?: Prisma.LoginSessionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the LoginSession
+   */
+  omit?: Prisma.LoginSessionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LoginSessionInclude<ExtArgs> | null
+  where?: Prisma.LoginSessionWhereInput
+  orderBy?: Prisma.LoginSessionOrderByWithRelationInput | Prisma.LoginSessionOrderByWithRelationInput[]
+  cursor?: Prisma.LoginSessionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.LoginSessionScalarFieldEnum | Prisma.LoginSessionScalarFieldEnum[]
 }
 
 /**

@@ -63,7 +63,9 @@ export const ModelName = {
   User: 'User',
   UserSettings: 'UserSettings',
   Rendition: 'Rendition',
-  RenditionJob: 'RenditionJob'
+  RenditionJob: 'RenditionJob',
+  LoginSession: 'LoginSession',
+  RefreshToken: 'RefreshToken'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -249,6 +251,38 @@ export const RenditionJobScalarFieldEnum = {
 } as const
 
 export type RenditionJobScalarFieldEnum = (typeof RenditionJobScalarFieldEnum)[keyof typeof RenditionJobScalarFieldEnum]
+
+
+export const LoginSessionScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  device_id: 'device_id',
+  device_label: 'device_label',
+  last_seen_at: 'last_seen_at',
+  revoked_at: 'revoked_at',
+  idle_expires_at: 'idle_expires_at',
+  absolute_expires_at: 'absolute_expires_at',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+} as const
+
+export type LoginSessionScalarFieldEnum = (typeof LoginSessionScalarFieldEnum)[keyof typeof LoginSessionScalarFieldEnum]
+
+
+export const RefreshTokenScalarFieldEnum = {
+  id: 'id',
+  token_hash: 'token_hash',
+  login_session_id: 'login_session_id',
+  rotated_at: 'rotated_at',
+  rotated_to_id: 'rotated_to_id',
+  expires_at: 'expires_at',
+  issued_ip: 'issued_ip',
+  issued_user_agent: 'issued_user_agent',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+} as const
+
+export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[keyof typeof RefreshTokenScalarFieldEnum]
 
 
 export const SortOrder = {
