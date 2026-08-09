@@ -68,6 +68,15 @@ export const Scrubber = () => {
     // Capture the casting state at effect setup time for proper cleanup
     const is_casting_at_setup = player.is_casting.value;
 
+    // Recovers playback that failed on a dead access token (ADR-0009 U8) --
+    // re-runs on every track change alongside the timeupdate listeners
+    // above, for the same reason: either fixture may be the one actively
+    // playing at a given time, so re-attaching on every track change is
+    // what survives the crossover swap.
+    const detachMediaErrorBackstop = is_casting_at_setup
+      ? null
+      : player.attachMediaErrorBackstop();
+
     if (!is_casting_at_setup) {
       audio.addEventListener("timeupdate", onCrossover);
       crossover.addEventListener("timeupdate", onCrossover);
@@ -75,6 +84,7 @@ export const Scrubber = () => {
 
     return () => {
       AudioProgress.cancelAnimationFrames();
+      detachMediaErrorBackstop?.();
 
       if (!is_casting_at_setup) {
         audio.removeEventListener("timeupdate", onCrossover);
