@@ -4,7 +4,10 @@ import z from "zod";
 import { AudioType, ImageType } from "@server/lib/media/types";
 
 import { db } from "@server/lib/data/db";
-import { verifyAndDecodeJwt } from "@server/lib/Token";
+import {
+  cast_token_payload_schema,
+  verifyAndDecodeJwt,
+} from "@server/lib/Token";
 
 const audioOrImageExtension = new RegExp(
   `\\.(${[...Object.values(AudioType), ...Object.values(ImageType)].join(
@@ -43,14 +46,10 @@ export const hasValidAudioToken =
     }
 
     try {
-      const decoded = await verifyAndDecodeJwt(token);
-
-      if (typeof decoded === "string") {
-        console.warn(
-          "User tried to access token-secured media could not find track_id in JWT payload",
-        );
-        return res.sendStatus(401);
-      }
+      const decoded = await verifyAndDecodeJwt(
+        token,
+        cast_token_payload_schema,
+      );
 
       if (
         // Token not valid for track

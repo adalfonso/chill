@@ -1,7 +1,7 @@
 import * as cookie from "cookie";
 import { Server } from "node:http";
 
-import { verifyAndDecodeJwt } from "../Token";
+import { access_token_payload_schema, verifyAndDecodeJwt } from "../Token";
 import { SocketServer } from "./SocketServer";
 import { ClientSocketData, ClientSocketEvent } from "@common/SocketClientEvent";
 import { ServerSocketData, ServerSocketEvent } from "@common/SocketServerEvent";
@@ -29,7 +29,12 @@ export const upgradeServer = (
     socket.removeListener("error", console.error);
 
     try {
-      Object.assign(req, { _user: await verifyAndDecodeJwt(access_token) });
+      Object.assign(req, {
+        _user: await verifyAndDecodeJwt(
+          access_token,
+          access_token_payload_schema,
+        ),
+      });
     } catch (err) {
       console.error("JWT verification failed:", err);
       socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");

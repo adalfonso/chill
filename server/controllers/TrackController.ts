@@ -145,9 +145,10 @@ export const TrackController = {
             for: req.user?.email,
             track_id: id,
             album_art_filename: map[id]?.album_art_filename,
+            typ: "cast",
           },
           env.SIGNING_KEY,
-          { expiresIn: "1h" },
+          { expiresIn: "1h", header: { alg: "HS256", typ: "cast" } },
         );
 
         return { url, token, content_type };

@@ -1,6 +1,10 @@
 import passport from "passport";
 import { Request, Response, NextFunction } from "express";
-import { tokenIsBlacklisted, verifyAndDecodeJwt } from "@server/lib/Token";
+import {
+  access_token_payload_schema,
+  tokenIsBlacklisted,
+  verifyAndDecodeJwt,
+} from "@server/lib/Token";
 
 const login_redirect = "/auth/login";
 
@@ -29,7 +33,10 @@ export const storeTokenPayload = async (
 ) => {
   try {
     Object.assign(req, {
-      _user: await verifyAndDecodeJwt(req.cookies.access_token),
+      _user: await verifyAndDecodeJwt(
+        req.cookies.access_token,
+        access_token_payload_schema,
+      ),
     });
   } catch (_) {
     return res.redirect(301, login_redirect);
