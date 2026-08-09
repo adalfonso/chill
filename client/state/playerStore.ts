@@ -16,6 +16,7 @@ export { MobileDisplayMode } from "@common/types";
 import { PreCastPayload } from "@client/lib/cast/types";
 import { api } from "@client/client";
 import { shuffle as _shuffle, findIndex } from "@common/commonUtils";
+import { maybeRefresh } from "@client/lib/auth/refresh";
 
 export let audio = new Audio();
 export let crossover = new Audio();
@@ -147,6 +148,11 @@ export const pause = () => {
 };
 
 export const play = (payload: PlayLoad) => {
+  // Playback-start trigger for the refresh lifecycle (ADR-0009 U7). Fired
+  // and forgotten -- never awaited here, since play() runs inside the iOS
+  // audio-unlock gesture and an await before .play() would break the unlock.
+  maybeRefresh().catch(() => {});
+
   const {
     tracks,
     cast_info: cast_info_incoming = null,
@@ -295,6 +301,13 @@ export const previous = (payload: { is_virtual?: boolean }) => {
 };
 
 export const next = (payload: { auto?: boolean; is_virtual?: boolean }) => {
+  // Track-advance trigger for the refresh lifecycle (ADR-0009 U7, R3) --
+  // fired and forgotten, same reasoning as play()'s trigger. Auto-advance
+  // (from Scrubber.tsx's timeupdate handler) is the trigger that actually
+  // keeps a long, unattended playlist alive; a manual click benefits too
+  // but isn't the scenario this closes.
+  maybeRefresh().catch(() => {});
+
   const { auto = false, is_virtual = false } = payload;
 
   let idx = index.value + 1;
@@ -481,8 +494,20 @@ const load = (use_crossover = false) => {
     audio.src = mediaLoadUrl(now_playing.value?.id);
   }
 
+  // The crossover element preloads one track ahead of what's audible, so a
+  // stale access token here fails silently until it becomes the active
+  // track. Refresh completes before the URL is assigned (never awaited
+  // synchronously -- load() itself stays synchronous so it never introduces
+  // an await into a caller running inside the iOS gesture window). A failed
+  // refresh still assigns the URL; U8's error backstop covers that case.
   if (next_playing.value) {
-    crossover.src = mediaLoadUrl(next_playing.value?.id);
+    const next_id = next_playing.value.id;
+
+    maybeRefresh()
+      .catch(() => {})
+      .finally(() => {
+        crossover.src = mediaLoadUrl(next_id);
+      });
   }
 };
 

@@ -10,6 +10,7 @@ import { Search } from "./Toolbar/Search";
 import { api } from "@client/client";
 import { setUser } from "@client/state/userStore";
 import { useAppState } from "@hooks/index";
+import { maybeRefresh } from "@client/lib/auth/refresh";
 
 export const AppRouter = () => {
   const { is_loading } = useAppState();
@@ -17,7 +18,12 @@ export const AppRouter = () => {
   // Load the user once on mount. Updates to the user through the UI
   // will return updated user bits that we will merge into the state
   effect(() => {
-    api.user.get.query().then(setUser);
+    api.user.get.query().then(setUser).catch(console.error);
+  });
+
+  // Mount trigger for the access-token refresh lifecycle (ADR-0009 U7)
+  effect(() => {
+    maybeRefresh().catch(() => {});
   });
 
   return (
