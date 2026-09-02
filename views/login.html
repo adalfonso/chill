@@ -136,7 +136,7 @@
           Something went wrong signing you in. Please try again.
         </p>
 
-        <a href="/auth/google">
+        <a href="/auth/google" id="google-login">
           <div class="login-link">
             <img src="https://static.cdnlogo.com/logos/g/35/google-icon.svg" />
           </div>
@@ -151,6 +151,65 @@
       if (new URLSearchParams(location.search).get("failure") === "true") {
         document.getElementById("login-error").hidden = false;
       }
+
+      // In the native app, Google refuses to render its login form inside the
+      // embedded WebView. Route it through a Custom Tab instead (real Chrome,
+      // so Google allows it) and return here via deep link when it's done,
+      // rather than letting Google force a jarring hand-off to the full
+      // Chrome app on its own.
+      (function () {
+        var capacitor = window.Capacitor;
+        if (!capacitor || !capacitor.isNativePlatform || !capacitor.isNativePlatform()) {
+          return;
+        }
+
+        var link = document.getElementById("google-login");
+
+        link.addEventListener("click", function (event) {
+          event.preventDefault();
+          capacitor.Plugins.Browser.open({
+            url: window.location.origin + "/auth/google?platform=native",
+          });
+        });
+
+        capacitor.Plugins.App.addListener("appUrlOpen", function (data) {
+          var url = data.url || "";
+          var marker_index = url.indexOf("auth/callback");
+          if (marker_index === -1) {
+            return;
+          }
+
+          capacitor.Plugins.Browser.close();
+
+          // The Custom Tab's cookie jar is separate from this WebView, so the
+          // cookies set at the end of the web OAuth flow never reach us here.
+          // The deep link carries the signed access token and the opaque
+          // refresh token instead; redeem them through a request that
+          // actually originates from this WebView so the resulting
+          // Set-Cookie lands in the right cookie jar.
+          var params = new URLSearchParams(url.slice(marker_index).split("?")[1] || "");
+          var access_token = params.get("access_token");
+          var refresh_token = params.get("refresh_token");
+
+          if (!access_token || !refresh_token) {
+            return;
+          }
+
+          fetch("/auth/native/exchange", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              access_token: access_token,
+              refresh_token: refresh_token,
+            }),
+          }).then(function (response) {
+            if (response.ok) {
+              window.location.href = "/";
+            }
+          });
+        });
+      })();
     </script>
   </body>
 </html>
