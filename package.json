@@ -16,7 +16,7 @@
     "lint": "eslint ./{server,client,common}/**/*.{mts,ts,tsx} --quiet",
     "test": "jest --coverage --watchAll",
     "viz": "npx vite-bundle-visualizer",
-    "cap:build": "vite build && cap sync android",
+    "cap:build": "vite build && cap sync android && find android/app/src/main/assets/public \\( -name '*.gz' -o -name '*.br' \\) -delete",
     "cap:open": "cap open android",
     "cap:run": "cap run android",
     "prisma:build": "npx prisma format && npx prisma generate"
