@@ -8,7 +8,9 @@ const config: CapacitorConfig = {
     allowMixedContent: false,
   },
   server: {
-    androidScheme: "https",
+    androidScheme: "http",
+    url: "http://localhost:3200",
+    cleartext: true,
   },
 };
 
