@@ -52,7 +52,7 @@ export const AuthController = {
   },
 
   authCallback: async (req: Request, res: Response) => {
-    const is_native = req.query.state === "native";
+    const is_native = req.query?.state === "native";
 
     if (req.user === undefined) {
       console.error("OAuth callback reached authCallback without req.user");
@@ -106,9 +106,7 @@ export const AuthController = {
         // tokens to the app via deep link instead and let
         // `nativeTokenExchange` set the cookies from a request that
         // actually originates from the WebView.
-        return res.redirect(
-          nativeCallbackUrl({ access_token, refresh_token }),
-        );
+        return res.redirect(nativeCallbackUrl({ access_token, refresh_token }));
       }
 
       setAuthCookies(res, access_token, refresh_token).redirect("/");
@@ -221,10 +219,7 @@ export const AuthController = {
     const access_token: unknown = req.body?.access_token;
     const refresh_token: unknown = req.body?.refresh_token;
 
-    if (
-      typeof access_token !== "string" ||
-      typeof refresh_token !== "string"
-    ) {
+    if (typeof access_token !== "string" || typeof refresh_token !== "string") {
       return res.status(400).json({ error: "Missing token" });
     }
 
