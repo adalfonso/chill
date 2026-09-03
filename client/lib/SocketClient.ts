@@ -1,4 +1,11 @@
 /**
+ * Ignore forced reconnects that land within this window of the last
+ * connect() call. Absorbs bursts of visibility/online events (rapid app
+ * switching on mobile) so we don't open several sockets back to back.
+ */
+const RECONNECT_DEBOUNCE_MS = 1_000;
+
+/**
  * WebSocket client for the frontend.
  *
  * Handles automatic reconnects, network and visibility changes,
@@ -17,6 +24,9 @@ export class SocketClient<
 > {
   /** Current WebSocket instance, or null if not connected */
   #ws: WebSocket | null = null;
+
+  /** Timestamp (ms) of the last connect() call; used to debounce forceReconnect */
+  #last_connect_at = 0;
 
   /** Does some syncing action when connecting; your choice */
   #syncFn: () => void = () => {};
@@ -41,19 +51,22 @@ export class SocketClient<
     // Reconnect when returning from idle
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "hidden") {
-        // Clear any reconnections underway we don't need them when we're going idle
+        // Going idle — cancel any pending reconnect. It should not fire in
+        // the background, and we force a fresh connection on return anyway.
         return this.clearReconnectionMeta();
       }
 
-      // visible → reconnect if needed
-      this.reconnectIfNeeded();
+      // Visible again — the existing socket may be a zombie (mobile browsers
+      // leave readyState at OPEN after freezing the tab), so reconnect
+      // unconditionally rather than trusting its state.
+      this.forceReconnect();
     });
 
     // Reconnect when network comes back
     window.addEventListener("online", () => {
-      console.info("Online status changed; attempting reconnect");
+      console.info("Online status changed; forcing reconnect");
 
-      this.reconnectIfNeeded();
+      this.forceReconnect();
     });
   }
 
@@ -62,6 +75,25 @@ export class SocketClient<
    * Sets up message, open, close, and error handlers.
    */
   private connect() {
+    // Dispose of any prior socket first. A frozen-then-resumed mobile tab
+    // often leaves the old socket reporting readyState OPEN even though the
+    // connection is dead and no close event will ever fire; without this it
+    // would leak, and a late onclose could race the new connection.
+    if (this.#ws) {
+      this.#ws.onopen = null;
+      this.#ws.onclose = null;
+      this.#ws.onerror = null;
+      this.#ws.onmessage = null;
+
+      try {
+        this.#ws.close();
+      } catch {
+        // Already closing/closed — nothing to clean up.
+      }
+    }
+
+    this.#last_connect_at = Date.now();
+
     const host = window.location.host;
     const protocol = window.location.protocol === "http:" ? "ws" : "wss";
 
@@ -204,18 +236,33 @@ export class SocketClient<
   }
 
   /**
-   * Reconnect the WebSocket if it is closed or closing.
-   * Called automatically on network/visibility changes.
+   * Force a fresh WebSocket connection without trusting the current one.
+   *
+   * Called on visibility and network changes. A mobile browser that froze
+   * and later resumed the tab frequently leaves the old socket reporting
+   * readyState OPEN even though the underlying connection is dead and no
+   * close event will ever arrive. Inspecting readyState (as the old
+   * reconnectIfNeeded did) would wrongly treat that zombie as healthy and
+   * skip reconnecting, leaving the client silently detached until a full
+   * page reload. Instead we always tear down and reconnect; connect()
+   * disposes of the previous socket.
+   *
+   * A short debounce absorbs bursts of events (rapid app switching) so a
+   * single wake does not open several sockets in a row.
    */
-  public reconnectIfNeeded() {
+  private forceReconnect() {
     if (document.visibilityState === "hidden") {
       return; // don't reconnect while idle
     }
 
-    if (!this.#ws || this.#ws.readyState !== WebSocket.OPEN) {
-      console.info("WebSocket is closed — reconnecting");
-      this.clearReconnectionMeta();
-      this.connect();
+    // A burst of visibility/online events right after a connect is not a
+    // real wake — ignore it so we don't churn through sockets.
+    if (Date.now() - this.#last_connect_at < RECONNECT_DEBOUNCE_MS) {
+      return;
     }
+
+    console.info("Forcing WebSocket reconnect");
+    this.clearReconnectionMeta();
+    this.connect();
   }
 }
