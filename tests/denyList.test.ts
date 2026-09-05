@@ -1,5 +1,5 @@
 /** @jest-environment node */
-import { createDenyList } from "../server/lib/auth/DenyList";
+import { DenyList } from "../server/lib/auth/DenyList";
 
 const find_unique = jest.fn();
 const find_many = jest.fn();
@@ -29,7 +29,7 @@ beforeEach(() => {
 describe("deny", () => {
   it("writes a deny key with a TTL matching the access-token lifetime", async () => {
     const client = makeClient();
-    const deny_list = createDenyList(client);
+    const deny_list = new DenyList(client);
 
     await deny_list.deny(42);
 
@@ -44,7 +44,7 @@ describe("deny", () => {
     const client = makeClient({
       set: jest.fn().mockRejectedValue(new Error("redis down")),
     });
-    const deny_list = createDenyList(client);
+    const deny_list = new DenyList(client);
 
     await expect(deny_list.deny(42)).rejects.toThrow("redis down");
   });
@@ -53,7 +53,7 @@ describe("deny", () => {
     const client = makeClient({
       set: jest.fn(() => new Promise(() => {})), // never resolves
     });
-    const deny_list = createDenyList(client, { read_timeout_ms: 10 });
+    const deny_list = new DenyList(client, { read_timeout_ms: 10 });
 
     await expect(deny_list.deny(42)).rejects.toThrow("timed out");
   });
@@ -62,14 +62,14 @@ describe("deny", () => {
 describe("isDenied", () => {
   it("denies a login session with a deny key set", async () => {
     const client = makeClient({ get: jest.fn().mockResolvedValue("1") });
-    const deny_list = createDenyList(client);
+    const deny_list = new DenyList(client);
 
     await expect(deny_list.isDenied(42)).resolves.toBe(true);
   });
 
   it("does not deny an unrelated login session", async () => {
     const client = makeClient();
-    const deny_list = createDenyList(client);
+    const deny_list = new DenyList(client);
 
     await expect(deny_list.isDenied(7)).resolves.toBe(false);
   });
@@ -78,7 +78,7 @@ describe("isDenied", () => {
     const client = makeClient({
       get: jest.fn(() => new Promise(() => {})), // never resolves
     });
-    const deny_list = createDenyList(client, { read_timeout_ms: 10 });
+    const deny_list = new DenyList(client, { read_timeout_ms: 10 });
     find_unique.mockResolvedValue({ revoked_at: new Date() });
 
     await expect(deny_list.isDenied(42)).resolves.toBe(true);
@@ -92,7 +92,7 @@ describe("isDenied", () => {
     const client = makeClient({
       get: jest.fn().mockRejectedValue(new Error("connection reset")),
     });
-    const deny_list = createDenyList(client);
+    const deny_list = new DenyList(client);
     find_unique.mockResolvedValue({ revoked_at: null });
 
     await expect(deny_list.isDenied(42)).resolves.toBe(false);
@@ -101,7 +101,7 @@ describe("isDenied", () => {
   it("opens the circuit after repeated failures and stops hammering Redis", async () => {
     const get = jest.fn().mockRejectedValue(new Error("connection reset"));
     const client = makeClient({ get });
-    const deny_list = createDenyList(client, {
+    const deny_list = new DenyList(client, {
       failure_threshold: 2,
       circuit_cooldown_ms: 10_000,
     });
@@ -119,7 +119,7 @@ describe("isDenied", () => {
 describe("warmUp", () => {
   it("restores a deny key for every session revoked within the access-token lifetime", async () => {
     const client = makeClient();
-    const deny_list = createDenyList(client);
+    const deny_list = new DenyList(client);
     find_many.mockResolvedValue([{ id: 1 }, { id: 2 }]);
 
     await deny_list.warmUp();
@@ -133,7 +133,7 @@ describe("warmUp", () => {
 
   it("skips sessions revoked before the access-token lifetime window", async () => {
     const client = makeClient();
-    const deny_list = createDenyList(client);
+    const deny_list = new DenyList(client);
     find_many.mockResolvedValue([]);
 
     await deny_list.warmUp();

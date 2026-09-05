@@ -22,12 +22,6 @@ export type DenyListOptions = {
   circuit_cooldown_ms?: number;
 };
 
-export type DenyList = {
-  deny: (login_session_id: number) => Promise<void>;
-  isDenied: (login_session_id: number) => Promise<boolean>;
-  warmUp: () => Promise<void>;
-};
-
 const denyKeyFor = (login_session_id: number) =>
   `deny.login_session.${login_session_id}`;
 
@@ -73,43 +67,39 @@ const isDeniedInPostgres = async (
 };
 
 /**
- * Build a deny list bound to one Redis client
+ * Deny list bound to one Redis client
  *
  * Do not add auth policy to `Cache.ts` -- that module stays connection
  * management. The client is a constructor parameter (not the `Cache`
  * singleton) so the throw and degradation paths are testable with a stub.
  *
- * @param client - Redis client to read and write deny keys on
- * @param options - timeout and circuit-breaker tuning; defaults are production values
- * @returns deny/isDenied/warmUp bound to `client`
+ * The circuit-breaker counters are instance state, so one `DenyList` must be
+ * shared across requests for the failure count to mean anything -- see the
+ * `denyList` singleton below.
  */
-export const createDenyList = (
-  client: DenyListClient,
-  options: DenyListOptions = {},
-): DenyList => {
-  const read_timeout_ms = options.read_timeout_ms ?? DEFAULT_READ_TIMEOUT_MS;
-  const failure_threshold =
-    options.failure_threshold ?? DEFAULT_FAILURE_THRESHOLD;
-  const circuit_cooldown_ms =
-    options.circuit_cooldown_ms ?? DEFAULT_CIRCUIT_COOLDOWN_MS;
+export class DenyList {
+  readonly #client: DenyListClient;
+  readonly #read_timeout_ms: number;
+  readonly #failure_threshold: number;
+  readonly #circuit_cooldown_ms: number;
 
-  let consecutive_failures = 0;
-  let circuit_open_until = 0;
+  #consecutive_failures = 0;
+  #circuit_open_until = 0;
 
-  const circuitIsOpen = () => Date.now() < circuit_open_until;
-
-  const recordFailure = () => {
-    consecutive_failures += 1;
-
-    if (consecutive_failures >= failure_threshold) {
-      circuit_open_until = Date.now() + circuit_cooldown_ms;
-    }
-  };
-
-  const recordSuccess = () => {
-    consecutive_failures = 0;
-    circuit_open_until = 0;
-  };
+  /**
+   * Build a deny list bound to one Redis client
+   *
+   * @param client - Redis client to read and write deny keys on
+   * @param options - timeout and circuit-breaker tuning; defaults are production values
+   */
+  constructor(client: DenyListClient, options: DenyListOptions = {}) {
+    this.#client = client;
+    this.#read_timeout_ms = options.read_timeout_ms ?? DEFAULT_READ_TIMEOUT_MS;
+    this.#failure_threshold =
+      options.failure_threshold ?? DEFAULT_FAILURE_THRESHOLD;
+    this.#circuit_cooldown_ms =
+      options.circuit_cooldown_ms ?? DEFAULT_CIRCUIT_COOLDOWN_MS;
+  }
 
   /**
    * Deny a login session, sized to the longest an access token can live
@@ -126,14 +116,14 @@ export const createDenyList = (
    * @param login_session_id - the login session to deny
    * @throws when the underlying write fails or times out
    */
-  const deny = async (login_session_id: number): Promise<void> => {
+  async deny(login_session_id: number): Promise<void> {
     await withTimeout(
-      client.set(denyKeyFor(login_session_id), "1", {
+      this.#client.set(denyKeyFor(login_session_id), "1", {
         EX: ACCESS_TOKEN_TTL_SECONDS,
       }),
-      read_timeout_ms,
+      this.#read_timeout_ms,
     );
-  };
+  }
 
   /**
    * Determine whether a login session is currently denied
@@ -141,27 +131,27 @@ export const createDenyList = (
    * @param login_session_id - the login session to check
    * @returns true if the session is denied
    */
-  const isDenied = async (login_session_id: number): Promise<boolean> => {
-    if (!circuitIsOpen()) {
+  async isDenied(login_session_id: number): Promise<boolean> {
+    if (!this.#circuitIsOpen()) {
       try {
         const value = await withTimeout(
-          client.get(denyKeyFor(login_session_id)),
-          read_timeout_ms,
+          this.#client.get(denyKeyFor(login_session_id)),
+          this.#read_timeout_ms,
         );
 
-        recordSuccess();
+        this.#recordSuccess();
 
         return value !== null;
       } catch (err) {
         console.error("Deny-key read failed, falling back to Postgres", {
           err,
         });
-        recordFailure();
+        this.#recordFailure();
       }
     }
 
     return isDeniedInPostgres(login_session_id);
-  };
+  }
 
   /**
    * Rewrite deny keys for every session revoked within one access-token lifetime
@@ -172,7 +162,7 @@ export const createDenyList = (
    *
    * @throws when it cannot complete -- startup should fail rather than boot under-enforcing revocation
    */
-  const warmUp = async (): Promise<void> => {
+  async warmUp(): Promise<void> {
     const cutoff = new Date(Date.now() - ACCESS_TOKEN_TTL_SECONDS * 1000);
 
     const recently_revoked = await db.loginSession.findMany({
@@ -180,13 +170,40 @@ export const createDenyList = (
       select: { id: true },
     });
 
-    await Promise.all(recently_revoked.map(({ id }) => deny(id)));
+    await Promise.all(recently_revoked.map(({ id }) => this.deny(id)));
 
     console.info(`Warmed ${recently_revoked.length} deny key(s) from Postgres`);
-  };
+  }
 
-  return { deny, isDenied, warmUp };
-};
+  /**
+   * Whether the circuit breaker is currently open
+   *
+   * @returns true while deny-key reads should be bypassed in favour of Postgres
+   */
+  #circuitIsOpen(): boolean {
+    return Date.now() < this.#circuit_open_until;
+  }
+
+  /**
+   * Record a failed deny-key read, opening the circuit once the failure
+   * threshold is reached
+   */
+  #recordFailure(): void {
+    this.#consecutive_failures += 1;
+
+    if (this.#consecutive_failures >= this.#failure_threshold) {
+      this.#circuit_open_until = Date.now() + this.#circuit_cooldown_ms;
+    }
+  }
+
+  /**
+   * Clear the failure count and close the circuit after a successful read
+   */
+  #recordSuccess(): void {
+    this.#consecutive_failures = 0;
+    this.#circuit_open_until = 0;
+  }
+}
 
 let deny_list_instance: DenyList | undefined;
 
@@ -203,7 +220,7 @@ export const denyList = {
    * @param client - Redis client to read and write deny keys on
    */
   init: (client: DenyListClient): void => {
-    deny_list_instance = createDenyList(client);
+    deny_list_instance = new DenyList(client);
   },
 
   /**
