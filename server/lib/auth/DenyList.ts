@@ -1,5 +1,6 @@
 import { ACCESS_TOKEN_TTL_SECONDS } from "@server/lib/auth/constants";
 import { db } from "@server/lib/data/db";
+import { withTimeout } from "@common/commonUtils";
 
 const DEFAULT_READ_TIMEOUT_MS = 500;
 const DEFAULT_FAILURE_THRESHOLD = 3;
@@ -88,25 +89,27 @@ export class DenyList {
    * @returns true if the session is denied
    */
   async isDenied(login_session_id: number): Promise<boolean> {
-    if (!this.#circuitIsOpen()) {
-      try {
-        const value = await withTimeout(
-          this.#client.get(denyKeyFor(login_session_id)),
-          this.#read_timeout_ms,
-        );
-
-        this.#recordSuccess();
-
-        return value !== null;
-      } catch (err) {
-        console.error("Deny-key read failed, falling back to Postgres", {
-          err,
-        });
-        this.#recordFailure();
-      }
+    if (this.#circuitIsOpen()) {
+      return isDeniedInPostgres(login_session_id);
     }
 
-    return isDeniedInPostgres(login_session_id);
+    try {
+      const value = await withTimeout(
+        this.#client.get(denyKeyFor(login_session_id)),
+        this.#read_timeout_ms,
+      );
+
+      this.#recordSuccess();
+
+      return value !== null;
+    } catch (err) {
+      console.error("Deny-key read failed, falling back to Postgres", {
+        err,
+      });
+      this.#recordFailure();
+
+      return isDeniedInPostgres(login_session_id);
+    }
   }
 
   /**
@@ -163,25 +166,6 @@ export class DenyList {
 
 const denyKeyFor = (login_session_id: number) =>
   `deny.login_session.${login_session_id}`;
-
-const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
-  new Promise((resolve, reject) => {
-    const timer = setTimeout(
-      () => reject(new Error("Redis read timed out")),
-      ms,
-    );
-
-    promise.then(
-      (value) => {
-        clearTimeout(timer);
-        resolve(value);
-      },
-      (err) => {
-        clearTimeout(timer);
-        reject(err);
-      },
-    );
-  });
 
 /**
  * Look up whether a login session is revoked directly from Postgres
