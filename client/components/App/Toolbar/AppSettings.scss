@@ -95,6 +95,97 @@
       margin-bottom: 0.75rem;
     }
   }
+
+  // Shared small-button look for account-related actions (log out, revoke a
+  // session) -- sized to their text, not the 18rem the desktop media query
+  // below sets for every `.setting`'s inputs/buttons. That rule targets
+  // form-style controls (selects, text inputs); it was never meant for a
+  // short action button, so overriding just `width` here is the narrow,
+  // legitimate use of !important -- the alternative is matching or beating
+  // its specificity with extra nesting for no readability gain.
+  .setting-account,
+  .setting-login-sessions {
+    button {
+      width: auto !important;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.85rem;
+      background-color: transparent;
+      color: $dm-font-3;
+      border: 1px solid $dm-font-5;
+      border-radius: 0.4rem;
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        background-color: $dm-background-2;
+        color: $dm-font;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+    }
+  }
+
+  .setting-login-sessions {
+    .login-session-loading {
+      color: $dm-font-4;
+      padding: 0.5rem 0;
+    }
+
+    .login-session-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .login-session-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem 1rem;
+      background-color: $dm-background;
+      border-radius: 0.4rem;
+      padding: 0.75rem 1rem;
+    }
+
+    .login-session-info {
+      min-width: 0;
+    }
+
+    .login-session-label {
+      font-weight: 600;
+      color: $dm-font;
+    }
+
+    .login-session-badge {
+      display: inline-block;
+      margin-left: 0.5rem;
+      padding: 0.05rem 0.5rem;
+      border-radius: 999px;
+      // Reuses this app's one existing "you are here" convention (the
+      // active-tab underline elsewhere uses $primary the same way) instead
+      // of inventing a new accent color.
+      background-color: rgba($primary, 0.18);
+      color: $primary-light;
+      font-size: 0.75rem;
+      font-weight: 600;
+      vertical-align: middle;
+    }
+
+    .login-session-meta {
+      margin-top: 0.25rem;
+      font-size: 0.8rem;
+      color: $dm-font-4;
+      line-height: 1.5;
+    }
+
+    button {
+      flex-shrink: 0;
+    }
+  }
 }
 
 @media screen and (min-width: 844px) {

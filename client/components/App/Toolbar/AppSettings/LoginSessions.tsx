@@ -62,7 +62,7 @@ export const LoginSessions = () => {
       {error.value && <div className="ui-error">{error.value}</div>}
 
       {is_loading.value && sessions.value.length === 0 ? (
-        <div>Loading…</div>
+        <div className="login-session-loading">Loading…</div>
       ) : (
         <>
           <div className="login-session-list">
@@ -71,7 +71,9 @@ export const LoginSessions = () => {
                 <div className="login-session-info">
                   <div className="login-session-label">
                     {session.device_label}
-                    {session.is_current_session && " (this device)"}
+                    {session.is_current_session && (
+                      <span className="login-session-badge">this device</span>
+                    )}
                   </div>
                   <div className="login-session-meta">
                     Signed in {new Date(session.created_at).toLocaleString()}
