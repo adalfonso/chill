@@ -25,95 +25,6 @@ import {
 
 const DEVICE_ID_COOKIE = "device_id";
 
-// Client-supplied per ADR-0009 KTD5, but authCallback is reached via a
-// full-page redirect from Google's OAuth callback rather than client JS, so
-// there is no header to read it from yet. Falling back to a cookie here
-// keeps a login working before U7 gives the client its own localStorage-
-// backed device id; a first-time visitor gets one minted and echoed back.
-const readOrCreateDeviceId = (req: Request, res: Response): string => {
-  const existing = req.cookies?.[DEVICE_ID_COOKIE];
-
-  if (isString(existing) && existing.length > 0) {
-    return existing;
-  }
-
-  const device_id = nanoid();
-
-  res.cookie(DEVICE_ID_COOKIE, device_id, {
-    httpOnly: false,
-    sameSite: "lax",
-    secure: env.NODE_ENV === "production",
-    maxAge: 400 * 24 * 60 * 60 * 1000,
-  });
-
-  return device_id;
-};
-
-/**
- * Recover the device (socket-routing) session id from the expiring access token
- *
- * `session_id` is not a secret and carries no authority (see
- * docs/glossary.md) -- it only tags which WebSocket connection belongs to
- * this device. Decoded structurally, without verifying the token's
- * signature or expiry, since by the time refresh runs the old access token
- * has often just expired. A live socket connection stays tagged with the
- * value it connected with regardless of later refreshes, so preserving it
- * here (rather than minting a new one) is what keeps `wss.drop` and the
- * device picker's "this device" comparison working after a refresh. Falls
- * back to a fresh id when there's no old token to recover one from (e.g.
- * the very first refresh of a session).
- *
- * @param req - express request
- * @returns the recovered or freshly minted device session id
- */
-const recoverOrCreateSessionId = (req: Request): string => {
-  const old_token = req.cookies?.[ACCESS_TOKEN_COOKIE];
-
-  if (isString(old_token)) {
-    const decoded = jwt.decode(old_token);
-
-    if (
-      decoded !== null &&
-      typeof decoded === "object" &&
-      isString(decoded.session_id)
-    ) {
-      return decoded.session_id;
-    }
-  }
-
-  return nanoid(4);
-};
-
-/**
- * Sign an access token
- *
- * @param identity - the payload to sign
- * @returns the signed JWT
- * @throws when signing fails
- */
-const signAccessToken = (identity: Omit<AccessTokenPayload, "typ">): string =>
-  jwt.sign({ ...identity, typ: "access" }, env.SIGNING_KEY, {
-    expiresIn: ACCESS_TOKEN_TTL_SECONDS,
-    header: { alg: "HS256", typ: "access" },
-  });
-
-/**
- * Set the access and refresh cookies on a response
- *
- * @param res - express response
- * @param access_token - signed access token
- * @param refresh_token - plaintext refresh token
- * @returns `res`, for chaining a terminal call
- */
-const setAuthCookies = (
-  res: Response,
-  access_token: string,
-  refresh_token: string,
-): Response =>
-  res
-    .cookie(ACCESS_TOKEN_COOKIE, access_token, accessTokenCookieOptions())
-    .cookie(REFRESH_TOKEN_COOKIE, refresh_token, refreshTokenCookieOptions());
-
 export const AuthController = {
   loginPage: (_req: Request, res: Response) =>
     res.sendFile(path.join(path.resolve(), "views/login.html")),
@@ -262,3 +173,92 @@ export const AuthController = {
     }
   },
 };
+
+// Client-supplied per ADR-0009 KTD5, but authCallback is reached via a
+// full-page redirect from Google's OAuth callback rather than client JS, so
+// there is no header to read it from yet. Falling back to a cookie here
+// keeps a login working before U7 gives the client its own localStorage-
+// backed device id; a first-time visitor gets one minted and echoed back.
+const readOrCreateDeviceId = (req: Request, res: Response): string => {
+  const existing = req.cookies?.[DEVICE_ID_COOKIE];
+
+  if (isString(existing) && existing.length > 0) {
+    return existing;
+  }
+
+  const device_id = nanoid();
+
+  res.cookie(DEVICE_ID_COOKIE, device_id, {
+    httpOnly: false,
+    sameSite: "lax",
+    secure: env.NODE_ENV === "production",
+    maxAge: 400 * 24 * 60 * 60 * 1000,
+  });
+
+  return device_id;
+};
+
+/**
+ * Recover the device (socket-routing) session id from the expiring access token
+ *
+ * `session_id` is not a secret and carries no authority (see
+ * docs/glossary.md) -- it only tags which WebSocket connection belongs to
+ * this device. Decoded structurally, without verifying the token's
+ * signature or expiry, since by the time refresh runs the old access token
+ * has often just expired. A live socket connection stays tagged with the
+ * value it connected with regardless of later refreshes, so preserving it
+ * here (rather than minting a new one) is what keeps `wss.drop` and the
+ * device picker's "this device" comparison working after a refresh. Falls
+ * back to a fresh id when there's no old token to recover one from (e.g.
+ * the very first refresh of a session).
+ *
+ * @param req - express request
+ * @returns the recovered or freshly minted device session id
+ */
+const recoverOrCreateSessionId = (req: Request): string => {
+  const old_token = req.cookies?.[ACCESS_TOKEN_COOKIE];
+
+  if (isString(old_token)) {
+    const decoded = jwt.decode(old_token);
+
+    if (
+      decoded !== null &&
+      typeof decoded === "object" &&
+      isString(decoded.session_id)
+    ) {
+      return decoded.session_id;
+    }
+  }
+
+  return nanoid(4);
+};
+
+/**
+ * Sign an access token
+ *
+ * @param identity - the payload to sign
+ * @returns the signed JWT
+ * @throws when signing fails
+ */
+const signAccessToken = (identity: Omit<AccessTokenPayload, "typ">): string =>
+  jwt.sign({ ...identity, typ: "access" }, env.SIGNING_KEY, {
+    expiresIn: ACCESS_TOKEN_TTL_SECONDS,
+    header: { alg: "HS256", typ: "access" },
+  });
+
+/**
+ * Set the access and refresh cookies on a response
+ *
+ * @param res - express response
+ * @param access_token - signed access token
+ * @param refresh_token - plaintext refresh token
+ * @returns `res`, for chaining a terminal call
+ */
+const setAuthCookies = (
+  res: Response,
+  access_token: string,
+  refresh_token: string,
+): Response =>
+  res
+    .cookie(ACCESS_TOKEN_COOKIE, access_token, accessTokenCookieOptions())
+    .cookie(REFRESH_TOKEN_COOKIE, refresh_token, refreshTokenCookieOptions());
