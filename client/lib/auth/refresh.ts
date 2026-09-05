@@ -75,10 +75,15 @@ const doRefresh = async (is_retry = false): Promise<void> => {
   const response = await postRefresh();
 
   if (response.status === 401) {
+    // First failure -- not conclusive yet. Retry once before giving up, in
+    // case this was the benign concurrent-tab race described above.
     if (!is_retry) {
       return doRefresh(true);
     }
 
+    // Redirect before rejecting, so every caller sharing this promise ends
+    // up on the login page rather than each having to notice the rejection
+    // and redirect themselves.
     redirectToLogin();
     throw new Error("Session expired");
   }
@@ -107,6 +112,8 @@ export const refresh = (): Promise<void> => {
   }
 
   const attempt = doRefresh().finally(() => {
+    // Only clear the slot if it's still this attempt -- guards against a
+    // newer attempt's slot being cleared by this one settling late.
     if (in_flight === attempt) {
       in_flight = null;
     }

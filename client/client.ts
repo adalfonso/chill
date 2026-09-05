@@ -15,12 +15,14 @@ import { refresh } from "@client/lib/auth/refresh";
 // single-flight promise in refresh() is what keeps that to one round trip.
 // Not automated: no link test harness exists (see U6's Test scenarios note
 // on the same limitation for server-side auth integration).
-const refreshRetryLink: TRPCLink<ApiRouter> = () => {
-  return ({ next, op }) => {
-    return observable((observer) => {
-      let retried = false;
-
-      const attempt = () =>
+const refreshRetryLink: TRPCLink<ApiRouter> =
+  () =>
+  ({ next, op }) =>
+    observable((observer) => {
+      // retries_left counts down as a parameter instead of a `retried`
+      // flag mutated from inside the handler below -- one fewer piece of
+      // state to track across the closure.
+      const attempt = (retries_left = 1) =>
         next(op).subscribe({
           next(value) {
             observer.next(value);
@@ -28,10 +30,9 @@ const refreshRetryLink: TRPCLink<ApiRouter> = () => {
           error(err) {
             const status = (err.meta?.response as Response | undefined)?.status;
 
-            if (status === 401 && !retried) {
-              retried = true;
+            if (status === 401 && retries_left > 0) {
               refresh()
-                .then(() => attempt())
+                .then(() => attempt(retries_left - 1))
                 .catch(() => observer.error(err));
               return;
             }
@@ -45,8 +46,6 @@ const refreshRetryLink: TRPCLink<ApiRouter> = () => {
 
       return attempt();
     });
-  };
-};
 
 export const api = createTRPCProxyClient<ApiRouter>({
   links: [
