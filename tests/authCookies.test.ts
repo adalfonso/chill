@@ -6,6 +6,13 @@ import {
   refreshTokenCookieOptions,
 } from "../server/lib/auth/cookies";
 
+// cookies.ts now also exports readOrCreateDeviceId, which reads env.NODE_ENV
+// -- mocking server/init keeps this file from pulling in the real
+// (ESM-only) Prisma client transitively, same as every other auth test.
+jest.mock("../server/init", () => ({
+  env: { SIGNING_KEY: "test-signing-key", NODE_ENV: "test" },
+}));
+
 describe("accessTokenCookieOptions", () => {
   it("carries maxAge, Secure, HttpOnly, SameSite=Lax, Path=/", () => {
     expect(accessTokenCookieOptions()).toEqual({

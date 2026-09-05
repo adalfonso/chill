@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import { env } from "@server/init";
 import { z, ZodType } from "zod";
 
+import { ACCESS_TOKEN_TTL_SECONDS } from "@server/lib/auth/constants";
+
 /**
  * Manually verify and parse a JWT against an expected payload schema
  *
@@ -48,6 +50,21 @@ export const access_token_payload_schema = z.object({
 });
 
 export type AccessTokenPayload = z.infer<typeof access_token_payload_schema>;
+
+/**
+ * Sign an access token
+ *
+ * @param identity - the payload to sign
+ * @returns the signed JWT
+ * @throws when signing fails
+ */
+export const signAccessToken = (
+  identity: Omit<AccessTokenPayload, "typ">,
+): string =>
+  jwt.sign({ ...identity, typ: "access" }, env.SIGNING_KEY, {
+    expiresIn: ACCESS_TOKEN_TTL_SECONDS,
+    header: { alg: "HS256", typ: "access" },
+  });
 
 // What a cast token -- minted per track for Chromecast playback -- must
 // contain. The `typ` discriminator is what makes it structurally distinct
