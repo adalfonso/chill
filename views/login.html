@@ -83,6 +83,20 @@
         font-weight: 300;
       }
 
+      /* Matches this app's shared .ui-error treatment (client/App.scss) --
+         this page has no build step and can't import that stylesheet, so
+         the same colors are duplicated here by hand. */
+      .login-error {
+        padding: 0.6rem 0.9rem;
+        margin: 0 0 1rem 0;
+        border-radius: 0.4rem;
+        background-color: rgba(220, 70, 70, 0.15);
+        border: 1px solid rgba(220, 70, 70, 0.4);
+        color: #ff8a8a;
+        font-size: 0.9rem;
+        font-weight: 400;
+      }
+
       .login-link {
         display: inline-flex;
         align-items: center;
@@ -118,6 +132,10 @@
         <h1>Login</h1>
         <p>Please sign in to continue</p>
 
+        <p class="login-error" id="login-error" hidden>
+          Something went wrong signing you in. Please try again.
+        </p>
+
         <a href="/auth/google">
           <div class="login-link">
             <img src="https://static.cdnlogo.com/logos/g/35/google-icon.svg" />
@@ -125,5 +143,14 @@
         </a>
       </div>
     </div>
+
+    <script>
+      // /auth/login?failure=true is set by the server (a denied/failed
+      // Google OAuth attempt, or a login-session creation failure) --
+      // this page has no framework/build step, so read it with plain JS.
+      if (new URLSearchParams(location.search).get("failure") === "true") {
+        document.getElementById("login-error").hidden = false;
+      }
+    </script>
   </body>
 </html>

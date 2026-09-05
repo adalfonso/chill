@@ -115,7 +115,7 @@ const setAuthCookies = (
     .cookie(REFRESH_TOKEN_COOKIE, refresh_token, refreshTokenCookieOptions());
 
 export const AuthController = {
-  login: (_req: Request, res: Response) =>
+  loginPage: (_req: Request, res: Response) =>
     res.sendFile(path.join(path.resolve(), "views/login.html")),
 
   logout: (wss: ChillWss) => async (req: Request, res: Response) => {
