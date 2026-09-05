@@ -164,9 +164,9 @@ export class SocketServer<
   };
 
   #onConnection(ws: ExtWebSocket, req: Request) {
-    const { id, session_id, login_session_id } = req._user;
+    const { user_id, session_id, login_session_id } = req._user;
 
-    ws.user_id = id;
+    ws.user_id = user_id;
     ws.session_id = session_id;
     ws.login_session_id = login_session_id;
     ws.device_info = {
