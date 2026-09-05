@@ -48,6 +48,15 @@ describe("deny", () => {
 
     await expect(deny_list.deny(42)).rejects.toThrow("redis down");
   });
+
+  it("times out and throws rather than hanging when Redis is up but unresponsive", async () => {
+    const client = makeClient({
+      set: jest.fn(() => new Promise(() => {})), // never resolves
+    });
+    const deny_list = createDenyList(client, { read_timeout_ms: 10 });
+
+    await expect(deny_list.deny(42)).rejects.toThrow("timed out");
+  });
 });
 
 describe("isDenied", () => {

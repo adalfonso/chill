@@ -2,12 +2,16 @@ import jwt from "jsonwebtoken";
 import path from "node:path";
 import { Request, Response } from "express";
 import { nanoid } from "nanoid";
+import { Prisma } from "@prisma/client";
 
 import { ChillWss } from "@server/registerServerSocket";
 import { env } from "@server/init";
 import { db } from "@server/lib/data/db";
 import { ACCESS_TOKEN_TTL_SECONDS } from "@server/lib/auth/constants";
-import { loginSessionService } from "@server/lib/auth/LoginSession";
+import {
+  loginSessionService,
+  RotateResult,
+} from "@server/lib/auth/LoginSession";
 import { AccessTokenPayload } from "@server/lib/Token";
 import { isString } from "@common/commonUtils";
 import {
@@ -115,7 +119,10 @@ export const AuthController = {
     res.sendFile(path.join(path.resolve(), "views/login.html")),
 
   logout: (wss: ChillWss) => async (req: Request, res: Response) => {
-    wss.drop(req._user.session_id);
+    // Drops every socket the login session holds, not just the one this
+    // request arrived on -- a session can have more than one live
+    // connection (e.g. multiple tabs on the same device).
+    wss.dropByLoginSession(req._user.login_session_id);
 
     try {
       await loginSessionService.instance().revoke(req._user.login_session_id);
@@ -140,14 +147,24 @@ export const AuthController = {
     const device_id = readOrCreateDeviceId(req, res);
     const session_id = nanoid(4);
 
-    const { login_session_id, refresh_token } = await loginSessionService
-      .instance()
-      .create({
-        user_id: req.user.id,
-        device_id,
-        user_agent: req.headers["user-agent"] ?? "",
-        ip: req.ip ?? "",
+    let login_session_id: number;
+    let refresh_token: string;
+
+    try {
+      ({ login_session_id, refresh_token } = await loginSessionService
+        .instance()
+        .create({
+          user_id: req.user.id,
+          device_id,
+          user_agent: req.headers["user-agent"] ?? "",
+          ip: req.ip ?? "",
+        }));
+    } catch (err) {
+      console.error("Failed to create login session during OAuth callback", {
+        err,
       });
+      return res.redirect("/auth/login?failure=true");
+    }
 
     try {
       const access_token = signAccessToken({
@@ -169,12 +186,16 @@ export const AuthController = {
    *
    * Requires a non-simple header (defense in depth alongside the refresh
    * cookie's SameSite=Strict and scoped path) and re-reads the User row,
-   * refusing to mint if it is gone.
+   * refusing to mint if it is gone. Takes `wss` (curried, matching
+   * `logout`) so a reuse-triggered revocation can drop the live sockets of
+   * the session it just revoked -- `LoginSessionService` itself stays
+   * ignorant of the socket server (see `LoginSession.ts`'s `revoke` docblock).
    *
+   * @param wss - socket server, used only when rotation reveals reuse
    * @param req - express request
    * @param res - express response
    */
-  refresh: async (req: Request, res: Response) => {
+  refresh: (wss: ChillWss) => async (req: Request, res: Response) => {
     if (typeof req.headers["x-requested-with"] !== "string") {
       return res.status(400).json({ error: "Missing required header" });
     }
@@ -185,20 +206,37 @@ export const AuthController = {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const result = await loginSessionService.instance().rotate({
-      refresh_token,
-      user_agent: req.headers["user-agent"] ?? "",
-      ip: req.ip ?? "",
-    });
+    let result: RotateResult;
+    let login_session: Prisma.LoginSessionGetPayload<{
+      include: { user: true };
+    }> | null;
 
-    if (!result.ok) {
-      return res.status(401).json({ error: "Unauthorized" });
+    try {
+      result = await loginSessionService.instance().rotate({
+        refresh_token,
+        user_agent: req.headers["user-agent"] ?? "",
+        ip: req.ip ?? "",
+      });
+
+      if (!result.ok) {
+        // Only a reuse-triggered revocation carries this -- an invalid,
+        // expired, or already-revoked token has no newly-live sockets to
+        // drop beyond what was already dropped when the family was first
+        // revoked.
+        if (result.revoked_login_session_id !== undefined) {
+          wss.dropByLoginSession(result.revoked_login_session_id);
+        }
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      login_session = await db.loginSession.findUnique({
+        where: { id: result.login_session_id },
+        include: { user: true },
+      });
+    } catch (err) {
+      console.error("Failed to rotate refresh token during refresh", { err });
+      return res.status(500).json({ error: "Failed to refresh" });
     }
-
-    const login_session = await db.loginSession.findUnique({
-      where: { id: result.login_session_id },
-      include: { user: true },
-    });
 
     if (login_session === null) {
       return res.status(401).json({ error: "Unauthorized" });

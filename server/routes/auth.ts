@@ -12,7 +12,7 @@ export default (wss: ChillWss) => {
   // POST (not GET) so logout can report failure to the caller instead of
   // an anchor tag doing a fire-and-forget navigation (ADR-0009 R8).
   router.post("/logout", isAuthenticatedApi, AuthController.logout(wss));
-  router.post("/refresh", AuthController.refresh);
+  router.post("/refresh", AuthController.refresh(wss));
 
   router.get(
     "/google",

@@ -61,7 +61,7 @@ describe("refresh", () => {
     expect(window.location.href).toBe(original_href);
   });
 
-  it("covers a definitive 401: redirects to login exactly once and rejects", async () => {
+  it("covers a definitive 401: retries once, then redirects to login exactly once and rejects", async () => {
     mockFetch(() => Promise.resolve(fakeResponse(401)));
 
     await Promise.all([
@@ -69,8 +69,22 @@ describe("refresh", () => {
       expect(refresh()).rejects.toThrow(),
     ]);
 
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledTimes(2);
     expect(window.location.href).toContain("/auth/login");
+  });
+
+  it("recovers from a benign concurrent-rotation race: a 401 followed by a 200 on retry resolves without redirecting", async () => {
+    let calls = 0;
+    mockFetch(() => {
+      calls += 1;
+      return Promise.resolve(fakeResponse(calls === 1 ? 401 : 200));
+    });
+    const original_href = window.location.href;
+
+    await expect(refresh()).resolves.toBeUndefined();
+
+    expect(calls).toBe(2);
+    expect(window.location.href).toBe(original_href);
   });
 
   it("caches an expiry hint on success", async () => {

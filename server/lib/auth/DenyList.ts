@@ -116,15 +116,23 @@ export const createDenyList = (
    *
    * A rejected write throws rather than logging -- a caller that swallows
    * this can report a revocation as successful when enforcement never
-   * happened (ADR-0009 R8).
+   * happened (ADR-0009 R8). Bounded by the same timeout as the read path
+   * (`read_timeout_ms`) so a Redis connection that is up but unresponsive
+   * fails fast and throws instead of hanging the caller indefinitely --
+   * `revoke()`'s catch already logs and degrades gracefully on this, and
+   * `warmUp()` deliberately does not catch it, so a hung write still fails
+   * startup loudly rather than booting under-enforcing revocation.
    *
    * @param login_session_id - the login session to deny
-   * @throws when the underlying write fails
+   * @throws when the underlying write fails or times out
    */
   const deny = async (login_session_id: number): Promise<void> => {
-    await client.set(denyKeyFor(login_session_id), "1", {
-      EX: ACCESS_TOKEN_TTL_SECONDS,
-    });
+    await withTimeout(
+      client.set(denyKeyFor(login_session_id), "1", {
+        EX: ACCESS_TOKEN_TTL_SECONDS,
+      }),
+      read_timeout_ms,
+    );
   };
 
   /**

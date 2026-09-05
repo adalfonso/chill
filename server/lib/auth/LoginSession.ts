@@ -62,7 +62,8 @@ export type RotateParams = {
 };
 
 export type RotateResult =
-  { ok: true; login_session_id: number; refresh_token: string } | { ok: false };
+  | { ok: true; login_session_id: number; refresh_token: string }
+  | { ok: false; revoked_login_session_id?: number };
 
 type RefreshTokenWithRelations = {
   id: number;
@@ -270,7 +271,12 @@ export const createLoginSessionService = (
    *
    * @param token - the already-rotated token that failed the rotation CAS
    * @param current - the presenting request's identity, logged against what was originally recorded on the token
-   * @returns the graced successor, or a failure (revoking the family when reuse is detected)
+   * @returns the graced successor, or a failure -- carrying `revoked_login_session_id`
+   *   only when this call is what newly revoked the family, so a caller with
+   *   a socket server (unlike this service, which stays ignorant of it, see
+   *   `revoke`'s docblock) knows to drop the live connections. The HTTP
+   *   response built from this failure stays generic either way (KTD17):
+   *   this field is for server-side use, never echoed to the client.
    */
   const disambiguateReplay = async (
     token: RefreshTokenWithRelations,
@@ -325,7 +331,7 @@ export const createLoginSessionService = (
     });
 
     await revoke(token.login_session_id);
-    return { ok: false };
+    return { ok: false, revoked_login_session_id: token.login_session_id };
   };
 
   /**
