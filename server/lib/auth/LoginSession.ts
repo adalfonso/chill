@@ -7,9 +7,6 @@ import { ABSOLUTE_WINDOW_MS, IDLE_WINDOW_MS } from "@server/lib/auth/constants";
 const GRACE_WINDOW_MS = 30_000;
 const MAX_DEVICE_LABEL_LENGTH = 64;
 
-const graceCacheKeyFor = (predecessor_token_hash: string) =>
-  `grace.refresh_token.${predecessor_token_hash}`;
-
 const BROWSER_TOKENS: Array<[RegExp, string]> = [
   [/Edg\//, "Edge"],
   [/OPR\//, "Opera"],
@@ -28,9 +25,6 @@ const PLATFORM_TOKENS: Array<[RegExp, string]> = [
   [/Linux/, "Linux"],
 ];
 
-const matchToken = (user_agent: string, tokens: Array<[RegExp, string]>) =>
-  tokens.find(([pattern]) => pattern.test(user_agent))?.[1];
-
 /**
  * Derive a short, display-safe device label from a User-Agent header
  *
@@ -47,6 +41,9 @@ export const deriveDeviceLabel = (user_agent: string): string => {
 
   return `${browser} on ${platform}`.slice(0, MAX_DEVICE_LABEL_LENGTH);
 };
+
+const matchToken = (user_agent: string, tokens: Array<[RegExp, string]>) =>
+  tokens.find(([pattern]) => pattern.test(user_agent))?.[1];
 
 export type LoginSessionParams = {
   user_id: number;
@@ -452,6 +449,9 @@ export const createLoginSessionService = (
 
   return { create, rotate, revoke, prune };
 };
+
+const graceCacheKeyFor = (predecessor_token_hash: string) =>
+  `grace.refresh_token.${predecessor_token_hash}`;
 
 export type LoginSessionService = ReturnType<typeof createLoginSessionService>;
 

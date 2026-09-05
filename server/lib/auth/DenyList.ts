@@ -22,50 +22,6 @@ export type DenyListOptions = {
   circuit_cooldown_ms?: number;
 };
 
-const denyKeyFor = (login_session_id: number) =>
-  `deny.login_session.${login_session_id}`;
-
-const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
-  new Promise((resolve, reject) => {
-    const timer = setTimeout(
-      () => reject(new Error("Redis read timed out")),
-      ms,
-    );
-
-    promise.then(
-      (value) => {
-        clearTimeout(timer);
-        resolve(value);
-      },
-      (err) => {
-        clearTimeout(timer);
-        reject(err);
-      },
-    );
-  });
-
-/**
- * Look up whether a login session is revoked directly from Postgres
- *
- * The fallback path used when the deny-key read times out, errors, or the
- * circuit breaker is open. `revoked_at` committing is what revocation
- * durably means (ADR-0009 KTD6) -- this is never wrong, only potentially
- * stale by however long the deny key would have covered.
- *
- * @param login_session_id - the login session to check
- * @returns true if the session's `revoked_at` is set
- */
-const isDeniedInPostgres = async (
-  login_session_id: number,
-): Promise<boolean> => {
-  const session = await db.loginSession.findUnique({
-    where: { id: login_session_id },
-    select: { revoked_at: true },
-  });
-
-  return session?.revoked_at != null;
-};
-
 /**
  * Deny list bound to one Redis client
  *
@@ -204,6 +160,50 @@ export class DenyList {
     this.#circuit_open_until = 0;
   }
 }
+
+const denyKeyFor = (login_session_id: number) =>
+  `deny.login_session.${login_session_id}`;
+
+const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
+  new Promise((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error("Redis read timed out")),
+      ms,
+    );
+
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+
+/**
+ * Look up whether a login session is revoked directly from Postgres
+ *
+ * The fallback path used when the deny-key read times out, errors, or the
+ * circuit breaker is open. `revoked_at` committing is what revocation
+ * durably means (ADR-0009 KTD6) -- this is never wrong, only potentially
+ * stale by however long the deny key would have covered.
+ *
+ * @param login_session_id - the login session to check
+ * @returns true if the session's `revoked_at` is set
+ */
+const isDeniedInPostgres = async (
+  login_session_id: number,
+): Promise<boolean> => {
+  const session = await db.loginSession.findUnique({
+    where: { id: login_session_id },
+    select: { revoked_at: true },
+  });
+
+  return session?.revoked_at != null;
+};
 
 let deny_list_instance: DenyList | undefined;
 

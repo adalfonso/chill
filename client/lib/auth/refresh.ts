@@ -28,6 +28,56 @@ const REFRESH_FETCH_TIMEOUT_MS = 10_000;
 let in_flight: Promise<void> | null = null;
 
 /**
+ * Refresh the access token, sharing one in-flight request across concurrent callers
+ *
+ * A rejected attempt is never cached -- the next call starts a fresh
+ * request rather than replaying a stale failure.
+ *
+ * @returns resolves once a fresh access token cookie is set
+ * @throws on any failure. Only a definitive 401 means the session is dead
+ *   (and it already redirects before rejecting); a transient failure
+ *   (network error, 5xx) must not be read as "log the user out" by callers.
+ */
+export const refresh = (): Promise<void> => {
+  if (in_flight) {
+    return in_flight;
+  }
+
+  const attempt = doRefresh().finally(() => {
+    // Only clear the slot if it's still this attempt -- guards against a
+    // newer attempt's slot being cleared by this one settling late.
+    if (in_flight === attempt) {
+      in_flight = null;
+    }
+  });
+
+  in_flight = attempt;
+
+  return attempt;
+};
+
+/**
+ * Refresh only if the cached expiry hint says the access token is running low
+ *
+ * A missing hint (cleared localStorage, first load this session) is treated
+ * as "refresh now," not "session dead" -- the hint is a cache (ADR-0009 U7).
+ *
+ * @returns resolves once refreshed, or immediately if the refresh was skipped
+ */
+export const maybeRefresh = (): Promise<void> => {
+  const expires_at = getAccessTokenExpiryHint();
+
+  if (
+    expires_at !== null &&
+    expires_at - Date.now() > REFRESH_SKIP_THRESHOLD_MS
+  ) {
+    return Promise.resolve();
+  }
+
+  return refresh();
+};
+
+/**
  * Build a signal that aborts after `ms`
  *
  * `AbortSignal.timeout` covers this in modern runtimes, but isn't
@@ -93,56 +143,6 @@ const doRefresh = async (is_retry = false): Promise<void> => {
   }
 
   setAccessTokenExpiryHint(Date.now() + ACCESS_TOKEN_TTL_MS);
-};
-
-/**
- * Refresh the access token, sharing one in-flight request across concurrent callers
- *
- * A rejected attempt is never cached -- the next call starts a fresh
- * request rather than replaying a stale failure.
- *
- * @returns resolves once a fresh access token cookie is set
- * @throws on any failure. Only a definitive 401 means the session is dead
- *   (and it already redirects before rejecting); a transient failure
- *   (network error, 5xx) must not be read as "log the user out" by callers.
- */
-export const refresh = (): Promise<void> => {
-  if (in_flight) {
-    return in_flight;
-  }
-
-  const attempt = doRefresh().finally(() => {
-    // Only clear the slot if it's still this attempt -- guards against a
-    // newer attempt's slot being cleared by this one settling late.
-    if (in_flight === attempt) {
-      in_flight = null;
-    }
-  });
-
-  in_flight = attempt;
-
-  return attempt;
-};
-
-/**
- * Refresh only if the cached expiry hint says the access token is running low
- *
- * A missing hint (cleared localStorage, first load this session) is treated
- * as "refresh now," not "session dead" -- the hint is a cache (ADR-0009 U7).
- *
- * @returns resolves once refreshed, or immediately if the refresh was skipped
- */
-export const maybeRefresh = (): Promise<void> => {
-  const expires_at = getAccessTokenExpiryHint();
-
-  if (
-    expires_at !== null &&
-    expires_at - Date.now() > REFRESH_SKIP_THRESHOLD_MS
-  ) {
-    return Promise.resolve();
-  }
-
-  return refresh();
 };
 
 // Foreground trigger. Registered at module load rather than from a
