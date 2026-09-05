@@ -2,6 +2,7 @@ import {
   getAccessTokenExpiryHint,
   setAccessTokenExpiryHint,
 } from "@client/lib/DeviceInfo";
+import { ACCESS_TOKEN_TTL_SECONDS } from "@common/authConstants";
 
 const REFRESH_ENDPOINT = "/auth/refresh";
 const LOGIN_PATH = "/auth/login";
@@ -11,11 +12,9 @@ export const redirectToLogin = (): void => {
   window.location.href = LOGIN_PATH;
 };
 
-// Mirrors server/lib/auth/constants.ts ACCESS_TOKEN_TTL_SECONDS. Client and
-// server are separate bundles with no shared constants module for this;
-// being wrong about it only costs an extra refresh call; it is a cache, not
-// a security or correctness boundary (ADR-0009 KTD1).
-const ACCESS_TOKEN_TTL_MS = 12 * 60 * 60 * 1000;
+// Estimate, not a security or correctness boundary (ADR-0009 KTD1) --
+// being wrong about it only costs an extra refresh call.
+const ACCESS_TOKEN_TTL_MS = ACCESS_TOKEN_TTL_SECONDS * 1000;
 
 // Refresh proactively once less than this much of the token's estimated
 // life remains, so an ordinary trigger (mount, foreground) rarely has to

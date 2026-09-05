@@ -1,12 +1,8 @@
-/**
- * Access token lifetime, in seconds
- *
- * Once the deny key is checked per request, TTL no longer bounds
- * revocation lag -- it only bounds an access-token-only leak and the
- * fallback window if the cache is unavailable. 12 hours sits above the
- * longest-running mobile audio range-stream (ADR-0009 KTD1).
- */
-export const ACCESS_TOKEN_TTL_SECONDS = 3600 * 12;
+// Re-exported so every existing server import of ACCESS_TOKEN_TTL_SECONDS
+// from this module keeps working unchanged -- the value itself now lives in
+// common/authConstants.ts, the one source of truth shared with the client
+// (see that file's docblock for why).
+export { ACCESS_TOKEN_TTL_SECONDS } from "@common/authConstants";
 
 /**
  * Login session sliding inactivity window, in milliseconds
