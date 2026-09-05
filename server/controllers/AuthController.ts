@@ -9,6 +9,7 @@ import {
   loginSessionService,
   RotateResult,
 } from "@server/lib/auth/LoginSession";
+import { revokeAndDisconnect } from "@server/lib/auth/revokeAndDisconnect";
 import { signAccessToken } from "@server/lib/Token";
 import {
   ACCESS_TOKEN_COOKIE,
@@ -25,13 +26,11 @@ export const AuthController = {
     res.sendFile(path.join(path.resolve(), "views/login.html")),
 
   logout: (wss: ChillWss) => async (req: Request, res: Response) => {
-    // Drops every socket the login session holds, not just the one this
-    // request arrived on -- a session can have more than one live
-    // connection (e.g. multiple tabs on the same device).
-    wss.dropByLoginSession(req._user.login_session_id);
-
     try {
-      await loginSessionService.instance().revoke(req._user.login_session_id);
+      // No owner_user_id: req._user.login_session_id already came from a
+      // verified, deny-list-checked access token, so there's nothing left
+      // to scope against (see revokeAndDisconnect's docblock).
+      await revokeAndDisconnect(req._user.login_session_id, wss);
     } catch (err) {
       console.error("Failed to revoke login session on logout", { err });
       return res.status(500).json({ error: "Failed to log out" });

@@ -63,7 +63,7 @@ describe("AuthController.logout", () => {
     await AuthController.logout(wss as any)(req, res);
 
     expect(wss.dropByLoginSession).toHaveBeenCalledWith(5);
-    expect(revoke).toHaveBeenCalledWith(5);
+    expect(revoke).toHaveBeenCalledWith(5, {});
     expect(res.clearCookie).toHaveBeenCalledWith(
       ACCESS_TOKEN_COOKIE,
       expect.anything(),

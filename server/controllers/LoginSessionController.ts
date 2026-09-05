@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { AuthedRequest } from "@server/trpc";
 import { db } from "@server/lib/data/db";
-import { loginSessionService } from "@server/lib/auth/LoginSession";
+import { revokeAndDisconnect } from "@server/lib/auth/revokeAndDisconnect";
 import { LoginSessionDto } from "@common/types";
 
 export const schema = {
@@ -78,8 +78,8 @@ export const LoginSessionController = {
    * Revoke one of the caller's own login sessions
    *
    * A nonexistent id and someone else's id return the identical generic
-   * error -- see `revokeOwnedSession`'s docblock for why that's a single
-   * atomic update rather than a look-up-then-check.
+   * error -- see `revokeAndDisconnect`'s docblock for why the owner scoping
+   * is a single atomic update rather than a look-up-then-check.
    *
    * @throws `UNAUTHORIZED` if `login_session_id` does not belong to the caller
    */
@@ -87,11 +87,9 @@ export const LoginSessionController = {
     ctx: { req, token },
     input: { login_session_id },
   }: AuthedRequest<typeof schema.revoke>) => {
-    const owned = await revokeOwnedSession(
-      login_session_id,
-      token.id,
-      req.app._wss,
-    );
+    const owned = await revokeAndDisconnect(login_session_id, req.app._wss, {
+      owner_user_id: token.id,
+    });
 
     if (!owned) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
@@ -137,40 +135,11 @@ export const LoginSessionController = {
     // not across different sessions), so they run concurrently rather than
     // paying N sequential DB+Redis round trips.
     await Promise.all(
-      others.map(({ id }) => revokeOwnedSession(id, token.id, req.app._wss)),
+      others.map(({ id }) =>
+        revokeAndDisconnect(id, req.app._wss, { owner_user_id: token.id }),
+      ),
     );
 
     return { revoked_count: others.length };
   },
-};
-
-/**
- * Revoke one of a user's own login sessions and drop its live sockets
- *
- * The ownership check and the revocation are the single atomic update
- * inside `LoginSessionService.revoke` (owner-scoped) -- there is no
- * separate look-up-then-check here, which would be both a race and an
- * existence oracle. Socket-dropping is the one piece of behavior specific
- * to this entry point, layered on top of the shared revoke so the service
- * itself stays ignorant of the socket server.
- *
- * @param login_session_id - the login session to revoke
- * @param user_id - the owner it must belong to
- * @param wss - socket server to drop the session's live connections from
- * @returns whether the session was owned by `user_id` (and so was revoked, or already was)
- */
-const revokeOwnedSession = async (
-  login_session_id: number,
-  user_id: number,
-  wss: Express.Application["_wss"],
-): Promise<boolean> => {
-  const { ok } = await loginSessionService
-    .instance()
-    .revoke(login_session_id, { owner_user_id: user_id });
-
-  if (ok) {
-    wss.dropByLoginSession(login_session_id);
-  }
-
-  return ok;
 };
