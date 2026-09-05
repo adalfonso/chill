@@ -42,7 +42,7 @@ export const verifyAndDecodeJwt = async <T>(
 // docs/glossary.md); `login_session_id` is the login session this token
 // belongs to, checked against the deny list on every request.
 export const access_token_payload_schema = z.object({
-  id: z.number().int(),
+  user_id: z.number().int(),
   email: z.string(),
   session_id: z.string(),
   login_session_id: z.number().int(),

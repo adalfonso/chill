@@ -44,7 +44,7 @@ describe("LoginSessionController.revoke", () => {
       ctx: {
         req: makeReq(wss),
         res: {} as any,
-        token: { id: 1, login_session_id: 99 } as any,
+        token: { user_id: 1, login_session_id: 99 } as any,
       },
       input: { login_session_id: 5 },
     } as any);
@@ -62,7 +62,7 @@ describe("LoginSessionController.revoke", () => {
         ctx: {
           req: makeReq(wss),
           res: {} as any,
-          token: { id: 1, login_session_id: 99 } as any,
+          token: { user_id: 1, login_session_id: 99 } as any,
         },
         input: { login_session_id: 5 },
       } as any),
@@ -83,7 +83,7 @@ describe("LoginSessionController.revokeOthers", () => {
       ctx: {
         req: makeReq(wss),
         res: {} as any,
-        token: { id: 1, login_session_id: 99 } as any,
+        token: { user_id: 1, login_session_id: 99 } as any,
       },
       input: undefined,
     } as any);
@@ -108,7 +108,7 @@ describe("LoginSessionController.revokeOthers", () => {
         ctx: {
           req: makeReq(wss),
           res: {} as any,
-          token: { id: 1, login_session_id: 99 } as any,
+          token: { user_id: 1, login_session_id: 99 } as any,
         },
         input: undefined,
       } as any),

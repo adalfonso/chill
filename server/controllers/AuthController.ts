@@ -73,7 +73,7 @@ export const AuthController = {
 
     try {
       const access_token = signAccessToken({
-        id: req.user.id,
+        user_id: req.user.id,
         email: req.user.email,
         session_id,
         login_session_id,
@@ -152,7 +152,7 @@ export const AuthController = {
 
     try {
       const access_token = signAccessToken({
-        id: user.id,
+        user_id: user.id,
         email: user.email,
         session_id,
         login_session_id: result.login_session_id,

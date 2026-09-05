@@ -55,7 +55,7 @@ export const LoginSessionController = {
 
     const sessions = await db.loginSession.findMany({
       where: {
-        user_id: token.id,
+        user_id: token.user_id,
         revoked_at: null,
         idle_expires_at: { gt: now },
         absolute_expires_at: { gt: now },
@@ -88,7 +88,7 @@ export const LoginSessionController = {
     input: { login_session_id },
   }: AuthedRequest<typeof schema.revoke>) => {
     const owned = await revokeAndDisconnect(login_session_id, req.app._wss, {
-      owner_user_id: token.id,
+      owner_user_id: token.user_id,
     });
 
     if (!owned) {
@@ -122,7 +122,7 @@ export const LoginSessionController = {
 
     const others = await db.loginSession.findMany({
       where: {
-        user_id: token.id,
+        user_id: token.user_id,
         id: { not: token.login_session_id },
         revoked_at: null,
       },
@@ -136,7 +136,9 @@ export const LoginSessionController = {
     // paying N sequential DB+Redis round trips.
     await Promise.all(
       others.map(({ id }) =>
-        revokeAndDisconnect(id, req.app._wss, { owner_user_id: token.id }),
+        revokeAndDisconnect(id, req.app._wss, {
+          owner_user_id: token.user_id,
+        }),
       ),
     );
 

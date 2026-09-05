@@ -16,7 +16,7 @@ jest.mock("../server/init", () => ({
 const SIGNING_KEY = "test-signing-key";
 
 const access_payload = {
-  id: 1,
+  user_id: 1,
   email: "user@example.com",
   session_id: "abcd",
   login_session_id: 42,

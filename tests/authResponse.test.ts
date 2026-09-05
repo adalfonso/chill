@@ -50,7 +50,7 @@ describe("isAuthenticatedApi", () => {
     const jwt = require("jsonwebtoken");
     const token = jwt.sign(
       {
-        id: 1,
+        user_id: 1,
         email: "user@example.com",
         session_id: "abcd",
         login_session_id: 42,
@@ -75,7 +75,7 @@ describe("isAuthenticatedApi", () => {
     const jwt = require("jsonwebtoken");
     const token = jwt.sign(
       {
-        id: 1,
+        user_id: 1,
         email: "user@example.com",
         session_id: "abcd",
         login_session_id: 42,
@@ -116,7 +116,7 @@ describe("isAuthenticatedPage", () => {
     const jwt = require("jsonwebtoken");
     const token = jwt.sign(
       {
-        id: 1,
+        user_id: 1,
         email: "user@example.com",
         session_id: "abcd",
         login_session_id: 42,

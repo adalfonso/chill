@@ -40,7 +40,7 @@ const authenticate = async (req: Request): Promise<boolean> => {
     const [is_denied, user] = await Promise.all([
       denyList.instance().isDenied(decoded.login_session_id),
       db.user.findUnique({
-        where: { id: decoded.id },
+        where: { id: decoded.user_id },
         include: { settings: true },
       }),
     ]);

@@ -66,7 +66,11 @@ describe("LoginSessionController.list", () => {
 
     const req = {} as any;
     await LoginSessionController.list({
-      ctx: { req, res: {} as any, token: { id: 42, login_session_id: 7 } as any },
+      ctx: {
+        req,
+        res: {} as any,
+        token: { user_id: 42, login_session_id: 7 } as any,
+      },
       input: undefined,
     } as any);
 
@@ -87,7 +91,11 @@ describe("LoginSessionController.list", () => {
 
     const req = {} as any;
     await LoginSessionController.list({
-      ctx: { req, res: {} as any, token: { id: 42, login_session_id: 7 } as any },
+      ctx: {
+        req,
+        res: {} as any,
+        token: { user_id: 42, login_session_id: 7 } as any,
+      },
       input: undefined,
     } as any);
 

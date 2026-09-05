@@ -41,7 +41,7 @@ export const { router, middleware, procedure } = t;
 // ACCESS_TOKEN_TTL_SECONDS (ADR-0009 KTD16, R16).
 const isAdmin = middleware(async ({ ctx: { req }, next }) => {
   const user = await db.user.findUnique({
-    where: { id: req._user.id },
+    where: { id: req._user.user_id },
     select: { type: true },
   });
 
