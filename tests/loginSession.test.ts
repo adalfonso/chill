@@ -315,8 +315,10 @@ describe("rotate", () => {
     // A caller with a socket server (e.g. AuthController.refresh) needs this
     // to drop the reused session's live sockets -- see LoginSession.ts's
     // disambiguateReplay docblock.
-    expect((replay as { revoked_login_session_id?: number })
-      .revoked_login_session_id).toBe(login_session_id);
+    expect(
+      (replay as { revoked_login_session_id?: number })
+        .revoked_login_session_id,
+    ).toBe(login_session_id);
 
     jest.useRealTimers();
   });
@@ -348,8 +350,10 @@ describe("rotate", () => {
     expect(deny_list.deny).not.toHaveBeenCalled();
     // A benign lost-response race must stay indistinguishable from reuse at
     // the response layer (KTD17) -- no socket-drop signal, either.
-    expect((replay as { revoked_login_session_id?: number })
-      .revoked_login_session_id).toBeUndefined();
+    expect(
+      (replay as { revoked_login_session_id?: number })
+        .revoked_login_session_id,
+    ).toBeUndefined();
   });
 
   it("trips detection on a grandparent token even inside 30 seconds", async () => {

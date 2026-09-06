@@ -45,7 +45,8 @@ type RefreshTokenWithRelations = {
 };
 
 /**
- * Own creation, rotation, grace, reuse detection, and revocation of login sessions
+ * Own creation, rotation, grace, reuse detection, and revocation of login
+ * sessions
  *
  * Takes `db` and the deny list as parameters rather than importing the
  * singletons, so the rotation CAS can be exercised against a real database
@@ -53,7 +54,8 @@ type RefreshTokenWithRelations = {
  *
  * @param db - Prisma client (or a structurally compatible fake for tests)
  * @param deny_list - deny list used to enforce revocation on the next request
- * @param grace_cache - Redis-shaped client used for the 30s post-rotation grace entry (ADR-0009 KTD14)
+ * @param grace_cache - Redis-shaped client used for the 30s post-rotation
+ *   grace entry (ADR-0009 KTD14)
  * @returns create/rotate/revoke/prune bound to the given dependencies
  */
 export const createLoginSessionService = (
@@ -70,7 +72,8 @@ export const createLoginSessionService = (
    * was never rotated is expired immediately so it fails quietly as an
    * ordinary miss rather than staying live under the restarted session.
    *
-   * @param params - the user, device, and request identity to bind the session to
+   * @param params - the user, device, and request identity to bind the
+   *   session to
    * @returns the session id and a plaintext refresh token
    */
   const create = async ({
@@ -149,8 +152,11 @@ export const createLoginSessionService = (
    * KTD6 requires.
    *
    * @param login_session_id - the login session to revoke
-   * @param options.owner_user_id - if set, the update (and the disambiguation read below) are scoped to sessions owned by this user
-   * @returns `ok: false` only when `owner_user_id` was set and the session is not owned by that user (or does not exist) -- otherwise always `ok: true`
+   * @param options.owner_user_id - if set, the update (and the
+   *   disambiguation read below) are scoped to sessions owned by this user
+   * @returns `ok: false` only when `owner_user_id` was set and the session
+   *   is not owned by that user (or does not exist) -- otherwise always
+   *   `ok: true`
    */
   const revoke = async (
     login_session_id: number,
@@ -208,8 +214,10 @@ export const createLoginSessionService = (
   /**
    * Look up a refresh token by hash or id, with the relations `rotate` needs
    *
-   * @param where - `token_hash` for the initial lookup, `id` for the re-read after a lost CAS race
-   * @returns the token with its login session and successor, or null if no row matches
+   * @param where - `token_hash` for the initial lookup, `id` for the
+   *   re-read after a lost CAS race
+   * @returns the token with its login session and successor, or null if no
+   *   row matches
    */
   const findTokenWithRelations = (
     where: { token_hash: string } | { id: number },
@@ -220,7 +228,8 @@ export const createLoginSessionService = (
     }) as Promise<RefreshTokenWithRelations | null>;
 
   /**
-   * Determine whether a replayed (already-rotated) token gets grace or trips reuse detection
+   * Determine whether a replayed (already-rotated) token gets grace or
+   * trips reuse detection
    *
    * Only the immediate predecessor of the current live token is graced, and
    * only inside the 30-second window -- an older ancestor (one whose
@@ -232,8 +241,10 @@ export const createLoginSessionService = (
    * benign lost-response race from actual reuse.
    *
    * @param token - the already-rotated token that failed the rotation CAS
-   * @param current - the presenting request's identity, logged against what was originally recorded on the token
-   * @returns the graced successor, or a failure -- carrying `revoked_login_session_id`
+   * @param current - the presenting request's identity, logged against
+   *   what was originally recorded on the token
+   * @returns the graced successor, or a failure -- carrying
+   *   `revoked_login_session_id`
    *   only when this call is what newly revoked the family, so a caller with
    *   a socket server (unlike this service, which stays ignorant of it, see
    *   `revoke`'s docblock) knows to drop the live connections. The HTTP
@@ -304,7 +315,8 @@ export const createLoginSessionService = (
    * atomic under Postgres READ COMMITTED. On CAS loss, disambiguates
    * between a graced in-window replay and genuine reuse.
    *
-   * @param params - the presented refresh token and the request identity to record on its successor
+   * @param params - the presented refresh token and the request identity
+   *   to record on its successor
    * @returns the new refresh token on success, or a generic failure
    */
   const rotate = async ({
@@ -419,7 +431,9 @@ export type LoginSessionService = ReturnType<typeof createLoginSessionService>;
 
 let login_session_service_instance: LoginSessionService | undefined;
 
-/** Process-wide `LoginSessionService` singleton, mirroring `Cache.instance()` */
+/**
+ * Process-wide `LoginSessionService` singleton, mirroring `Cache.instance()`
+ */
 export const loginSessionService = {
   /**
    * Create the singleton
