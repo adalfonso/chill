@@ -14,10 +14,8 @@ import { ChillWss, registerServerSocket } from "./registerServerSocket";
 import { accessLogs } from "./middleware/accessLogs";
 import { startRenditionWorker } from "./lib/media/RenditionWorker";
 import { denyList } from "./lib/auth/DenyList";
-import {
-  loginSessionService,
-  startSessionPruner,
-} from "./lib/auth/LoginSession";
+import { loginSessionService } from "./lib/auth/LoginSession";
+import { startSessionPruner } from "./lib/auth/sessionPruner";
 
 /**
  * Initialize the express app

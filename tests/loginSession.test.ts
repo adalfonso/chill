@@ -1,8 +1,5 @@
 /** @jest-environment node */
-import {
-  createLoginSessionService,
-  deriveDeviceLabel,
-} from "../server/lib/auth/LoginSession";
+import { createLoginSessionService } from "../server/lib/auth/LoginSession";
 
 jest.mock("../server/init", () => ({
   env: { SIGNING_KEY: "test-signing-key" },
@@ -216,17 +213,6 @@ const setup = () => {
   );
   return { db, cache, deny_list, service };
 };
-
-describe("deriveDeviceLabel", () => {
-  it("derives an allowlisted browser/platform label", () => {
-    expect(deriveDeviceLabel(CHROME_WINDOWS_UA)).toBe("Chrome on Windows");
-  });
-
-  it("never stores the raw header", () => {
-    const weird_ua = "TotallyCustomBotThing/1.0 (rare-config; x86_64)";
-    expect(deriveDeviceLabel(weird_ua)).not.toContain("TotallyCustomBotThing");
-  });
-});
 
 describe("create", () => {
   it("issues a login session and a refresh token", async () => {

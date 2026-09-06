@@ -3,47 +3,12 @@ import type { PrismaClient } from "@prisma/client";
 import { DenyList, DenyListClient } from "@server/lib/auth/DenyList";
 import { generateRefreshToken, hashRefreshToken } from "@server/lib/Token";
 import { ABSOLUTE_WINDOW_MS, IDLE_WINDOW_MS } from "@server/lib/auth/constants";
+import { deriveDeviceLabel } from "@server/lib/auth/deviceLabel";
 
 const GRACE_WINDOW_MS = 30_000;
-const MAX_DEVICE_LABEL_LENGTH = 64;
 
-const BROWSER_TOKENS: Array<[RegExp, string]> = [
-  [/Edg\//, "Edge"],
-  [/OPR\//, "Opera"],
-  [/CriOS\//, "Chrome"],
-  [/Chrome\//, "Chrome"],
-  [/FxiOS\//, "Firefox"],
-  [/Firefox\//, "Firefox"],
-  [/Safari\//, "Safari"],
-];
-
-const PLATFORM_TOKENS: Array<[RegExp, string]> = [
-  [/iPhone|iPad|iPod/, "iOS"],
-  [/Android/, "Android"],
-  [/Mac OS X/, "macOS"],
-  [/Windows/, "Windows"],
-  [/Linux/, "Linux"],
-];
-
-/**
- * Derive a short, display-safe device label from a User-Agent header
- *
- * Matched against a small fixed allowlist rather than stored verbatim --
- * the raw header is client-controlled and unbounded (ADR-0009 U2).
- *
- * @param user_agent - the request's User-Agent header
- * @returns a label like "Chrome on Windows", capped to the schema's column length
- */
-export const deriveDeviceLabel = (user_agent: string): string => {
-  const browser = matchToken(user_agent, BROWSER_TOKENS) ?? "Unknown browser";
-  const platform =
-    matchToken(user_agent, PLATFORM_TOKENS) ?? "unknown platform";
-
-  return `${browser} on ${platform}`.slice(0, MAX_DEVICE_LABEL_LENGTH);
-};
-
-const matchToken = (user_agent: string, tokens: Array<[RegExp, string]>) =>
-  tokens.find(([pattern]) => pattern.test(user_agent))?.[1];
+const graceCacheKeyFor = (predecessor_token_hash: string) =>
+  `grace.refresh_token.${predecessor_token_hash}`;
 
 export type LoginSessionParams = {
   user_id: number;
@@ -96,20 +61,6 @@ export const createLoginSessionService = (
   deny_list: DenyList,
   grace_cache: DenyListClient,
 ) => {
-  /**
-   * Look up a refresh token by hash or id, with the relations `rotate` needs
-   *
-   * @param where - `token_hash` for the initial lookup, `id` for the re-read after a lost CAS race
-   * @returns the token with its login session and successor, or null if no row matches
-   */
-  const findTokenWithRelations = (
-    where: { token_hash: string } | { id: number },
-  ) =>
-    db.refreshToken.findUnique({
-      where,
-      include: { login_session: true, rotated_to: true },
-    }) as Promise<RefreshTokenWithRelations | null>;
-
   /**
    * Start or restart a login session on one device
    *
@@ -253,6 +204,20 @@ export const createLoginSessionService = (
 
     return { ok: true, login_session_id };
   };
+
+  /**
+   * Look up a refresh token by hash or id, with the relations `rotate` needs
+   *
+   * @param where - `token_hash` for the initial lookup, `id` for the re-read after a lost CAS race
+   * @returns the token with its login session and successor, or null if no row matches
+   */
+  const findTokenWithRelations = (
+    where: { token_hash: string } | { id: number },
+  ) =>
+    db.refreshToken.findUnique({
+      where,
+      include: { login_session: true, rotated_to: true },
+    }) as Promise<RefreshTokenWithRelations | null>;
 
   /**
    * Determine whether a replayed (already-rotated) token gets grace or trips reuse detection
@@ -450,9 +415,6 @@ export const createLoginSessionService = (
   return { create, rotate, revoke, prune };
 };
 
-const graceCacheKeyFor = (predecessor_token_hash: string) =>
-  `grace.refresh_token.${predecessor_token_hash}`;
-
 export type LoginSessionService = ReturnType<typeof createLoginSessionService>;
 
 let login_session_service_instance: LoginSessionService | undefined;
@@ -490,50 +452,4 @@ export const loginSessionService = {
 
     return login_session_service_instance;
   },
-};
-
-const DEFAULT_SESSION_PRUNE_INTERVAL_MS = 24 * 60 * 60 * 1000;
-
-/**
- * Start the periodic login-session pruner
- *
- * There is no existing scheduler in this codebase to reuse -- library
- * scanning is admin-pull only. Mirrors startRenditionWorker's setInterval
- * shape instead, the only other periodic scaffolding here: a reentrancy
- * flag so a slow tick can't overlap itself, and a caught/logged failure
- * that leaves the interval running rather than crashing the process.
- *
- * @param interval_ms - how often to sweep; defaults to once a day
- */
-export const startSessionPruner = (
-  interval_ms: number = DEFAULT_SESSION_PRUNE_INTERVAL_MS,
-): void => {
-  console.info(`Session pruner: starting (interval_ms=${interval_ms})`);
-
-  let pruning = false;
-
-  const tick = () => {
-    if (pruning) {
-      return;
-    }
-
-    pruning = true;
-
-    loginSessionService
-      .instance()
-      .prune()
-      .then(({ count }) => {
-        if (count > 0) {
-          console.info(
-            `Session pruner: removed ${count} expired login session(s)`,
-          );
-        }
-      })
-      .catch((error) => console.error("Session pruner tick failed", { error }))
-      .finally(() => {
-        pruning = false;
-      });
-  };
-
-  setInterval(tick, interval_ms);
 };
