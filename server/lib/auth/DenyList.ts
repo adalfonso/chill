@@ -1,0 +1,222 @@
+import { ACCESS_TOKEN_TTL_SECONDS } from "@server/lib/auth/constants";
+import { db } from "@server/lib/data/db";
+import { withTimeout } from "@common/commonUtils";
+
+const DEFAULT_READ_TIMEOUT_MS = 500;
+const DEFAULT_FAILURE_THRESHOLD = 3;
+const DEFAULT_CIRCUIT_COOLDOWN_MS = 30_000;
+
+/** Minimal shape `DenyList` needs from a Redis client, so the throw and
+ * timeout paths are testable with a small stub instead of a live connection. */
+export type DenyListClient = {
+  set: (
+    key: string,
+    value: string,
+    options: { EX: number },
+  ) => Promise<unknown>;
+  get: (key: string) => Promise<string | null>;
+};
+
+export type DenyListOptions = {
+  read_timeout_ms?: number;
+  failure_threshold?: number;
+  circuit_cooldown_ms?: number;
+};
+
+/**
+ * Deny list bound to one Redis client
+ *
+ * Do not add auth policy to `Cache.ts` -- that module stays connection
+ * management. The client is a constructor parameter (not the `Cache`
+ * singleton) so the throw and degradation paths are testable with a stub.
+ *
+ * The circuit-breaker counters are instance state, so one `DenyList` must be
+ * shared across requests for the failure count to mean anything -- see the
+ * `denyList` singleton below.
+ */
+export class DenyList {
+  readonly #client: DenyListClient;
+  readonly #read_timeout_ms: number;
+  readonly #failure_threshold: number;
+  readonly #circuit_cooldown_ms: number;
+
+  #consecutive_failures = 0;
+  #circuit_open_until = 0;
+
+  /**
+   * Build a deny list bound to one Redis client
+   *
+   * @param client - Redis client to read and write deny keys on
+   * @param options - timeout and circuit-breaker tuning; defaults are production values
+   */
+  constructor(client: DenyListClient, options: DenyListOptions = {}) {
+    this.#client = client;
+    this.#read_timeout_ms = options.read_timeout_ms ?? DEFAULT_READ_TIMEOUT_MS;
+    this.#failure_threshold =
+      options.failure_threshold ?? DEFAULT_FAILURE_THRESHOLD;
+    this.#circuit_cooldown_ms =
+      options.circuit_cooldown_ms ?? DEFAULT_CIRCUIT_COOLDOWN_MS;
+  }
+
+  /**
+   * Deny a login session, sized to the longest an access token can live
+   *
+   * A rejected write throws rather than logging -- a caller that swallows
+   * this can report a revocation as successful when enforcement never
+   * happened (ADR-0009 R8). Bounded by the same timeout as the read path
+   * (`read_timeout_ms`) so a Redis connection that is up but unresponsive
+   * fails fast and throws instead of hanging the caller indefinitely --
+   * `revoke()`'s catch already logs and degrades gracefully on this, and
+   * `warmUp()` deliberately does not catch it, so a hung write still fails
+   * startup loudly rather than booting under-enforcing revocation.
+   *
+   * @param login_session_id - the login session to deny
+   * @throws when the underlying write fails or times out
+   */
+  async deny(login_session_id: number): Promise<void> {
+    await withTimeout(
+      this.#client.set(denyKeyFor(login_session_id), "1", {
+        EX: ACCESS_TOKEN_TTL_SECONDS,
+      }),
+      this.#read_timeout_ms,
+    );
+  }
+
+  /**
+   * Determine whether a login session is currently denied
+   *
+   * @param login_session_id - the login session to check
+   * @returns true if the session is denied
+   */
+  async isDenied(login_session_id: number): Promise<boolean> {
+    if (this.#circuitIsOpen()) {
+      return isDeniedInPostgres(login_session_id);
+    }
+
+    try {
+      const value = await withTimeout(
+        this.#client.get(denyKeyFor(login_session_id)),
+        this.#read_timeout_ms,
+      );
+
+      this.#recordSuccess();
+
+      return value !== null;
+    } catch (err) {
+      console.error("Deny-key read failed, falling back to Postgres", {
+        err,
+      });
+      this.#recordFailure();
+
+      return isDeniedInPostgres(login_session_id);
+    }
+  }
+
+  /**
+   * Rewrite deny keys for every session revoked within one access-token lifetime
+   *
+   * Run at startup: the deny keyspace does not survive a cache restart or
+   * container recreation, so a revocation just inside the window would
+   * otherwise be silently forgotten (ADR-0009 KTD15).
+   *
+   * @throws when it cannot complete -- startup should fail rather than boot under-enforcing revocation
+   */
+  async warmUp(): Promise<void> {
+    const cutoff = new Date(Date.now() - ACCESS_TOKEN_TTL_SECONDS * 1000);
+
+    const recently_revoked = await db.loginSession.findMany({
+      where: { revoked_at: { gte: cutoff } },
+      select: { id: true },
+    });
+
+    await Promise.all(recently_revoked.map(({ id }) => this.deny(id)));
+
+    console.info(`Warmed ${recently_revoked.length} deny key(s) from Postgres`);
+  }
+
+  /**
+   * Whether the circuit breaker is currently open
+   *
+   * @returns true while deny-key reads should be bypassed in favour of Postgres
+   */
+  #circuitIsOpen(): boolean {
+    return Date.now() < this.#circuit_open_until;
+  }
+
+  /**
+   * Record a failed deny-key read, opening the circuit once the failure
+   * threshold is reached
+   */
+  #recordFailure(): void {
+    this.#consecutive_failures += 1;
+
+    if (this.#consecutive_failures >= this.#failure_threshold) {
+      this.#circuit_open_until = Date.now() + this.#circuit_cooldown_ms;
+    }
+  }
+
+  /**
+   * Clear the failure count and close the circuit after a successful read
+   */
+  #recordSuccess(): void {
+    this.#consecutive_failures = 0;
+    this.#circuit_open_until = 0;
+  }
+}
+
+const denyKeyFor = (login_session_id: number) =>
+  `deny.login_session.${login_session_id}`;
+
+/**
+ * Look up whether a login session is revoked directly from Postgres
+ *
+ * The fallback path used when the deny-key read times out, errors, or the
+ * circuit breaker is open. `revoked_at` committing is what revocation
+ * durably means (ADR-0009 KTD6) -- this is never wrong, only potentially
+ * stale by however long the deny key would have covered.
+ *
+ * @param login_session_id - the login session to check
+ * @returns true if the session's `revoked_at` is set
+ */
+const isDeniedInPostgres = async (
+  login_session_id: number,
+): Promise<boolean> => {
+  const session = await db.loginSession.findUnique({
+    where: { id: login_session_id },
+    select: { revoked_at: true },
+  });
+
+  return session?.revoked_at != null;
+};
+
+let deny_list_instance: DenyList | undefined;
+
+/**
+ * Process-wide `DenyList` singleton, mirroring `Cache.instance()`
+ *
+ * One instance is required for the circuit breaker's failure count to mean
+ * anything across requests -- a fresh instance per call would never trip.
+ */
+export const denyList = {
+  /**
+   * Create the singleton, bound to a connected Redis client
+   *
+   * @param client - Redis client to read and write deny keys on
+   */
+  init: (client: DenyListClient): void => {
+    deny_list_instance = new DenyList(client);
+  },
+
+  /**
+   * Get the singleton
+   *
+   * @throws when accessed before `init`
+   */
+  instance: (): DenyList => {
+    if (!deny_list_instance) {
+      throw new Error("DenyList accessed before init");
+    }
+
+    return deny_list_instance;
+  },
+};

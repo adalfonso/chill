@@ -1,5 +1,53 @@
 import { DeviceInfo } from "@common/types";
 
+const DEVICE_ID_KEY = "device_id";
+const ACCESS_TOKEN_EXPIRES_AT_KEY = "access_token_expires_at";
+
+/**
+ * Get this device's persistent identifier, generating and storing one if absent
+ *
+ * Client-supplied per ADR-0009 KTD5: the server treats this as a cache, not
+ * a source of truth, since it can vanish independently of any live session.
+ *
+ * @returns a stable id for this browser/device
+ */
+export const getDeviceId = (): string => {
+  const existing = localStorage.getItem(DEVICE_ID_KEY);
+
+  if (existing) {
+    return existing;
+  }
+
+  const device_id = crypto.randomUUID();
+  localStorage.setItem(DEVICE_ID_KEY, device_id);
+
+  return device_id;
+};
+
+/**
+ * Read the cached access-token expiry hint
+ *
+ * A cache, not a credential -- a missing or cleared hint means "refresh
+ * now," never "session dead" (ADR-0009 U7).
+ *
+ * @returns the cached expiry as an epoch-ms timestamp, or null if unset
+ */
+export const getAccessTokenExpiryHint = (): number | null => {
+  const raw = localStorage.getItem(ACCESS_TOKEN_EXPIRES_AT_KEY);
+  const parsed = raw === null ? NaN : Number(raw);
+
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+/**
+ * Cache when the current access token is expected to expire
+ *
+ * @param expires_at - epoch-ms timestamp of the estimated expiry
+ */
+export const setAccessTokenExpiryHint = (expires_at: number): void => {
+  localStorage.setItem(ACCESS_TOKEN_EXPIRES_AT_KEY, String(expires_at));
+};
+
 export const getDeviceInfo = (): DeviceInfo => {
   const ua = navigator.userAgent;
   const isTouch = "ontouchstart" in window;

@@ -4,6 +4,7 @@ export const AppSettingType = {
   InviteUser: "InviteUser",
   LibraryInsights: "LibraryInsights",
   LibraryScan: "LibraryScan",
+  LoginSessions: "LoginSessions",
   MusicQuality: "MusicQuality",
   NameDevice: "NameDevice",
 } as const;

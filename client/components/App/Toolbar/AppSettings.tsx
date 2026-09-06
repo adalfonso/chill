@@ -10,6 +10,7 @@ import { FileTypeCounts } from "./AppSettings/FileTypeCounts";
 import { InviteUser } from "./AppSettings/InviteUser";
 import { LibraryScan } from "./AppSettings/LibraryScan";
 import { LibraryStats } from "./AppSettings/LibraryStats";
+import { LoginSessions } from "./AppSettings/LoginSessions";
 import { LowQualityAlbums } from "./AppSettings/LowQualityAlbums";
 import { NameDevice } from "./AppSettings/NameDevice";
 import { TrackCountByYear } from "./TrackCountByYear";
@@ -20,6 +21,7 @@ import { useAppState } from "@hooks/useAppState";
 const settingsContent = {
   [SettingType.None]: <></>,
   [SettingType.Account]: <AccountSettings />,
+  [SettingType.LoginSessions]: <LoginSessions />,
   [SettingType.NameDevice]: <NameDevice />,
   [SettingType.MusicQuality]: <AudioQualitySetting />,
   [SettingType.InviteUser]: <InviteUser />,
@@ -48,6 +50,10 @@ export const AppSettings = () => {
             <AppSetting
               id={SettingType.Account}
               title="Account settings"
+            ></AppSetting>
+            <AppSetting
+              id={SettingType.LoginSessions}
+              title="Login sessions"
             ></AppSetting>
           </div>
 

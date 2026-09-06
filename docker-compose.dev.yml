@@ -50,18 +50,6 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: chill-database-2-gui
-    restart: unless-stopped
-    ports:
-      - "8888:80"
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
-    volumes:
-      - pgadmin:/var/lib/pgadmin
-
   redis:
     image: redis:7.0-alpine
     container_name: chill-cache
@@ -86,7 +74,7 @@ services:
     ports:
       - 127.0.0.1:6379:6379
     volumes:
-      - redis:/data/cache
+      - redis:/data
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
@@ -104,6 +92,5 @@ services:
 
 volumes:
   postgres:
-  pgadmin:
   redis:
   elastic_search:

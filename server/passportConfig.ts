@@ -1,13 +1,11 @@
 import { PassportStatic } from "passport";
 import { Request } from "express";
 import { Strategy as GoogleStrategy } from "passport-google-oauth2";
-import { Strategy as JwtStrategy, VerifiedCallback } from "passport-jwt";
 import { UserType } from "@prisma/client";
 import { VerifyCallback } from "passport-google-oauth2";
 
 import { db } from "./lib/data/db";
 import { env } from "./init";
-import { access_token_payload_schema } from "./lib/Token";
 
 export const configurePassport = (passport: PassportStatic) => {
   passport.use(
@@ -19,16 +17,6 @@ export const configurePassport = (passport: PassportStatic) => {
         passReqToCallback: true,
       },
       verifyGoogleAuth,
-    ),
-  );
-
-  passport.use(
-    new JwtStrategy(
-      {
-        jwtFromRequest: (req: Request) => req?.cookies?.access_token ?? null,
-        secretOrKey: env.SIGNING_KEY,
-      },
-      verifyJwtUser,
     ),
   );
 };
@@ -85,33 +73,5 @@ async function verifyGoogleAuth(
   } catch (error) {
     console.error(error);
     return done("Failed to verify google auth", false);
-  }
-}
-
-/**
- * Verify the user from a JWT
- *
- * @param unverified_payload - JWT payload
- * @param done - verification callback
- */
-async function verifyJwtUser(
-  unverified_payload: unknown,
-  done: VerifiedCallback,
-) {
-  try {
-    const payload = access_token_payload_schema.parse(unverified_payload);
-    const user = await db.user.findUnique({
-      where: { id: payload.user.id },
-      include: { settings: true },
-    });
-
-    if (user) {
-      return done(null, user);
-    }
-
-    return done(null, false);
-  } catch (error) {
-    console.error(error);
-    done("Failed to verify token", false);
   }
 }

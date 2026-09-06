@@ -3,13 +3,16 @@ import passport from "passport";
 
 import { AuthController } from "@controllers/AuthController";
 import { ChillWss } from "@server/registerServerSocket";
-import { isAuthenticated } from "@server/middleware/isAuthenticated";
+import { isAuthenticatedApi } from "@server/middleware/isAuthenticated";
 
 export default (wss: ChillWss) => {
   const router = express.Router();
 
-  router.get("/login", AuthController.login);
-  router.get("/logout", isAuthenticated, AuthController.logout(wss));
+  router.get("/login", AuthController.loginPage);
+  // POST (not GET) so logout can report failure to the caller instead of
+  // an anchor tag doing a fire-and-forget navigation (ADR-0009 R8).
+  router.post("/logout", isAuthenticatedApi, AuthController.logout(wss));
+  router.post("/refresh", AuthController.refresh(wss));
 
   router.get(
     "/google",

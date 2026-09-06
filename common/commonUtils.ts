@@ -136,3 +136,40 @@ export const isNotNullish = <T>(value: T): value is NonNullable<T> => {
 export const uniq = <T>(array: T[]): T[] => {
   return Array.from(new Set(array));
 };
+
+/**
+ * Rejects with a timeout error if the given promise doesn't settle in time
+ *
+ * Does not cancel or otherwise affect `promise` itself -- it keeps running
+ * in the background after the timeout fires; this only changes what the
+ * caller waiting on it sees. Useful for bounding a dependency (a Redis
+ * call, a network request) that offers no timeout option of its own, so a
+ * connection that is up but unresponsive fails fast instead of hanging the
+ * caller indefinitely.
+ *
+ * @param promise - the promise to bound
+ * @param ms - milliseconds to wait before rejecting
+ * @returns a promise that resolves/rejects exactly like `promise`, or
+ *   rejects with a timeout error first if `ms` elapses before it settles
+ * @throws an `Error` with message "timed out after {ms}ms" if `promise`
+ *   doesn't settle within `ms`; otherwise propagates `promise`'s own
+ *   rejection, if any
+ */
+export const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
+  new Promise((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`timed out after ${ms}ms`)),
+      ms,
+    );
+
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });

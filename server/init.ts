@@ -13,6 +13,9 @@ import { initRouter } from "@routes/router";
 import { ChillWss, registerServerSocket } from "./registerServerSocket";
 import { accessLogs } from "./middleware/accessLogs";
 import { startRenditionWorker } from "./lib/media/RenditionWorker";
+import { denyList } from "./lib/auth/DenyList";
+import { loginSessionService } from "./lib/auth/LoginSession";
+import { startSessionPruner } from "./lib/auth/sessionPruner";
 
 /**
  * Initialize the express app
@@ -44,9 +47,19 @@ export const init = async (app: Express) => {
     }),
   ]);
 
+  denyList.init(Cache.instance());
+  loginSessionService.init(db, denyList.instance(), Cache.instance());
+
+  // The deny keyspace does not survive a cache restart or container
+  // recreation, so a session revoked just inside the access-token lifetime
+  // would otherwise be silently under-enforced until its token expires on
+  // its own. Failing startup here is deliberate (ADR-0009 KTD15).
+  await denyList.instance().warmUp();
+
   await createInitialAdminUser();
 
   startRenditionWorker();
+  startSessionPruner(Number(env.SESSION_PRUNE_INTERVAL_MS));
 
   return { env, wss };
 };
@@ -68,6 +81,7 @@ const required_vars = [
   "SEARCH_ENGINE_PASSWORD",
   "SEARCH_ENGINE_URL",
   "SEARCH_ENGINE_USERNAME",
+  "SESSION_PRUNE_INTERVAL_MS",
   "SIGNING_KEY",
   "SOURCE_DIR",
   "TRANSCODED_PATH",
@@ -82,6 +96,9 @@ const defaults: Record<string, string> = {
   REDIS_HOST: "redis",
   SOURCE_DIR: "dist/client",
   RECEIVER_SOURCE_DIR: "dist/receiver",
+  // Once a day -- login sessions expire on a 90-day/1-year timescale, so
+  // pruning doesn't need to run often (ADR-0009 U10).
+  SESSION_PRUNE_INTERVAL_MS: String(24 * 60 * 60 * 1000),
 } as const;
 
 export type EnvStore = {

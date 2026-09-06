@@ -14,6 +14,11 @@ module.exports = {
     "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$":
       "<rootDir>/tests/__mocks__/fileMock.js",
     "\\.(css|scss|less)$": "<rootDir>/tests/__mocks__/styleMock.js",
+    // nanoid@5 is ESM-only, which Jest's CJS runtime can't load; redirect
+    // to a CJS stub rather than fight pnpm's nested node_modules path with
+    // transformIgnorePatterns.
+    "^nanoid$": "<rootDir>/tests/__mocks__/nanoidMock.js",
+    "^@prisma/client$": "<rootDir>/prisma/generated/prisma/client",
     "@client(.*)$": "<rootDir>/client$1",
     "@server(.*)$": "<rootDir>/server$1",
     "@common(.*)$": "<rootDir>/common$1",

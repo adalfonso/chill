@@ -1,6 +1,4 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
 import { createClient } from "redis";
-import { jwt_expiration_seconds } from "@server/controllers/AuthController";
 
 /** Singleton cache connection instance */
 export class Cache {
@@ -21,6 +19,10 @@ export class Cache {
       const client = createClient({
         url: `redis://${host}:6379`,
         password: password,
+        // A dropped socket otherwise queues commands indefinitely instead of
+        // failing, parking every authenticated request until it reconnects
+        // (ADR-0009 KTD15).
+        disableOfflineQueue: true,
       });
 
       client.on("error", (err) => {
@@ -53,33 +55,3 @@ export class Cache {
     return Cache._instance;
   }
 }
-
-export const blacklistToken = async (token: string) => {
-  try {
-    const client = Cache.instance();
-    const payload = jwt.decode(token);
-    const expires_in_seconds = getJwtExpiresInSeconds(payload);
-
-    await client.set(getTokenKey(token), token, {
-      EX: expires_in_seconds,
-    });
-  } catch (err) {
-    console.error("Failed to blacklist a JWT", { err });
-  }
-};
-
-export const getTokenKey = (token: string) => `token.blacklist.${token}`;
-
-const getJwtExpiresInSeconds = (
-  payload: null | JwtPayload | string,
-): number => {
-  if (payload === null || typeof payload === "string") {
-    return jwt_expiration_seconds;
-  }
-
-  if (payload.exp === undefined) {
-    return jwt_expiration_seconds;
-  }
-
-  return payload.exp - Math.round(Date.now().valueOf() / 1000);
-};

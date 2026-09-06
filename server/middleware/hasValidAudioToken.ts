@@ -4,7 +4,11 @@ import z from "zod";
 import { AudioType, ImageType } from "@server/lib/media/types";
 
 import { db } from "@server/lib/data/db";
-import { verifyAndDecodeJwt } from "@server/lib/Token";
+import {
+  cast_token_payload_schema,
+  verifyAndDecodeJwt,
+} from "@server/lib/Token";
+import { denyList } from "@server/lib/auth/DenyList";
 
 const audioOrImageExtension = new RegExp(
   `\\.(${[...Object.values(AudioType), ...Object.values(ImageType)].join(
@@ -43,14 +47,10 @@ export const hasValidAudioToken =
     }
 
     try {
-      const decoded = await verifyAndDecodeJwt(token);
-
-      if (typeof decoded === "string") {
-        console.warn(
-          "User tried to access token-secured media could not find track_id in JWT payload",
-        );
-        return res.sendStatus(401);
-      }
+      const decoded = await verifyAndDecodeJwt(
+        token,
+        cast_token_payload_schema,
+      );
 
       if (
         // Token not valid for track
@@ -64,10 +64,23 @@ export const hasValidAudioToken =
         return res.sendStatus(401);
       }
 
-      const user = await db.user.findUnique({
-        where: { email: decoded.for },
-        include: { settings: true },
-      });
+      // Neither /cast/media/* route is in the Express isAuthenticated
+      // chain, so this middleware has to run the deny-key check itself.
+      // Independent of the user lookup below -- run both concurrently.
+      const [is_denied, user] = await Promise.all([
+        denyList.instance().isDenied(decoded.login_session_id),
+        db.user.findUnique({
+          where: { email: decoded.for },
+          include: { settings: true },
+        }),
+      ]);
+
+      if (is_denied) {
+        console.warn(
+          "User tried to access token-secured media with a token from a revoked login session",
+        );
+        return res.sendStatus(401);
+      }
 
       // Is this even possible?
       if (user === null) {

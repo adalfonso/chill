@@ -1,6 +1,39 @@
-# Glossary — On-the-go Audio (renditions & streaming)
+# Glossary
 
 Terms used by the ADRs in `docs/adr/`. Kept short and project-specific.
+
+## Authentication & sessions
+
+- **Device session** — The existing `session_id` in the JWT payload. Identifies one *connected
+  device* for WebSocket routing and DeviceConnect, nothing more. Low-entropy (`nanoid(4)`),
+  sent to the client, and displayed in the device picker as a fallback device label. It is
+  **not** a secret and carries no authority.
+
+- **Login session** — A server-side record of one user's login on one device, and the unit of
+  revocation. Outlives any individual access token. Killing it logs that device out; killing
+  all of a user's logs them out everywhere. Distinct from **device session** — a login session
+  survives reconnects, a device session does not.
+
+- **Access token** — Bounded-lifetime JWT (12h) in the `access_token` cookie, presented on every
+  request. Stateless, carries the user and the login session it belongs to. Its lifetime bounds
+  revocation lag, not exposure — revoking the login session is what ends access.
+
+- **Refresh token** — Long-lived credential whose only power is to mint a new access token for
+  its login session. Never sent on ordinary API requests.
+
+- **Token family** — The chain of refresh tokens descended from one login. Rotation replaces the
+  current member with its successor; the family is the unit that reuse detection acts on.
+
+- **Reuse detection** — Presenting a refresh token that has already been rotated away. Since a
+  legitimate client always holds the newest member, reuse means the credential was copied, and
+  the whole family is revoked.
+
+- **Deny key** — A short-lived cache entry marking a login session as revoked, checked on every
+  authenticated request. Makes revocation take effect on the session's next request rather than
+  waiting for its access token to expire. Held only as long as the longest access token could
+  still be alive.
+
+## On-the-go Audio (renditions & streaming)
 
 - **Source / Original** — The untouched file on disk that the crawler found (FLAC, mp3, etc.).
   In the quality model `original` is the top tier and always available.

@@ -141,12 +141,13 @@ model Invitation {
 }
 
 model User {
-  id         Int           @id @default(autoincrement())
-  created_at DateTime      @default(now())
-  updated_at DateTime      @default(now()) @updatedAt
-  email      String        @unique
-  type       UserType
-  settings   UserSettings?
+  id             Int            @id @default(autoincrement())
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @default(now()) @updatedAt
+  email          String         @unique
+  type           UserType
+  settings       UserSettings?
+  login_sessions LoginSession[]
 }
 
 enum UserType {
@@ -212,4 +213,41 @@ model RenditionJob {
 
   @@unique([audio_checksum, tier])
   @@index([status, priority, enqueued_at])
+}
+
+model LoginSession {
+  id                  Int            @id @default(autoincrement())
+  user_id             Int
+  user                User           @relation(fields: [user_id], references: [id])
+  device_id           String
+  device_label        String         @db.VarChar(64)
+  last_seen_at        DateTime       @default(now())
+  revoked_at          DateTime?
+  idle_expires_at     DateTime
+  absolute_expires_at DateTime
+  refresh_tokens      RefreshToken[]
+  created_at          DateTime       @default(now())
+  updated_at          DateTime       @default(now()) @updatedAt
+
+  @@unique([user_id, device_id])
+  @@index([user_id])
+  @@index([revoked_at])
+}
+
+model RefreshToken {
+  id                Int           @id @default(autoincrement())
+  token_hash        String        @unique
+  login_session_id  Int
+  login_session     LoginSession  @relation(fields: [login_session_id], references: [id], onDelete: Cascade)
+  rotated_at        DateTime?
+  rotated_to_id     Int?          @unique
+  rotated_to        RefreshToken? @relation("TokenRotation", fields: [rotated_to_id], references: [id], onDelete: SetNull)
+  rotated_from      RefreshToken? @relation("TokenRotation")
+  expires_at        DateTime
+  issued_ip         String
+  issued_user_agent String
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @default(now()) @updatedAt
+
+  @@index([login_session_id])
 }

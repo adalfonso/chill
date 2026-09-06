@@ -106,3 +106,13 @@ export type Rendition = Prisma.RenditionModel
  * 
  */
 export type RenditionJob = Prisma.RenditionJobModel
+/**
+ * Model LoginSession
+ * 
+ */
+export type LoginSession = Prisma.LoginSessionModel
+/**
+ * Model RefreshToken
+ * 
+ */
+export type RefreshToken = Prisma.RefreshTokenModel

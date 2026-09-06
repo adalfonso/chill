@@ -23,7 +23,7 @@ export const App = () => {
   // One-time initialization on mount
   effect(() => {
     unlockAudio();
-    api.cast.getCastId.query().then(setCastAppId);
+    api.cast.getCastId.query().then(setCastAppId).catch(console.error);
   });
 
   effect(() => {

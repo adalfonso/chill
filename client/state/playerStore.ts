@@ -16,6 +16,7 @@ export { MobileDisplayMode } from "@common/types";
 import { PreCastPayload } from "@client/lib/cast/types";
 import { api } from "@client/client";
 import { shuffle as _shuffle, findIndex } from "@common/commonUtils";
+import { maybeRefresh, refresh } from "@client/lib/auth/refresh";
 
 export let audio = new Audio();
 export let crossover = new Audio();
@@ -54,6 +55,77 @@ const unlockCrossover = () => {
   crossover_unlocked = true;
   crossover.play().catch(() => {});
   crossover.pause();
+};
+
+// Tracks the src we last attempted to recover, so a second `error` on that
+// same src (e.g. a genuinely broken file, not just a dead token) doesn't
+// retry forever. Module-level rather than per-attach: attachMediaErrorBackstop
+// re-runs on every track change (Scrubber's effect), and a new track always
+// has a different src, so this naturally resets without explicit clearing.
+let recovered_src: string | null = null;
+
+/**
+ * Recover playback after a media element's `error` event
+ *
+ * A dead access token can't be intercepted in the request path the way a
+ * tRPC call can -- an `<audio>` element's failed request only surfaces as
+ * its `error` event. Refreshes once through the shared single-flight
+ * promise, then re-assigns `src` to retry with the fresh cookie. Only the
+ * actively-playing element's position is restored and resumed; the
+ * crossover element is just a preload with nothing playing yet to resume.
+ *
+ * @param el - the audio element that fired `error`
+ */
+const recoverFromMediaError = async (el: HTMLAudioElement): Promise<void> => {
+  if (!el.src || recovered_src === el.src) {
+    return;
+  }
+
+  recovered_src = el.src;
+
+  const is_active_element = el === audio;
+  const resume_at = el.currentTime;
+  const src = el.src;
+
+  try {
+    await refresh();
+  } catch {
+    // Genuinely dead session or a network failure -- nothing more to do
+    // here; the user sees playback stop rather than loop retrying.
+    return;
+  }
+
+  el.src = src;
+
+  if (is_active_element) {
+    el.currentTime = resume_at;
+    el.play().catch(() => {});
+  }
+};
+
+/**
+ * Attach the media error backstop to both audio elements
+ *
+ * Cover art is deliberately excluded (ADR-0009 KTD11): nginx serves it
+ * unauthenticated, so an image error there is a cache miss, not a 401.
+ *
+ * @returns a cleanup function that removes both listeners
+ */
+export const attachMediaErrorBackstop = (): (() => void) => {
+  const handleAudioError = () => {
+    recoverFromMediaError(audio).catch(() => {});
+  };
+  const handleCrossoverError = () => {
+    recoverFromMediaError(crossover).catch(() => {});
+  };
+
+  audio.addEventListener("error", handleAudioError);
+  crossover.addEventListener("error", handleCrossoverError);
+
+  return () => {
+    audio.removeEventListener("error", handleAudioError);
+    crossover.removeEventListener("error", handleCrossoverError);
+  };
 };
 
 export type PlayLoad = PlayPayload & {
@@ -147,6 +219,11 @@ export const pause = () => {
 };
 
 export const play = (payload: PlayLoad) => {
+  // Playback-start trigger for the refresh lifecycle (ADR-0009 U7). Fired
+  // and forgotten -- never awaited here, since play() runs inside the iOS
+  // audio-unlock gesture and an await before .play() would break the unlock.
+  maybeRefresh().catch(() => {});
+
   const {
     tracks,
     cast_info: cast_info_incoming = null,
@@ -295,6 +372,13 @@ export const previous = (payload: { is_virtual?: boolean }) => {
 };
 
 export const next = (payload: { auto?: boolean; is_virtual?: boolean }) => {
+  // Track-advance trigger for the refresh lifecycle (ADR-0009 U7, R3) --
+  // fired and forgotten, same reasoning as play()'s trigger. Auto-advance
+  // (from Scrubber.tsx's timeupdate handler) is the trigger that actually
+  // keeps a long, unattended playlist alive; a manual click benefits too
+  // but isn't the scenario this closes.
+  maybeRefresh().catch(() => {});
+
   const { auto = false, is_virtual = false } = payload;
 
   let idx = index.value + 1;
@@ -481,8 +565,20 @@ const load = (use_crossover = false) => {
     audio.src = mediaLoadUrl(now_playing.value?.id);
   }
 
+  // The crossover element preloads one track ahead of what's audible, so a
+  // stale access token here fails silently until it becomes the active
+  // track. Refresh completes before the URL is assigned (never awaited
+  // synchronously -- load() itself stays synchronous so it never introduces
+  // an await into a caller running inside the iOS gesture window). A failed
+  // refresh still assigns the URL; U8's error backstop covers that case.
   if (next_playing.value) {
-    crossover.src = mediaLoadUrl(next_playing.value?.id);
+    const next_id = next_playing.value.id;
+
+    maybeRefresh()
+      .catch(() => {})
+      .finally(() => {
+        crossover.src = mediaLoadUrl(next_id);
+      });
   }
 };
 

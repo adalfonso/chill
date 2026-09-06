@@ -10,8 +10,7 @@ const LOSSLESS_TYPES = new Set(["flac", "wav", "aiff", "alac"]);
 const NO_TANDEM_MULTIPLIER = 2;
 
 export type TierResolution =
-  | { convert: false }
-  | { convert: true; target_kbps: number };
+  { convert: false } | { convert: true; target_kbps: number };
 
 /**
  * Decide whether a track needs transcoding for a requested quality tier, and

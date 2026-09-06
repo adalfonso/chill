@@ -1,60 +1,169 @@
-import jwt from "jsonwebtoken";
 import path from "node:path";
 import { Request, Response } from "express";
 import { nanoid } from "nanoid";
+import { Prisma } from "@prisma/client";
 
 import { ChillWss } from "@server/registerServerSocket";
-import { blacklistToken } from "@server/lib/data/Cache";
-import { env } from "@server/init";
-
-// Six hours
-export const jwt_expiration_seconds = 3600 * 6;
+import { db } from "@server/lib/data/db";
+import {
+  loginSessionService,
+  RotateResult,
+} from "@server/lib/auth/LoginSession";
+import { revokeAndDisconnect } from "@server/lib/auth/revokeAndDisconnect";
+import { signAccessToken } from "@server/lib/Token";
+import {
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+  clearAccessTokenCookieOptions,
+  clearRefreshTokenCookieOptions,
+  readOrCreateDeviceId,
+  recoverOrCreateSessionId,
+  setAuthCookies,
+} from "@server/lib/auth/cookies";
 
 export const AuthController = {
-  login: (_req: Request, res: Response) =>
+  loginPage: (_req: Request, res: Response) =>
     res.sendFile(path.join(path.resolve(), "views/login.html")),
 
   logout: (wss: ChillWss) => async (req: Request, res: Response) => {
-    const token = req.cookies?.access_token;
-
-    wss.drop(req._user.session_id);
-    if (token) {
-      await blacklistToken(token);
-    } else {
-      console.warn(
-        "Unable to find access_token cookie when a user logged out",
-        req.user?.email,
-      );
+    try {
+      // No owner_user_id: req._user.login_session_id already came from a
+      // verified, deny-list-checked access token, so there's nothing left
+      // to scope against (see revokeAndDisconnect's docblock).
+      await revokeAndDisconnect(req._user.login_session_id, wss);
+    } catch (err) {
+      console.error("Failed to revoke login session on logout", { err });
+      return res.status(500).json({ error: "Failed to log out" });
     }
 
-    res.clearCookie("access_token");
-    res.redirect("/auth/login");
+    res
+      .clearCookie(ACCESS_TOKEN_COOKIE, clearAccessTokenCookieOptions())
+      .clearCookie(REFRESH_TOKEN_COOKIE, clearRefreshTokenCookieOptions())
+      .status(200)
+      .json({ ok: true });
   },
 
-  authCallback: (req: Request, res: Response) => {
-    const signingCallback = async (
-      err: Error | null,
-      token: string | undefined,
-    ) => {
-      if (err || token === undefined) {
-        console.error(`Failed to create JWT: ${err}`);
-        return res.redirect("/");
+  authCallback: async (req: Request, res: Response) => {
+    if (req.user === undefined) {
+      console.error("OAuth callback reached authCallback without req.user");
+      return res.redirect("/auth/login?failure=true");
+    }
+
+    const device_id = readOrCreateDeviceId(req, res);
+    const session_id = nanoid(4);
+
+    let login_session_id: number;
+    let refresh_token: string;
+
+    try {
+      ({ login_session_id, refresh_token } = await loginSessionService
+        .instance()
+        .create({
+          user_id: req.user.id,
+          device_id,
+          user_agent: req.headers["user-agent"] ?? "",
+          ip: req.ip ?? "",
+        }));
+    } catch (err) {
+      console.error("Failed to create login session during OAuth callback", {
+        err,
+      });
+      return res.redirect("/auth/login?failure=true");
+    }
+
+    try {
+      const access_token = signAccessToken({
+        user_id: req.user.id,
+        email: req.user.email,
+        session_id,
+        login_session_id,
+      });
+
+      setAuthCookies(res, access_token, refresh_token).redirect("/");
+    } catch (err) {
+      console.error(`Failed to create JWT: ${err}`);
+      res.redirect("/");
+    }
+  },
+
+  /**
+   * Rotate a refresh token, minting a fresh access/refresh pair
+   *
+   * Requires a non-simple header (defense in depth alongside the refresh
+   * cookie's SameSite=Strict and scoped path) and re-reads the User row,
+   * refusing to mint if it is gone. Takes `wss` (curried, matching
+   * `logout`) so a reuse-triggered revocation can drop the live sockets of
+   * the session it just revoked -- `LoginSessionService` itself stays
+   * ignorant of the socket server (see `LoginSession.ts`'s `revoke` docblock).
+   *
+   * @param wss - socket server, used only when rotation reveals reuse
+   * @param req - express request
+   * @param res - express response
+   */
+  refresh: (wss: ChillWss) => async (req: Request, res: Response) => {
+    if (typeof req.headers["x-requested-with"] !== "string") {
+      return res.status(400).json({ error: "Missing required header" });
+    }
+
+    const refresh_token = req.cookies?.[REFRESH_TOKEN_COOKIE];
+
+    if (typeof refresh_token !== "string") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    let result: RotateResult;
+    let login_session: Prisma.LoginSessionGetPayload<{
+      include: { user: true };
+    }> | null;
+
+    try {
+      result = await loginSessionService.instance().rotate({
+        refresh_token,
+        user_agent: req.headers["user-agent"] ?? "",
+        ip: req.ip ?? "",
+      });
+
+      if (!result.ok) {
+        // Only a reuse-triggered revocation carries this -- an invalid,
+        // expired, or already-revoked token has no newly-live sockets to
+        // drop beyond what was already dropped when the family was first
+        // revoked.
+        if (result.revoked_login_session_id !== undefined) {
+          wss.dropByLoginSession(result.revoked_login_session_id);
+        }
+        return res.status(401).json({ error: "Unauthorized" });
       }
 
-      res
-        .cookie("access_token", token, {
-          httpOnly: true,
-          sameSite: "lax",
-          secure: env.NODE_ENV === "production",
-        })
-        .redirect("/");
-    };
+      login_session = await db.loginSession.findUnique({
+        where: { id: result.login_session_id },
+        include: { user: true },
+      });
+    } catch (err) {
+      console.error("Failed to rotate refresh token during refresh", { err });
+      return res.status(500).json({ error: "Failed to refresh" });
+    }
 
-    jwt.sign(
-      { user: req.user, session_id: nanoid(4) },
-      env.SIGNING_KEY,
-      { expiresIn: jwt_expiration_seconds },
-      signingCallback,
-    );
+    if (login_session === null) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const { user } = login_session;
+    const session_id = recoverOrCreateSessionId(req);
+
+    try {
+      const access_token = signAccessToken({
+        user_id: user.id,
+        email: user.email,
+        session_id,
+        login_session_id: result.login_session_id,
+      });
+
+      setAuthCookies(res, access_token, result.refresh_token)
+        .status(200)
+        .json({ ok: true });
+    } catch (err) {
+      console.error(`Failed to create JWT during refresh: ${err}`);
+      res.status(500).json({ error: "Failed to refresh" });
+    }
   },
 };
