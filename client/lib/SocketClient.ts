@@ -1,3 +1,5 @@
+import { websocketUrl } from "./serverUrl";
+
 /**
  * Ignore forced reconnects that land within this window of the last
  * connect() call. Absorbs bursts of visibility/online events (rapid app
@@ -94,10 +96,7 @@ export class SocketClient<
 
     this.#last_connect_at = Date.now();
 
-    const host = window.location.host;
-    const protocol = window.location.protocol === "http:" ? "ws" : "wss";
-
-    this.#ws = new WebSocket(`${protocol}://${host}/ws`);
+    this.#ws = new WebSocket(websocketUrl("/ws"));
 
     this.#ws.onopen = (event) => {
       console.info("Connected to WebSocket", { event });

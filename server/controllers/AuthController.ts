@@ -10,7 +10,11 @@ import {
   RotateResult,
 } from "@server/lib/auth/LoginSession";
 import { revokeAndDisconnect } from "@server/lib/auth/revokeAndDisconnect";
-import { signAccessToken } from "@server/lib/Token";
+import {
+  access_token_payload_schema,
+  signAccessToken,
+  verifyAndDecodeJwt,
+} from "@server/lib/Token";
 import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
@@ -20,6 +24,10 @@ import {
   recoverOrCreateSessionId,
   setAuthCookies,
 } from "@server/lib/auth/cookies";
+
+// Must match `appId` in capacitor.config.ts. Used to hand control back to the
+// native app after Google login completes in a Custom Tab.
+const NATIVE_APP_SCHEME = "com.adalfonso.chill";
 
 export const AuthController = {
   loginPage: (_req: Request, res: Response) =>
@@ -44,8 +52,15 @@ export const AuthController = {
   },
 
   authCallback: async (req: Request, res: Response) => {
+    const is_native = req.query?.state === "native";
+
     if (req.user === undefined) {
       console.error("OAuth callback reached authCallback without req.user");
+
+      if (is_native) {
+        return res.redirect(nativeCallbackUrl());
+      }
+
       return res.redirect("/auth/login?failure=true");
     }
 
@@ -68,6 +83,11 @@ export const AuthController = {
       console.error("Failed to create login session during OAuth callback", {
         err,
       });
+
+      if (is_native) {
+        return res.redirect(nativeCallbackUrl());
+      }
+
       return res.redirect("/auth/login?failure=true");
     }
 
@@ -79,9 +99,24 @@ export const AuthController = {
         login_session_id,
       });
 
+      if (is_native) {
+        // This response is served to the Custom Tab's own Chrome instance,
+        // which has a cookie jar separate from the app's WebView, so
+        // `res.cookie` here would never reach the app. Hand the signed
+        // tokens to the app via deep link instead and let
+        // `nativeTokenExchange` set the cookies from a request that
+        // actually originates from the WebView.
+        return res.redirect(nativeCallbackUrl({ access_token, refresh_token }));
+      }
+
       setAuthCookies(res, access_token, refresh_token).redirect("/");
     } catch (err) {
       console.error(`Failed to create JWT: ${err}`);
+
+      if (is_native) {
+        return res.redirect(nativeCallbackUrl());
+      }
+
       res.redirect("/");
     }
   },
@@ -166,4 +201,56 @@ export const AuthController = {
       res.status(500).json({ error: "Failed to refresh" });
     }
   },
+
+  /**
+   * Redeem a native login's deep-linked access/refresh token pair for cookies
+   *
+   * The Custom Tab used for native Google login has its own cookie jar,
+   * separate from the app's WebView, so the cookies set at the end of the
+   * web OAuth flow never reach the app. The deep link instead carries the
+   * already-signed access token and the opaque refresh token, and the
+   * WebView redeems them here so `Set-Cookie` lands in its own cookie jar.
+   *
+   * @param req - request with `access_token` and `refresh_token` (from the
+   *   deep link) in the JSON body
+   * @param res - response
+   */
+  nativeTokenExchange: async (req: Request, res: Response) => {
+    const access_token: unknown = req.body?.access_token;
+    const refresh_token: unknown = req.body?.refresh_token;
+
+    if (typeof access_token !== "string" || typeof refresh_token !== "string") {
+      return res.status(400).json({ error: "Missing token" });
+    }
+
+    try {
+      await verifyAndDecodeJwt(access_token, access_token_payload_schema);
+    } catch (error) {
+      console.error("Failed to verify native auth token", error);
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    setAuthCookies(res, access_token, refresh_token).status(204).send();
+  },
+};
+
+/**
+ * Build the native app's deep-link callback URL
+ *
+ * With no `tokens`, the app regains focus (the Custom Tab closes on any
+ * `auth/callback` link) without completing login -- used on every failure
+ * path above.
+ *
+ * @param tokens - the access/refresh pair to hand off, omitted on failure
+ * @returns the `NATIVE_APP_SCHEME://auth/callback` deep link
+ */
+const nativeCallbackUrl = (tokens?: {
+  access_token: string;
+  refresh_token: string;
+}): string => {
+  if (tokens === undefined) {
+    return `${NATIVE_APP_SCHEME}://auth/callback`;
+  }
+
+  return `${NATIVE_APP_SCHEME}://auth/callback?${new URLSearchParams(tokens).toString()}`;
 };

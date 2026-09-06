@@ -14,10 +14,17 @@ export default (wss: ChillWss) => {
   router.post("/logout", isAuthenticatedApi, AuthController.logout(wss));
   router.post("/refresh", AuthController.refresh(wss));
 
-  router.get(
-    "/google",
-    passport.authenticate("google", { scope: ["email", "profile"] }),
-  );
+  router.get("/google", (req, res, next) => {
+    // Threaded through as an OAuth `state` value (no server session exists to
+    // stash it in) so `/google/cb` knows to hand off to the native app via
+    // deep link instead of redirecting the browser to "/".
+    const state = req.query.platform === "native" ? "native" : undefined;
+
+    return passport.authenticate("google", {
+      scope: ["email", "profile"],
+      state,
+    })(req, res, next);
+  });
 
   router.get(
     "/google/cb",
@@ -27,6 +34,8 @@ export default (wss: ChillWss) => {
     }),
     AuthController.authCallback,
   );
+
+  router.post("/native/exchange", AuthController.nativeTokenExchange);
 
   return router;
 };
