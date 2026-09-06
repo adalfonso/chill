@@ -1,4 +1,4 @@
-import { authed_procedure, router } from "@server/trpc";
+import { procedure, router } from "@server/trpc";
 import {
   LoginSessionController,
   schema,
@@ -6,11 +6,9 @@ import {
 
 export const LoginSessionRouter = (routes: typeof router) =>
   routes({
-    list: authed_procedure.query(LoginSessionController.list),
-    revoke: authed_procedure
+    list: procedure.query(LoginSessionController.list),
+    revoke: procedure
       .input(schema.revoke)
       .mutation(LoginSessionController.revoke),
-    revokeOthers: authed_procedure.mutation(
-      LoginSessionController.revokeOthers,
-    ),
+    revokeOthers: procedure.mutation(LoginSessionController.revokeOthers),
   });

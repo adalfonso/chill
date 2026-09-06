@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { AuthedRequest } from "@server/trpc";
+import { Request } from "@server/trpc";
 import { db } from "@server/lib/data/db";
 import { revokeAndDisconnect } from "@server/lib/auth/revokeAndDisconnect";
 import { LoginSessionDto } from "@common/types";
@@ -50,7 +50,7 @@ export const LoginSessionController = {
    *   material or `device_id`. Revoked and expired rows are hidden, not
    *   deleted: reuse-detection forensics depend on them surviving to prune.
    */
-  list: async ({ ctx: { token } }: AuthedRequest) => {
+  list: async ({ ctx: { token } }: Request) => {
     const now = new Date();
 
     const sessions = await db.loginSession.findMany({
@@ -86,7 +86,7 @@ export const LoginSessionController = {
   revoke: async ({
     ctx: { req, token },
     input: { login_session_id },
-  }: AuthedRequest<typeof schema.revoke>) => {
+  }: Request<typeof schema.revoke>) => {
     const owned = await revokeAndDisconnect(login_session_id, req.app._wss, {
       owner_user_id: token.user_id,
     });
@@ -110,7 +110,7 @@ export const LoginSessionController = {
    * @returns the number of other sessions revoked
    * @throws `UNAUTHORIZED` if the caller's own session is already revoked
    */
-  revokeOthers: async ({ ctx: { req, token } }: AuthedRequest) => {
+  revokeOthers: async ({ ctx: { req, token } }: Request) => {
     const caller_session = await db.loginSession.findUnique({
       where: { id: token.login_session_id },
       select: { revoked_at: true },
