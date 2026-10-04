@@ -35,6 +35,19 @@ export const AuthController = {
   loginPage: (_req: Request, res: Response) =>
     res.sendFile(path.join(path.resolve(), "views/login.html")),
 
+  /**
+   * Serve the login page's script
+   *
+   * Kept out of login.html because the production CSP only allows
+   * same-origin scripts; unauthenticated like the login page itself.
+   *
+   * @param _req - request
+   * @param res - response
+   * @returns resolves once the file has been sent
+   */
+  loginScript: (_req: Request, res: Response) =>
+    res.sendFile(path.join(path.resolve(), "views/login.js")),
+
   logout: (wss: ChillWss) => async (req: Request, res: Response) => {
     try {
       // No owner_user_id: req._user.login_session_id already came from a

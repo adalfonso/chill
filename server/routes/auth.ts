@@ -10,6 +10,7 @@ export default (wss: ChillWss) => {
   const router = express.Router();
 
   router.get("/login", AuthController.loginPage);
+  router.get("/login.js", AuthController.loginScript);
   // POST (not GET) so logout can report failure to the caller instead of
   // an anchor tag doing a fire-and-forget navigation (ADR-0009 R8).
   router.post("/logout", isAuthenticatedApi, AuthController.logout(wss));
