@@ -38,6 +38,14 @@ if (new URLSearchParams(location.search).get("failure") === "true") {
     spinner.style.display = "none";
   };
 
+  // Back to the login screen with the error message showing, for every way a
+  // native login can fail (denied or failed OAuth, lost verifier, rejected or
+  // unreachable exchange).
+  var failLogin = function () {
+    document.getElementById("login-error").hidden = false;
+    showLogin();
+  };
+
   var VERIFIER_KEY = "chill_native_verifier";
 
   // base64url without padding, matching the server's challenge format
@@ -94,8 +102,11 @@ if (new URLSearchParams(location.search).get("failure") === "true") {
     var verifier = localStorage.getItem(VERIFIER_KEY);
     localStorage.removeItem(VERIFIER_KEY);
 
+    // No code means the server reported a failed or denied login
+    // (`failure=true`); no verifier means it was lost (e.g. storage cleared)
+    // and the code cannot be redeemed.
     if (!code || !verifier) {
-      showLogin();
+      failLogin();
       return;
     }
 
@@ -113,8 +124,8 @@ if (new URLSearchParams(location.search).get("failure") === "true") {
           window.location.href = "/";
           return;
         }
-        showLogin();
+        failLogin();
       })
-      .catch(showLogin);
+      .catch(failLogin);
   });
 })();

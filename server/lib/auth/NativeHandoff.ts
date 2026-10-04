@@ -21,6 +21,10 @@ export type NativeHandoff = {
  */
 export const HANDOFF_TTL_SECONDS = 60;
 
+// Must match `appId` in capacitor.config.ts. Used to hand control back to the
+// native app after Google login completes in a Custom Tab.
+const NATIVE_APP_SCHEME = "com.adalfonso.chill";
+
 const STATE_PREFIX = "native.";
 const KEY_PREFIX = "native_handoff:";
 const CODE_BYTES = 32;
@@ -66,6 +70,26 @@ export const challengeFromState = (state: unknown): string | undefined => {
   const challenge = state.slice(STATE_PREFIX.length);
 
   return isValidChallenge(challenge) ? challenge : undefined;
+};
+
+/**
+ * Build the native app's deep-link callback URL
+ *
+ * With a `code`, the app redeems it to finish login. Without one, the app
+ * still regains focus (the Custom Tab closes on any `auth/callback` link) but
+ * is told login failed via `failure=true` -- used on every failure path of the
+ * OAuth callback.
+ *
+ * @param code - the single-use handoff code, omitted on failure
+ * @returns the `NATIVE_APP_SCHEME://auth/callback` deep link
+ */
+export const nativeCallbackUrl = (code?: string): string => {
+  const query =
+    code === undefined
+      ? new URLSearchParams({ failure: "true" })
+      : new URLSearchParams({ code });
+
+  return `${NATIVE_APP_SCHEME}://auth/callback?${query.toString()}`;
 };
 
 /**

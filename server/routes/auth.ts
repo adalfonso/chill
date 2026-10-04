@@ -1,10 +1,15 @@
-import express from "express";
+import express, { Request } from "express";
 import passport from "passport";
 
 import { AuthController } from "@controllers/AuthController";
 import { ChillWss } from "@server/registerServerSocket";
 import { isAuthenticatedApi } from "@server/middleware/isAuthenticated";
-import { isValidChallenge, nativeState } from "@server/lib/auth/NativeHandoff";
+import {
+  challengeFromState,
+  isValidChallenge,
+  nativeCallbackUrl,
+  nativeState,
+} from "@server/lib/auth/NativeHandoff";
 
 export default (wss: ChillWss) => {
   const router = express.Router();
@@ -42,10 +47,31 @@ export default (wss: ChillWss) => {
 
   router.get(
     "/google/cb",
-    passport.authenticate("google", {
-      session: false,
-      failureRedirect: "/auth/login?failure=true",
-    }),
+    (req, res, next) => {
+      const is_native = challengeFromState(req.query.state) !== undefined;
+
+      // A custom callback (rather than passport's `failureRedirect`) so a
+      // failed or denied native login can deep-link back to the app instead
+      // of stranding the user on the web login page inside the Custom Tab.
+      passport.authenticate(
+        "google",
+        { session: false },
+        (err: unknown, user: Request["user"] | false) => {
+          if (err && !is_native) {
+            return next(err);
+          }
+
+          if (err || !user) {
+            return is_native
+              ? res.redirect(nativeCallbackUrl())
+              : res.redirect("/auth/login?failure=true");
+          }
+
+          req.user = user;
+          next();
+        },
+      )(req, res, next);
+    },
     AuthController.authCallback,
   );
 
