@@ -12,7 +12,7 @@ import {
   convert as convertAudioTrack,
   remuxToCaf,
 } from "@server/lib/conversion";
-import { resolveTier } from "@server/lib/media/resolveTier";
+import { effectiveQuality, resolveTier } from "@server/lib/media/resolveTier";
 import { qualityToRenditionTier } from "@server/lib/media/renditionTiers";
 import {
   findRendition,
@@ -375,16 +375,20 @@ export const TrackController = {
         return res.sendStatus(401);
       }
 
-      const quality_setting =
+      const stored_setting =
         (
           await db.userSettings.findUnique({
             where: { user_id: req.user.id },
             select: { audio_quality: true },
           })
-        )?.audio_quality ?? null;
+        )?.audio_quality ?? AudioQuality.Original;
+
+      // Some sources (8-bit FLAC) are undecodable on WebKit, so Original
+      // may be bumped to a transcoding tier for them
+      const quality_setting = effectiveQuality(stored_setting, track);
 
       const stats = await fs.stat(track.path);
-      const resolution = resolveTier(quality_setting ?? AudioQuality.Original, {
+      const resolution = resolveTier(quality_setting, {
         file_type: track.file_type,
         effective_kbps: (stats.size * 8) / 1000 / track.duration.toNumber(),
       });

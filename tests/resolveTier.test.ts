@@ -1,4 +1,4 @@
-import { resolveTier } from "../server/lib/media/resolveTier";
+import { effectiveQuality, resolveTier } from "../server/lib/media/resolveTier";
 import { AudioQuality } from "../common/types";
 
 describe("resolveTier", () => {
@@ -47,4 +47,23 @@ describe("resolveTier", () => {
       }),
     ).toEqual({ convert: true, target_kbps: 64 });
   });
+});
+
+describe("effectiveQuality", () => {
+  it.each([
+    ["flac", 8, AudioQuality.Original, AudioQuality.High],
+    ["FLAC", 8, AudioQuality.Original, AudioQuality.High],
+    ["flac", 16, AudioQuality.Original, AudioQuality.Original],
+    ["flac", 24, AudioQuality.Original, AudioQuality.Original],
+    ["flac", 0, AudioQuality.Original, AudioQuality.Original],
+    ["mp3", 3, AudioQuality.Original, AudioQuality.Original],
+    ["flac", 8, AudioQuality.Low, AudioQuality.Low],
+  ])(
+    "%s @ %i-bit, setting %s -> %s",
+    (file_type, bits_per_sample, requested, expected) => {
+      expect(effectiveQuality(requested, { file_type, bits_per_sample })).toBe(
+        expected,
+      );
+    },
+  );
 });
