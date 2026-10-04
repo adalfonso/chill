@@ -1,9 +1,34 @@
 /** @jest-environment node */
+import crypto from "node:crypto";
+
 import { AuthController } from "../server/controllers/AuthController";
-import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from "../server/lib/auth/cookies";
+import {
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+} from "../server/lib/auth/cookies";
 
 jest.mock("../server/init", () => ({
   env: { SIGNING_KEY: "test-signing-key", NODE_ENV: "test" },
+}));
+
+// In-memory stand-in for the Redis commands the native handoff uses. `getDel`
+// removes the entry as it reads it, which the single-use tests rely on. The
+// `mock` prefix lets the hoisted jest.mock factory below reference these.
+const mockHandoffStore = new Map<string, string>();
+const mockCache = {
+  set: jest.fn(async (key: string, value: string) => {
+    mockHandoffStore.set(key, value);
+    return "OK";
+  }),
+  getDel: jest.fn(async (key: string) => {
+    const value = mockHandoffStore.get(key);
+    mockHandoffStore.delete(key);
+    return value ?? null;
+  }),
+};
+
+jest.mock("../server/lib/data/Cache", () => ({
+  Cache: { instance: () => mockCache },
 }));
 
 const create = jest.fn();
@@ -42,6 +67,7 @@ const makeRes = () => {
     json: jest.fn().mockImplementation(() => res),
     redirect: jest.fn().mockImplementation(() => res),
     sendFile: jest.fn().mockImplementation(() => res),
+    send: jest.fn().mockImplementation(() => res),
   };
   return res;
 };
@@ -51,6 +77,9 @@ beforeEach(() => {
   revoke.mockReset();
   rotate.mockReset();
   find_unique.mockReset();
+  mockHandoffStore.clear();
+  mockCache.set.mockClear();
+  mockCache.getDel.mockClear();
 });
 
 describe("AuthController.logout", () => {
@@ -253,5 +282,252 @@ describe("AuthController.authCallback", () => {
       expect.anything(),
     );
     expect(res.redirect).toHaveBeenCalledWith("/");
+  });
+});
+
+describe("AuthController.authCallback (native login)", () => {
+  const verifier = "verifier-only-the-app-knows";
+  const challenge = crypto
+    .createHash("sha256")
+    .update(verifier)
+    .digest("base64url");
+  const FAILURE_URL = "com.adalfonso.chill://auth/callback?failure=true";
+
+  // The callback still sets the non-auth device_id cookie; what must never
+  // happen is an auth cookie landing in the Custom Tab's own cookie jar.
+  const expectNoAuthCookies = (res: any) => {
+    const names = res.cookie.mock.calls.map(([name]: [string]) => name);
+
+    expect(names).not.toContain(ACCESS_TOKEN_COOKIE);
+    expect(names).not.toContain(REFRESH_TOKEN_COOKIE);
+  };
+
+  const nativeReq = (overrides: Record<string, unknown> = {}): any => ({
+    headers: {},
+    cookies: {},
+    query: { state: `native.${challenge}` },
+    user: { id: 1, email: "a@example.com" },
+    ...overrides,
+  });
+
+  it("deep-links back with a code, never the tokens, and sets no cookies", async () => {
+    create.mockResolvedValue({ login_session_id: 5, refresh_token: "tok" });
+    const res = makeRes();
+
+    await AuthController.authCallback(nativeReq(), res);
+
+    const [url] = res.redirect.mock.calls[0];
+    expect(url).toMatch(
+      /^com\.adalfonso\.chill:\/\/auth\/callback\?code=[A-Za-z0-9_-]+$/,
+    );
+    expect(url).not.toContain("tok");
+    expectNoAuthCookies(res);
+  });
+
+  it("parks the tokens, bound to the app's challenge, behind that code", async () => {
+    create.mockResolvedValue({ login_session_id: 5, refresh_token: "tok" });
+    const res = makeRes();
+
+    await AuthController.authCallback(nativeReq(), res);
+
+    const code = new URL(res.redirect.mock.calls[0][0]).searchParams.get(
+      "code",
+    );
+    const stored = JSON.parse(
+      [...mockHandoffStore.entries()].find(([key]) => key.includes(code!))![1],
+    );
+    expect(stored).toEqual({
+      access_token: expect.any(String),
+      refresh_token: "tok",
+      challenge,
+    });
+  });
+
+  it("deep-links a failure when passport didn't attach req.user", async () => {
+    const res = makeRes();
+
+    await AuthController.authCallback(nativeReq({ user: undefined }), res);
+
+    expect(res.redirect).toHaveBeenCalledWith(FAILURE_URL);
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  it("deep-links a failure when session creation throws", async () => {
+    create.mockRejectedValue(new Error("postgres down"));
+    const res = makeRes();
+
+    await AuthController.authCallback(nativeReq(), res);
+
+    expect(res.redirect).toHaveBeenCalledWith(FAILURE_URL);
+  });
+
+  it("deep-links a failure when the handoff cannot be written to the cache", async () => {
+    create.mockResolvedValue({ login_session_id: 5, refresh_token: "tok" });
+    mockCache.set.mockRejectedValueOnce(new Error("redis down"));
+    const res = makeRes();
+
+    await AuthController.authCallback(nativeReq(), res);
+
+    expect(res.redirect).toHaveBeenCalledWith(FAILURE_URL);
+    expectNoAuthCookies(res);
+  });
+
+  it("treats a malformed native state as a web login", async () => {
+    const res = makeRes();
+
+    await AuthController.authCallback(
+      nativeReq({
+        user: undefined,
+        query: { state: "native.not-a-challenge" },
+      }),
+      res,
+    );
+
+    expect(res.redirect).toHaveBeenCalledWith("/auth/login?failure=true");
+  });
+});
+
+describe("AuthController.nativeTokenExchange", () => {
+  const verifier = "verifier-only-the-app-knows";
+  const challenge = crypto
+    .createHash("sha256")
+    .update(verifier)
+    .digest("base64url");
+
+  /** Run the callback to mint a real handoff code, as the Custom Tab would */
+  const mintCode = async (): Promise<string> => {
+    create.mockResolvedValue({ login_session_id: 5, refresh_token: "tok" });
+    const res = makeRes();
+
+    await AuthController.authCallback(
+      {
+        headers: {},
+        cookies: {},
+        query: { state: `native.${challenge}` },
+        user: { id: 1, email: "a@example.com" },
+      } as any,
+      res,
+    );
+
+    return new URL(res.redirect.mock.calls[0][0]).searchParams.get("code")!;
+  };
+
+  const exchangeReq = (
+    body: unknown,
+    headers: Record<string, string> = { "x-requested-with": "fetch" },
+  ): any => ({ headers, body });
+
+  it("requires the anti-CSRF header", async () => {
+    const code = await mintCode();
+    const res = makeRes();
+
+    await AuthController.nativeTokenExchange(
+      exchangeReq({ code, verifier }, {}),
+      res,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.cookie).not.toHaveBeenCalled();
+    expect(mockCache.getDel).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["no body", undefined],
+    ["a missing verifier", { code: "abc" }],
+    ["a missing code", { verifier: "abc" }],
+    ["non-string values", { code: 1, verifier: { a: 1 } }],
+  ])("responds 400 for %s", async (_label, body) => {
+    const res = makeRes();
+
+    await AuthController.nativeTokenExchange(exchangeReq(body), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.cookie).not.toHaveBeenCalled();
+  });
+
+  it("responds 401 for an unknown code", async () => {
+    const res = makeRes();
+
+    await AuthController.nativeTokenExchange(
+      exchangeReq({ code: "never-issued", verifier }),
+      res,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.cookie).not.toHaveBeenCalled();
+  });
+
+  it("responds 401 for the wrong verifier, and burns the code", async () => {
+    const code = await mintCode();
+    const wrong = makeRes();
+
+    await AuthController.nativeTokenExchange(
+      exchangeReq({ code, verifier: "someone-elses-guess" }),
+      wrong,
+    );
+
+    expect(wrong.status).toHaveBeenCalledWith(401);
+    expect(wrong.cookie).not.toHaveBeenCalled();
+
+    const retry = makeRes();
+    await AuthController.nativeTokenExchange(
+      exchangeReq({ code, verifier }),
+      retry,
+    );
+
+    expect(retry.status).toHaveBeenCalledWith(401);
+  });
+
+  it("on success, sets both cookies and responds 204", async () => {
+    const code = await mintCode();
+    const res = makeRes();
+
+    await AuthController.nativeTokenExchange(
+      exchangeReq({ code, verifier }),
+      res,
+    );
+
+    expect(res.cookie).toHaveBeenCalledWith(
+      ACCESS_TOKEN_COOKIE,
+      expect.any(String),
+      expect.anything(),
+    );
+    expect(res.cookie).toHaveBeenCalledWith(
+      REFRESH_TOKEN_COOKIE,
+      "tok",
+      expect.anything(),
+    );
+    expect(res.status).toHaveBeenCalledWith(204);
+  });
+
+  it("works at most once: a second redemption of the same code is rejected", async () => {
+    const code = await mintCode();
+
+    await AuthController.nativeTokenExchange(
+      exchangeReq({ code, verifier }),
+      makeRes(),
+    );
+
+    const second = makeRes();
+    await AuthController.nativeTokenExchange(
+      exchangeReq({ code, verifier }),
+      second,
+    );
+
+    expect(second.status).toHaveBeenCalledWith(401);
+    expect(second.cookie).not.toHaveBeenCalled();
+  });
+
+  it("responds 500 (not an unhandled rejection) when the cache read fails", async () => {
+    mockCache.getDel.mockRejectedValueOnce(new Error("redis down"));
+    const res = makeRes();
+
+    await AuthController.nativeTokenExchange(
+      exchangeReq({ code: "abc", verifier }),
+      res,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.cookie).not.toHaveBeenCalled();
   });
 });

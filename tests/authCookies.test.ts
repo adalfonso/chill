@@ -13,6 +13,14 @@ jest.mock("../server/init", () => ({
   env: { SIGNING_KEY: "test-signing-key", NODE_ENV: "test" },
 }));
 
+// cookies.ts loads .env itself (its cookie names are resolved at import time);
+// stubbing dotenv keeps a developer's local INSECURE_DEV_COOKIES=true from
+// leaking into these tests -- each case sets the env it needs explicitly.
+jest.mock("dotenv", () => ({
+  __esModule: true,
+  default: { config: jest.fn() },
+}));
+
 describe("accessTokenCookieOptions", () => {
   it("carries maxAge, Secure, HttpOnly, SameSite=Lax, Path=/", () => {
     expect(accessTokenCookieOptions()).toEqual({
@@ -66,5 +74,64 @@ describe("clear-cookie options", () => {
     expect(clearRefreshTokenCookieOptions().path).toEqual(
       refreshTokenCookieOptions().path,
     );
+  });
+});
+
+describe("INSECURE_DEV_COOKIES dev switch", () => {
+  /**
+   * Load a fresh copy of cookies.ts under the given env
+   *
+   * The dev switch is resolved when the module is first imported, so each case
+   * needs its own module instance. `process.env` is restored afterwards so
+   * cases cannot leak into each other.
+   *
+   * @param node_env - the NODE_ENV to load the module under
+   * @param switch_value - the INSECURE_DEV_COOKIES value, or undefined to
+   *   leave it unset
+   * @returns the freshly loaded cookies module
+   */
+  const loadWithEnv = (node_env: string, switch_value?: string) => {
+    const saved = { ...process.env };
+    process.env.NODE_ENV = node_env;
+
+    if (switch_value === undefined) {
+      delete process.env.INSECURE_DEV_COOKIES;
+    } else {
+      process.env.INSECURE_DEV_COOKIES = switch_value;
+    }
+
+    try {
+      let mod!: typeof import("../server/lib/auth/cookies");
+      jest.isolateModules(() => {
+        // isolateModules only isolates synchronous require, not import()
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        mod = require("../server/lib/auth/cookies");
+      });
+      return mod;
+    } finally {
+      process.env = saved;
+    }
+  };
+
+  it("drops Secure and the __Secure- prefix in development when enabled", () => {
+    const cookies = loadWithEnv("development", "true");
+
+    expect(cookies.ACCESS_TOKEN_COOKIE).toBe("access_token");
+    expect(cookies.REFRESH_TOKEN_COOKIE).toBe("refresh_token");
+    expect(cookies.accessTokenCookieOptions().secure).toBe(false);
+    expect(cookies.refreshTokenCookieOptions().secure).toBe(false);
+  });
+
+  it.each([
+    ["development", undefined],
+    ["development", "false"],
+    ["production", "true"],
+    ["test", "true"],
+  ])("stays Secure and prefixed for NODE_ENV=%s, switch=%s", (env, value) => {
+    const cookies = loadWithEnv(env, value);
+
+    expect(cookies.ACCESS_TOKEN_COOKIE).toBe("__Secure-access_token");
+    expect(cookies.accessTokenCookieOptions().secure).toBe(true);
+    expect(cookies.refreshTokenCookieOptions().secure).toBe(true);
   });
 });

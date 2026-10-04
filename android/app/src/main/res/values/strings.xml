@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Chill</string>
+    <string name="title_activity_main">Chill</string>
+    <string name="package_name">com.adalfonso.chill</string>
+    <string name="custom_url_scheme">com.adalfonso.chill</string>
+</resources>

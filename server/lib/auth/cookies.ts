@@ -1,4 +1,5 @@
 import { CookieOptions, Request, Response } from "express";
+import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { nanoid } from "nanoid";
 
@@ -9,13 +10,40 @@ import {
 } from "@server/lib/auth/constants";
 import { isString } from "@common/commonUtils";
 
+/**
+ * Dev-only escape hatch for clients that refuse `Secure` cookies over plain
+ * HTTP -- Android's WebView drops them even for http://localhost, which
+ * leaves a locally-run native app unable to hold a login. Opt-in via
+ * INSECURE_DEV_COOKIES=true and honoured only when NODE_ENV is exactly
+ * "development" -- never in production, and never under test, so a deployed
+ * server can't serve non-Secure auth cookies and a dev `.env` can't loosen
+ * the cookie tests.
+ *
+ * Resolved at import time (the cookie names below are constants), which is
+ * before server/init has loaded .env, so dotenv is loaded here too. For the
+ * same reason this reads `process.env` directly rather than the `env`
+ * singleton, which is not populated yet at this point.
+ */
+const allow_insecure_cookies = (() => {
+  dotenv.config();
+
+  return (
+    process.env.NODE_ENV === "development" &&
+    process.env.INSECURE_DEV_COOKIES === "true"
+  );
+})();
+
 // __Host- requires Path=/, which is incompatible with the refresh cookie's
 // path scoping (see REFRESH_TOKEN_PATH below), so both use __Secure-
 // instead. The prefix silently drops the cookie if Secure isn't also set,
 // so `secure` is unconditional -- never NODE_ENV-gated -- for both cookies
-// below (ADR-0009 KTD10).
-export const ACCESS_TOKEN_COOKIE = "__Secure-access_token";
-export const REFRESH_TOKEN_COOKIE = "__Secure-refresh_token";
+// below (ADR-0009 KTD10). The one exception is the dev-only switch above,
+// which drops the prefix together with the Secure attribute: a prefixed
+// cookie without Secure is rejected outright.
+const cookie_prefix = allow_insecure_cookies ? "" : "__Secure-";
+
+export const ACCESS_TOKEN_COOKIE = `${cookie_prefix}access_token`;
+export const REFRESH_TOKEN_COOKIE = `${cookie_prefix}refresh_token`;
 
 // Scoped so the longest-lived credential never rides along on the hundreds
 // of /api/v1/media/* requests a listening session makes (ADR-0009 KTD10).
@@ -30,7 +58,7 @@ const DEVICE_ID_COOKIE = "device_id";
  */
 export const accessTokenCookieOptions = (): CookieOptions => ({
   httpOnly: true,
-  secure: true,
+  secure: !allow_insecure_cookies,
   sameSite: "lax",
   path: "/",
   maxAge: ACCESS_TOKEN_TTL_SECONDS * 1000,
@@ -48,7 +76,7 @@ export const accessTokenCookieOptions = (): CookieOptions => ({
  */
 export const refreshTokenCookieOptions = (): CookieOptions => ({
   httpOnly: true,
-  secure: true,
+  secure: !allow_insecure_cookies,
   sameSite: "strict",
   path: REFRESH_TOKEN_PATH,
   maxAge: IDLE_WINDOW_MS,
