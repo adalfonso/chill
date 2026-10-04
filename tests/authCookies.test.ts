@@ -13,6 +13,14 @@ jest.mock("../server/init", () => ({
   env: { SIGNING_KEY: "test-signing-key", NODE_ENV: "test" },
 }));
 
+// cookies.ts loads .env itself (its cookie names are resolved at import time);
+// stubbing dotenv keeps a developer's local INSECURE_DEV_COOKIES=true from
+// leaking into these tests -- each case sets the env it needs explicitly.
+jest.mock("dotenv", () => ({
+  __esModule: true,
+  default: { config: jest.fn() },
+}));
+
 describe("accessTokenCookieOptions", () => {
   it("carries maxAge, Secure, HttpOnly, SameSite=Lax, Path=/", () => {
     expect(accessTokenCookieOptions()).toEqual({
