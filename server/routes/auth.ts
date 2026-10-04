@@ -21,6 +21,20 @@ export default (wss: ChillWss) => {
   router.post("/logout", isAuthenticatedApi, AuthController.logout(wss));
   router.post("/refresh", AuthController.refresh(wss));
 
+  /**
+   * Start the Google OAuth flow
+   *
+   * A web login goes straight to Google. A native login (`platform=native`)
+   * must also bring a `challenge`, which is carried through Google in the
+   * OAuth `state` so the callback can bind the resulting handoff to the app
+   * that started it.
+   *
+   * @param req - request, with `platform` and (for native) `challenge` query
+   *   params
+   * @param res - response; 400 when a native login has no valid challenge
+   * @param next - next middleware, handed to passport
+   * @returns passport's redirect to Google, or the 400 response
+   */
   router.get("/google", (req, res, next) => {
     const is_native = req.query.platform === "native";
 

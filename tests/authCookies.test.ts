@@ -78,7 +78,18 @@ describe("clear-cookie options", () => {
 });
 
 describe("INSECURE_DEV_COOKIES dev switch", () => {
-  /** Load a fresh copy of cookies.ts under the given env */
+  /**
+   * Load a fresh copy of cookies.ts under the given env
+   *
+   * The dev switch is resolved when the module is first imported, so each case
+   * needs its own module instance. `process.env` is restored afterwards so
+   * cases cannot leak into each other.
+   *
+   * @param node_env - the NODE_ENV to load the module under
+   * @param switch_value - the INSECURE_DEV_COOKIES value, or undefined to
+   *   leave it unset
+   * @returns the freshly loaded cookies module
+   */
   const loadWithEnv = (node_env: string, switch_value?: string) => {
     const saved = { ...process.env };
     process.env.NODE_ENV = node_env;

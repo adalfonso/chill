@@ -3,6 +3,14 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+// Fail loudly: a missing value would otherwise build the URL
+// "undefined:undefined" and the native shell would point nowhere.
+if (!process.env.HOST || !process.env.APP_PORT) {
+  throw new Error(
+    "capacitor.config.ts needs HOST and APP_PORT set in .env (e.g. HOST=http://localhost, APP_PORT=3200)",
+  );
+}
+
 // Same source of truth the server uses to build its own OAuth callback URL
 // (see passportConfig.ts) — pointing the native shell anywhere else would
 // make it same-origin with a different server than the one it authenticates

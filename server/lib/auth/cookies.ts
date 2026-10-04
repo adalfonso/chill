@@ -20,7 +20,9 @@ import { isString } from "@common/commonUtils";
  * the cookie tests.
  *
  * Resolved at import time (the cookie names below are constants), which is
- * before server/init has loaded .env, so dotenv is loaded here too.
+ * before server/init has loaded .env, so dotenv is loaded here too. For the
+ * same reason this reads `process.env` directly rather than the `env`
+ * singleton, which is not populated yet at this point.
  */
 const allow_insecure_cookies = (() => {
   dotenv.config();
