@@ -1,10 +1,11 @@
-import { MAX_SEARCH_RESULTS_VISIBLE } from "../Search";
 import { SearchResult, SearchResultType } from "@common/types";
 import { SearchResultRow } from "./SearchResultRow";
 
 type SearchGroupProps = {
   type: SearchResultType;
   items: Array<SearchResult>;
+  /** How many of `items` to show before collapsing the rest */
+  visible: number;
   onExpand: () => void;
   onVisit: (r: SearchResult) => void;
 };
@@ -12,10 +13,11 @@ type SearchGroupProps = {
 export const SearchResultGroup = ({
   type,
   items,
+  visible,
   onExpand,
   onVisit,
 }: SearchGroupProps) => {
-  const hasMore = items.length > MAX_SEARCH_RESULTS_VISIBLE;
+  const hasMore = items.length > visible;
 
   return (
     <>
@@ -26,7 +28,7 @@ export const SearchResultGroup = ({
         {type.toUpperCase()}
       </h4>
 
-      {items.slice(0, MAX_SEARCH_RESULTS_VISIBLE).map((result) => (
+      {items.slice(0, visible).map((result) => (
         <SearchResultRow
           key={result.displayAs.join("|") + result.value}
           result={result}
