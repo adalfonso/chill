@@ -68,3 +68,51 @@ describe("clear-cookie options", () => {
     );
   });
 });
+
+describe("INSECURE_DEV_COOKIES dev switch", () => {
+  /** Load a fresh copy of cookies.ts under the given env */
+  const loadWithEnv = (node_env: string, switch_value?: string) => {
+    const saved = { ...process.env };
+    process.env.NODE_ENV = node_env;
+
+    if (switch_value === undefined) {
+      delete process.env.INSECURE_DEV_COOKIES;
+    } else {
+      process.env.INSECURE_DEV_COOKIES = switch_value;
+    }
+
+    try {
+      let mod!: typeof import("../server/lib/auth/cookies");
+      jest.isolateModules(() => {
+        // isolateModules only isolates synchronous require, not import()
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        mod = require("../server/lib/auth/cookies");
+      });
+      return mod;
+    } finally {
+      process.env = saved;
+    }
+  };
+
+  it("drops Secure and the __Secure- prefix in development when enabled", () => {
+    const cookies = loadWithEnv("development", "true");
+
+    expect(cookies.ACCESS_TOKEN_COOKIE).toBe("access_token");
+    expect(cookies.REFRESH_TOKEN_COOKIE).toBe("refresh_token");
+    expect(cookies.accessTokenCookieOptions().secure).toBe(false);
+    expect(cookies.refreshTokenCookieOptions().secure).toBe(false);
+  });
+
+  it.each([
+    ["development", undefined],
+    ["development", "false"],
+    ["production", "true"],
+    ["test", "true"],
+  ])("stays Secure and prefixed for NODE_ENV=%s, switch=%s", (env, value) => {
+    const cookies = loadWithEnv(env, value);
+
+    expect(cookies.ACCESS_TOKEN_COOKIE).toBe("__Secure-access_token");
+    expect(cookies.accessTokenCookieOptions().secure).toBe(true);
+    expect(cookies.refreshTokenCookieOptions().secure).toBe(true);
+  });
+});
