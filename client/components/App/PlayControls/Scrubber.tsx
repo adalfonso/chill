@@ -115,7 +115,7 @@ export const Scrubber = () => {
       <div className="time-tracking">
         <div className="current-time">
           {player.now_playing.value &&
-            AudioProgress.getTimeTracking(
+            AudioProgress.getElapsedTimeTracking(
               progress.value * player.now_playing.value.duration,
             )}
         </div>
