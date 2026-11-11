@@ -16,14 +16,9 @@ export default defineConfig({
   },
   plugins: [
     preact(),
-    // Gzip compression (fallback for older browsers)
-    viteCompression({
-      algorithm: "gzip",
-      ext: ".gz",
-      threshold: 1024,
-      deleteOriginFile: false,
-    }),
-    // Brotli compression (15-20% better than gzip, modern browsers)
+    // Brotli pre-compression, served by nginx via `brotli_static`. There is no
+    // gzip variant: nginx never served the .gz files, and browsers without
+    // Brotli fall back to nginx's on-the-fly `gzip on`.
     viteCompression({
       algorithm: "brotliCompress",
       ext: ".br",
