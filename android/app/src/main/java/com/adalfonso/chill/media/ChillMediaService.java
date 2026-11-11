@@ -1,6 +1,6 @@
 package com.adalfonso.chill.media;
 
-import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.Nullable;
 import androidx.media3.common.MediaItem;
@@ -20,8 +20,10 @@ import com.google.common.util.concurrent.ListenableFuture;
  * <p>Android Auto finds it through the manifest, binds to it even when the app
  * is not running, and reads the now-playing state from its media session. In
  * phase 1 the session is backed by a {@link MirrorPlayer} that mirrors the
- * WebView's player; with nothing to mirror, the browse root holds a single
- * message item that tells the driver to start playback on the phone.
+ * WebView's player. The browse root holds a single item: a message that tells
+ * the driver to start playback on the phone while there is nothing to mirror, and
+ * the current track once there is. Connected controllers are told when it
+ * changes, so the message goes away on its own.
  *
  * <p>Only Android Auto, the system media controller, and Chill itself may
  * connect (see {@link CallerAllowlist}).
@@ -31,16 +33,24 @@ public final class ChillMediaService extends MediaLibraryService {
 
   private static final String ROOT_ID = "chill-root";
   private static final String MESSAGE_ID = "chill-message";
+  private static final String NOW_PLAYING_ID = "chill-now-playing";
 
+  private final MediaBridgeHub hub = MediaBridgeHub.instance();
+  private final MediaBridgeHub.StateListener hubListener = this::onHubChanged;
+  private Handler handler;
   private MirrorPlayer player;
   private MediaLibrarySession session;
+  private String browseKey;
 
   /** Create the mirror player and the media session Android Auto connects to. */
   @Override
   public void onCreate() {
     super.onCreate();
-    player = new MirrorPlayer(Looper.getMainLooper(), MediaBridgeHub.instance());
+    handler = new Handler(Looper.getMainLooper());
+    player = new MirrorPlayer(Looper.getMainLooper(), hub);
     session = new MediaLibrarySession.Builder(this, player, new LibraryCallback()).build();
+    browseKey = browseKey(hub.state());
+    hub.addStateListener(hubListener);
   }
 
   /**
@@ -56,10 +66,41 @@ public final class ChillMediaService extends MediaLibraryService {
   /** Release the session and the player. */
   @Override
   public void onDestroy() {
+    hub.removeStateListener(hubListener);
+    handler.removeCallbacksAndMessages(null);
     session.release();
     player.detach();
     player.release();
     super.onDestroy();
+  }
+
+  /**
+   * Tell connected controllers to reload the browse list when what it shows changes.
+   *
+   * <p>The hub can change on the WebView's thread, so the check runs on the main
+   * looper. Without this, a car that opened the app before the phone was ready
+   * keeps showing the old message until the driver navigates away and back.
+   */
+  private void onHubChanged() {
+    handler.post(
+        () -> {
+          String key = browseKey(hub.state());
+
+          if (!key.equals(browseKey)) {
+            browseKey = key;
+            session.notifyChildrenChanged(ROOT_ID, 1, null);
+          }
+        });
+  }
+
+  /**
+   * A short string that changes exactly when the browse list should change.
+   *
+   * @param state the current snapshot
+   * @return one value for the message, and one per track shown
+   */
+  static String browseKey(MirrorState state) {
+    return state.showMessage() ? "message" : "track:" + state.trackId + ":" + state.title;
   }
 
   /**
@@ -92,7 +133,34 @@ public final class ChillMediaService extends MediaLibraryService {
         .build();
   }
 
-  /** Accepts allowed callers and serves the one-item message library. */
+  /**
+   * @param state the current snapshot, which has a local track
+   * @return an item naming the track playing on the phone; tapping it does nothing
+   */
+  private MediaItem nowPlayingItem(MirrorState state) {
+    return new MediaItem.Builder()
+        .setMediaId(NOW_PLAYING_ID)
+        .setMediaMetadata(
+            new MediaMetadata.Builder()
+                .setIsBrowsable(false)
+                .setIsPlayable(false)
+                .setTitle(state.title)
+                .setArtist(state.artist)
+                .setAlbumTitle(state.album)
+                .build())
+        .build();
+  }
+
+  /**
+   * @return the one item the browse root holds right now
+   */
+  private MediaItem currentChild() {
+    MirrorState state = hub.state();
+
+    return state.showMessage() ? messageItem() : nowPlayingItem(state);
+  }
+
+  /** Accepts allowed callers and serves the one-item library. */
   private final class LibraryCallback implements MediaLibrarySession.Callback {
 
     /**
@@ -133,7 +201,7 @@ public final class ChillMediaService extends MediaLibraryService {
      * @param page the page number
      * @param pageSize the page size
      * @param params the browse parameters, if any
-     * @return a list holding only the message item
+     * @return a list holding the message, or the current track once there is one
      */
     @Override
     public ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> onGetChildren(
@@ -144,19 +212,19 @@ public final class ChillMediaService extends MediaLibraryService {
         int pageSize,
         @Nullable LibraryParams params) {
       return Futures.immediateFuture(
-          LibraryResult.ofItemList(ImmutableList.of(messageItem()), params));
+          LibraryResult.ofItemList(ImmutableList.of(currentChild()), params));
     }
 
     /**
      * @param mediaSession the session being browsed
      * @param browser the controller browsing
      * @param mediaId the item asked for
-     * @return the root or the message item
+     * @return the root, or the item the root currently holds
      */
     @Override
     public ListenableFuture<LibraryResult<MediaItem>> onGetItem(
         MediaLibrarySession mediaSession, MediaSession.ControllerInfo browser, String mediaId) {
-      MediaItem item = ROOT_ID.equals(mediaId) ? rootItem() : messageItem();
+      MediaItem item = ROOT_ID.equals(mediaId) ? rootItem() : currentChild();
 
       return Futures.immediateFuture(LibraryResult.ofItem(item, null));
     }

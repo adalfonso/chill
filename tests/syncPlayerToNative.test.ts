@@ -254,6 +254,18 @@ describe("startNativeSync", () => {
     expect(last_state()).toMatchObject({ has_next: true, has_previous: true });
   });
 
+  it("accepts a duration that arrives as a numeric string (random tracks)", async () => {
+    // The random-tracks route returns the database decimal as a string
+    mock_player.now_playing.value = track({
+      duration: "245.5",
+      album_art_filename: null,
+    });
+    stop = startNativeSync();
+    await tick();
+
+    expect(last_state().track.duration_s).toBe(245.5);
+  });
+
   it("sends a NaN duration as 0 so native can parse it", async () => {
     mock_player.now_playing.value = track({
       duration: Number.NaN,

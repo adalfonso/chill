@@ -12,6 +12,7 @@ import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.session.LibraryResult;
+import androidx.media3.session.MediaLibraryService;
 import androidx.media3.session.MediaBrowser;
 import androidx.media3.session.SessionToken;
 import androidx.test.core.app.ApplicationProvider;
@@ -19,6 +20,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.collect.ImmutableList;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
@@ -91,6 +93,31 @@ public class ChillMediaServiceTest {
     browser = future.get().get(15, TimeUnit.SECONDS);
   }
 
+  /** Connect with a listener, so the test can see "reload the list" notifications. */
+  private void connectCounting(AtomicInteger changes) throws Exception {
+    SessionToken token = new SessionToken(context, new ComponentName(context, ChillMediaService.class));
+    AtomicReference<com.google.common.util.concurrent.ListenableFuture<MediaBrowser>> future =
+        new AtomicReference<>();
+    MediaBrowser.Listener listener =
+        new MediaBrowser.Listener() {
+          @Override
+          public void onChildrenChanged(
+              MediaBrowser b, String parentId, int itemCount, MediaLibraryService.LibraryParams params) {
+            changes.incrementAndGet();
+          }
+        };
+
+    onMain(() -> future.set(new MediaBrowser.Builder(context, token).setListener(listener).buildAsync()));
+    browser = future.get().get(15, TimeUnit.SECONDS);
+  }
+
+  private String rootChildTitle() throws Exception {
+    LibraryResult<ImmutableList<MediaItem>> children =
+        onMain(() -> browser.getChildren("chill-root", 0, 10, null)).get(10, TimeUnit.SECONDS);
+
+    return children.value.get(0).mediaMetadata.title.toString();
+  }
+
   private static MirrorState playingTrack() {
     return new MirrorState.Builder()
         .track("7", "Test Song", "Test Artist", "Test Album", 200_000)
@@ -127,6 +154,46 @@ public class ChillMediaServiceTest {
     assertEquals(
         context.getString(com.adalfonso.chill.R.string.car_start_on_phone),
         children.value.get(0).mediaMetadata.title.toString());
+  }
+
+  @Test
+  public void the_browse_list_follows_the_phone_and_tells_the_car_to_reload() throws Exception {
+    AtomicInteger changes = new AtomicInteger();
+    connectCounting(changes);
+    onMain(() -> browser.subscribe("chill-root", null));
+    String message = context.getString(com.adalfonso.chill.R.string.car_start_on_phone);
+    assertEquals(message, rootChildTitle());
+
+    // The phone becomes ready: the message must give way to the track on its own
+    hub.publish(playingTrack());
+    waitFor(() -> changes.get() >= 1);
+    assertEquals("Test Song", rootChildTitle());
+
+    // The phone signs out: back to the message
+    int before = changes.get();
+    hub.clear();
+    waitFor(() -> changes.get() > before);
+    assertEquals(message, rootChildTitle());
+  }
+
+  @Test
+  public void position_only_updates_do_not_reload_the_browse_list() throws Exception {
+    hub.publish(playingTrack());
+    AtomicInteger changes = new AtomicInteger();
+    connectCounting(changes);
+    onMain(() -> browser.subscribe("chill-root", null));
+    waitFor(() -> browser.getCurrentMediaItem() != null);
+    int before = changes.get();
+
+    hub.publish(
+        new MirrorState.Builder()
+            .track("7", "Test Song", "Test Artist", "Test Album", 200_000)
+            .playback(true, false, 90_000)
+            .queue(true, true)
+            .build());
+    Thread.sleep(800);
+
+    assertEquals(before, changes.get());
   }
 
   @Test

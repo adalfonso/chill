@@ -33,12 +33,15 @@ export const handleNativeCommand = (command: NativeMediaCommand): void => {
     next: () => useNext()({}),
     previous: () => usePrevious()(),
     seek: () => {
-      // Without a usable duration there is no fraction to seek to
-      if (typeof command.position_s !== "number" || !(track.duration > 0)) {
+      // Some routes send the duration as a numeric string, so coerce it; with
+      // no usable duration there is no fraction to seek to
+      const duration = Number(track.duration);
+
+      if (typeof command.position_s !== "number" || !(duration > 0)) {
         return;
       }
 
-      player.seek(toFraction(command.position_s, track.duration));
+      player.seek(toFraction(command.position_s, duration));
     },
   };
 

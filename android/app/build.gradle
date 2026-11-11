@@ -41,6 +41,8 @@ dependencies {
     // Android's own org.json is a stub in local unit tests, so use the real one
     testImplementation "org.json:json:$orgJsonVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    // The legacy MediaSessionCompat view, which is what Android Auto actually reads
+    androidTestImplementation "androidx.media:media:1.7.0"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
 }

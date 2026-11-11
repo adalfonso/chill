@@ -161,9 +161,11 @@ export const startNativeSync = (): (() => void) => {
  * no position signal. A next and a previous track exist whenever the queue has
  * more than one track, since the store wraps around at both ends. The remote
  * flag comes from the DeviceConnect outgoing connection: a virtual remote
- * play also sets the local player signals, so those cannot say it. A duration
- * that is not a finite number is sent as 0, which native treats as unknown;
- * sending NaN would make the native parse throw and freeze the car view.
+ * play also sets the local player signals, so those cannot say it. The duration
+ * is coerced to a number first, because some server routes (random tracks) send
+ * the database decimal as a string. One that is still not a finite number is
+ * sent as 0, which native treats as unknown; sending NaN would make the native
+ * parse throw and freeze the car view.
  *
  * @param buffering - whether playback is currently stalled
  * @returns the snapshot to publish
@@ -171,6 +173,7 @@ export const startNativeSync = (): (() => void) => {
 const buildState = (buffering: boolean): NativeMediaState => {
   const track = player.now_playing.value;
   const queue_length = player.playlist.value.length;
+  const duration = Number(track?.duration);
 
   return {
     track: track
@@ -179,7 +182,7 @@ const buildState = (buffering: boolean): NativeMediaState => {
           title: track.title,
           artist: track.artist,
           album: track.album,
-          duration_s: Number.isFinite(track.duration) ? track.duration : 0,
+          duration_s: Number.isFinite(duration) ? duration : 0,
           art_base64: track.album_art_filename
             ? (art_cache.get(track.album_art_filename) ?? null)
             : null,

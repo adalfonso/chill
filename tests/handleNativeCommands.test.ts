@@ -68,6 +68,14 @@ describe("handleNativeCommand", () => {
     expect(mock_seek).toHaveBeenCalledWith(1);
   });
 
+  it("seeks correctly when the duration arrives as a numeric string", () => {
+    mock_now_playing.value = { duration: "120" } as never;
+
+    handleNativeCommand({ action: "seek", position_s: 30 });
+
+    expect(mock_seek).toHaveBeenCalledWith(0.25);
+  });
+
   it("ignores a seek on a track with no usable duration", () => {
     mock_now_playing.value = { duration: 0 };
     handleNativeCommand({ action: "seek", position_s: 10 });
