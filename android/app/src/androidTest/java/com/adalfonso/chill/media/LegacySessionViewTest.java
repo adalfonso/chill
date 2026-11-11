@@ -14,6 +14,7 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import androidx.media3.common.util.UnstableApi;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
@@ -37,10 +38,12 @@ public class LegacySessionViewTest {
   private final MediaBridgeHub hub = MediaBridgeHub.instance();
   private MediaBrowserCompat browser;
   private MediaControllerCompat controller;
+  private final CopyOnWriteArrayList<MirrorCommand> commands = new CopyOnWriteArrayList<>();
 
   @Before
   public void setUp() {
     hub.clear();
+    hub.setCommandSink(commands::add);
   }
 
   @After
@@ -142,5 +145,38 @@ public class LegacySessionViewTest {
 
     assertEquals(0.0f, state().getPlaybackSpeed(), 0.001f);
     assertTrue(Math.abs(state().getPosition() - 60_000) < 1_500);
+  }
+
+  @Test
+  public void legacy_transport_controls_reach_the_web_player() throws Exception {
+    // Android Auto presses buttons through this older API, so each must become a command
+    hub.publish(track(true, 10_000));
+    connect();
+    waitUntil(() -> state() != null && state().getState() == PlaybackStateCompat.STATE_PLAYING);
+
+    controller.getTransportControls().pause();
+    waitUntil(() -> commands.size() >= 1);
+    assertEquals(MirrorCommand.Action.PAUSE, commands.get(0).action());
+
+    controller.getTransportControls().skipToNext();
+    waitUntil(() -> commands.size() >= 2);
+    assertEquals(MirrorCommand.Action.NEXT, commands.get(1).action());
+
+    controller.getTransportControls().seekTo(30_000);
+    waitUntil(() -> commands.size() >= 3);
+    assertEquals(MirrorCommand.Action.SEEK, commands.get(2).action());
+    assertEquals(30.0, commands.get(2).positionSeconds(), 0.001);
+  }
+
+  @Test
+  public void legacy_play_reaches_the_web_player_while_paused() throws Exception {
+    hub.publish(track(false, 10_000));
+    connect();
+    waitUntil(() -> state() != null && state().getState() == PlaybackStateCompat.STATE_PAUSED);
+
+    controller.getTransportControls().play();
+    waitUntil(() -> commands.size() >= 1);
+
+    assertEquals(MirrorCommand.Action.PLAY, commands.get(0).action());
   }
 }
