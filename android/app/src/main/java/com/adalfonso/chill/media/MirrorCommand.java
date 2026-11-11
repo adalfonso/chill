@@ -13,6 +13,11 @@ public final class MirrorCommand {
   /** Target position in seconds; only meaningful for {@link #SEEK}. */
   public final double positionSeconds;
 
+  /**
+   * @param action one of the action constants
+   * @param positionSeconds the target position in seconds; ignored unless the
+   *     action is {@link #SEEK}
+   */
   public MirrorCommand(String action, double positionSeconds) {
     this.action = action;
     this.positionSeconds = positionSeconds;

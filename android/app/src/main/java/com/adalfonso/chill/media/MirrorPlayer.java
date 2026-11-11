@@ -54,11 +54,22 @@ public final class MirrorPlayer extends SimpleBasePlayer {
     hub.removeStateListener(hubListener);
   }
 
+  /** Refresh the session state on the main looper when the hub changes. */
   private void onHubChanged() {
     // The hub can change from the WebView's thread; the session needs its own
     handler.post(this::invalidateState);
   }
 
+  /**
+   * Build the player state the media session shows from the hub's snapshot.
+   *
+   * <p>With no local track, or while the phone is remote-controlling another
+   * device, the player is idle with no commands, so the car shows the message.
+   * Otherwise the playlist holds the current track and a placeholder either side
+   * when the WebView's queue has a next or previous track.
+   *
+   * @return the player state
+   */
   @Override
   protected State getState() {
     MirrorState s = hub.state();
@@ -93,6 +104,13 @@ public final class MirrorPlayer extends SimpleBasePlayer {
         .build();
   }
 
+  /**
+   * Work out which transport commands the car may use.
+   *
+   * @param s the current snapshot
+   * @return play and pause always; seek only with a known duration; next and
+   *     previous only when the queue has them
+   */
   private static Player.Commands commandsFor(MirrorState s) {
     Player.Commands.Builder commands =
         new Player.Commands.Builder()
@@ -118,6 +136,14 @@ public final class MirrorPlayer extends SimpleBasePlayer {
     return commands.build();
   }
 
+  /**
+   * Build the current track's item, with its cover when it is valid.
+   *
+   * <p>A malformed cover is ignored so it cannot take the whole session down.
+   *
+   * @param s the current snapshot
+   * @return the playlist item for the current track
+   */
   private static MediaItemData currentItem(MirrorState s) {
     MediaMetadata.Builder metadata =
         new MediaMetadata.Builder().setTitle(s.title).setArtist(s.artist).setAlbumTitle(s.album);
@@ -144,12 +170,27 @@ public final class MirrorPlayer extends SimpleBasePlayer {
         .build();
   }
 
+  /**
+   * Build an empty item that stands in for a neighbouring track.
+   *
+   * @param uid the item's unique id
+   * @return the placeholder item
+   */
   private static MediaItemData placeholder(String uid) {
     return new MediaItemData.Builder(uid)
         .setMediaItem(new MediaItem.Builder().setMediaId("chill-" + uid).build())
         .build();
   }
 
+  /**
+   * Send a play or pause from the car to the WebView.
+   *
+   * <p>The mirror's own state does not change; it follows the WebView's next
+   * push.
+   *
+   * @param playWhenReady true for play, false for pause
+   * @return an already-complete future
+   */
   @Override
   protected ListenableFuture<?> handleSetPlayWhenReady(boolean playWhenReady) {
     hub.sendCommand(MirrorCommand.of(playWhenReady ? MirrorCommand.PLAY : MirrorCommand.PAUSE));
@@ -157,6 +198,17 @@ public final class MirrorPlayer extends SimpleBasePlayer {
     return Futures.immediateVoidFuture();
   }
 
+  /**
+   * Turn a car seek into a command for the WebView.
+   *
+   * <p>A seek to a placeholder item is a next or previous; a seek within the
+   * current item is a position seek.
+   *
+   * @param mediaItemIndex the playlist index the controller asked for
+   * @param positionMs the position within that item
+   * @param seekCommand the media3 command that caused the seek
+   * @return an already-complete future
+   */
   @Override
   protected ListenableFuture<?> handleSeek(int mediaItemIndex, long positionMs, int seekCommand) {
     int current = hub.state().hasPrevious ? 1 : 0;

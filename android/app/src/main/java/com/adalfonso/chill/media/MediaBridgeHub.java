@@ -128,6 +128,7 @@ public final class MediaBridgeHub {
     listeners.remove(listener);
   }
 
+  /** Tell every state listener that the state changed. */
   private void notifyListeners() {
     for (StateListener listener : listeners) {
       listener.onStateChanged();

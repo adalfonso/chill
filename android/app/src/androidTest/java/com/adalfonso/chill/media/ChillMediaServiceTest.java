@@ -226,6 +226,63 @@ public class ChillMediaServiceTest {
   }
 
   @Test
+  public void previous_item_from_the_car_becomes_a_previous_command() throws Exception {
+    hub.publish(playingTrack());
+    connect();
+    waitFor(() -> browser.getCurrentMediaItem() != null);
+
+    onMain(() -> browser.seekToPreviousMediaItem());
+    waitFor(() -> !commands.isEmpty());
+
+    assertEquals(MirrorCommand.PREVIOUS, commands.get(0).action);
+  }
+
+  @Test
+  public void previous_after_the_first_seconds_restarts_the_track_instead() throws Exception {
+    // The default controller rule: past a few seconds in, previous restarts the
+    // current track. The mirror must turn that into a seek, not a track change.
+    hub.publish(playingTrack());
+    connect();
+    waitFor(() -> browser.getCurrentMediaItem() != null);
+
+    onMain(() -> browser.seekToPrevious());
+    waitFor(() -> !commands.isEmpty());
+
+    assertEquals(MirrorCommand.SEEK, commands.get(0).action);
+    assertEquals(0.0, commands.get(0).positionSeconds, 0.001);
+  }
+
+  @Test
+  public void remote_control_shows_the_message_even_with_a_local_track() throws Exception {
+    hub.publish(
+        new MirrorState.Builder()
+            .track("7", "Remote Song", "A", "B", 100_000)
+            .playback(true, false, 0)
+            .remote(true)
+            .build());
+    connect();
+
+    LibraryResult<ImmutableList<MediaItem>> children =
+        onMain(() -> browser.getChildren("chill-root", 0, 10, null)).get(10, TimeUnit.SECONDS);
+
+    assertNull(onMain(() -> browser.getCurrentMediaItem()));
+    assertEquals(1, children.value.size());
+  }
+
+  @Test
+  public void a_stalled_stream_is_reported_as_buffering() throws Exception {
+    hub.publish(
+        new MirrorState.Builder()
+            .track("7", "Song", "A", "B", 100_000)
+            .playback(true, true, 5_000)
+            .build());
+    connect();
+    waitFor(() -> browser.getCurrentMediaItem() != null);
+
+    assertEquals(Player.STATE_BUFFERING, (int) onMain(() -> browser.getPlaybackState()));
+  }
+
+  @Test
   public void a_single_track_queue_reports_next_and_previous_unavailable() throws Exception {
     hub.publish(
         new MirrorState.Builder()
@@ -263,6 +320,6 @@ public class ChillMediaServiceTest {
     waitFor(() -> browser.getCurrentMediaItem() == null);
 
     assertFalse(hub.sendCommand(MirrorCommand.of(MirrorCommand.PLAY)));
-    assertNotNull(browser);
+    assertNull(onMain(() -> browser.getCurrentMediaItem()));
   }
 }

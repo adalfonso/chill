@@ -34,6 +34,9 @@ public final class MirrorState {
   /** When this snapshot arrived, in the clock the hub uses. */
   public final long receivedAtMs;
 
+  /**
+   * @param b the builder holding the values to copy
+   */
   private MirrorState(Builder b) {
     this.hasTrack = b.hasTrack;
     this.trackId = b.trackId;
@@ -112,8 +115,14 @@ public final class MirrorState {
     private boolean remote;
     private long receivedAtMs;
 
+    /** Start with every field at "nothing". */
     public Builder() {}
 
+    /**
+     * Start from an existing snapshot.
+     *
+     * @param s the snapshot to copy
+     */
     private Builder(MirrorState s) {
       hasTrack = s.hasTrack;
       trackId = s.trackId;
@@ -131,6 +140,16 @@ public final class MirrorState {
       receivedAtMs = s.receivedAtMs;
     }
 
+    /**
+     * Set the current track. Marks the state as having a track.
+     *
+     * @param id the track id
+     * @param title the track title
+     * @param artist the artist, or an empty string
+     * @param album the album, or an empty string
+     * @param durationMs the track length in milliseconds, or 0 when unknown
+     * @return this builder
+     */
     public Builder track(String id, String title, String artist, String album, long durationMs) {
       this.hasTrack = true;
       this.trackId = id;
@@ -141,11 +160,21 @@ public final class MirrorState {
       return this;
     }
 
+    /**
+     * @param artBase64 the cover as base64 JPEG, or null when there is none
+     * @return this builder
+     */
     public Builder art(String artBase64) {
       this.artBase64 = artBase64;
       return this;
     }
 
+    /**
+     * @param isPlaying whether the WebView is playing
+     * @param buffering whether playback is stalled waiting for data
+     * @param positionMs the position at the time of the push
+     * @return this builder
+     */
     public Builder playback(boolean isPlaying, boolean buffering, long positionMs) {
       this.isPlaying = isPlaying;
       this.buffering = buffering;
@@ -153,22 +182,38 @@ public final class MirrorState {
       return this;
     }
 
+    /**
+     * @param hasNext whether the queue has a next track
+     * @param hasPrevious whether the queue has a previous track
+     * @return this builder
+     */
     public Builder queue(boolean hasNext, boolean hasPrevious) {
       this.hasNext = hasNext;
       this.hasPrevious = hasPrevious;
       return this;
     }
 
+    /**
+     * @param remote whether the phone is remote-controlling another device
+     * @return this builder
+     */
     public Builder remote(boolean remote) {
       this.remote = remote;
       return this;
     }
 
+    /**
+     * @param receivedAtMs the arrival time to stamp
+     * @return this builder
+     */
     private Builder receivedAtMs(long receivedAtMs) {
       this.receivedAtMs = receivedAtMs;
       return this;
     }
 
+    /**
+     * @return the immutable snapshot
+     */
     public MirrorState build() {
       return new MirrorState(this);
     }

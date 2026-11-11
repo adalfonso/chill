@@ -35,6 +35,7 @@ public final class ChillMediaService extends MediaLibraryService {
   private MirrorPlayer player;
   private MediaLibrarySession session;
 
+  /** Create the mirror player and the media session Android Auto connects to. */
   @Override
   public void onCreate() {
     super.onCreate();
@@ -42,12 +43,17 @@ public final class ChillMediaService extends MediaLibraryService {
     session = new MediaLibrarySession.Builder(this, player, new LibraryCallback()).build();
   }
 
+  /**
+   * @param controllerInfo the controller asking for the session
+   * @return the one media session this service hosts
+   */
   @Nullable
   @Override
   public MediaLibrarySession onGetSession(MediaSession.ControllerInfo controllerInfo) {
     return session;
   }
 
+  /** Release the session and the player. */
   @Override
   public void onDestroy() {
     session.release();
@@ -56,6 +62,9 @@ public final class ChillMediaService extends MediaLibraryService {
     super.onDestroy();
   }
 
+  /**
+   * @return the browse root item
+   */
   private MediaItem rootItem() {
     return new MediaItem.Builder()
         .setMediaId(ROOT_ID)
@@ -68,6 +77,9 @@ public final class ChillMediaService extends MediaLibraryService {
         .build();
   }
 
+  /**
+   * @return the single item that tells the driver to start playback on the phone
+   */
   private MediaItem messageItem() {
     return new MediaItem.Builder()
         .setMediaId(MESSAGE_ID)
@@ -83,6 +95,13 @@ public final class ChillMediaService extends MediaLibraryService {
   /** Accepts allowed callers and serves the one-item message library. */
   private final class LibraryCallback implements MediaLibrarySession.Callback {
 
+    /**
+     * Accept a controller only when it is on the allowlist.
+     *
+     * @param mediaSession the session being connected to
+     * @param controller the controller asking to connect
+     * @return an accepted result for an allowed caller, otherwise a rejection
+     */
     @Override
     public MediaSession.ConnectionResult onConnect(
         MediaSession mediaSession, MediaSession.ControllerInfo controller) {
@@ -93,6 +112,12 @@ public final class ChillMediaService extends MediaLibraryService {
       return MediaLibrarySession.Callback.super.onConnect(mediaSession, controller);
     }
 
+    /**
+     * @param mediaSession the session being browsed
+     * @param browser the controller browsing
+     * @param params the browse parameters, if any
+     * @return the browse root
+     */
     @Override
     public ListenableFuture<LibraryResult<MediaItem>> onGetLibraryRoot(
         MediaLibrarySession mediaSession,
@@ -101,6 +126,15 @@ public final class ChillMediaService extends MediaLibraryService {
       return Futures.immediateFuture(LibraryResult.ofItem(rootItem(), params));
     }
 
+    /**
+     * @param mediaSession the session being browsed
+     * @param browser the controller browsing
+     * @param parentId the item whose children are wanted
+     * @param page the page number
+     * @param pageSize the page size
+     * @param params the browse parameters, if any
+     * @return a list holding only the message item
+     */
     @Override
     public ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> onGetChildren(
         MediaLibrarySession mediaSession,
@@ -113,6 +147,12 @@ public final class ChillMediaService extends MediaLibraryService {
           LibraryResult.ofItemList(ImmutableList.of(messageItem()), params));
     }
 
+    /**
+     * @param mediaSession the session being browsed
+     * @param browser the controller browsing
+     * @param mediaId the item asked for
+     * @return the root or the message item
+     */
     @Override
     public ListenableFuture<LibraryResult<MediaItem>> onGetItem(
         MediaLibrarySession mediaSession, MediaSession.ControllerInfo browser, String mediaId) {

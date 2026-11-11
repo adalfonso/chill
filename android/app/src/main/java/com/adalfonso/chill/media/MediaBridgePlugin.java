@@ -19,13 +19,25 @@ import org.json.JSONException;
 @CapacitorPlugin(name = "MediaBridge")
 public final class MediaBridgePlugin extends Plugin {
 
-  private static final String LOGIN_PATH_PREFIX = "/auth/login";
-
+  /**
+   * Attach to the hub when the plugin loads, so car commands reach the WebView.
+   *
+   * <p>Capacitor calls this once the bridge is up. The command sink is replaced
+   * if an earlier plugin instance left one behind.
+   */
   @Override
   public void load() {
     MediaBridgeHub.instance().setCommandSink(this::deliverCommand);
   }
 
+  /**
+   * Receive a snapshot of the WebView player and hand it to the hub.
+   *
+   * <p>Rejects the call when the snapshot is malformed, so the WebView sees the
+   * failure instead of the car silently keeping the previous track.
+   *
+   * @param call the plugin call carrying the snapshot as its data
+   */
   @PluginMethod
   public void publishState(PluginCall call) {
     try {
@@ -36,6 +48,11 @@ public final class MediaBridgePlugin extends Plugin {
     }
   }
 
+  /**
+   * Forget the current playback so the car shows the message again.
+   *
+   * @param call the plugin call to resolve
+   */
   @PluginMethod
   public void clearState(PluginCall call) {
     MediaBridgeHub.instance().clear();
@@ -48,9 +65,7 @@ public final class MediaBridgePlugin extends Plugin {
    */
   @Override
   public Boolean shouldOverrideLoad(Uri url) {
-    String path = url.getPath();
-
-    if (path != null && path.startsWith(LOGIN_PATH_PREFIX)) {
+    if (NavigationPolicy.isLoginPath(url.getPath())) {
       MediaBridgeHub.instance().clear();
     }
 
@@ -58,12 +73,22 @@ public final class MediaBridgePlugin extends Plugin {
     return null;
   }
 
-  /** Drops the state and the command sink when the Activity is destroyed. */
+  /**
+   * Drop the state and the command sink when the Activity is destroyed, so the
+   * car does not keep showing a track nobody is playing.
+   */
   @Override
   protected void handleOnDestroy() {
     MediaBridgeHub.instance().teardown();
   }
 
+  /**
+   * Send a car command to the WebView as a {@code command} event.
+   *
+   * <p>Only a seek carries a position.
+   *
+   * @param command the command from the car
+   */
   private void deliverCommand(MirrorCommand command) {
     JSObject data = new JSObject();
     data.put("action", command.action);
