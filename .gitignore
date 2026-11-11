@@ -10,6 +10,7 @@ server/**/*.js
 tests/__coverage__/
 tests/**/*.jsx
 .env
+.env.native
 coverage
 .vscode
 todo.md

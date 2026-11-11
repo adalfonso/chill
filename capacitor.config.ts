@@ -1,6 +1,11 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 import dotenv from "dotenv";
 
+// Load order matters: dotenv never overrides a variable that is already set,
+// so the first file loaded wins. `.env.native` (optional, gitignored) holds the
+// HOST/APP_PORT the native app should point at (e.g. a prod server) without
+// touching the `.env` used for local development. Without it, `.env` is used.
+dotenv.config({ path: ".env.native" });
 dotenv.config();
 
 // Fail loudly: a missing value would otherwise build the URL
@@ -15,7 +20,7 @@ if (!process.env.HOST || !process.env.APP_PORT) {
 // (see passportConfig.ts) — pointing the native shell anywhere else would
 // make it same-origin with a different server than the one it authenticates
 // against. Switching between a local dev server and a real deployment is a
-// matter of changing HOST/APP_PORT in .env, not this file.
+// matter of changing HOST/APP_PORT in .env.native (or .env), not this file.
 const server_url = `${process.env.HOST}:${process.env.APP_PORT}`;
 const is_cleartext = server_url.startsWith("http://");
 
