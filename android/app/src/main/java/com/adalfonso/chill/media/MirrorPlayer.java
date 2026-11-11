@@ -123,8 +123,12 @@ public final class MirrorPlayer extends SimpleBasePlayer {
         new MediaMetadata.Builder().setTitle(s.title).setArtist(s.artist).setAlbumTitle(s.album);
 
     if (s.artBase64 != null) {
-      byte[] art = Base64.decode(s.artBase64, Base64.DEFAULT);
-      metadata.setArtworkData(art, MediaMetadata.PICTURE_TYPE_FRONT_COVER);
+      try {
+        byte[] art = Base64.decode(s.artBase64, Base64.DEFAULT);
+        metadata.setArtworkData(art, MediaMetadata.PICTURE_TYPE_FRONT_COVER);
+      } catch (IllegalArgumentException e) {
+        // A malformed cover must not take the whole session down; show no art
+      }
     }
 
     MediaItem item =

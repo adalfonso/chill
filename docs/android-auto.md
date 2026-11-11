@@ -25,6 +25,21 @@ pnpm cap:run --target <device-id>
 
 The app points at the server in `.env.native` (see `.env.native.example`).
 
+## Automated tests
+
+```bash
+cd android
+./gradlew testDebugUnitTest            # plain JVM tests, no device needed
+./gradlew :app:connectedDebugAndroidTest   # needs a device or emulator
+```
+
+The instrumented tests connect a real media3 controller to the service, the way
+Android Auto does, and check the session, the transport commands, and clearing.
+Run them for the `:app` module only: the all-modules `connectedDebugAndroidTest`
+trips over a duplicate Kotlin library in the generated Cordova module, which is
+unrelated to this feature. The tests uninstall the app from the device when they
+finish.
+
 ## Let Android Auto show a sideloaded app
 
 Android Auto hides apps that did not come from Google Play unless its developer

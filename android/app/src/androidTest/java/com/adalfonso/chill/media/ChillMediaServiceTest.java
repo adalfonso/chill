@@ -143,6 +143,36 @@ public class ChillMediaServiceTest {
   }
 
   @Test
+  public void malformed_art_is_ignored_and_does_not_crash_the_session() throws Exception {
+    hub.publish(
+        new MirrorState.Builder()
+            .track("7", "Test Song", "Test Artist", "Test Album", 200_000)
+            .art("!!! not base64 !!!")
+            .playback(true, false, 0)
+            .build());
+    connect();
+
+    waitFor(() -> browser.getCurrentMediaItem() != null);
+
+    assertEquals("Test Song", onMain(() -> browser.getMediaMetadata().title.toString()));
+  }
+
+  @Test
+  public void valid_art_reaches_the_session_metadata() throws Exception {
+    hub.publish(
+        new MirrorState.Builder()
+            .track("7", "Test Song", "Test Artist", "Test Album", 200_000)
+            .art("QUJDRA==")
+            .playback(true, false, 0)
+            .build());
+    connect();
+
+    waitFor(() -> browser.getCurrentMediaItem() != null);
+
+    assertNotNull(onMain(() -> browser.getMediaMetadata().artworkData));
+  }
+
+  @Test
   public void position_advances_while_playing_and_holds_while_paused() throws Exception {
     hub.publish(playingTrack());
     connect();
