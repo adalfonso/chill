@@ -3,12 +3,18 @@ import {
   setAccessTokenExpiryHint,
 } from "@client/lib/DeviceInfo";
 import { ACCESS_TOKEN_TTL_SECONDS } from "@common/authConstants";
+import { clearState } from "@client/lib/native/mediaBridge";
 
 const REFRESH_ENDPOINT = "/auth/refresh";
 const LOGIN_PATH = "/auth/login";
 
-/** Navigate to the login page -- a full page load, not client-side routing, since logging out (or a dead session) should reset all app state. */
+/**
+ * Navigate to the login page -- a full page load, not client-side routing, since logging out (or a dead session) should reset all app state.
+ *
+ * Also tells the native media service to forget the current playback, so the car stops showing the last track once the session is gone. That is a no-op outside the native shell.
+ */
 export const redirectToLogin = (): void => {
+  void clearState();
   window.location.href = LOGIN_PATH;
 };
 

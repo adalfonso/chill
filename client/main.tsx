@@ -2,6 +2,8 @@ import { render } from "preact";
 
 import { App } from "./App";
 import { AppContext, getAppState } from "./state/AppState";
+import { startNativeCommands } from "./lib/native/handleNativeCommands";
+import { startNativeSync } from "./lib/native/syncPlayerToNative";
 
 const element = document.getElementById("root");
 
@@ -12,6 +14,11 @@ if (element === null) {
 window.__chill_app = {
   cast_ready: false,
 };
+
+// Mirror the player into Android Auto and accept car commands. Both do
+// nothing outside the native shell, so the web build is unaffected.
+startNativeSync();
+startNativeCommands();
 
 render(
   <AppContext.Provider value={getAppState()}>
