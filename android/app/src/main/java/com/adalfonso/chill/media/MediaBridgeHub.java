@@ -30,6 +30,7 @@ public final class MediaBridgeHub {
   private final CopyOnWriteArrayList<StateListener> listeners = new CopyOnWriteArrayList<>();
   private volatile MirrorState state = MirrorState.EMPTY;
   private volatile CommandSink commandSink;
+  private volatile boolean signedOut;
 
   /** Creates a hub; tests pass their own clock and run listeners inline. */
   public MediaBridgeHub(LongSupplier clock, Executor listenerExecutor) {
@@ -59,8 +60,16 @@ public final class MediaBridgeHub {
     return clock.getAsLong();
   }
 
-  /** Stores a new state from the web page, noting when it arrived, and tells listeners. */
+  /**
+   * Stores a new state from the web page, noting when it arrived, and tells listeners. Ignored
+   * after {@link #markSignedOut}, so a page that is still unloading cannot bring the last track
+   * back.
+   */
   public void publish(MirrorState incoming) {
+    if (signedOut) {
+      return;
+    }
+
     state = incoming.withReceivedAt(clock.getAsLong());
     notifyListeners();
   }
@@ -74,7 +83,19 @@ public final class MediaBridgeHub {
   /** Clears the state and stops sending commands; used when the screen is destroyed. */
   public void teardown() {
     commandSink = null;
+    signedOut = false;
     clear();
+  }
+
+  /** The user signed out: clears the playback and ignores pushes until {@link #markSignedIn}. */
+  public void markSignedOut() {
+    signedOut = true;
+    clear();
+  }
+
+  /** A page other than the login page is loading, so pushes are accepted again. */
+  public void markSignedIn() {
+    signedOut = false;
   }
 
   /** Passes a car command on to the web page; false if no page is attached. */
