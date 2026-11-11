@@ -22,6 +22,7 @@ describe("loadCover", () => {
 
     expect(global.fetch).toHaveBeenCalledWith(
       `/api/v1/media/cover/${cover}?size=256`,
+      expect.objectContaining({ signal: expect.anything() }),
     );
     expect(loaded).toBe(btoa("art-bytes"));
   });
@@ -62,6 +63,31 @@ describe("loadCover", () => {
     expect(await loadCover(cover)).toBeNull();
     expect(await loadCover(cover)).toBe(btoa("art-bytes"));
     expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("gives up on a stalled request after the timeout and retries on the next call", async () => {
+    jest.useFakeTimers("legacy");
+    const cover = fresh_cover();
+    // A request that never answers, but honors being aborted
+    global.fetch = jest
+      .fn()
+      .mockImplementationOnce(
+        (_url: string, init: { signal: AbortSignal }) =>
+          new Promise((_resolve, reject) =>
+            init.signal.addEventListener("abort", () =>
+              reject(new Error("aborted")),
+            ),
+          ),
+      )
+      .mockResolvedValue(ok_response()) as never;
+
+    const stalled = loadCover(cover);
+    jest.advanceTimersByTime(10_000);
+
+    expect(await stalled).toBeNull();
+
+    jest.useRealTimers();
+    expect(await loadCover(cover)).toBe(btoa("art-bytes"));
   });
 
   it("forgets the oldest cover past the cache limit", async () => {

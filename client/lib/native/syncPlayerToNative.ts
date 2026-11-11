@@ -37,6 +37,13 @@ export const startNativeSync = (): (() => void) => {
   let buffering = false;
   let push_scheduled = false;
 
+  /**
+   * Schedule one push of the current player state to native
+   *
+   * Several triggers in one synchronous run collapse into a single push that reads the
+   * state after they have all settled, so it sees the audio elements after their swap.
+   * Does nothing once the sync has been stopped.
+   */
   const push = (): void => {
     if (push_scheduled) {
       return;
@@ -53,7 +60,14 @@ export const startNativeSync = (): (() => void) => {
     });
   };
 
-  // The car needs the cover as bytes, so fetch it once and push when it lands
+  /**
+   * Make sure the car gets the current track's cover
+   *
+   * Android Auto needs the cover as bytes, so it is fetched once and a push follows when it
+   * lands, as long as that track is still the current one.
+   *
+   * @param filename - the track's album art filename, or null when it has none
+   */
   const loadCurrentCover = (filename: string | null): void => {
     if (!filename || cachedCover(filename) !== null) {
       return;
@@ -66,8 +80,15 @@ export const startNativeSync = (): (() => void) => {
     });
   };
 
+  /**
+   * React to a seek, play, pause, or stall on an audio element
+   *
+   * Only the audible element counts, since the preloaded one is silent. A stall marks the
+   * state as buffering until playback resumes or pauses.
+   *
+   * @param event - the audio element event
+   */
   const onAudioEvent = (event: Event): void => {
-    // The preloaded element is silent; only the audible one matters
     if (event.target !== player.audio) {
       return;
     }
@@ -88,6 +109,11 @@ export const startNativeSync = (): (() => void) => {
   });
 
   const elements = [player.audio, player.crossover];
+  /**
+   * Add or remove the audio event listeners on both audio elements
+   *
+   * @param method - whether to add or remove them
+   */
   const listen = (method: "addEventListener" | "removeEventListener") =>
     elements.forEach((el) =>
       AUDIO_EVENTS.forEach((name) => el[method](name, onAudioEvent)),
