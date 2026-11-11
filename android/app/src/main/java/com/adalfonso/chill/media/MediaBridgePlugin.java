@@ -37,16 +37,26 @@ public final class MediaBridgePlugin extends Plugin {
   }
 
   /**
-   * Runs before each page load; clears the car view when the page is the login
-   * page (the user signed out). Returns null: it never takes over a navigation.
+   * Runs before each page load and reports it to {@link #applyNavigation}. Returns null: it
+   * never takes over a navigation.
    */
   @Override
   public Boolean shouldOverrideLoad(Uri url) {
-    if (isLoginPath(url.getPath())) {
-      MediaBridgeHub.instance().clear();
-    }
+    applyNavigation(MediaBridgeHub.instance(), url.getPath());
 
     return null;
+  }
+
+  /**
+   * Reacts to a page load: the login page means the user signed out, so the car view is cleared
+   * and late pushes from the old page are ignored; any other page lifts that block.
+   */
+  static void applyNavigation(MediaBridgeHub hub, String path) {
+    if (isLoginPath(path)) {
+      hub.markSignedOut();
+    } else {
+      hub.markSignedIn();
+    }
   }
 
   /** Whether a page path is the login page; {@code /auth/login-help} is not. */
@@ -62,6 +72,11 @@ public final class MediaBridgePlugin extends Plugin {
 
   /** Forwards a car command to the web page as a {@code command} event. */
   private void deliverCommand(MirrorCommand command) {
+    notifyListeners("command", commandPayload(command));
+  }
+
+  /** What the web page receives for a command: its action name, plus a position for a seek. */
+  static JSObject commandPayload(MirrorCommand command) {
     JSObject data = new JSObject();
     data.put("action", command.action().wireName());
 
@@ -69,6 +84,6 @@ public final class MediaBridgePlugin extends Plugin {
       data.put("position_s", command.positionSeconds());
     }
 
-    notifyListeners("command", data);
+    return data;
   }
 }

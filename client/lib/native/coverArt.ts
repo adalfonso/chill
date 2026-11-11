@@ -1,6 +1,9 @@
 /** Cover size sent to the car; small enough to cross the bridge cheaply */
 const COVER_SIZE = 256;
 
+/** How long to wait for a cover before giving up, so a stalled request cannot block it forever */
+const COVER_TIMEOUT_MS = 10_000;
+
 /** How many covers to keep, so a long session cannot grow without bound */
 const CACHE_LIMIT = 20;
 
@@ -47,15 +50,19 @@ export const loadCover = (filename: string): Promise<string | null> => {
 };
 
 /**
- * Fetch a cover and remember it
+ * Fetch a cover and remember it, giving up after {@link COVER_TIMEOUT_MS}
  *
  * @param filename - the album art filename
  * @returns the cover as base64, or null when the request failed
  */
 const fetchCover = async (filename: string): Promise<string | null> => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), COVER_TIMEOUT_MS);
+
   try {
     const response = await fetch(
       `/api/v1/media/cover/${filename}?size=${COVER_SIZE}`,
+      { signal: controller.signal },
     );
 
     if (!response.ok) {
@@ -69,6 +76,8 @@ const fetchCover = async (filename: string): Promise<string | null> => {
     return cover;
   } catch {
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 };
 
@@ -93,6 +102,7 @@ const remember = (filename: string, cover: string): void => {
  *
  * @param blob - the image data
  * @returns the base64 payload without the data-URL prefix
+ * @throws the reader's error when the blob cannot be read
  */
 const toBase64 = (blob: Blob): Promise<string> =>
   new Promise((resolve, reject) => {

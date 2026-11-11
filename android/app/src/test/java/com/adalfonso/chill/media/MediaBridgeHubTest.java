@@ -103,4 +103,37 @@ public class MediaBridgeHubTest {
     assertEquals(30.0, MirrorCommand.seek(30_000).positionSeconds(), 0.0001);
     assertEquals(MirrorCommand.Action.SEEK, MirrorCommand.seek(1).action());
   }
+
+  @Test
+  public void signing_out_clears_the_playback_and_ignores_late_pushes() {
+    MediaBridgeHub hub = new MediaBridgeHub(() -> 0, Runnable::run);
+    hub.publish(track());
+
+    hub.markSignedOut();
+    hub.publish(track());
+
+    assertSame(MirrorState.EMPTY, hub.state());
+  }
+
+  @Test
+  public void pushes_are_accepted_again_once_signed_in() {
+    MediaBridgeHub hub = new MediaBridgeHub(() -> 0, Runnable::run);
+    hub.markSignedOut();
+
+    hub.markSignedIn();
+    hub.publish(track());
+
+    assertTrue(hub.state().hasTrack);
+  }
+
+  @Test
+  public void teardown_lifts_the_sign_out_block_for_the_next_screen() {
+    MediaBridgeHub hub = new MediaBridgeHub(() -> 0, Runnable::run);
+    hub.markSignedOut();
+
+    hub.teardown();
+    hub.publish(track());
+
+    assertTrue(hub.state().hasTrack);
+  }
 }

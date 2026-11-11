@@ -222,6 +222,19 @@ describe("startNativeSync", () => {
     expect(last_state().buffering).toBe(false);
   });
 
+  it("clears buffering when playback pauses, not only when it resumes", async () => {
+    mock_player.now_playing.value = track({ album_art_filename: null });
+    stop = startNativeSync();
+    await tick();
+
+    mock_player.audio.dispatchEvent(new Event("waiting"));
+    await tick();
+    mock_player.audio.dispatchEvent(new Event("pause"));
+    await tick();
+
+    expect(last_state().buffering).toBe(false);
+  });
+
   it("reports remote control from the outgoing connection, not the local signals", async () => {
     mock_player.now_playing.value = track({ album_art_filename: null });
     stop = startNativeSync();
@@ -308,6 +321,22 @@ describe("coarse position timer", () => {
     jest.advanceTimersByTime(1_000);
     await tick();
     expect(mock_publish).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not push on the timer while buffering", async () => {
+    jest.useFakeTimers("legacy");
+    mock_player.now_playing.value = track({ album_art_filename: null });
+    mock_player.is_playing.value = true;
+    stop = startNativeSync();
+    await tick();
+    mock_player.audio.dispatchEvent(new Event("waiting"));
+    await tick();
+    mock_publish.mockClear();
+
+    jest.advanceTimersByTime(60_000);
+    await tick();
+
+    expect(mock_publish).not.toHaveBeenCalled();
   });
 
   it("does not push on the timer while paused", async () => {

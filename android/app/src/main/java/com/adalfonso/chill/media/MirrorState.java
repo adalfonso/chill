@@ -8,6 +8,12 @@ package com.adalfonso.chill.media;
  */
 public final class MirrorState {
 
+  /**
+   * How far the position may run ahead of the last snapshot: three of the page's 15 second
+   * position reports. While the page is alive a fresh one always arrives well before this.
+   */
+  static final long MAX_EXTRAPOLATION_MS = 45_000;
+
   /** Nothing playing; also the state after a sign-out. */
   public static final MirrorState EMPTY = new Builder().build();
 
@@ -57,14 +63,17 @@ public final class MirrorState {
 
   /**
    * Where playback is at a given time: advances from the snapshot while playing, holds when paused
-   * or buffering, and never passes the end.
+   * or buffering, and never passes the end. It also stops advancing {@link #MAX_EXTRAPOLATION_MS}
+   * after the snapshot, so a page that stopped reporting does not leave the car's progress bar
+   * running forever.
    */
   public long positionAt(long nowMs) {
     if (!isPlaying || buffering) {
       return positionMs;
     }
 
-    long advanced = positionMs + Math.max(0, nowMs - receivedAtMs);
+    long ahead = Math.min(MAX_EXTRAPOLATION_MS, Math.max(0, nowMs - receivedAtMs));
+    long advanced = positionMs + ahead;
 
     return durationMs > 0 ? Math.min(advanced, durationMs) : advanced;
   }

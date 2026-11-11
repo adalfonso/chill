@@ -82,4 +82,19 @@ public class MirrorStateTest {
     assertFalse(s.hasNext);
     assertTrue(s.hasPrevious);
   }
+
+  @Test
+  public void position_stops_running_ahead_when_the_page_stops_reporting() {
+    MirrorState s = playingTrack().build().withReceivedAt(0);
+
+    // 10 s at the push, then at most MAX_EXTRAPOLATION_MS more, however long ago it was
+    assertEquals(10_000 + MirrorState.MAX_EXTRAPOLATION_MS, s.positionAt(10 * 60_000));
+  }
+
+  @Test
+  public void position_keeps_advancing_normally_within_the_cap() {
+    MirrorState s = playingTrack().build().withReceivedAt(0);
+
+    assertEquals(10_000 + 20_000, s.positionAt(20_000));
+  }
 }
