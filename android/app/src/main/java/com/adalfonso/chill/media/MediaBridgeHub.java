@@ -7,24 +7,20 @@ import java.util.concurrent.Executor;
 import java.util.function.LongSupplier;
 
 /**
- * The process-wide meeting point between the WebView plugin and the media
- * service.
- *
- * <p>The media service can start with no Activity, and a Capacitor plugin only
- * exists while the bridge is alive, so neither can hold the other directly.
- * The hub holds the latest pushed state and the command sink, and each side
- * attaches to it when it starts.
- *
- * <p>It has no Android dependencies, so it is covered by plain JVM unit tests.
+ * The shared notice board between the plugin and the media service. It holds the
+ * latest player state and where to send car commands. The service can outlive the
+ * screen (and so the plugin), so neither can hold the other directly; both use the
+ * hub instead. Listener callbacks run on the main thread, where Android wants
+ * media code to run.
  */
 public final class MediaBridgeHub {
 
-  /** Told, on the listener executor, when the state changes. */
+  /** Told whenever the state changes. */
   public interface StateListener {
     void onStateChanged();
   }
 
-  /** Receives commands from the car and delivers them to the WebView. */
+  /** Where car commands go; the plugin, which passes them on to the web page. */
   public interface CommandSink {
     void send(MirrorCommand command);
   }
@@ -35,78 +31,53 @@ public final class MediaBridgeHub {
   private volatile MirrorState state = MirrorState.EMPTY;
   private volatile CommandSink commandSink;
 
-  /**
-   * @param clock the time source used to stamp pushed states
-   * @param listenerExecutor where state listeners run; the main looper in the app, so
-   *     listeners never have to hop threads themselves
-   */
+  /** Creates a hub; tests pass their own clock and run listeners inline. */
   public MediaBridgeHub(LongSupplier clock, Executor listenerExecutor) {
     this.clock = clock;
     this.listenerExecutor = listenerExecutor;
   }
 
-  /** Holds the shared hub, created on first use so unit tests never touch Android. */
+  /** Creates the shared hub on first use, so JVM unit tests never touch Android. */
   private static final class Shared {
     static final MediaBridgeHub HUB =
         new MediaBridgeHub(
             System::currentTimeMillis, new Handler(Looper.getMainLooper())::post);
   }
 
-  /**
-   * @return the shared hub for this process
-   */
+  /** The one hub the whole app shares. */
   public static MediaBridgeHub instance() {
     return Shared.HUB;
   }
 
-  /**
-   * @return the latest pushed state, or {@link MirrorState#EMPTY}
-   */
+  /** The latest state from the web page, or {@link MirrorState#EMPTY} if none. */
   public MirrorState state() {
     return state;
   }
 
-  /**
-   * @return the current time in the clock used to stamp pushed states
-   */
+  /** The current time, from the same clock used to stamp pushed states. */
   public long now() {
     return clock.getAsLong();
   }
 
-  /**
-   * Replace the state with a newly pushed one, stamping its arrival time.
-   *
-   * @param incoming the snapshot from the WebView
-   */
+  /** Stores a new state from the web page, noting when it arrived, and tells listeners. */
   public void publish(MirrorState incoming) {
     state = incoming.withReceivedAt(clock.getAsLong());
     notifyListeners();
   }
 
-  /** Forget the current playback, so the car shows the message again. */
+  /** Forgets the current playback, so the car shows its message again. */
   public void clear() {
     state = MirrorState.EMPTY;
     notifyListeners();
   }
 
-  /**
-   * Forget the playback and detach the command sink.
-   *
-   * <p>Called when the Activity or WebView is destroyed while the process lives,
-   * so the car does not keep showing a track nobody is playing and commands do
-   * not go to a listener that no longer exists.
-   */
+  /** Clears the state and stops sending commands; used when the screen is destroyed. */
   public void teardown() {
     commandSink = null;
     clear();
   }
 
-  /**
-   * Deliver a car command to the WebView.
-   *
-   * @param command the command from the car
-   * @return false when no WebView is attached and the command was dropped
-   */
+  /** Passes a car command on to the web page; false if no page is attached. */
   public boolean sendCommand(MirrorCommand command) {
     CommandSink sink = commandSink;
 
@@ -119,28 +90,22 @@ public final class MediaBridgeHub {
     return true;
   }
 
-  /**
-   * @param sink where commands go, or null to detach
-   */
+  /** Sets where car commands go; null detaches. */
   public void setCommandSink(CommandSink sink) {
     commandSink = sink;
   }
 
-  /**
-   * @param listener told on every state change
-   */
+  /** Registers someone to be told on every state change. */
   public void addStateListener(StateListener listener) {
     listeners.add(listener);
   }
 
-  /**
-   * @param listener the listener to stop notifying
-   */
+  /** Stops telling a registered listener. */
   public void removeStateListener(StateListener listener) {
     listeners.remove(listener);
   }
 
-  /** Tell every state listener that the state changed. */
+  /** Tells every listener, on the main thread, that the state changed. */
   private void notifyListeners() {
     listenerExecutor.execute(() -> listeners.forEach(StateListener::onStateChanged));
   }

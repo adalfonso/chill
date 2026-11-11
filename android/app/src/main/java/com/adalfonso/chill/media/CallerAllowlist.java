@@ -3,33 +3,26 @@ package com.adalfonso.chill.media;
 import java.util.Set;
 
 /**
- * Decides which apps may connect to the media service.
- *
- * <p>Android Auto needs the service exported, which also lets any other app on
- * the phone bind to it, read the now-playing details, and send play, pause, and
- * skip commands. Only Android Auto, the system media controller, and Chill
- * itself are accepted.
+ * The guest list for the media service. Android Auto can only find the service if
+ * it is visible to other apps, which would let any app connect, so each connecting
+ * app's package name is checked here. Used by {@link ChillMediaService}.
  */
 public final class CallerAllowlist {
 
-  /** Android Auto's package on the phone. */
+  /** Android Auto. */
   public static final String ANDROID_AUTO = "com.google.android.projection.gearhead";
 
-  /** The system UI, which draws the notification and lock screen controls. */
+  /** The system UI, which draws notification and lock screen media controls. */
   public static final String SYSTEM_UI = "com.android.systemui";
 
-  /** The Android framework itself, used for media buttons and system controllers. */
+  /** Android itself, which handles media buttons such as a headset's play/pause. */
   public static final String ANDROID_FRAMEWORK = "android";
 
   private static final Set<String> ALLOWED = Set.of(ANDROID_AUTO, SYSTEM_UI, ANDROID_FRAMEWORK);
 
   private CallerAllowlist() {}
 
-  /**
-   * @param callerPackage the package of the app asking to connect
-   * @param ownPackage Chill's own package, always allowed
-   * @return true when the caller may connect
-   */
+  /** Whether an app may connect: it is Chill itself or on the allowed list. */
   public static boolean isAllowed(String callerPackage, String ownPackage) {
     if (callerPackage == null) {
       return false;

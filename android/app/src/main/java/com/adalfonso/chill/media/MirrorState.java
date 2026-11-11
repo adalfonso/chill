@@ -1,19 +1,14 @@
 package com.adalfonso.chill.media;
 
 /**
- * An immutable snapshot of the phone's WebView player, as pushed to native.
- *
- * <p>The native media service mirrors this into Android Auto and never changes
- * it on its own: the WebView is the only source of truth in phase 1. Position
- * between pushes is worked out from the time the snapshot arrived, so the
- * WebView does not have to push every second.
- *
- * <p>This class has no Android dependencies, so it is covered by plain JVM unit
- * tests.
+ * A snapshot of the web player as the page last reported it: what is playing,
+ * whether it is playing, and where. Immutable. The media service only mirrors it;
+ * the web player is the only source of truth. Between snapshots the position is
+ * worked out from when the last one arrived.
  */
 public final class MirrorState {
 
-  /** The state before anything has been pushed, or after a clear. */
+  /** Nothing playing; also the state after a sign-out. */
   public static final MirrorState EMPTY = new Builder().build();
 
   public final boolean hasTrack;
@@ -34,9 +29,7 @@ public final class MirrorState {
   /** When this snapshot arrived, in the clock the hub uses. */
   public final long receivedAtMs;
 
-  /**
-   * @param b the builder holding the values to copy
-   */
+  /** Copies the builder's values. */
   private MirrorState(Builder b) {
     this.hasTrack = b.hasTrack;
     this.trackId = b.trackId;
@@ -55,27 +48,16 @@ public final class MirrorState {
   }
 
   /**
-   * Whether the car should show the "start playback on the phone" message
-   * instead of a track.
-   *
-   * <p>That is the case when there is no local track, and also while the phone
-   * is remote-controlling another device, because the local player signals
-   * still hold the remote device's track then.
-   *
-   * @return true when the message should show
+   * Whether the car should show its "start playback on the phone" message: nothing is playing here,
+   * or the phone is remote-controlling another device.
    */
   public boolean showMessage() {
     return !hasTrack || remote;
   }
 
   /**
-   * The playback position at a given moment.
-   *
-   * <p>Advances from the last push while playing, holds still while paused or
-   * buffering, and never runs past the end of the track.
-   *
-   * @param nowMs the current time, in the same clock as {@link #receivedAtMs}
-   * @return the position in milliseconds
+   * Where playback is at a given time: advances from the snapshot while playing, holds when paused
+   * or buffering, and never passes the end.
    */
   public long positionAt(long nowMs) {
     if (!isPlaying || buffering) {
@@ -87,17 +69,12 @@ public final class MirrorState {
     return durationMs > 0 ? Math.min(advanced, durationMs) : advanced;
   }
 
-  /**
-   * A copy of this snapshot stamped with its arrival time.
-   *
-   * @param receivedAtMs the arrival time
-   * @return the stamped copy
-   */
+  /** A copy that notes when the snapshot arrived. */
   public MirrorState withReceivedAt(long receivedAtMs) {
     return new Builder(this).receivedAtMs(receivedAtMs).build();
   }
 
-  /** Builds {@link MirrorState} values; every field defaults to "nothing". */
+  /** Builds a {@link MirrorState}; every field starts as "nothing". */
   public static final class Builder {
 
     private boolean hasTrack;
@@ -115,14 +92,10 @@ public final class MirrorState {
     private boolean remote;
     private long receivedAtMs;
 
-    /** Start with every field at "nothing". */
+    /** Starts with nothing set. */
     public Builder() {}
 
-    /**
-     * Start from an existing snapshot.
-     *
-     * @param s the snapshot to copy
-     */
+    /** Starts from an existing state. */
     private Builder(MirrorState s) {
       hasTrack = s.hasTrack;
       trackId = s.trackId;
@@ -140,16 +113,7 @@ public final class MirrorState {
       receivedAtMs = s.receivedAtMs;
     }
 
-    /**
-     * Set the current track. Marks the state as having a track.
-     *
-     * @param id the track id
-     * @param title the track title
-     * @param artist the artist, or an empty string
-     * @param album the album, or an empty string
-     * @param durationMs the track length in milliseconds, or 0 when unknown
-     * @return this builder
-     */
+    /** Sets the current track, and marks that there is one. */
     public Builder track(String id, String title, String artist, String album, long durationMs) {
       this.hasTrack = true;
       this.trackId = id;
@@ -160,21 +124,13 @@ public final class MirrorState {
       return this;
     }
 
-    /**
-     * @param artBase64 the cover as base64 JPEG, or null when there is none
-     * @return this builder
-     */
+    /** Sets the cover, as base64 JPEG; null for none. */
     public Builder art(String artBase64) {
       this.artBase64 = artBase64;
       return this;
     }
 
-    /**
-     * @param isPlaying whether the WebView is playing
-     * @param buffering whether playback is stalled waiting for data
-     * @param positionMs the position at the time of the push
-     * @return this builder
-     */
+    /** Sets whether it is playing, whether it is stalled, and the position. */
     public Builder playback(boolean isPlaying, boolean buffering, long positionMs) {
       this.isPlaying = isPlaying;
       this.buffering = buffering;
@@ -182,38 +138,26 @@ public final class MirrorState {
       return this;
     }
 
-    /**
-     * @param hasNext whether the queue has a next track
-     * @param hasPrevious whether the queue has a previous track
-     * @return this builder
-     */
+    /** Sets whether the queue has a next and a previous track. */
     public Builder queue(boolean hasNext, boolean hasPrevious) {
       this.hasNext = hasNext;
       this.hasPrevious = hasPrevious;
       return this;
     }
 
-    /**
-     * @param remote whether the phone is remote-controlling another device
-     * @return this builder
-     */
+    /** Sets whether the phone is remote-controlling another Chill device. */
     public Builder remote(boolean remote) {
       this.remote = remote;
       return this;
     }
 
-    /**
-     * @param receivedAtMs the arrival time to stamp
-     * @return this builder
-     */
+    /** Sets when the snapshot arrived. */
     private Builder receivedAtMs(long receivedAtMs) {
       this.receivedAtMs = receivedAtMs;
       return this;
     }
 
-    /**
-     * @return the immutable snapshot
-     */
+    /** Creates the finished, unchangeable state. */
     public MirrorState build() {
       return new MirrorState(this);
     }

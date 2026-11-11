@@ -4,19 +4,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Reads the JSON the WebView pushes into a {@link MirrorState}.
- *
- * <p>The shape is defined by {@code NativeMediaState} in
- * {@code common/nativeMedia.ts}.
+ * Turns the JSON snapshot of the web player into a {@link MirrorState}. The shape
+ * is defined on the web side as {@code NativeMediaState} in
+ * {@code common/nativeMedia.ts}; change one and you must change the other.
  */
 public final class MirrorStateParser {
 
   private MirrorStateParser() {}
 
   /**
-   * @param json the pushed snapshot
-   * @return the parsed state
-   * @throws JSONException when a required field is missing or the wrong type
+   * Reads one snapshot, converting the page's seconds to milliseconds.
+   *
+   * @throws JSONException if a required field is missing or the wrong type
    */
   public static MirrorState parse(JSONObject json) throws JSONException {
     MirrorState.Builder builder = new MirrorState.Builder();

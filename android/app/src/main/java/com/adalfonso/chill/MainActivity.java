@@ -4,17 +4,15 @@ import android.os.Bundle;
 import com.adalfonso.chill.media.MediaBridgePlugin;
 import com.getcapacitor.BridgeActivity;
 
-/** The app's single Activity: a Capacitor bridge with the media plugin added. */
+/**
+ * The app's only screen (an Android "Activity"): a WebView, which is an embedded
+ * browser, showing the web UI. The one thing added here is the media plugin.
+ */
 public class MainActivity extends BridgeActivity {
 
-  /**
-   * Register the media plugin, then let Capacitor build the bridge.
-   *
-   * @param savedInstanceState the saved state, passed through to Capacitor
-   */
+  /** Registers the media plugin so the web page can call it, before Capacitor starts. */
   @Override
   public void onCreate(Bundle savedInstanceState) {
-    // Custom plugins must be registered before the base class creates the bridge
     registerPlugin(MediaBridgePlugin.class);
     super.onCreate(savedInstanceState);
   }

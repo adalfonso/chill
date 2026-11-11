@@ -14,18 +14,11 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 /**
- * The service Android Auto connects to.
- *
- * <p>Android Auto finds it through the manifest, binds to it even when the app
- * is not running, and reads the now-playing state from its media session. In
- * phase 1 the session is backed by a {@link MirrorPlayer} that mirrors the
- * WebView's player. The browse root holds a single item: a message that tells
- * the driver to start playback on the phone while there is nothing to mirror, and
- * the current track once there is. Connected controllers are told when it
- * changes, so the message goes away on its own.
- *
- * <p>Only Android Auto, the system media controller, and Chill itself may
- * connect (see {@link CallerAllowlist}).
+ * The media service Android Auto connects to (an Android "Service" is a background
+ * component with no screen that other apps can connect to). It hosts the media
+ * session built on {@link MirrorPlayer}. The browse screen in the car is a
+ * one-entry list: a message to start playback on the phone, or the current track
+ * once there is one. Only apps on the {@link CallerAllowlist} may connect.
  */
 @UnstableApi
 public final class ChillMediaService extends MediaLibraryService {
@@ -40,7 +33,7 @@ public final class ChillMediaService extends MediaLibraryService {
   private MediaLibrarySession session;
   private String browseKey;
 
-  /** Create the mirror player and the media session Android Auto connects to. */
+  /** Creates the player and the media session, and starts watching the hub. */
   @Override
   public void onCreate() {
     super.onCreate();
@@ -50,17 +43,14 @@ public final class ChillMediaService extends MediaLibraryService {
     hub.addStateListener(hubListener);
   }
 
-  /**
-   * @param controllerInfo the controller asking for the session
-   * @return the one media session this service hosts
-   */
+  /** Hands Android the session when an app such as Android Auto connects. */
   @Nullable
   @Override
   public MediaLibrarySession onGetSession(MediaSession.ControllerInfo controllerInfo) {
     return session;
   }
 
-  /** Release the session and the player. */
+  /** Stops watching the hub and releases the session and player. */
   @Override
   public void onDestroy() {
     hub.removeStateListener(hubListener);
@@ -71,10 +61,8 @@ public final class ChillMediaService extends MediaLibraryService {
   }
 
   /**
-   * Tell connected controllers to reload the browse list when what it shows changes.
-   *
-   * <p>Without this, a car that opened the app before the phone was ready keeps
-   * showing the old message until the driver navigates away and back.
+   * When the list's entry would change, tells connected apps to reload it, so the message goes away
+   * on its own.
    */
   private void onHubChanged() {
     String key = browseKey(hub.state());
@@ -85,19 +73,12 @@ public final class ChillMediaService extends MediaLibraryService {
     }
   }
 
-  /**
-   * A short string that changes exactly when the browse list should change.
-   *
-   * @param state the current snapshot
-   * @return one value for the message, and one per track shown
-   */
+  /** A short label for what the list shows now; it changes exactly when the list should reload. */
   private static String browseKey(MirrorState state) {
     return state.showMessage() ? "message" : "track:" + state.trackId + ":" + state.title;
   }
 
-  /**
-   * @return the browse root item
-   */
+  /** The top of the browse tree. */
   private MediaItem rootItem() {
     return new MediaItem.Builder()
         .setMediaId(ROOT_ID)
@@ -110,9 +91,7 @@ public final class ChillMediaService extends MediaLibraryService {
         .build();
   }
 
-  /**
-   * @return the single item that tells the driver to start playback on the phone
-   */
+  /** The "start playback on the phone" entry. */
   private MediaItem messageItem() {
     return new MediaItem.Builder()
         .setMediaId(MESSAGE_ID)
@@ -125,10 +104,7 @@ public final class ChillMediaService extends MediaLibraryService {
         .build();
   }
 
-  /**
-   * @param state the current snapshot, which has a local track
-   * @return an item naming the track playing on the phone; tapping it does nothing
-   */
+  /** An entry naming the track playing on the phone; tapping it does nothing. */
   private MediaItem nowPlayingItem(MirrorState state) {
     return new MediaItem.Builder()
         .setMediaId(NOW_PLAYING_ID)
@@ -143,25 +119,17 @@ public final class ChillMediaService extends MediaLibraryService {
         .build();
   }
 
-  /**
-   * @return the one item the browse root holds right now
-   */
+  /** The one entry the list holds right now: the message, or the current track. */
   private MediaItem currentChild() {
     MirrorState state = hub.state();
 
     return state.showMessage() ? messageItem() : nowPlayingItem(state);
   }
 
-  /** Accepts allowed callers and serves the one-item library. */
+  /** Answers Android Auto's requests to connect and to browse. */
   private final class LibraryCallback implements MediaLibrarySession.Callback {
 
-    /**
-     * Accept a controller only when it is on the allowlist.
-     *
-     * @param mediaSession the session being connected to
-     * @param controller the controller asking to connect
-     * @return an accepted result for an allowed caller, otherwise a rejection
-     */
+    /** Lets an app connect only if the {@link CallerAllowlist} allows it. */
     @Override
     public MediaSession.ConnectionResult onConnect(
         MediaSession mediaSession, MediaSession.ControllerInfo controller) {
@@ -172,12 +140,7 @@ public final class ChillMediaService extends MediaLibraryService {
       return MediaLibrarySession.Callback.super.onConnect(mediaSession, controller);
     }
 
-    /**
-     * @param mediaSession the session being browsed
-     * @param browser the controller browsing
-     * @param params the browse parameters, if any
-     * @return the browse root
-     */
+    /** Returns the top of the browse tree. */
     @Override
     public ListenableFuture<LibraryResult<MediaItem>> onGetLibraryRoot(
         MediaLibrarySession mediaSession,
@@ -186,15 +149,7 @@ public final class ChillMediaService extends MediaLibraryService {
       return Futures.immediateFuture(LibraryResult.ofItem(rootItem(), params));
     }
 
-    /**
-     * @param mediaSession the session being browsed
-     * @param browser the controller browsing
-     * @param parentId the item whose children are wanted
-     * @param page the page number
-     * @param pageSize the page size
-     * @param params the browse parameters, if any
-     * @return a list holding the message, or the current track once there is one
-     */
+    /** Returns the list's single entry. */
     @Override
     public ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> onGetChildren(
         MediaLibrarySession mediaSession,
@@ -207,12 +162,7 @@ public final class ChillMediaService extends MediaLibraryService {
           LibraryResult.ofItemList(ImmutableList.of(currentChild()), params));
     }
 
-    /**
-     * @param mediaSession the session being browsed
-     * @param browser the controller browsing
-     * @param mediaId the item asked for
-     * @return the root, or the item the root currently holds
-     */
+    /** Returns one entry by id. */
     @Override
     public ListenableFuture<LibraryResult<MediaItem>> onGetItem(
         MediaLibrarySession mediaSession, MediaSession.ControllerInfo browser, String mediaId) {

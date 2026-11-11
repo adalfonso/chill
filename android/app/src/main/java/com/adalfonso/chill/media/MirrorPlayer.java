@@ -12,19 +12,12 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 /**
- * A player that plays nothing: it mirrors the WebView's player into the media
- * session so Android Auto can show it.
- *
- * <p>The WebView is the only source of truth in phase 1. This class never
- * changes state on its own. A command from the car goes to the WebView through
- * the {@link MediaBridgeHub}, and the car view updates only when the WebView
- * pushes its next snapshot. It never requests audio focus, so it cannot
- * interrupt the WebView's audio.
- *
- * <p>The playlist holds placeholder items either side of the current track so
- * that media3 treats next and previous as available exactly when the WebView's
- * queue has them. Seeking to a placeholder is translated into a next or
- * previous command.
+ * A pretend music player for Android's media system. It plays no sound: it reports
+ * whatever the web page last sent, so Android Auto can show it. Car button presses
+ * are forwarded to the web player through the hub, and the car view only changes
+ * when the page next reports. It never takes audio focus, so it cannot interrupt
+ * the page's audio. (media3's {@code SimpleBasePlayer} lets a player be described
+ * by returning its state from {@link #getState}.)
  */
 @UnstableApi
 public final class MirrorPlayer extends SimpleBasePlayer {
@@ -34,30 +27,22 @@ public final class MirrorPlayer extends SimpleBasePlayer {
   // one passed to removeStateListener would never match the one added
   private final MediaBridgeHub.StateListener hubListener = this::invalidateState;
 
-  /**
-   * @param looper the application looper the media session runs on
-   * @param hub the hub holding the pushed state and the command sink
-   */
+  /** Starts mirroring the hub, refreshing the media session whenever it changes. */
   public MirrorPlayer(Looper looper, MediaBridgeHub hub) {
     super(looper);
     this.hub = hub;
     hub.addStateListener(hubListener);
   }
 
-  /** Stop listening to the hub. */
+  /** Stops mirroring the hub. */
   public void detach() {
     hub.removeStateListener(hubListener);
   }
 
   /**
-   * Build the player state the media session shows from the hub's snapshot.
-   *
-   * <p>With no local track, or while the phone is remote-controlling another
-   * device, the player is idle with no commands, so the car shows the message.
-   * Otherwise the playlist holds the current track and a placeholder either side
-   * when the WebView's queue has a next or previous track.
-   *
-   * @return the player state
+   * Describes the player for the media session: idle with no controls when there is
+   * nothing to show, otherwise the current track with an empty placeholder item before
+   * and after it, so next and previous appear exactly when the queue has them.
    */
   @Override
   protected State getState() {
@@ -93,22 +78,15 @@ public final class MirrorPlayer extends SimpleBasePlayer {
   }
 
   /**
-   * The current track's place in the playlist, which has a placeholder before it
-   * when the queue has a previous track.
-   *
-   * @param state the current snapshot
-   * @return 1 when there is a previous track, otherwise 0
+   * The current track's place in the playlist: 1 when a previous-track placeholder sits before it.
    */
   private static int currentIndex(MirrorState state) {
     return state.hasPrevious ? 1 : 0;
   }
 
   /**
-   * Work out which transport commands the car may use.
-   *
-   * @param state the current snapshot
-   * @return play and pause always; seek only with a known duration; next and
-   *     previous only when the queue has them
+   * The buttons the car may show: play/pause always, seek if the length is known, next and previous
+   * if the queue has them.
    */
   private static Player.Commands commandsFor(MirrorState state) {
     Player.Commands.Builder commands =
@@ -136,12 +114,7 @@ public final class MirrorPlayer extends SimpleBasePlayer {
   }
 
   /**
-   * Build the current track's item, with its cover when it is valid.
-   *
-   * <p>A malformed cover is ignored so it cannot take the whole session down.
-   *
-   * @param state the current snapshot
-   * @return the playlist item for the current track
+   * The current track's playlist item, with title, artist, album and cover; a bad cover is ignored.
    */
   private static MediaItemData currentItem(MirrorState state) {
     MediaMetadata.Builder metadata =
@@ -172,12 +145,7 @@ public final class MirrorPlayer extends SimpleBasePlayer {
         .build();
   }
 
-  /**
-   * Build an empty item that stands in for a neighbouring track.
-   *
-   * @param uid the item's unique id
-   * @return the placeholder item
-   */
+  /** An empty stand-in item for a neighbouring track. */
   private static MediaItemData placeholder(String uid) {
     return new MediaItemData.Builder(uid)
         .setMediaItem(new MediaItem.Builder().setMediaId("chill-" + uid).build())
@@ -185,13 +153,8 @@ public final class MirrorPlayer extends SimpleBasePlayer {
   }
 
   /**
-   * Send a play or pause from the car to the WebView.
-   *
-   * <p>The mirror's own state does not change; it follows the WebView's next
-   * push.
-   *
-   * @param playWhenReady true for play, false for pause
-   * @return an already-complete future
+   * The car pressed play or pause: sends it to the web player. Our own state waits for the page to
+   * report back.
    */
   @Override
   protected ListenableFuture<?> handleSetPlayWhenReady(boolean playWhenReady) {
@@ -202,15 +165,8 @@ public final class MirrorPlayer extends SimpleBasePlayer {
   }
 
   /**
-   * Turn a car seek into a command for the WebView.
-   *
-   * <p>A seek to a placeholder item is a next or previous; a seek within the
-   * current item is a position seek.
-   *
-   * @param mediaItemIndex the playlist index the controller asked for
-   * @param positionMs the position within that item
-   * @param seekCommand the media3 command that caused the seek
-   * @return an already-complete future
+   * The car sought: a jump to the next or previous placeholder is a next or previous command,
+   * anything else is a seek within the track.
    */
   @Override
   protected ListenableFuture<?> handleSeek(int mediaItemIndex, long positionMs, int seekCommand) {

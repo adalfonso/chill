@@ -3,10 +3,10 @@ package com.adalfonso.chill.media;
 import java.util.Locale;
 
 /**
- * A command from the car, on its way to the WebView player.
+ * A button press from the car, on its way to the web player.
  *
  * @param action what the car asked for
- * @param positionSeconds the target position in seconds; only meaningful for a seek
+ * @param positionSeconds the target position; only used for a seek
  */
 public record MirrorCommand(Action action, double positionSeconds) {
 
@@ -18,30 +18,18 @@ public record MirrorCommand(Action action, double positionSeconds) {
     PREVIOUS,
     SEEK;
 
-    /**
-     * @return the name the WebView knows this action by, e.g. {@code pause}
-     */
+    /** The lowercase name the web page knows this action by, such as {@code pause}. */
     public String wireName() {
       return name().toLowerCase(Locale.ROOT);
     }
   }
 
-  /**
-   * A command that carries no position.
-   *
-   * @param action what the car asked for
-   * @return the command
-   */
+  /** A command with no position, such as pause. */
   public static MirrorCommand of(Action action) {
     return new MirrorCommand(action, 0);
   }
 
-  /**
-   * A seek to a position.
-   *
-   * @param positionMs the target position in milliseconds
-   * @return the seek command, with the position converted to seconds
-   */
+  /** A seek to a position given in milliseconds. */
   public static MirrorCommand seek(long positionMs) {
     return new MirrorCommand(Action.SEEK, positionMs / 1000.0);
   }
