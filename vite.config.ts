@@ -16,9 +16,8 @@ export default defineConfig({
   },
   plugins: [
     preact(),
-    // Brotli pre-compression, served by nginx via `brotli_static`. There is no
-    // gzip variant: nginx never served the .gz files, and browsers without
-    // Brotli fall back to nginx's on-the-fly `gzip on`.
+    // Brotli pre-compression, served by nginx via `brotli_static`. No .gz
+    // copies: Android's asset merger rejects `x.js.gz` next to `x.js`.
     viteCompression({
       algorithm: "brotliCompress",
       ext: ".br",
