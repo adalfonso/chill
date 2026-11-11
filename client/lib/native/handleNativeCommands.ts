@@ -4,20 +4,10 @@ import { useNext } from "@client/hooks/useNext";
 import { usePause } from "@client/hooks/usePause";
 import { usePlay } from "@client/hooks/usePlay";
 import { usePrevious } from "@client/hooks/usePrevious";
-import type { NativeMediaCommand } from "@common/nativeMedia";
-
-/**
- * Convert a position in seconds to the fraction of the current track
- *
- * The player store seeks by fraction, but the car reports seconds. The track
- * duration comes from metadata, matching how the scrubber computes it.
- *
- * @param seconds - target position in seconds
- * @param duration - track length in seconds
- * @returns the position as a fraction clamped to 0..1
- */
-const toFraction = (seconds: number, duration: number): number =>
-  Math.min(1, Math.max(0, seconds / duration));
+import type {
+  NativeMediaAction,
+  NativeMediaCommand,
+} from "@common/nativeMedia";
 
 /**
  * Run one car command against the phone's player
@@ -37,13 +27,14 @@ export const handleNativeCommand = (command: NativeMediaCommand): void => {
     return;
   }
 
-  const actions: Record<string, () => void> = {
+  const actions: Record<NativeMediaAction, () => void> = {
     play: () => usePlay()({}),
     pause: () => usePause()(),
     next: () => useNext()({}),
     previous: () => usePrevious()(),
     seek: () => {
-      if (typeof command.position_s !== "number") {
+      // Without a usable duration there is no fraction to seek to
+      if (typeof command.position_s !== "number" || !(track.duration > 0)) {
         return;
       }
 
@@ -67,3 +58,16 @@ export const handleNativeCommand = (command: NativeMediaCommand): void => {
  */
 export const startNativeCommands = (): (() => void) =>
   onNativeCommand(handleNativeCommand);
+
+/**
+ * Convert a position in seconds to the fraction of the current track
+ *
+ * The player store seeks by fraction, but the car reports seconds. The track
+ * duration comes from metadata, matching how the scrubber computes it.
+ *
+ * @param seconds - target position in seconds
+ * @param duration - track length in seconds, greater than zero
+ * @returns the position as a fraction clamped to 0..1
+ */
+const toFraction = (seconds: number, duration: number): number =>
+  Math.min(1, Math.max(0, seconds / duration));

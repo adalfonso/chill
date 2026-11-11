@@ -1,5 +1,12 @@
+const mock_clear_state = jest.fn().mockResolvedValue(undefined);
+
+jest.mock("../client/lib/native/mediaBridge", () => ({
+  clearState: (...args: unknown[]) => mock_clear_state(...args),
+}));
+
 import {
   maybeRefresh,
+  redirectToLogin,
   refresh,
 } from "../client/lib/auth/refresh";
 import {
@@ -26,6 +33,17 @@ beforeEach(() => {
   Object.defineProperty(window, "location", {
     writable: true,
     value: { href: "http://localhost/" },
+  });
+});
+
+describe("redirectToLogin", () => {
+  beforeEach(() => mock_clear_state.mockClear());
+
+  it("tells native to forget the playback, then navigates to the login page", () => {
+    redirectToLogin();
+
+    expect(mock_clear_state).toHaveBeenCalledTimes(1);
+    expect(window.location.href).toBe("/auth/login");
   });
 });
 

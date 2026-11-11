@@ -68,6 +68,16 @@ describe("handleNativeCommand", () => {
     expect(mock_seek).toHaveBeenCalledWith(1);
   });
 
+  it("ignores a seek on a track with no usable duration", () => {
+    mock_now_playing.value = { duration: 0 };
+    handleNativeCommand({ action: "seek", position_s: 10 });
+
+    mock_now_playing.value = { duration: Number.NaN };
+    handleNativeCommand({ action: "seek", position_s: 10 });
+
+    expect(mock_seek).not.toHaveBeenCalled();
+  });
+
   it("ignores a seek with no position", () => {
     handleNativeCommand({ action: "seek" });
 
