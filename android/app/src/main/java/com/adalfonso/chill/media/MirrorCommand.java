@@ -1,26 +1,39 @@
 package com.adalfonso.chill.media;
 
-/** A command from the car, on its way to the WebView player. */
-public final class MirrorCommand {
+import java.util.Locale;
 
-  public static final String PLAY = "play";
-  public static final String PAUSE = "pause";
-  public static final String NEXT = "next";
-  public static final String PREVIOUS = "previous";
-  public static final String SEEK = "seek";
+/**
+ * A command from the car, on its way to the WebView player.
+ *
+ * @param action what the car asked for
+ * @param positionSeconds the target position in seconds; only meaningful for a seek
+ */
+public record MirrorCommand(Action action, double positionSeconds) {
 
-  public final String action;
-  /** Target position in seconds; only meaningful for {@link #SEEK}. */
-  public final double positionSeconds;
+  /** What the car can ask the phone's player to do. */
+  public enum Action {
+    PLAY,
+    PAUSE,
+    NEXT,
+    PREVIOUS,
+    SEEK;
+
+    /**
+     * @return the name the WebView knows this action by, e.g. {@code pause}
+     */
+    public String wireName() {
+      return name().toLowerCase(Locale.ROOT);
+    }
+  }
 
   /**
-   * @param action one of the action constants
-   * @param positionSeconds the target position in seconds; ignored unless the
-   *     action is {@link #SEEK}
+   * A command that carries no position.
+   *
+   * @param action what the car asked for
+   * @return the command
    */
-  public MirrorCommand(String action, double positionSeconds) {
-    this.action = action;
-    this.positionSeconds = positionSeconds;
+  public static MirrorCommand of(Action action) {
+    return new MirrorCommand(action, 0);
   }
 
   /**
@@ -30,16 +43,6 @@ public final class MirrorCommand {
    * @return the seek command, with the position converted to seconds
    */
   public static MirrorCommand seek(long positionMs) {
-    return new MirrorCommand(SEEK, positionMs / 1000.0);
-  }
-
-  /**
-   * A command that carries no position.
-   *
-   * @param action one of the action constants
-   * @return the command
-   */
-  public static MirrorCommand of(String action) {
-    return new MirrorCommand(action, 0);
+    return new MirrorCommand(Action.SEEK, positionMs / 1000.0);
   }
 }

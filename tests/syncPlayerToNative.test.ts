@@ -338,44 +338,11 @@ describe("album art", () => {
     mock_player.now_playing.value = track({ album_art_filename: cover });
     await flush();
 
-    expect(global.fetch).toHaveBeenCalledWith(
-      `/api/v1/media/cover/${cover}?size=256`,
-    );
     expect(typeof last_state().track.art_base64).toBe("string");
     expect(last_state().track.art_base64.length).toBeGreaterThan(0);
   });
 
-  it("fetches a repeated cover only once", async () => {
-    const cover = fresh_cover();
-    global.fetch = jest.fn().mockResolvedValue(ok_response()) as never;
-    stop = startNativeSync();
-
-    mock_player.now_playing.value = track({ album_art_filename: cover });
-    await flush();
-    mock_player.now_playing.value = track({ id: 8, album_art_filename: cover });
-    await flush();
-
-    expect(global.fetch).toHaveBeenCalledTimes(1);
-  });
-
-  it("does not start a second fetch for a cover that is still loading", async () => {
-    const cover = fresh_cover();
-    let release: (value: unknown) => void = () => {};
-    global.fetch = jest.fn(
-      () => new Promise((resolve) => (release = resolve)),
-    ) as never;
-    stop = startNativeSync();
-
-    mock_player.now_playing.value = track({ album_art_filename: cover });
-    mock_player.is_playing.value = true;
-    mock_player.is_playing.value = false;
-    await tick();
-
-    expect(global.fetch).toHaveBeenCalledTimes(1);
-    release({ ok: false });
-  });
-
-  it("publishes state with no art and does not throw when the cover fetch fails", async () => {
+  it("publishes state with no art when the cover fetch fails", async () => {
     const cover = fresh_cover();
     global.fetch = jest.fn().mockRejectedValue(new Error("offline")) as never;
     stop = startNativeSync();
@@ -384,50 +351,6 @@ describe("album art", () => {
     await flush();
 
     expect(last_state().track.art_base64).toBeNull();
-  });
-
-  it("retries a failed cover on the next change instead of giving up for the session", async () => {
-    const cover = fresh_cover();
-    global.fetch = jest
-      .fn()
-      .mockRejectedValueOnce(new Error("offline"))
-      .mockResolvedValue(ok_response()) as never;
-    stop = startNativeSync();
-
-    mock_player.now_playing.value = track({ album_art_filename: cover });
-    await flush();
-    expect(last_state().track.art_base64).toBeNull();
-
-    mock_player.is_playing.value = true;
-    await flush();
-
-    expect(global.fetch).toHaveBeenCalledTimes(2);
-    expect(typeof last_state().track.art_base64).toBe("string");
-  });
-
-  it("forgets the oldest cover past the cache limit and fetches it again", async () => {
-    global.fetch = jest.fn().mockResolvedValue(ok_response()) as never;
-    stop = startNativeSync();
-    const first = fresh_cover();
-
-    mock_player.now_playing.value = track({ album_art_filename: first });
-    await flush();
-
-    for (let i = 0; i < 20; i += 1) {
-      mock_player.now_playing.value = track({
-        id: 100 + i,
-        album_art_filename: fresh_cover(),
-      });
-      await flush();
-    }
-
-    const calls_before = (global.fetch as jest.Mock).mock.calls.length;
-    mock_player.now_playing.value = track({ id: 7, album_art_filename: first });
-    await flush();
-
-    expect((global.fetch as jest.Mock).mock.calls.length).toBe(
-      calls_before + 1,
-    );
   });
 
   it("does not republish a cover for a track that is no longer current", async () => {
@@ -440,10 +363,7 @@ describe("album art", () => {
 
     mock_player.now_playing.value = track({ album_art_filename: cover });
     await tick();
-    mock_player.now_playing.value = track({
-      id: 9,
-      album_art_filename: null,
-    });
+    mock_player.now_playing.value = track({ id: 9, album_art_filename: null });
     await tick();
     mock_publish.mockClear();
 

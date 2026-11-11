@@ -1,7 +1,8 @@
 package com.adalfonso.chill.media;
 
+import static com.adalfonso.chill.media.TestSupport.onMain;
+import static com.adalfonso.chill.media.TestSupport.waitUntil;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.ComponentName;
@@ -13,7 +14,6 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import androidx.media3.common.util.UnstableApi;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.platform.app.InstrumentationRegistry;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
@@ -46,7 +46,7 @@ public class LegacySessionViewTest {
   @After
   public void tearDown() {
     if (browser != null) {
-      InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> browser.disconnect());
+      onMain(() -> browser.disconnect());
     }
 
     hub.teardown();
@@ -63,8 +63,7 @@ public class LegacySessionViewTest {
   private void connect() throws Exception {
     CountDownLatch connected = new CountDownLatch(1);
 
-    InstrumentationRegistry.getInstrumentation()
-        .runOnMainSync(
+    onMain(
             () -> {
               browser =
                   new MediaBrowserCompat(
@@ -93,20 +92,6 @@ public class LegacySessionViewTest {
     return controller.getPlaybackState();
   }
 
-  private void waitUntil(java.util.function.BooleanSupplier condition) throws Exception {
-    long deadline = System.currentTimeMillis() + 10_000;
-
-    while (System.currentTimeMillis() < deadline) {
-      if (condition.getAsBoolean()) {
-        return;
-      }
-
-      Thread.sleep(50);
-    }
-
-    throw new AssertionError("Condition not met within 10 seconds");
-  }
-
   @Test
   public void metadata_carries_the_track_duration_the_progress_bar_needs() throws Exception {
     hub.publish(track(true, 10_000));
@@ -130,7 +115,6 @@ public class LegacySessionViewTest {
     assertEquals(1.0f, s.getPlaybackSpeed(), 0.001f);
     assertTrue("position should start near the pushed 10s", Math.abs(s.getPosition() - 10_000) < 2_000);
     assertTrue("seek should be offered", (s.getActions() & PlaybackStateCompat.ACTION_SEEK_TO) != 0);
-    assertNotNull(s);
     assertTrue("update time should be set", s.getLastPositionUpdateTime() > 0);
   }
 

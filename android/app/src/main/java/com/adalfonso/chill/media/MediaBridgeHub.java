@@ -1,6 +1,9 @@
 package com.adalfonso.chill.media;
 
+import android.os.Handler;
+import android.os.Looper;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
 import java.util.function.LongSupplier;
 
 /**
@@ -16,7 +19,7 @@ import java.util.function.LongSupplier;
  */
 public final class MediaBridgeHub {
 
-  /** Told when the state changes, so the player can refresh what Android Auto sees. */
+  /** Told, on the listener executor, when the state changes. */
   public interface StateListener {
     void onStateChanged();
   }
@@ -26,25 +29,34 @@ public final class MediaBridgeHub {
     void send(MirrorCommand command);
   }
 
-  private static final MediaBridgeHub INSTANCE = new MediaBridgeHub(System::currentTimeMillis);
-
   private final LongSupplier clock;
+  private final Executor listenerExecutor;
   private final CopyOnWriteArrayList<StateListener> listeners = new CopyOnWriteArrayList<>();
   private volatile MirrorState state = MirrorState.EMPTY;
   private volatile CommandSink commandSink;
 
   /**
    * @param clock the time source used to stamp pushed states
+   * @param listenerExecutor where state listeners run; the main looper in the app, so
+   *     listeners never have to hop threads themselves
    */
-  public MediaBridgeHub(LongSupplier clock) {
+  public MediaBridgeHub(LongSupplier clock, Executor listenerExecutor) {
     this.clock = clock;
+    this.listenerExecutor = listenerExecutor;
+  }
+
+  /** Holds the shared hub, created on first use so unit tests never touch Android. */
+  private static final class Shared {
+    static final MediaBridgeHub HUB =
+        new MediaBridgeHub(
+            System::currentTimeMillis, new Handler(Looper.getMainLooper())::post);
   }
 
   /**
    * @return the shared hub for this process
    */
   public static MediaBridgeHub instance() {
-    return INSTANCE;
+    return Shared.HUB;
   }
 
   /**
@@ -130,8 +142,6 @@ public final class MediaBridgeHub {
 
   /** Tell every state listener that the state changed. */
   private void notifyListeners() {
-    for (StateListener listener : listeners) {
-      listener.onStateChanged();
-    }
+    listenerExecutor.execute(() -> listeners.forEach(StateListener::onStateChanged));
   }
 }

@@ -1,7 +1,6 @@
 /** @jest-environment jsdom */
 const mock_plugin = {
   publishState: jest.fn(),
-  clearState: jest.fn(),
   addListener: jest.fn(),
 };
 const mock_is_native = jest.fn();
@@ -12,7 +11,6 @@ jest.mock("@capacitor/core", () => ({
 }));
 
 import {
-  clearState,
   onNativeCommand,
   publishState,
 } from "../client/lib/native/mediaBridge";
@@ -30,7 +28,6 @@ const state: NativeMediaState = {
 
 beforeEach(() => {
   mock_plugin.publishState.mockReset().mockResolvedValue(undefined);
-  mock_plugin.clearState.mockReset().mockResolvedValue(undefined);
   mock_plugin.addListener.mockReset();
   mock_is_native.mockReset();
 });
@@ -49,12 +46,6 @@ describe("mediaBridge on the native platform", () => {
     mock_plugin.publishState.mockRejectedValue(new Error("bridge down"));
 
     await expect(publishState(state)).resolves.toBeUndefined();
-  });
-
-  it("forwards a clear to the plugin", async () => {
-    await clearState();
-
-    expect(mock_plugin.clearState).toHaveBeenCalledTimes(1);
   });
 
   it("delivers a command event to the subscribed handler", () => {
@@ -81,12 +72,10 @@ describe("mediaBridge on the native platform", () => {
 describe("mediaBridge on the web", () => {
   beforeEach(() => mock_is_native.mockReturnValue(false));
 
-  it("publish and clear do nothing and do not throw", async () => {
+  it("publishing does nothing and does not throw", async () => {
     await expect(publishState(state)).resolves.toBeUndefined();
-    await expect(clearState()).resolves.toBeUndefined();
 
     expect(mock_plugin.publishState).not.toHaveBeenCalled();
-    expect(mock_plugin.clearState).not.toHaveBeenCalled();
   });
 
   it("subscribing never touches the plugin and returns a safe unsubscribe", () => {

@@ -4,10 +4,7 @@ import { useNext } from "@client/hooks/useNext";
 import { usePause } from "@client/hooks/usePause";
 import { usePlay } from "@client/hooks/usePlay";
 import { usePrevious } from "@client/hooks/usePrevious";
-import type {
-  NativeMediaAction,
-  NativeMediaCommand,
-} from "@common/nativeMedia";
+import type { NativeMediaCommand } from "@common/nativeMedia";
 
 /**
  * Run one car command against the phone's player
@@ -27,27 +24,22 @@ export const handleNativeCommand = (command: NativeMediaCommand): void => {
     return;
   }
 
-  const actions: Record<NativeMediaAction, () => void> = {
-    play: () => usePlay()({}),
-    pause: () => usePause()(),
-    next: () => useNext()({}),
-    previous: () => usePrevious()(),
-    seek: () => {
-      // Some routes send the duration as a numeric string, so coerce it; with
-      // no usable duration there is no fraction to seek to
-      const duration = Number(track.duration);
-
-      if (typeof command.position_s !== "number" || !(duration > 0)) {
-        return;
-      }
-
-      player.seek(toFraction(command.position_s, duration));
-    },
-  };
-
-  // Own keys only, so an inherited name like "constructor" is not an action
-  if (Object.hasOwn(actions, command.action)) {
-    actions[command.action]();
+  switch (command.action) {
+    case "play":
+      usePlay()({});
+      break;
+    case "pause":
+      usePause()();
+      break;
+    case "next":
+      useNext()({});
+      break;
+    case "previous":
+      usePrevious()();
+      break;
+    case "seek":
+      seekTo(command.position_s, Number(track.duration));
+      break;
   }
 };
 
@@ -63,14 +55,19 @@ export const startNativeCommands = (): (() => void) =>
   onNativeCommand(handleNativeCommand);
 
 /**
- * Convert a position in seconds to the fraction of the current track
+ * Seek the current track to a position the car gave in seconds
  *
- * The player store seeks by fraction, but the car reports seconds. The track
- * duration comes from metadata, matching how the scrubber computes it.
+ * The player store seeks by fraction. Some routes send the duration as a numeric
+ * string, so the caller coerces it; with no usable duration there is nothing to
+ * seek within.
  *
- * @param seconds - target position in seconds
- * @param duration - track length in seconds, greater than zero
- * @returns the position as a fraction clamped to 0..1
+ * @param seconds - the target position, or undefined when the car sent none
+ * @param duration - the track length in seconds
  */
-const toFraction = (seconds: number, duration: number): number =>
-  Math.min(1, Math.max(0, seconds / duration));
+const seekTo = (seconds: number | undefined, duration: number): void => {
+  if (seconds === undefined || !(duration > 0)) {
+    return;
+  }
+
+  player.seek(Math.min(1, Math.max(0, seconds / duration)));
+};

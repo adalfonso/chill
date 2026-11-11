@@ -1,6 +1,5 @@
 package com.adalfonso.chill.media;
 
-import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
 import androidx.media3.common.MediaItem;
@@ -11,8 +10,6 @@ import androidx.media3.common.util.UnstableApi;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A player that plays nothing: it mirrors the WebView's player into the media
@@ -33,10 +30,9 @@ import java.util.List;
 public final class MirrorPlayer extends SimpleBasePlayer {
 
   private final MediaBridgeHub hub;
-  private final Handler handler;
   // Kept in a field: a method reference makes a new object each time, so the
   // one passed to removeStateListener would never match the one added
-  private final MediaBridgeHub.StateListener hubListener = this::onHubChanged;
+  private final MediaBridgeHub.StateListener hubListener = this::invalidateState;
 
   /**
    * @param looper the application looper the media session runs on
@@ -45,19 +41,12 @@ public final class MirrorPlayer extends SimpleBasePlayer {
   public MirrorPlayer(Looper looper, MediaBridgeHub hub) {
     super(looper);
     this.hub = hub;
-    this.handler = new Handler(looper);
     hub.addStateListener(hubListener);
   }
 
   /** Stop listening to the hub. */
   public void detach() {
     hub.removeStateListener(hubListener);
-  }
-
-  /** Refresh the session state on the main looper when the hub changes. */
-  private void onHubChanged() {
-    // The hub can change from the WebView's thread; the session needs its own
-    handler.post(this::invalidateState);
   }
 
   /**
@@ -72,46 +61,56 @@ public final class MirrorPlayer extends SimpleBasePlayer {
    */
   @Override
   protected State getState() {
-    MirrorState s = hub.state();
-    State.Builder builder = new State.Builder();
+    MirrorState state = hub.state();
 
-    if (s.showMessage()) {
-      return builder
-          .setAvailableCommands(new Player.Commands.Builder().build())
+    if (state.showMessage()) {
+      return new State.Builder()
+          .setAvailableCommands(Player.Commands.EMPTY)
           .setPlaybackState(Player.STATE_IDLE)
           .build();
     }
 
-    List<MediaItemData> items = new ArrayList<>();
+    ImmutableList.Builder<MediaItemData> items = ImmutableList.builder();
 
-    if (s.hasPrevious) {
+    if (state.hasPrevious) {
       items.add(placeholder("previous"));
     }
 
-    items.add(currentItem(s));
+    items.add(currentItem(state));
 
-    if (s.hasNext) {
+    if (state.hasNext) {
       items.add(placeholder("next"));
     }
 
-    return builder
-        .setAvailableCommands(commandsFor(s))
-        .setPlaybackState(s.buffering ? Player.STATE_BUFFERING : Player.STATE_READY)
-        .setPlayWhenReady(s.isPlaying, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
-        .setPlaylist(ImmutableList.copyOf(items))
-        .setCurrentMediaItemIndex(s.hasPrevious ? 1 : 0)
-        .setContentPositionMs(() -> s.positionAt(hub.now()))
+    return new State.Builder()
+        .setAvailableCommands(commandsFor(state))
+        .setPlaybackState(state.buffering ? Player.STATE_BUFFERING : Player.STATE_READY)
+        .setPlayWhenReady(state.isPlaying, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
+        .setPlaylist(items.build())
+        .setCurrentMediaItemIndex(currentIndex(state))
+        .setContentPositionMs(() -> state.positionAt(hub.now()))
         .build();
+  }
+
+  /**
+   * The current track's place in the playlist, which has a placeholder before it
+   * when the queue has a previous track.
+   *
+   * @param state the current snapshot
+   * @return 1 when there is a previous track, otherwise 0
+   */
+  private static int currentIndex(MirrorState state) {
+    return state.hasPrevious ? 1 : 0;
   }
 
   /**
    * Work out which transport commands the car may use.
    *
-   * @param s the current snapshot
+   * @param state the current snapshot
    * @return play and pause always; seek only with a known duration; next and
    *     previous only when the queue has them
    */
-  private static Player.Commands commandsFor(MirrorState s) {
+  private static Player.Commands commandsFor(MirrorState state) {
     Player.Commands.Builder commands =
         new Player.Commands.Builder()
             .addAll(
@@ -120,15 +119,15 @@ public final class MirrorPlayer extends SimpleBasePlayer {
                 Player.COMMAND_GET_TIMELINE,
                 Player.COMMAND_GET_METADATA);
 
-    if (s.durationMs > 0) {
+    if (state.durationMs > 0) {
       commands.add(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM);
     }
 
-    if (s.hasNext) {
+    if (state.hasNext) {
       commands.addAll(Player.COMMAND_SEEK_TO_NEXT, Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM);
     }
 
-    if (s.hasPrevious) {
+    if (state.hasPrevious) {
       commands.addAll(
           Player.COMMAND_SEEK_TO_PREVIOUS, Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM);
     }
@@ -141,16 +140,19 @@ public final class MirrorPlayer extends SimpleBasePlayer {
    *
    * <p>A malformed cover is ignored so it cannot take the whole session down.
    *
-   * @param s the current snapshot
+   * @param state the current snapshot
    * @return the playlist item for the current track
    */
-  private static MediaItemData currentItem(MirrorState s) {
+  private static MediaItemData currentItem(MirrorState state) {
     MediaMetadata.Builder metadata =
-        new MediaMetadata.Builder().setTitle(s.title).setArtist(s.artist).setAlbumTitle(s.album);
+        new MediaMetadata.Builder()
+            .setTitle(state.title)
+            .setArtist(state.artist)
+            .setAlbumTitle(state.album);
 
-    if (s.artBase64 != null) {
+    if (state.artBase64 != null) {
       try {
-        byte[] art = Base64.decode(s.artBase64, Base64.DEFAULT);
+        byte[] art = Base64.decode(state.artBase64, Base64.DEFAULT);
         metadata.setArtworkData(art, MediaMetadata.PICTURE_TYPE_FRONT_COVER);
       } catch (IllegalArgumentException e) {
         // A malformed cover must not take the whole session down; show no art
@@ -159,14 +161,14 @@ public final class MirrorPlayer extends SimpleBasePlayer {
 
     MediaItem item =
         new MediaItem.Builder()
-            .setMediaId("chill-" + s.trackId)
+            .setMediaId("chill-" + state.trackId)
             .setMediaMetadata(metadata.build())
             .build();
 
     return new MediaItemData.Builder("current")
         .setMediaItem(item)
-        .setDurationUs(s.durationMs * 1000)
-        .setIsSeekable(s.durationMs > 0)
+        .setDurationUs(state.durationMs * 1000)
+        .setIsSeekable(state.durationMs > 0)
         .build();
   }
 
@@ -193,7 +195,8 @@ public final class MirrorPlayer extends SimpleBasePlayer {
    */
   @Override
   protected ListenableFuture<?> handleSetPlayWhenReady(boolean playWhenReady) {
-    hub.sendCommand(MirrorCommand.of(playWhenReady ? MirrorCommand.PLAY : MirrorCommand.PAUSE));
+    hub.sendCommand(
+        MirrorCommand.of(playWhenReady ? MirrorCommand.Action.PLAY : MirrorCommand.Action.PAUSE));
 
     return Futures.immediateVoidFuture();
   }
@@ -211,12 +214,12 @@ public final class MirrorPlayer extends SimpleBasePlayer {
    */
   @Override
   protected ListenableFuture<?> handleSeek(int mediaItemIndex, long positionMs, int seekCommand) {
-    int current = hub.state().hasPrevious ? 1 : 0;
+    int current = currentIndex(hub.state());
 
     if (mediaItemIndex > current) {
-      hub.sendCommand(MirrorCommand.of(MirrorCommand.NEXT));
+      hub.sendCommand(MirrorCommand.of(MirrorCommand.Action.NEXT));
     } else if (mediaItemIndex < current) {
-      hub.sendCommand(MirrorCommand.of(MirrorCommand.PREVIOUS));
+      hub.sendCommand(MirrorCommand.of(MirrorCommand.Action.PREVIOUS));
     } else {
       hub.sendCommand(MirrorCommand.seek(Math.max(0, positionMs)));
     }

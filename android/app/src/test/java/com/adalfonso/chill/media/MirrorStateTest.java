@@ -67,7 +67,7 @@ public class MirrorStateTest {
 
   @Test
   public void two_pushes_in_a_row_leave_only_the_later_one() {
-    MediaBridgeHub hub = new MediaBridgeHub(() -> 0);
+    MediaBridgeHub hub = new MediaBridgeHub(() -> 0, Runnable::run);
 
     hub.publish(playingTrack().build());
     hub.publish(new MirrorState.Builder().track("8", "Other", "", "", 1_000).build());

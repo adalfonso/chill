@@ -1,5 +1,7 @@
 package com.adalfonso.chill.media;
 
+import static com.adalfonso.chill.media.TestSupport.onMain;
+import static com.adalfonso.chill.media.TestSupport.waitUntil;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -12,17 +14,17 @@ import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.session.LibraryResult;
-import androidx.media3.session.MediaLibraryService;
 import androidx.media3.session.MediaBrowser;
+import androidx.media3.session.MediaLibraryService.LibraryParams;
 import androidx.media3.session.SessionToken;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.platform.app.InstrumentationRegistry;
+import com.adalfonso.chill.R;
 import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.ListenableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,55 +62,29 @@ public class ChillMediaServiceTest {
     hub.teardown();
   }
 
-  private static void onMain(Runnable runnable) {
-    InstrumentationRegistry.getInstrumentation().runOnMainSync(runnable);
-  }
-
-  private static <T> T onMain(java.util.concurrent.Callable<T> callable) throws Exception {
-    AtomicReference<T> result = new AtomicReference<>();
-    AtomicReference<Exception> error = new AtomicReference<>();
-
-    onMain(
-        () -> {
-          try {
-            result.set(callable.call());
-          } catch (Exception e) {
-            error.set(e);
-          }
-        });
-
-    if (error.get() != null) {
-      throw error.get();
-    }
-
-    return result.get();
-  }
-
   private void connect() throws Exception {
-    SessionToken token = new SessionToken(context, new ComponentName(context, ChillMediaService.class));
-    AtomicReference<com.google.common.util.concurrent.ListenableFuture<MediaBrowser>> future =
-        new AtomicReference<>();
-
-    onMain(() -> future.set(new MediaBrowser.Builder(context, token).buildAsync()));
-    browser = future.get().get(15, TimeUnit.SECONDS);
+    connect(new AtomicInteger());
   }
 
-  /** Connect with a listener, so the test can see "reload the list" notifications. */
-  private void connectCounting(AtomicInteger changes) throws Exception {
+  /**
+   * Connect a media3 browser to the service.
+   *
+   * @param listChanges counts the "reload the browse list" notifications the browser receives
+   */
+  private void connect(AtomicInteger listChanges) throws Exception {
     SessionToken token = new SessionToken(context, new ComponentName(context, ChillMediaService.class));
-    AtomicReference<com.google.common.util.concurrent.ListenableFuture<MediaBrowser>> future =
-        new AtomicReference<>();
     MediaBrowser.Listener listener =
         new MediaBrowser.Listener() {
           @Override
           public void onChildrenChanged(
-              MediaBrowser b, String parentId, int itemCount, MediaLibraryService.LibraryParams params) {
-            changes.incrementAndGet();
+              MediaBrowser b, String parentId, int itemCount, LibraryParams params) {
+            listChanges.incrementAndGet();
           }
         };
 
-    onMain(() -> future.set(new MediaBrowser.Builder(context, token).setListener(listener).buildAsync()));
-    browser = future.get().get(15, TimeUnit.SECONDS);
+    ListenableFuture<MediaBrowser> future =
+        onMain(() -> new MediaBrowser.Builder(context, token).setListener(listener).buildAsync());
+    browser = future.get(15, TimeUnit.SECONDS);
   }
 
   private String rootChildTitle() throws Exception {
@@ -126,20 +102,6 @@ public class ChillMediaServiceTest {
         .build();
   }
 
-  private void waitFor(java.util.function.BooleanSupplier condition) throws Exception {
-    long deadline = System.currentTimeMillis() + 10_000;
-
-    while (System.currentTimeMillis() < deadline) {
-      if (onMain(condition::getAsBoolean)) {
-        return;
-      }
-
-      Thread.sleep(50);
-    }
-
-    throw new AssertionError("Condition not met within 10 seconds");
-  }
-
   @Test
   public void with_nothing_pushed_the_browse_root_holds_only_the_message() throws Exception {
     connect();
@@ -152,27 +114,27 @@ public class ChillMediaServiceTest {
 
     assertEquals(1, children.value.size());
     assertEquals(
-        context.getString(com.adalfonso.chill.R.string.car_start_on_phone),
+        context.getString(R.string.car_start_on_phone),
         children.value.get(0).mediaMetadata.title.toString());
   }
 
   @Test
   public void the_browse_list_follows_the_phone_and_tells_the_car_to_reload() throws Exception {
     AtomicInteger changes = new AtomicInteger();
-    connectCounting(changes);
+    connect(changes);
     onMain(() -> browser.subscribe("chill-root", null));
-    String message = context.getString(com.adalfonso.chill.R.string.car_start_on_phone);
+    String message = context.getString(R.string.car_start_on_phone);
     assertEquals(message, rootChildTitle());
 
     // The phone becomes ready: the message must give way to the track on its own
     hub.publish(playingTrack());
-    waitFor(() -> changes.get() >= 1);
+    waitUntil(() -> changes.get() >= 1);
     assertEquals("Test Song", rootChildTitle());
 
     // The phone signs out: back to the message
     int before = changes.get();
     hub.clear();
-    waitFor(() -> changes.get() > before);
+    waitUntil(() -> changes.get() > before);
     assertEquals(message, rootChildTitle());
   }
 
@@ -180,9 +142,9 @@ public class ChillMediaServiceTest {
   public void position_only_updates_do_not_reload_the_browse_list() throws Exception {
     hub.publish(playingTrack());
     AtomicInteger changes = new AtomicInteger();
-    connectCounting(changes);
+    connect(changes);
     onMain(() -> browser.subscribe("chill-root", null));
-    waitFor(() -> browser.getCurrentMediaItem() != null);
+    waitUntil(() -> browser.getCurrentMediaItem() != null);
     int before = changes.get();
 
     hub.publish(
@@ -201,7 +163,7 @@ public class ChillMediaServiceTest {
     hub.publish(playingTrack());
     connect();
 
-    waitFor(() -> browser.getCurrentMediaItem() != null);
+    waitUntil(() -> browser.getCurrentMediaItem() != null);
 
     assertEquals("Test Song", onMain(() -> browser.getMediaMetadata().title.toString()));
     assertEquals("Test Artist", onMain(() -> browser.getMediaMetadata().artist.toString()));
@@ -219,7 +181,7 @@ public class ChillMediaServiceTest {
             .build());
     connect();
 
-    waitFor(() -> browser.getCurrentMediaItem() != null);
+    waitUntil(() -> browser.getCurrentMediaItem() != null);
 
     assertEquals("Test Song", onMain(() -> browser.getMediaMetadata().title.toString()));
   }
@@ -234,7 +196,7 @@ public class ChillMediaServiceTest {
             .build());
     connect();
 
-    waitFor(() -> browser.getCurrentMediaItem() != null);
+    waitUntil(() -> browser.getCurrentMediaItem() != null);
 
     assertNotNull(onMain(() -> browser.getMediaMetadata().artworkData));
   }
@@ -243,7 +205,7 @@ public class ChillMediaServiceTest {
   public void position_advances_while_playing_and_holds_while_paused() throws Exception {
     hub.publish(playingTrack());
     connect();
-    waitFor(() -> browser.getCurrentMediaItem() != null);
+    waitUntil(() -> browser.getCurrentMediaItem() != null);
 
     long first = onMain(() -> browser.getCurrentPosition());
     Thread.sleep(1_200);
@@ -253,7 +215,7 @@ public class ChillMediaServiceTest {
 
     hub.publish(new MirrorState.Builder().track("7", "Test Song", "Test Artist", "Test Album", 200_000)
         .playback(false, false, 50_000).build());
-    waitFor(() -> !browser.isPlaying());
+    waitUntil(() -> !browser.isPlaying());
     long paused_a = onMain(() -> browser.getCurrentPosition());
     Thread.sleep(1_000);
     long paused_b = onMain(() -> browser.getCurrentPosition());
@@ -265,12 +227,12 @@ public class ChillMediaServiceTest {
   public void pause_from_the_car_goes_to_the_webview_and_does_not_change_state() throws Exception {
     hub.publish(playingTrack());
     connect();
-    waitFor(() -> browser.getCurrentMediaItem() != null);
+    waitUntil(() -> browser.getCurrentMediaItem() != null);
 
     onMain(() -> browser.pause());
-    waitFor(() -> !commands.isEmpty());
+    waitUntil(() -> !commands.isEmpty());
 
-    assertEquals(MirrorCommand.PAUSE, commands.get(0).action);
+    assertEquals(MirrorCommand.Action.PAUSE, commands.get(0).action());
     // The WebView is the source of truth: until it pushes, the car still says playing
     Thread.sleep(300);
     assertTrue(onMain(() -> browser.isPlaying()));
@@ -280,28 +242,28 @@ public class ChillMediaServiceTest {
   public void next_and_a_seek_from_the_car_become_commands() throws Exception {
     hub.publish(playingTrack());
     connect();
-    waitFor(() -> browser.getCurrentMediaItem() != null);
+    waitUntil(() -> browser.getCurrentMediaItem() != null);
 
     onMain(() -> browser.seekToNext());
-    waitFor(() -> commands.size() >= 1);
-    assertEquals(MirrorCommand.NEXT, commands.get(0).action);
+    waitUntil(() -> commands.size() >= 1);
+    assertEquals(MirrorCommand.Action.NEXT, commands.get(0).action());
 
     onMain(() -> browser.seekTo(30_000));
-    waitFor(() -> commands.size() >= 2);
-    assertEquals(MirrorCommand.SEEK, commands.get(1).action);
-    assertEquals(30.0, commands.get(1).positionSeconds, 0.001);
+    waitUntil(() -> commands.size() >= 2);
+    assertEquals(MirrorCommand.Action.SEEK, commands.get(1).action());
+    assertEquals(30.0, commands.get(1).positionSeconds(), 0.001);
   }
 
   @Test
   public void previous_item_from_the_car_becomes_a_previous_command() throws Exception {
     hub.publish(playingTrack());
     connect();
-    waitFor(() -> browser.getCurrentMediaItem() != null);
+    waitUntil(() -> browser.getCurrentMediaItem() != null);
 
     onMain(() -> browser.seekToPreviousMediaItem());
-    waitFor(() -> !commands.isEmpty());
+    waitUntil(() -> !commands.isEmpty());
 
-    assertEquals(MirrorCommand.PREVIOUS, commands.get(0).action);
+    assertEquals(MirrorCommand.Action.PREVIOUS, commands.get(0).action());
   }
 
   @Test
@@ -310,13 +272,13 @@ public class ChillMediaServiceTest {
     // current track. The mirror must turn that into a seek, not a track change.
     hub.publish(playingTrack());
     connect();
-    waitFor(() -> browser.getCurrentMediaItem() != null);
+    waitUntil(() -> browser.getCurrentMediaItem() != null);
 
     onMain(() -> browser.seekToPrevious());
-    waitFor(() -> !commands.isEmpty());
+    waitUntil(() -> !commands.isEmpty());
 
-    assertEquals(MirrorCommand.SEEK, commands.get(0).action);
-    assertEquals(0.0, commands.get(0).positionSeconds, 0.001);
+    assertEquals(MirrorCommand.Action.SEEK, commands.get(0).action());
+    assertEquals(0.0, commands.get(0).positionSeconds(), 0.001);
   }
 
   @Test
@@ -344,7 +306,7 @@ public class ChillMediaServiceTest {
             .playback(true, true, 5_000)
             .build());
     connect();
-    waitFor(() -> browser.getCurrentMediaItem() != null);
+    waitUntil(() -> browser.getCurrentMediaItem() != null);
 
     assertEquals(Player.STATE_BUFFERING, (int) onMain(() -> browser.getPlaybackState()));
   }
@@ -358,7 +320,7 @@ public class ChillMediaServiceTest {
             .queue(false, false)
             .build());
     connect();
-    waitFor(() -> browser.getCurrentMediaItem() != null);
+    waitUntil(() -> browser.getCurrentMediaItem() != null);
 
     assertFalse(onMain(() -> browser.isCommandAvailable(Player.COMMAND_SEEK_TO_NEXT)));
     assertFalse(onMain(() -> browser.isCommandAvailable(Player.COMMAND_SEEK_TO_PREVIOUS)));
@@ -369,10 +331,10 @@ public class ChillMediaServiceTest {
   public void clearing_the_state_drops_the_track_from_the_session() throws Exception {
     hub.publish(playingTrack());
     connect();
-    waitFor(() -> browser.getCurrentMediaItem() != null);
+    waitUntil(() -> browser.getCurrentMediaItem() != null);
 
     hub.clear();
-    waitFor(() -> browser.getCurrentMediaItem() == null);
+    waitUntil(() -> browser.getCurrentMediaItem() == null);
 
     assertNull(onMain(() -> browser.getCurrentMediaItem()));
   }
@@ -381,12 +343,12 @@ public class ChillMediaServiceTest {
   public void teardown_drops_the_track_and_later_commands() throws Exception {
     hub.publish(playingTrack());
     connect();
-    waitFor(() -> browser.getCurrentMediaItem() != null);
+    waitUntil(() -> browser.getCurrentMediaItem() != null);
 
     hub.teardown();
-    waitFor(() -> browser.getCurrentMediaItem() == null);
+    waitUntil(() -> browser.getCurrentMediaItem() == null);
 
-    assertFalse(hub.sendCommand(MirrorCommand.of(MirrorCommand.PLAY)));
+    assertFalse(hub.sendCommand(MirrorCommand.of(MirrorCommand.Action.PLAY)));
     assertNull(onMain(() -> browser.getCurrentMediaItem()));
   }
 }

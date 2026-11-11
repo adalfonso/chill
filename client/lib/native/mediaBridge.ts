@@ -6,7 +6,6 @@ import type { NativeMediaCommand, NativeMediaState } from "@common/nativeMedia";
 /** The native side of the bridge, implemented by the Android media plugin */
 type MediaBridgePlugin = {
   publishState: (state: NativeMediaState) => Promise<void>;
-  clearState: () => Promise<void>;
   addListener: (
     event: "command",
     handler: (command: NativeMediaCommand) => void,
@@ -40,22 +39,6 @@ export const publishState = async (state: NativeMediaState): Promise<void> => {
   }
 
   await plugin.publishState(state).catch(() => {});
-};
-
-/**
- * Tell the native media service to forget the current playback
- *
- * Used on sign-out so the car stops showing the last track. Does nothing
- * outside the native shell, and never rejects.
- *
- * @returns resolves once the clear settles
- */
-export const clearState = async (): Promise<void> => {
-  if (!isNativeShell()) {
-    return;
-  }
-
-  await plugin.clearState().catch(() => {});
 };
 
 /**

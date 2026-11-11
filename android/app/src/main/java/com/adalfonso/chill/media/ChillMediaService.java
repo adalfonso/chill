@@ -1,6 +1,5 @@
 package com.adalfonso.chill.media;
 
-import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.Nullable;
 import androidx.media3.common.MediaItem;
@@ -37,7 +36,6 @@ public final class ChillMediaService extends MediaLibraryService {
 
   private final MediaBridgeHub hub = MediaBridgeHub.instance();
   private final MediaBridgeHub.StateListener hubListener = this::onHubChanged;
-  private Handler handler;
   private MirrorPlayer player;
   private MediaLibrarySession session;
   private String browseKey;
@@ -46,7 +44,6 @@ public final class ChillMediaService extends MediaLibraryService {
   @Override
   public void onCreate() {
     super.onCreate();
-    handler = new Handler(Looper.getMainLooper());
     player = new MirrorPlayer(Looper.getMainLooper(), hub);
     session = new MediaLibrarySession.Builder(this, player, new LibraryCallback()).build();
     browseKey = browseKey(hub.state());
@@ -67,7 +64,6 @@ public final class ChillMediaService extends MediaLibraryService {
   @Override
   public void onDestroy() {
     hub.removeStateListener(hubListener);
-    handler.removeCallbacksAndMessages(null);
     session.release();
     player.detach();
     player.release();
@@ -77,20 +73,16 @@ public final class ChillMediaService extends MediaLibraryService {
   /**
    * Tell connected controllers to reload the browse list when what it shows changes.
    *
-   * <p>The hub can change on the WebView's thread, so the check runs on the main
-   * looper. Without this, a car that opened the app before the phone was ready
-   * keeps showing the old message until the driver navigates away and back.
+   * <p>Without this, a car that opened the app before the phone was ready keeps
+   * showing the old message until the driver navigates away and back.
    */
   private void onHubChanged() {
-    handler.post(
-        () -> {
-          String key = browseKey(hub.state());
+    String key = browseKey(hub.state());
 
-          if (!key.equals(browseKey)) {
-            browseKey = key;
-            session.notifyChildrenChanged(ROOT_ID, 1, null);
-          }
-        });
+    if (!key.equals(browseKey)) {
+      browseKey = key;
+      session.notifyChildrenChanged(ROOT_ID, 1, null);
+    }
   }
 
   /**
@@ -99,7 +91,7 @@ public final class ChillMediaService extends MediaLibraryService {
    * @param state the current snapshot
    * @return one value for the message, and one per track shown
    */
-  static String browseKey(MirrorState state) {
+  private static String browseKey(MirrorState state) {
     return state.showMessage() ? "message" : "track:" + state.trackId + ":" + state.title;
   }
 
