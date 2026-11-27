@@ -11,6 +11,11 @@ services:
       - 24678:24678
     env_file:
       - .env
+    environment:
+      # Run as root in development (entrypoint.sh skips its ownership fix
+      # and user switch): the bind mounts below are root-owned on the host,
+      # and switching users would re-own them there.
+      PUID: "0"
     volumes:
       # bind project root during development for HMR
       - ./client:/usr/src/app/client

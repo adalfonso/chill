@@ -193,6 +193,8 @@ SSL_PATH=/path/to/certs
 NGINX_CONFIG_PATH=/path/to/nginx
 ```
 
+The app container runs as an unprivileged user, not root. `entrypoint.sh` starts as root only to take ownership of the paths the app writes (`/opt/app/data`, `/opt/app/transcoded`, `dist/`, `prisma/`), then switches to `PUID:PGID` (default `99:100`, Unraid's `nobody:users`) via `su-exec`. It never touches the media library. Set `PUID`/`PGID` in `.env` to change the user; `PUID=0` keeps root and skips the ownership fix (used by `docker-compose.dev.yml`). Anything new the app writes at runtime must live under one of those paths or `/tmp`.
+
 The nginx config requires manual updates (stored in persistent volume) until a fix is implemented.
 
 CSP headers in `nginx.conf` are configured for security - maintain strict CSP policies for XSS protection.
