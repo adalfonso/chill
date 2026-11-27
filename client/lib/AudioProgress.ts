@@ -35,14 +35,19 @@ export const cancelAnimationFrames = () => {
 /**
  * Format a track length as m:ss
  *
- * Rounds to the nearest second. A non-finite value (NaN before the duration
+ * Rounds to the nearest second. Some server routes send the duration as a
+ * numeric string ("215.4"), so it is coerced first; `Number.isFinite` alone
+ * rejects strings. A value that is still not finite (NaN before the duration
  * is known, Infinity for a live stream) reads as 0:00.
  *
- * @param time - duration in seconds
+ * @param time - duration in seconds, possibly as a numeric string
  * @returns the time formatted as m:ss
  */
-export const getTimeTracking = (time: number) =>
-  formatClock(Number.isFinite(time) ? Math.round(time) : 0);
+export const getTimeTracking = (time: number | string) => {
+  const seconds = Number(time);
+
+  return formatClock(Number.isFinite(seconds) ? Math.round(seconds) : 0);
+};
 
 /**
  * Format a playback position as m:ss
