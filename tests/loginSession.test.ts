@@ -112,6 +112,20 @@ const createFakeDb = () => {
         return session;
       },
       deleteMany: async ({ where }: any) => {
+        // `create` drops this device's revoked row before its upsert.
+        if (where.device_id !== undefined) {
+          const revoked = [...sessions.values()].filter(
+            (s) =>
+              s.user_id === where.user_id &&
+              s.device_id === where.device_id &&
+              s.revoked_at !== null,
+          );
+
+          revoked.forEach((s) => sessions.delete(s.id));
+          return { count: revoked.length };
+        }
+
+        // Otherwise it is `prune`'s expiry sweep.
         const cutoff: Date =
           where.OR[0].idle_expires_at.lte ??
           where.OR[1].absolute_expires_at.lte;
@@ -254,6 +268,30 @@ describe("create", () => {
     });
 
     expect(first_rotate.ok).toBe(false);
+  });
+
+  it("gives a re-login after logout a new id, so the old id's deny key cannot block it", async () => {
+    const { service } = setup();
+    const params = {
+      user_id: 1,
+      device_id: "device-a",
+      user_agent: CHROME_WINDOWS_UA,
+      ip: "1.2.3.4",
+    };
+
+    const first = await service.create(params);
+    await service.revoke(first.login_session_id);
+    const second = await service.create(params);
+
+    expect(second.login_session_id).not.toEqual(first.login_session_id);
+
+    const second_rotate = await service.rotate({
+      refresh_token: second.refresh_token,
+      user_agent: CHROME_WINDOWS_UA,
+      ip: "1.2.3.4",
+    });
+
+    expect(second_rotate.ok).toBe(true);
   });
 });
 

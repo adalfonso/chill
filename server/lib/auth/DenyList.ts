@@ -175,8 +175,13 @@ const denyKeyFor = (login_session_id: number) =>
  * durably means (ADR-0009 KTD6) -- this is never wrong, only potentially
  * stale by however long the deny key would have covered.
  *
+ * A missing row also counts as denied: rows are only ever deleted once
+ * revoked or expired, either by pruning or by a re-login on the same device
+ * replacing its revoked row (see `LoginSession.create`), so a token whose
+ * session row is gone must not be accepted.
+ *
  * @param login_session_id - the login session to check
- * @returns true if the session's `revoked_at` is set
+ * @returns true if the session's `revoked_at` is set or the row is gone
  */
 const isDeniedInPostgres = async (
   login_session_id: number,
@@ -186,7 +191,7 @@ const isDeniedInPostgres = async (
     select: { revoked_at: true },
   });
 
-  return session?.revoked_at != null;
+  return session === null || session.revoked_at !== null;
 };
 
 let deny_list_instance: DenyList | undefined;

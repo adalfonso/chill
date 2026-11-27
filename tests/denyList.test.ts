@@ -98,6 +98,16 @@ describe("isDenied", () => {
     await expect(deny_list.isDenied(42)).resolves.toBe(false);
   });
 
+  it("falls back to Postgres and treats a deleted session row as denied", async () => {
+    const client = makeClient({
+      get: jest.fn().mockRejectedValue(new Error("connection reset")),
+    });
+    const deny_list = new DenyList(client);
+    find_unique.mockResolvedValue(null);
+
+    await expect(deny_list.isDenied(42)).resolves.toBe(true);
+  });
+
   it("opens the circuit after repeated failures and stops hammering Redis", async () => {
     const get = jest.fn().mockRejectedValue(new Error("connection reset"));
     const client = makeClient({ get });

@@ -72,6 +72,14 @@ export const createLoginSessionService = (
    * was never rotated is expired immediately so it fails quietly as an
    * ordinary miss rather than staying live under the restarted session.
    *
+   * A *revoked* row is never reused. Revocation writes a deny key for the
+   * row's id that outlives the logout by up to an access token's lifetime,
+   * so reviving the row would hand the new login an id that is still
+   * denied -- every request would 401 and the user would bounce straight
+   * back to the login page. The revoked row is deleted instead (pruning
+   * deletes revoked rows anyway) and a fresh one with a new id is created.
+   * The old id stays denied, so tokens minted before the logout stay dead.
+   *
    * @param params - the user, device, and request identity to bind the
    *   session to
    * @returns the session id and a plaintext refresh token
@@ -90,23 +98,32 @@ export const createLoginSessionService = (
     const idle_expires_at = new Date(now.getTime() + IDLE_WINDOW_MS);
     const absolute_expires_at = new Date(now.getTime() + ABSOLUTE_WINDOW_MS);
 
-    const session = await db.loginSession.upsert({
-      where: { user_id_device_id: { user_id, device_id } },
-      create: {
-        user_id,
-        device_id,
-        device_label,
-        last_seen_at: now,
-        idle_expires_at,
-        absolute_expires_at,
-      },
-      update: {
-        device_label,
-        last_seen_at: now,
-        revoked_at: null,
-        idle_expires_at,
-        absolute_expires_at,
-      },
+    const session = await db.$transaction(async (tx) => {
+      // Drop a revoked row for this device so the upsert below creates a
+      // fresh id rather than reviving one that is still deny-listed (see
+      // docblock).
+      await tx.loginSession.deleteMany({
+        where: { user_id, device_id, revoked_at: { not: null } },
+      });
+
+      // Reuse a live row for this device, or create one.
+      return tx.loginSession.upsert({
+        where: { user_id_device_id: { user_id, device_id } },
+        create: {
+          user_id,
+          device_id,
+          device_label,
+          last_seen_at: now,
+          idle_expires_at,
+          absolute_expires_at,
+        },
+        update: {
+          device_label,
+          last_seen_at: now,
+          idle_expires_at,
+          absolute_expires_at,
+        },
+      });
     });
 
     await db.refreshToken.updateMany({
