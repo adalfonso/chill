@@ -31,7 +31,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
 
   redis:
-    image: redis:7.0-alpine
+    image: redis:8.12-alpine
     container_name: chill-cache
     restart: unless-stopped
     command:
@@ -55,7 +55,7 @@ services:
       - redis:/data
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.26
     container_name: chill-search
     restart: unless-stopped
     environment:
@@ -66,7 +66,7 @@ services:
       - elastic_search:/usr/share/elasticsearch/data
 
   nginx:
-    image: fholzer/nginx-brotli:latest
+    image: fholzer/nginx-brotli:v1.31.10
     container_name: chill-gateway
     restart: unless-stopped
     ports:
