@@ -1,8 +1,5 @@
 import crypto from "node:crypto";
-import { createClient } from "redis";
-
-/** The Redis connection type, as exposed by `Cache.instance()` */
-type CacheClient = ReturnType<typeof createClient>;
+import type { CacheClient } from "@server/lib/data/Cache";
 
 /** The token pair a native login hands from the Custom Tab to the app */
 export type NativeHandoff = {
