@@ -1,4 +1,4 @@
-/** @jest-environment node */
+/** @vitest-environment node */
 import jwt from "jsonwebtoken";
 
 import {
@@ -9,7 +9,7 @@ import {
   verifyAndDecodeJwt,
 } from "../server/lib/Token";
 
-jest.mock("../server/init", () => ({
+vi.mock("../server/init", () => ({
   env: { SIGNING_KEY: "test-signing-key" },
 }));
 

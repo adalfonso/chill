@@ -8,7 +8,7 @@ import {
 } from "../client/lib/DeviceInfo";
 
 const mockFetch = (impl: typeof fetch) => {
-  global.fetch = jest.fn(impl) as unknown as typeof fetch;
+  global.fetch = vi.fn(impl) as unknown as typeof fetch;
 };
 
 // jsdom has no fetch/Response globals, and reassigning window.location.href
@@ -22,7 +22,7 @@ const okResponse = () => Promise.resolve(fakeResponse(200));
 
 beforeEach(() => {
   localStorage.clear();
-  jest.restoreAllMocks();
+  vi.restoreAllMocks();
   Object.defineProperty(window, "location", {
     writable: true,
     value: { href: "http://localhost/" },

@@ -1,4 +1,4 @@
-/** @jest-environment node */
+/** @vitest-environment node */
 import { deriveDeviceLabel } from "../server/lib/auth/deviceLabel";
 
 const CHROME_WINDOWS_UA =

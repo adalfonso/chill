@@ -1,16 +1,16 @@
-/** @jest-environment node */
+/** @vitest-environment node */
 import {
   LoginSessionController,
   toLoginSessionDto,
 } from "../server/controllers/LoginSessionController";
 
-jest.mock("../server/init", () => ({
+vi.mock("../server/init", () => ({
   env: { SIGNING_KEY: "test-signing-key" },
 }));
 
-const find_many = jest.fn();
+const find_many = vi.fn();
 
-jest.mock("../server/lib/data/db", () => ({
+vi.mock("../server/lib/data/db", () => ({
   db: {
     loginSession: {
       findMany: (...args: unknown[]) => find_many(...args),
@@ -18,8 +18,8 @@ jest.mock("../server/lib/data/db", () => ({
   },
 }));
 
-jest.mock("../server/lib/auth/LoginSession", () => ({
-  loginSessionService: { instance: () => ({ revoke: jest.fn() }) },
+vi.mock("../server/lib/auth/LoginSession", () => ({
+  loginSessionService: { instance: () => ({ revoke: vi.fn() }) },
 }));
 
 beforeEach(() => {

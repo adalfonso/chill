@@ -1,10 +1,12 @@
-/** @jest-environment node */
+/** @vitest-environment node */
+import type { Mock } from "vitest";
+
 import { DenyList } from "../server/lib/auth/DenyList";
 
-const find_unique = jest.fn();
-const find_many = jest.fn();
+const find_unique = vi.fn();
+const find_many = vi.fn();
 
-jest.mock("../server/lib/data/db", () => ({
+vi.mock("../server/lib/data/db", () => ({
   db: {
     loginSession: {
       findUnique: (...args: unknown[]) => find_unique(...args),
@@ -14,10 +16,10 @@ jest.mock("../server/lib/data/db", () => ({
 }));
 
 const makeClient = (
-  overrides: Partial<{ get: jest.Mock; set: jest.Mock }> = {},
+  overrides: Partial<{ get: Mock; set: Mock }> = {},
 ) => ({
-  get: jest.fn().mockResolvedValue(null),
-  set: jest.fn().mockResolvedValue("OK"),
+  get: vi.fn().mockResolvedValue(null),
+  set: vi.fn().mockResolvedValue("OK"),
   ...overrides,
 });
 
@@ -42,7 +44,7 @@ describe("deny", () => {
 
   it("surfaces a rejected write as a thrown error", async () => {
     const client = makeClient({
-      set: jest.fn().mockRejectedValue(new Error("redis down")),
+      set: vi.fn().mockRejectedValue(new Error("redis down")),
     });
     const deny_list = new DenyList(client);
 
@@ -51,7 +53,7 @@ describe("deny", () => {
 
   it("times out and throws rather than hanging when Redis is up but unresponsive", async () => {
     const client = makeClient({
-      set: jest.fn(() => new Promise(() => {})), // never resolves
+      set: vi.fn(() => new Promise(() => {})), // never resolves
     });
     const deny_list = new DenyList(client, { read_timeout_ms: 10 });
 
@@ -61,7 +63,7 @@ describe("deny", () => {
 
 describe("isDenied", () => {
   it("denies a login session with a deny key set", async () => {
-    const client = makeClient({ get: jest.fn().mockResolvedValue("1") });
+    const client = makeClient({ get: vi.fn().mockResolvedValue("1") });
     const deny_list = new DenyList(client);
 
     await expect(deny_list.isDenied(42)).resolves.toBe(true);
@@ -76,7 +78,7 @@ describe("isDenied", () => {
 
   it("falls back to Postgres on a read timeout and reports the row's revoked state", async () => {
     const client = makeClient({
-      get: jest.fn(() => new Promise(() => {})), // never resolves
+      get: vi.fn(() => new Promise(() => {})), // never resolves
     });
     const deny_list = new DenyList(client, { read_timeout_ms: 10 });
     find_unique.mockResolvedValue({ revoked_at: new Date() });
@@ -90,7 +92,7 @@ describe("isDenied", () => {
 
   it("falls back to Postgres on a read error and reports an active session as not denied", async () => {
     const client = makeClient({
-      get: jest.fn().mockRejectedValue(new Error("connection reset")),
+      get: vi.fn().mockRejectedValue(new Error("connection reset")),
     });
     const deny_list = new DenyList(client);
     find_unique.mockResolvedValue({ revoked_at: null });
@@ -100,7 +102,7 @@ describe("isDenied", () => {
 
   it("falls back to Postgres and treats a deleted session row as denied", async () => {
     const client = makeClient({
-      get: jest.fn().mockRejectedValue(new Error("connection reset")),
+      get: vi.fn().mockRejectedValue(new Error("connection reset")),
     });
     const deny_list = new DenyList(client);
     find_unique.mockResolvedValue(null);
@@ -109,7 +111,7 @@ describe("isDenied", () => {
   });
 
   it("opens the circuit after repeated failures and stops hammering Redis", async () => {
-    const get = jest.fn().mockRejectedValue(new Error("connection reset"));
+    const get = vi.fn().mockRejectedValue(new Error("connection reset"));
     const client = makeClient({ get });
     const deny_list = new DenyList(client, {
       failure_threshold: 2,

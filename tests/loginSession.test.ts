@@ -1,7 +1,7 @@
-/** @jest-environment node */
+/** @vitest-environment node */
 import { createLoginSessionService } from "../server/lib/auth/LoginSession";
 
-jest.mock("../server/init", () => ({
+vi.mock("../server/init", () => ({
   env: { SIGNING_KEY: "test-signing-key" },
 }));
 
@@ -202,8 +202,8 @@ const createFakeDb = () => {
 const makeCache = () => {
   const store = new Map<string, string>();
   return {
-    get: jest.fn(async (key: string) => store.get(key) ?? null),
-    set: jest.fn(async (key: string, value: string) => {
+    get: vi.fn(async (key: string) => store.get(key) ?? null),
+    set: vi.fn(async (key: string, value: string) => {
       store.set(key, value);
       return "OK";
     }),
@@ -211,9 +211,9 @@ const makeCache = () => {
 };
 
 const makeDenyList = () => ({
-  deny: jest.fn().mockResolvedValue(undefined),
-  isDenied: jest.fn().mockResolvedValue(false),
-  warmUp: jest.fn().mockResolvedValue(undefined),
+  deny: vi.fn().mockResolvedValue(undefined),
+  isDenied: vi.fn().mockResolvedValue(false),
+  warmUp: vi.fn().mockResolvedValue(undefined),
 });
 
 const setup = () => {
@@ -331,8 +331,8 @@ describe("rotate", () => {
       ip: "1.2.3.4",
     });
 
-    jest.useFakeTimers("modern");
-    jest.setSystemTime(new Date());
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date());
 
     await service.rotate({
       refresh_token,
@@ -340,7 +340,7 @@ describe("rotate", () => {
       ip: "1.2.3.4",
     });
 
-    jest.advanceTimersByTime(5 * 60 * 1000);
+    vi.advanceTimersByTime(5 * 60 * 1000);
 
     const replay = await service.rotate({
       refresh_token,
@@ -358,7 +358,7 @@ describe("rotate", () => {
         .revoked_login_session_id,
     ).toBe(login_session_id);
 
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it("covers KTD14: replaying inside the window with the grace cache empty returns a failure and leaves the family intact", async () => {

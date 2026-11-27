@@ -1,4 +1,4 @@
-/** @jest-environment node */
+/** @vitest-environment node */
 import {
   accessTokenCookieOptions,
   clearAccessTokenCookieOptions,
@@ -9,16 +9,16 @@ import {
 // cookies.ts now also exports readOrCreateDeviceId, which reads env.NODE_ENV
 // -- mocking server/init keeps this file from pulling in the real
 // (ESM-only) Prisma client transitively, same as every other auth test.
-jest.mock("../server/init", () => ({
+vi.mock("../server/init", () => ({
   env: { SIGNING_KEY: "test-signing-key", NODE_ENV: "test" },
 }));
 
 // cookies.ts loads .env itself (its cookie names are resolved at import time);
 // stubbing dotenv keeps a developer's local INSECURE_DEV_COOKIES=true from
 // leaking into these tests -- each case sets the env it needs explicitly.
-jest.mock("dotenv", () => ({
+vi.mock("dotenv", () => ({
   __esModule: true,
-  default: { config: jest.fn() },
+  default: { config: vi.fn() },
 }));
 
 describe("accessTokenCookieOptions", () => {
@@ -88,9 +88,9 @@ describe("INSECURE_DEV_COOKIES dev switch", () => {
    * @param node_env - the NODE_ENV to load the module under
    * @param switch_value - the INSECURE_DEV_COOKIES value, or undefined to
    *   leave it unset
-   * @returns the freshly loaded cookies module
+   * @returns a promise of the freshly loaded cookies module
    */
-  const loadWithEnv = (node_env: string, switch_value?: string) => {
+  const loadWithEnv = async (node_env: string, switch_value?: string) => {
     const saved = { ...process.env };
     process.env.NODE_ENV = node_env;
 
@@ -101,20 +101,17 @@ describe("INSECURE_DEV_COOKIES dev switch", () => {
     }
 
     try {
-      let mod!: typeof import("../server/lib/auth/cookies");
-      jest.isolateModules(() => {
-        // isolateModules only isolates synchronous require, not import()
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        mod = require("../server/lib/auth/cookies");
-      });
-      return mod;
+      // Clear the module registry so the import below re-evaluates cookies.ts
+      // under the env set above instead of returning a cached instance.
+      vi.resetModules();
+      return await import("../server/lib/auth/cookies");
     } finally {
       process.env = saved;
     }
   };
 
-  it("drops Secure and the __Secure- prefix in development when enabled", () => {
-    const cookies = loadWithEnv("development", "true");
+  it("drops Secure and the __Secure- prefix in development when enabled", async () => {
+    const cookies = await loadWithEnv("development", "true");
 
     expect(cookies.ACCESS_TOKEN_COOKIE).toBe("access_token");
     expect(cookies.REFRESH_TOKEN_COOKIE).toBe("refresh_token");
@@ -127,8 +124,8 @@ describe("INSECURE_DEV_COOKIES dev switch", () => {
     ["development", "false"],
     ["production", "true"],
     ["test", "true"],
-  ])("stays Secure and prefixed for NODE_ENV=%s, switch=%s", (env, value) => {
-    const cookies = loadWithEnv(env, value);
+  ])("stays Secure and prefixed for NODE_ENV=%s, switch=%s", async (env, value) => {
+    const cookies = await loadWithEnv(env, value);
 
     expect(cookies.ACCESS_TOKEN_COOKIE).toBe("__Secure-access_token");
     expect(cookies.accessTokenCookieOptions().secure).toBe(true);

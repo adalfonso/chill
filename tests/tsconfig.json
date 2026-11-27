@@ -1,0 +1,8 @@
+{
+  // Editor/type-check settings for the test suite. The root tsconfig only
+  // includes app code; this extends it so tests get the same paths and
+  // strictness. Vitest's global describe/it/expect/vi types come from
+  // vitest-globals.d.ts (vitest.config.ts sets `globals: true`).
+  "extends": "../tsconfig.json",
+  "include": ["./**/*.ts", "../server/@types"]
+}

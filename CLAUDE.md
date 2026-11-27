@@ -199,4 +199,4 @@ CSP headers in `nginx.conf` are configured for security - maintain strict CSP po
 
 ## Testing
 
-Tests are located in `tests/` and use Jest. Run `pnpm test` for watch mode with coverage.
+Tests are located in `tests/` and use Vitest (config in `vitest.config.ts`, which reuses the module aliases from `vite.config.ts`). Run `pnpm test` for watch mode with coverage, or `npx vitest run` for a single run. `describe`/`it`/`expect`/`vi` are globals; server tests opt into the Node environment with a `/** @vitest-environment node */` docblock (the default is jsdom). `vi.mock` factories are hoisted above imports, so any variable a factory reads while it runs must be declared with `vi.hoisted`.

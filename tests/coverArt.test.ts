@@ -1,4 +1,4 @@
-/** @jest-environment jsdom */
+/** @vitest-environment jsdom */
 import { cachedCover, loadCover } from "../client/lib/native/coverArt";
 
 const ok_response = () => ({
@@ -11,7 +11,7 @@ let counter = 0;
 const fresh_cover = () => `cover-${(counter += 1)}.jpg`;
 
 beforeEach(() => {
-  global.fetch = jest.fn().mockResolvedValue(ok_response()) as never;
+  global.fetch = vi.fn().mockResolvedValue(ok_response()) as never;
 });
 
 describe("loadCover", () => {
@@ -47,7 +47,7 @@ describe("loadCover", () => {
 
   it("returns null for a failed response and does not cache it", async () => {
     const cover = fresh_cover();
-    global.fetch = jest.fn().mockResolvedValue({ ok: false }) as never;
+    global.fetch = vi.fn().mockResolvedValue({ ok: false }) as never;
 
     expect(await loadCover(cover)).toBeNull();
     expect(cachedCover(cover)).toBeNull();
@@ -55,7 +55,7 @@ describe("loadCover", () => {
 
   it("returns null when the network is down, then retries on the next call", async () => {
     const cover = fresh_cover();
-    global.fetch = jest
+    global.fetch = vi
       .fn()
       .mockRejectedValueOnce(new Error("offline"))
       .mockResolvedValue(ok_response()) as never;
@@ -66,10 +66,10 @@ describe("loadCover", () => {
   });
 
   it("gives up on a stalled request after the timeout and retries on the next call", async () => {
-    jest.useFakeTimers("legacy");
+    vi.useFakeTimers();
     const cover = fresh_cover();
     // A request that never answers, but honors being aborted
-    global.fetch = jest
+    global.fetch = vi
       .fn()
       .mockImplementationOnce(
         (_url: string, init: { signal: AbortSignal }) =>
@@ -82,11 +82,11 @@ describe("loadCover", () => {
       .mockResolvedValue(ok_response()) as never;
 
     const stalled = loadCover(cover);
-    jest.advanceTimersByTime(10_000);
+    vi.advanceTimersByTime(10_000);
 
     expect(await stalled).toBeNull();
 
-    jest.useRealTimers();
+    vi.useRealTimers();
     expect(await loadCover(cover)).toBe(btoa("art-bytes"));
   });
 

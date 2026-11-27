@@ -1,15 +1,15 @@
-/** @jest-environment node */
+/** @vitest-environment node */
 import { LoginSessionController } from "../server/controllers/LoginSessionController";
 
-jest.mock("../server/init", () => ({
+vi.mock("../server/init", () => ({
   env: { SIGNING_KEY: "test-signing-key" },
 }));
 
-const revoke = jest.fn();
-const find_unique = jest.fn();
-const find_many = jest.fn();
+const revoke = vi.fn();
+const find_unique = vi.fn();
+const find_many = vi.fn();
 
-jest.mock("../server/lib/data/db", () => ({
+vi.mock("../server/lib/data/db", () => ({
   db: {
     loginSession: {
       findUnique: (...args: unknown[]) => find_unique(...args),
@@ -18,13 +18,13 @@ jest.mock("../server/lib/data/db", () => ({
   },
 }));
 
-jest.mock("../server/lib/auth/LoginSession", () => ({
+vi.mock("../server/lib/auth/LoginSession", () => ({
   loginSessionService: {
     instance: () => ({ revoke: (...args: unknown[]) => revoke(...args) }),
   },
 }));
 
-const makeWss = () => ({ dropByLoginSession: jest.fn() });
+const makeWss = () => ({ dropByLoginSession: vi.fn() });
 const makeReq = (wss: ReturnType<typeof makeWss>): any => ({
   app: { _wss: wss },
 });

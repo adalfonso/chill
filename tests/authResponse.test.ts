@@ -1,30 +1,30 @@
-/** @jest-environment node */
+/** @vitest-environment node */
 import {
   isAuthenticatedApi,
   isAuthenticatedPage,
 } from "../server/middleware/isAuthenticated";
 import { ACCESS_TOKEN_COOKIE } from "../server/lib/auth/cookies";
 
-jest.mock("../server/init", () => ({
+vi.mock("../server/init", () => ({
   env: { SIGNING_KEY: "test-signing-key" },
 }));
 
-const find_unique = jest.fn();
+const find_unique = vi.fn();
 
-jest.mock("../server/lib/data/db", () => ({
+vi.mock("../server/lib/data/db", () => ({
   db: { user: { findUnique: (...args: unknown[]) => find_unique(...args) } },
 }));
 
-const is_denied = jest.fn().mockResolvedValue(false);
+const is_denied = vi.fn().mockResolvedValue(false);
 
-jest.mock("../server/lib/auth/DenyList", () => ({
+vi.mock("../server/lib/auth/DenyList", () => ({
   denyList: { instance: () => ({ isDenied: (...args: unknown[]) => is_denied(...args) }) },
 }));
 
 const makeRes = () => ({
-  status: jest.fn().mockReturnThis(),
-  json: jest.fn().mockReturnThis(),
-  redirect: jest.fn().mockReturnThis(),
+  status: vi.fn().mockReturnThis(),
+  json: vi.fn().mockReturnThis(),
+  redirect: vi.fn().mockReturnThis(),
 });
 
 beforeEach(() => {
@@ -36,7 +36,7 @@ describe("isAuthenticatedApi", () => {
   it("responds with JSON 401 (never a redirect) when there is no access-token cookie", async () => {
     const req = { cookies: {} } as any;
     const res = makeRes();
-    const next = jest.fn();
+    const next = vi.fn();
 
     await isAuthenticatedApi(req, res as any, next);
 
@@ -62,7 +62,7 @@ describe("isAuthenticatedApi", () => {
 
     const req = { cookies: { [ACCESS_TOKEN_COOKIE]: token } } as any;
     const res = makeRes();
-    const next = jest.fn();
+    const next = vi.fn();
 
     await isAuthenticatedApi(req, res as any, next);
 
@@ -87,7 +87,7 @@ describe("isAuthenticatedApi", () => {
 
     const req = { cookies: { [ACCESS_TOKEN_COOKIE]: token } } as any;
     const res = makeRes();
-    const next = jest.fn();
+    const next = vi.fn();
 
     await isAuthenticatedApi(req, res as any, next);
 
@@ -102,7 +102,7 @@ describe("isAuthenticatedPage", () => {
   it("redirects 302, never 301, when there is no access-token cookie", async () => {
     const req = { cookies: {} } as any;
     const res = makeRes();
-    const next = jest.fn();
+    const next = vi.fn();
 
     await isAuthenticatedPage(req, res as any, next);
 
@@ -128,7 +128,7 @@ describe("isAuthenticatedPage", () => {
 
     const req = { cookies: { [ACCESS_TOKEN_COOKIE]: token } } as any;
     const res = makeRes();
-    const next = jest.fn();
+    const next = vi.fn();
 
     await isAuthenticatedPage(req, res as any, next);
 

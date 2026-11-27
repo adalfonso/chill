@@ -1,34 +1,32 @@
-/** @jest-environment node */
+/** @vitest-environment node */
 import crypto from "node:crypto";
 
 import authRoutes from "../server/routes/auth";
 
-// The route file imports the controller through an alias jest has no mapping
-// for, so it is mocked virtually; these tests are about what the route layer
+// The controller is mocked out; these tests are about what the route layer
 // does with the OAuth `state`, not what the controller does after it.
-jest.mock(
+vi.mock(
   "@controllers/AuthController",
   () => ({
     AuthController: {
-      loginPage: jest.fn(),
-      loginScript: jest.fn(),
-      logout: () => jest.fn(),
-      refresh: () => jest.fn(),
-      authCallback: jest.fn(),
-      nativeTokenExchange: jest.fn(),
+      loginPage: vi.fn(),
+      loginScript: vi.fn(),
+      logout: () => vi.fn(),
+      refresh: () => vi.fn(),
+      authCallback: vi.fn(),
+      nativeTokenExchange: vi.fn(),
     },
   }),
-  { virtual: true },
 );
 
-jest.mock("../server/middleware/isAuthenticated", () => ({
-  isAuthenticatedApi: jest.fn(),
+vi.mock("../server/middleware/isAuthenticated", () => ({
+  isAuthenticatedApi: vi.fn(),
 }));
 
 // `authenticate` returns the middleware passport would; the test captures the
 // strategy options and the custom callback so it can drive both directly.
-const mockAuthenticate = jest.fn();
-jest.mock("passport", () => ({
+const mockAuthenticate = vi.fn();
+vi.mock("passport", () => ({
   __esModule: true,
   default: { authenticate: (...args: unknown[]) => mockAuthenticate(...args) },
 }));
@@ -52,23 +50,23 @@ const getHandlers = (path: string): ((...args: any[]) => any)[] => {
 
 const makeRes = () => {
   const res: any = {
-    status: jest.fn().mockImplementation(() => res),
-    send: jest.fn().mockImplementation(() => res),
-    redirect: jest.fn().mockImplementation(() => res),
+    status: vi.fn().mockImplementation(() => res),
+    send: vi.fn().mockImplementation(() => res),
+    redirect: vi.fn().mockImplementation(() => res),
   };
   return res;
 };
 
 beforeEach(() => {
   mockAuthenticate.mockReset();
-  mockAuthenticate.mockImplementation(() => jest.fn());
+  mockAuthenticate.mockImplementation(() => vi.fn());
 });
 
 describe("GET /auth/google", () => {
   const [handler] = getHandlers("/google");
 
   it("threads a native login's challenge into the OAuth state", () => {
-    handler({ query: { platform: "native", challenge } }, makeRes(), jest.fn());
+    handler({ query: { platform: "native", challenge } }, makeRes(), vi.fn());
 
     expect(mockAuthenticate).toHaveBeenCalledWith("google", {
       scope: ["email", "profile"],
@@ -77,7 +75,7 @@ describe("GET /auth/google", () => {
   });
 
   it("leaves state unset for a web login", () => {
-    handler({ query: {} }, makeRes(), jest.fn());
+    handler({ query: {} }, makeRes(), vi.fn());
 
     expect(mockAuthenticate).toHaveBeenCalledWith("google", {
       scope: ["email", "profile"],
@@ -92,7 +90,7 @@ describe("GET /auth/google", () => {
   ])("rejects a native login with a %s challenge", (_label, extra) => {
     const res = makeRes();
 
-    handler({ query: { platform: "native", ...extra } }, res, jest.fn());
+    handler({ query: { platform: "native", ...extra } }, res, vi.fn());
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(mockAuthenticate).not.toHaveBeenCalled();
@@ -103,7 +101,7 @@ describe("GET /auth/google/cb", () => {
   const [handler] = getHandlers("/google/cb");
 
   /** Run the route's handler and return the callback it gave passport */
-  const run = (state: unknown, res = makeRes(), next = jest.fn()) => {
+  const run = (state: unknown, res = makeRes(), next = vi.fn()) => {
     const req: any = { query: { state } };
     handler(req, res, next);
 

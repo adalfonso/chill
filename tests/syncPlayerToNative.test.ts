@@ -1,31 +1,42 @@
-/** @jest-environment jsdom */
-import { signal } from "@preact/signals";
+/** @vitest-environment jsdom */
+const mock_publish = vi.fn();
+const mock_is_native = vi.fn();
 
-const mock_publish = jest.fn();
-const mock_is_native = jest.fn();
+// The playerStore mock factory returns `mock_player` itself, so it has to
+// exist before the hoisted vi.mock calls run. vi.hoisted lifts this block
+// above them -- and above this file's imports, hence the dynamic import of
+// `signal` inside it.
+const { FakeAudio, mock_player, mock_outgoing } = await vi.hoisted(
+  async () => {
+    const { signal } = await import("@preact/signals");
 
-/** A stand-in audio element: an event target with a settable clock */
-class FakeAudio extends EventTarget {
-  currentTime = 0;
-}
+    /** A stand-in audio element: an event target with a settable clock */
+    class FakeAudio extends EventTarget {
+      currentTime = 0;
+    }
 
-const mock_player = {
-  audio: new FakeAudio(),
-  crossover: new FakeAudio(),
-  now_playing: signal<unknown>(null),
-  is_playing: signal(false),
-  playlist: signal<Array<unknown>>([]),
-};
-const mock_outgoing = signal<string | null>(null);
+    return {
+      FakeAudio,
+      mock_player: {
+        audio: new FakeAudio(),
+        crossover: new FakeAudio(),
+        now_playing: signal<unknown>(null),
+        is_playing: signal(false),
+        playlist: signal<Array<unknown>>([]),
+      },
+      mock_outgoing: signal<string | null>(null),
+    };
+  },
+);
 
-jest.mock("../client/lib/native/mediaBridge", () => ({
+vi.mock("../client/lib/native/mediaBridge", () => ({
   isNativeShell: () => mock_is_native(),
   publishState: (...args: unknown[]) => mock_publish(...args),
 }));
-jest.mock("../client/state/AppState", () => ({
+vi.mock("../client/state/AppState", () => ({
   getAppState: () => ({ outgoing_connection: mock_outgoing }),
 }));
-jest.mock("../client/state/playerStore", () => mock_player);
+vi.mock("../client/state/playerStore", () => mock_player);
 
 import { startNativeSync } from "../client/lib/native/syncPlayerToNative";
 
@@ -60,13 +71,13 @@ beforeEach(() => {
   mock_player.is_playing.value = false;
   mock_player.playlist.value = [];
   mock_outgoing.value = null;
-  global.fetch = jest.fn().mockResolvedValue({ ok: false }) as never;
+  global.fetch = vi.fn().mockResolvedValue({ ok: false }) as never;
 });
 
 afterEach(() => {
   stop();
   stop = () => {};
-  jest.useRealTimers();
+  vi.useRealTimers();
 });
 
 describe("startNativeSync", () => {
@@ -307,24 +318,24 @@ describe("startNativeSync", () => {
 
 describe("coarse position timer", () => {
   it("does not publish between timer pushes, then publishes once per interval while playing", async () => {
-    jest.useFakeTimers("legacy");
+    vi.useFakeTimers();
     mock_player.now_playing.value = track({ album_art_filename: null });
     mock_player.is_playing.value = true;
     stop = startNativeSync();
     await tick();
     mock_publish.mockClear();
 
-    jest.advanceTimersByTime(14_000);
+    vi.advanceTimersByTime(14_000);
     await tick();
     expect(mock_publish).not.toHaveBeenCalled();
 
-    jest.advanceTimersByTime(1_000);
+    vi.advanceTimersByTime(1_000);
     await tick();
     expect(mock_publish).toHaveBeenCalledTimes(1);
   });
 
   it("does not push on the timer while buffering", async () => {
-    jest.useFakeTimers("legacy");
+    vi.useFakeTimers();
     mock_player.now_playing.value = track({ album_art_filename: null });
     mock_player.is_playing.value = true;
     stop = startNativeSync();
@@ -333,20 +344,20 @@ describe("coarse position timer", () => {
     await tick();
     mock_publish.mockClear();
 
-    jest.advanceTimersByTime(60_000);
+    vi.advanceTimersByTime(60_000);
     await tick();
 
     expect(mock_publish).not.toHaveBeenCalled();
   });
 
   it("does not push on the timer while paused", async () => {
-    jest.useFakeTimers("legacy");
+    vi.useFakeTimers();
     mock_player.now_playing.value = track({ album_art_filename: null });
     stop = startNativeSync();
     await tick();
     mock_publish.mockClear();
 
-    jest.advanceTimersByTime(60_000);
+    vi.advanceTimersByTime(60_000);
     await tick();
 
     expect(mock_publish).not.toHaveBeenCalled();
@@ -361,7 +372,7 @@ describe("album art", () => {
 
   it("republishes with art once the cover loads", async () => {
     const cover = fresh_cover();
-    global.fetch = jest.fn().mockResolvedValue(ok_response()) as never;
+    global.fetch = vi.fn().mockResolvedValue(ok_response()) as never;
     stop = startNativeSync();
 
     mock_player.now_playing.value = track({ album_art_filename: cover });
@@ -373,7 +384,7 @@ describe("album art", () => {
 
   it("publishes state with no art when the cover fetch fails", async () => {
     const cover = fresh_cover();
-    global.fetch = jest.fn().mockRejectedValue(new Error("offline")) as never;
+    global.fetch = vi.fn().mockRejectedValue(new Error("offline")) as never;
     stop = startNativeSync();
 
     mock_player.now_playing.value = track({ album_art_filename: cover });
@@ -385,7 +396,7 @@ describe("album art", () => {
   it("does not republish a cover for a track that is no longer current", async () => {
     const cover = fresh_cover();
     let release: (value: unknown) => void = () => {};
-    global.fetch = jest.fn(
+    global.fetch = vi.fn(
       () => new Promise((resolve) => (release = resolve)),
     ) as never;
     stop = startNativeSync();

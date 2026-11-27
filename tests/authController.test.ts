@@ -1,4 +1,4 @@
-/** @jest-environment node */
+/** @vitest-environment node */
 import crypto from "node:crypto";
 
 import { AuthController } from "../server/controllers/AuthController";
@@ -7,36 +7,36 @@ import {
   REFRESH_TOKEN_COOKIE,
 } from "../server/lib/auth/cookies";
 
-jest.mock("../server/init", () => ({
+vi.mock("../server/init", () => ({
   env: { SIGNING_KEY: "test-signing-key", NODE_ENV: "test" },
 }));
 
 // In-memory stand-in for the Redis commands the native handoff uses. `getDel`
 // removes the entry as it reads it, which the single-use tests rely on. The
-// `mock` prefix lets the hoisted jest.mock factory below reference these.
+// `mock` prefix lets the hoisted vi.mock factory below reference these.
 const mockHandoffStore = new Map<string, string>();
 const mockCache = {
-  set: jest.fn(async (key: string, value: string) => {
+  set: vi.fn(async (key: string, value: string) => {
     mockHandoffStore.set(key, value);
     return "OK";
   }),
-  getDel: jest.fn(async (key: string) => {
+  getDel: vi.fn(async (key: string) => {
     const value = mockHandoffStore.get(key);
     mockHandoffStore.delete(key);
     return value ?? null;
   }),
 };
 
-jest.mock("../server/lib/data/Cache", () => ({
+vi.mock("../server/lib/data/Cache", () => ({
   Cache: { instance: () => mockCache },
 }));
 
-const create = jest.fn();
-const revoke = jest.fn();
-const rotate = jest.fn();
-const find_unique = jest.fn();
+const create = vi.fn();
+const revoke = vi.fn();
+const rotate = vi.fn();
+const find_unique = vi.fn();
 
-jest.mock("../server/lib/data/db", () => ({
+vi.mock("../server/lib/data/db", () => ({
   db: {
     loginSession: {
       findUnique: (...args: unknown[]) => find_unique(...args),
@@ -44,7 +44,7 @@ jest.mock("../server/lib/data/db", () => ({
   },
 }));
 
-jest.mock("../server/lib/auth/LoginSession", () => ({
+vi.mock("../server/lib/auth/LoginSession", () => ({
   loginSessionService: {
     instance: () => ({
       create: (...args: unknown[]) => create(...args),
@@ -55,19 +55,19 @@ jest.mock("../server/lib/auth/LoginSession", () => ({
 }));
 
 const makeWss = () => ({
-  dropByLoginSession: jest.fn(),
+  dropByLoginSession: vi.fn(),
 });
 
 /** A minimal fake Express response, tracking cookie/status/json/redirect calls for assertions. */
 const makeRes = () => {
   const res: any = {
-    cookie: jest.fn().mockImplementation(() => res),
-    clearCookie: jest.fn().mockImplementation(() => res),
-    status: jest.fn().mockImplementation(() => res),
-    json: jest.fn().mockImplementation(() => res),
-    redirect: jest.fn().mockImplementation(() => res),
-    sendFile: jest.fn().mockImplementation(() => res),
-    send: jest.fn().mockImplementation(() => res),
+    cookie: vi.fn().mockImplementation(() => res),
+    clearCookie: vi.fn().mockImplementation(() => res),
+    status: vi.fn().mockImplementation(() => res),
+    json: vi.fn().mockImplementation(() => res),
+    redirect: vi.fn().mockImplementation(() => res),
+    sendFile: vi.fn().mockImplementation(() => res),
+    send: vi.fn().mockImplementation(() => res),
   };
   return res;
 };

@@ -1,11 +1,15 @@
-/** @jest-environment jsdom */
-const mock_plugin = {
-  publishState: jest.fn(),
-  addListener: jest.fn(),
-};
-const mock_is_native = jest.fn();
+/** @vitest-environment jsdom */
+// mediaBridge.ts calls registerPlugin() at import time, before this file's
+// own top-level code runs; vi.hoisted makes these exist by then.
+const { mock_plugin, mock_is_native } = vi.hoisted(() => ({
+  mock_plugin: {
+    publishState: vi.fn(),
+    addListener: vi.fn(),
+  },
+  mock_is_native: vi.fn(),
+}));
 
-jest.mock("@capacitor/core", () => ({
+vi.mock("@capacitor/core", () => ({
   Capacitor: { isNativePlatform: () => mock_is_native() },
   registerPlugin: () => mock_plugin,
 }));
@@ -49,8 +53,8 @@ describe("mediaBridge on the native platform", () => {
   });
 
   it("delivers a command event to the subscribed handler", () => {
-    mock_plugin.addListener.mockResolvedValue({ remove: jest.fn() });
-    const handler = jest.fn();
+    mock_plugin.addListener.mockResolvedValue({ remove: vi.fn() });
+    const handler = vi.fn();
 
     onNativeCommand(handler);
 
@@ -58,10 +62,10 @@ describe("mediaBridge on the native platform", () => {
   });
 
   it("removes the listener when unsubscribed", async () => {
-    const remove = jest.fn();
+    const remove = vi.fn();
     mock_plugin.addListener.mockResolvedValue({ remove });
 
-    const unsubscribe = onNativeCommand(jest.fn());
+    const unsubscribe = onNativeCommand(vi.fn());
     unsubscribe();
     await new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -79,7 +83,7 @@ describe("mediaBridge on the web", () => {
   });
 
   it("subscribing never touches the plugin and returns a safe unsubscribe", () => {
-    const unsubscribe = onNativeCommand(jest.fn());
+    const unsubscribe = onNativeCommand(vi.fn());
 
     expect(mock_plugin.addListener).not.toHaveBeenCalled();
     expect(() => unsubscribe()).not.toThrow();

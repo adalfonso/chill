@@ -1,13 +1,13 @@
-/** @jest-environment jsdom */
-const refresh_mock = jest.fn();
+/** @vitest-environment jsdom */
+const refresh_mock = vi.fn();
 
-jest.mock("../client/lib/auth/refresh", () => ({
+vi.mock("../client/lib/auth/refresh", () => ({
   refresh: (...args: unknown[]) => refresh_mock(...args),
-  maybeRefresh: jest.fn().mockResolvedValue(undefined),
+  maybeRefresh: vi.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock("../client/client", () => ({ api: {} }));
-jest.mock("../client/lib/cast/CastSdk", () => ({ CastSdk: {} }));
+vi.mock("../client/client", () => ({ api: {} }));
+vi.mock("../client/lib/cast/CastSdk", () => ({ CastSdk: {} }));
 
 import {
   attachMediaErrorBackstop,

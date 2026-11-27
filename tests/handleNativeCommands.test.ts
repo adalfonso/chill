@@ -1,25 +1,27 @@
-/** @jest-environment jsdom */
-const mock_pause = jest.fn();
-const mock_play = jest.fn();
-const mock_next = jest.fn();
-const mock_previous = jest.fn();
-const mock_seek = jest.fn();
-const mock_now_playing: { value: { duration: number } | null } = {
-  value: null,
-};
-const mock_on_command = jest.fn();
+/** @vitest-environment jsdom */
+const mock_pause = vi.fn();
+const mock_play = vi.fn();
+const mock_next = vi.fn();
+const mock_previous = vi.fn();
+const mock_seek = vi.fn();
+// Read by a vi.mock factory as it runs, so it must exist before the hoisted
+// vi.mock calls: vi.hoisted lifts it above them.
+const mock_now_playing = vi.hoisted(
+  (): { value: { duration: number } | null } => ({ value: null }),
+);
+const mock_on_command = vi.fn();
 
-jest.mock("../client/hooks/usePause", () => ({ usePause: () => mock_pause }));
-jest.mock("../client/hooks/usePlay", () => ({ usePlay: () => mock_play }));
-jest.mock("../client/hooks/useNext", () => ({ useNext: () => mock_next }));
-jest.mock("../client/hooks/usePrevious", () => ({
+vi.mock("../client/hooks/usePause", () => ({ usePause: () => mock_pause }));
+vi.mock("../client/hooks/usePlay", () => ({ usePlay: () => mock_play }));
+vi.mock("../client/hooks/useNext", () => ({ useNext: () => mock_next }));
+vi.mock("../client/hooks/usePrevious", () => ({
   usePrevious: () => mock_previous,
 }));
-jest.mock("../client/state/playerStore", () => ({
+vi.mock("../client/state/playerStore", () => ({
   now_playing: mock_now_playing,
   seek: (...args: unknown[]) => mock_seek(...args),
 }));
-jest.mock("../client/lib/native/mediaBridge", () => ({
+vi.mock("../client/lib/native/mediaBridge", () => ({
   onNativeCommand: (...args: unknown[]) => mock_on_command(...args),
 }));
 
@@ -114,7 +116,7 @@ describe("handleNativeCommand", () => {
 
 describe("startNativeCommands", () => {
   it("subscribes the command handler to the bridge and returns its unsubscribe", () => {
-    const unsubscribe = jest.fn();
+    const unsubscribe = vi.fn();
     mock_on_command.mockReturnValue(unsubscribe);
 
     const stop = startNativeCommands();

@@ -1,4 +1,4 @@
-/** @jest-environment node */
+/** @vitest-environment node */
 import { redactQueryString } from "../server/middleware/accessLogs";
 
 describe("redactQueryString", () => {

@@ -1,4 +1,4 @@
-/** @jest-environment node */
+/** @vitest-environment node */
 import crypto from "node:crypto";
 
 import {
@@ -25,11 +25,11 @@ const makeCache = () => {
 
   return {
     entries,
-    set: jest.fn(async (key: string, value: string, opts?: { EX?: number }) => {
+    set: vi.fn(async (key: string, value: string, opts?: { EX?: number }) => {
       entries.set(key, { value, ttl: opts?.EX });
       return "OK";
     }),
-    getDel: jest.fn(async (key: string) => {
+    getDel: vi.fn(async (key: string) => {
       const entry = entries.get(key);
       entries.delete(key);
       return entry?.value ?? null;
