@@ -13,7 +13,7 @@ export const schema = {
     query: z.string(),
     limit: z.number().int().positive().max(100).default(20),
     types: z
-      .array(z.nativeEnum(SearchResultType))
+      .array(z.enum(SearchResultType))
       .default([
         "artist",
         "album",

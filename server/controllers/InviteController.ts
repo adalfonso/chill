@@ -5,7 +5,7 @@ import { Request } from "@server/trpc";
 import { db } from "@server/lib/data/db";
 
 export const schema = {
-  invite: z.string().email(),
+  invite: z.email(),
 };
 
 export const InviteController = {

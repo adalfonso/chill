@@ -1,7 +1,10 @@
 import { z } from "zod";
 import { SortOrder } from "./types";
 
-const sort_schema = z.record(z.nativeEnum(SortOrder).default(SortOrder.asc));
+const sort_schema = z.record(
+  z.string(),
+  z.enum(SortOrder).default(SortOrder.asc),
+);
 
 export type SortClause = z.infer<typeof sort_schema>;
 

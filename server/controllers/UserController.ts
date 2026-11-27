@@ -7,7 +7,7 @@ import { db } from "@server/lib/data/db";
 
 export const schema = {
   update_settings: z.object({
-    audio_quality: z.nativeEnum(AudioQuality).optional(),
+    audio_quality: z.enum(AudioQuality).optional(),
   }),
 };
 
