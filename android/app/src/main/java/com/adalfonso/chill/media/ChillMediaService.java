@@ -1,7 +1,9 @@
 package com.adalfonso.chill.media;
 
+import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.Nullable;
+import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MediaMetadata;
 import androidx.media3.common.util.UnstableApi;
@@ -9,9 +11,18 @@ import androidx.media3.session.LibraryResult;
 import androidx.media3.session.MediaLibraryService;
 import androidx.media3.session.MediaSession;
 import com.adalfonso.chill.R;
+import com.adalfonso.chill.media.auth.HttpTransport;
+import com.adalfonso.chill.media.auth.ServerConfig;
+import com.adalfonso.chill.media.auth.SessionAuth;
+import com.adalfonso.chill.media.auth.WebViewCookieJar;
+import com.adalfonso.chill.media.playback.NativePlayback;
+import com.adalfonso.chill.media.playback.NativePlayerFactory;
+import com.adalfonso.chill.media.playback.PlaybackArbiter;
+import com.adalfonso.chill.media.playback.QueueStore;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import java.io.File;
 
 /**
  * The media service Android Auto connects to (an Android "Service" is a background
@@ -31,6 +42,9 @@ public final class ChillMediaService extends MediaLibraryService {
   private final MediaBridgeHub.StateListener hubListener = this::onHubChanged;
   private MirrorPlayer player;
   private MediaLibrarySession session;
+  private QueueStore queueStore;
+  private NativePlayback nativePlayback;
+  private PlaybackArbiter arbiter;
   private String browseKey;
 
   /** Creates the player and the media session, and starts watching the hub. */
@@ -38,6 +52,18 @@ public final class ChillMediaService extends MediaLibraryService {
   public void onCreate() {
     super.onCreate();
     player = new MirrorPlayer(Looper.getMainLooper(), hub);
+
+    ServerConfig server = ServerConfig.fromCapacitor(this);
+    SessionAuth auth = new SessionAuth(new WebViewCookieJar(), new HttpTransport(), server);
+    // The no-backup folder keeps the queue out of Android's cloud backups
+    queueStore = new QueueStore(new File(getNoBackupFilesDir(), "queue.json").toPath());
+    auth.addSignedOutListener(this::onSignedOut);
+
+    ExoPlayer exo = NativePlayerFactory.create(this, auth);
+    nativePlayback =
+        new NativePlayback(exo, auth, server, queueStore, () -> arbiter.onNativeStarted());
+    arbiter = new PlaybackArbiter(new Handoff());
+
     session = new MediaLibrarySession.Builder(this, player, new LibraryCallback()).build();
     browseKey = browseKey(hub.state());
     hub.addStateListener(hubListener);
@@ -55,6 +81,7 @@ public final class ChillMediaService extends MediaLibraryService {
   public void onDestroy() {
     hub.removeStateListener(hubListener);
     session.release();
+    nativePlayback.release();
     player.detach();
     player.release();
     super.onDestroy();
@@ -65,12 +92,20 @@ public final class ChillMediaService extends MediaLibraryService {
    * on its own.
    */
   private void onHubChanged() {
+    arbiter.onWebViewState(hub.state().isPlaying);
+
     String key = browseKey(hub.state());
 
     if (!key.equals(browseKey)) {
       browseKey = key;
       session.notifyChildrenChanged(ROOT_ID, 1, null);
     }
+  }
+
+  /** The login is gone: forget the saved queue and stop the native player. */
+  private void onSignedOut() {
+    queueStore.delete();
+    new Handler(Looper.getMainLooper()).post(() -> nativePlayback.player().clearMediaItems());
   }
 
   /** A short label for what the list shows now; it changes exactly when the list should reload. */
@@ -126,6 +161,25 @@ public final class ChillMediaService extends MediaLibraryService {
     return state.showMessage() ? messageItem() : nowPlayingItem(state);
   }
 
+  /** Points the media session at the mirror or the native player, and pauses whichever loses. */
+  private final class Handoff implements PlaybackArbiter.Handoff {
+
+    @Override
+    public void use(PlaybackArbiter.Side side) {
+      session.setPlayer(side == PlaybackArbiter.Side.NATIVE ? nativePlayback.player() : player);
+    }
+
+    @Override
+    public void pauseWebView() {
+      hub.sendCommand(MirrorCommand.of(MirrorCommand.Action.PAUSE));
+    }
+
+    @Override
+    public void pauseNative() {
+      nativePlayback.player().pause();
+    }
+  }
+
   /** Answers Android Auto's requests to connect and to browse. */
   private final class LibraryCallback implements MediaLibrarySession.Callback {
 
@@ -138,6 +192,27 @@ public final class ChillMediaService extends MediaLibraryService {
       }
 
       return MediaLibrarySession.Callback.super.onConnect(mediaSession, controller);
+    }
+
+    /**
+     * Android asks what to play when the car taps Chill with nothing loaded, even if the app was
+     * killed. The answer is the last saved queue; the native player takes the session first.
+     */
+    @Override
+    public ListenableFuture<MediaSession.MediaItemsWithStartPosition> onPlaybackResumption(
+        MediaSession mediaSession, MediaSession.ControllerInfo controller, boolean isForPlayback) {
+      return nativePlayback
+          .savedQueue()
+          .map(
+              queue -> {
+                arbiter.onNativeStarted();
+
+                return Futures.immediateFuture(queue);
+              })
+          .orElseGet(
+              () ->
+                  Futures.<MediaSession.MediaItemsWithStartPosition>immediateFailedFuture(
+                      new UnsupportedOperationException("no saved queue")));
     }
 
     /** Returns the top of the browse tree. */

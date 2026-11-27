@@ -16,8 +16,8 @@ deepened: 2026-11-11
 
 - **Objective:** Make Chill usable from Android Auto on the Pixel running the native app. Phase 1 is a car-side control for what the phone is playing. Phase 2 is browsing and playing from the car, with a native player that owns playback.
 - **Product authority:** The Product Contract below. Where the Planning Contract and the Product Contract disagree on behavior, the Product Contract wins.
-- **Execution profile:** Phase 1 (U1 to U6) is planned in full and ships as a usable milestone. Phase 2 (U7 to U11) is an outline. Re-plan it with `ce-plan` after phase 1 is verified in the car, because it rests on decisions phase 1 proves.
-- **Stop conditions:** Stop and re-plan if, with the app in the background and the screen off, the WebView stops playing audio, stops advancing tracks, or stops receiving native commands (see U1), or if the native service cannot read the WebView's cookies (see U7).
+- **Execution profile:** Phase 1 (U1 to U6) is merged and was tried in the car. Phase 2 (U7 to U11) is planned in full and ships as two car-tested milestones: A (U7 to U9, native player and browse) and B (U10 to U11, phone UI as remote, mirror removed). Do not start B before A is verified in the car.
+- **Stop conditions:** Stop and re-plan if the native service cannot read the WebView's cookies on a cold start (U7 spike), or if Opus-in-Ogg is not gapless on ExoPlayer on the device (U8). The phase 1 stop condition about the WebView in the background held in testing.
 - **Open blockers:** None.
 
 ---
@@ -165,6 +165,18 @@ Product Contract preservation: unchanged, except Outstanding Questions, where th
 - KTD11. **Native code stays Java and adds only media3 libraries.** The existing shell is Java, and media3 works from Java. This avoids adding a Kotlin build setup for one feature. Pin the media3 version at implementation to the current stable release and check it against Google's current Android Auto media guide, which I only read in part while planning.
 - KTD12. **A single native-platform check gates every new client path.** On the web, the iPad, and the PWA the new modules do nothing. Governs R7.
 
+**Phase 2 decisions** (re-planned after phase 1 was tried in the car; KTD6 to KTD10 above still apply, refined here)
+
+- KTD13. **Phase 2 ships as two car-tested milestones.** A (U7 to U9): native auth, native player, browse and cold-start resume, with the phone UI still playing through the WebView. B (U10, U11): the phone UI becomes a remote and the mirror goes away. (session-settled: user-approved — chosen over one milestone and over browse-only first: each milestone is tested in the car before the riskier flip.) Governs R8 to R15.
+- KTD14. **Native auth reads the WebView cookie jar through a small interface, with a spike first and a hard stop if it fails.** `CookieManager.getCookie(url)` returns name and value pairs only and only for cookies matching that URL's path, which is why the refresh cookie is read for the refresh URL (KTD6). Write-back uses `setCookie` with the full `Set-Cookie` string and a flush. The native HTTP stack never installs a default `CookieHandler`, so the jar has one writer. A refresh has three outcomes: refreshed, signed out (a definitive 401 only), and transient failure (network, 5xx), and only the second ends the session and deletes the saved queue. If the cookie spike fails, stop and re-plan; a separate native login session is not planned. (session-settled: user-directed — chosen over falling back to a native device session via the login handoff.) Governs R10, R15.
+- KTD15. **ExoPlayer plays a queue of media items for gapless, with audio focus and the cookie handled natively.** Preparing the next item ahead replaces the web player's 200 ms crossover hack. A data-source wrapper adds the access cookie on every request. Quality tier stays the server's per-user decision, so the user's setting is unchanged. A 401 on a stream refreshes and re-prepares once per item, matching the web player's recover-once rule. Volume is the player's own volume, as the web `volume` signal is, not the system stream. Governs R11, R14.
+- KTD16. **The saved queue is the server's track JSON, stored verbatim, in the no-backup directory.** The phone UI needs full tracks (bitrate, file type and the rest), so native keeps each track as received and reads only the few fields it needs. Native parses that JSON in one place and coerces `duration`, since some routes send a string. The snapshot holds the tracks, index, position, and the shuffle flag with its original order, under a schema version. It is written atomically, saved on change and about every 15 s while playing, and discarded when corrupt, of an unknown version, or after sign-out. Governs R9, R10.
+- KTD17. **The browse tree is Shuffle all, Playlists, Albums, and Artists, built from existing GET routes.** Artists lead to albums, albums lead to tracks, and playing an album or a track queues the surrounding list. Pages map onto the server's `limit`, `page` and `offset` options. Cover art goes through a native bitmap loader that carries the cookie, because Android Auto fetches art URLs on its own and cannot send it (the nginx rule for cover files must be checked at implementation, and the loader makes the answer irrelevant). Governs R8.
+- KTD18. **The seam is one backend object the player store routes its mutators through, active only in the native shell.** In the native shell, with no cast session and no outgoing DeviceConnect connection, each store mutator calls the native backend, and the store's signals are updated from native snapshots through the existing `replaceState`. Everywhere else the existing code runs unchanged. DeviceConnect target commands arrive through the same socket handlers and reach native through the same mutators, so target echoes stay as they are. The phone cannot be a target while the WebView is closed, as today. Native owns the queue because the car can start playback with no WebView, which a store-owned queue cannot support. Refines KTD10. Governs R9, R11, R12.
+- KTD19. **During milestone A, an arbiter swaps the session between the phase 1 mirror and the ExoPlayer; the last to start wins.** The ExoPlayer and the WebView player must never play at once. Starting from the car pauses the WebView over the phase 1 command channel. Starting on the phone pauses the ExoPlayer and returns the session to the mirror. The arbiter is throwaway: U11 deletes it with the mirror. Accepted cost of testing the native player in the car before the flip. Governs R4, R9.
+- KTD20. **Casting and remote control take the player away from native, and native keeps its queue.** While the phone is casting or remote-controlling another device, native stays paused, the car shows the message state (AE1, AE4), and the WebView store is the authority through its existing paths. When either ends, the store's queue and position go back to native, paused. If the WebView goes away mid-cast, native clears the cast flag, because cast control lives only in the WebView. Governs R6, R12, R13.
+- KTD21. **Native shell only needs the notification permission asked once.** Android 13 and newer hide the media foreground notification without `POST_NOTIFICATIONS`, though audio still plays. Ask once at first launch of the native shell, and do not ask again if declined. Governs R9.
+
 ### High-Level Technical Design
 
 Phase 1 and phase 2 differ only in who owns the player. The service and the car-facing surface stay the same.
@@ -219,11 +231,23 @@ sequenceDiagram
 - **Android Auto changes.** Sideload visibility and media3 behavior change across Android and Android Auto releases. Mitigation: verify against Google's current guide and on the Desktop Head Unit before the car.
 - **Dependency:** the sign-in and native handoff work already merged (ADR-0009).
 
+**Phase 2 risks**
+
+- **Cookie jar not readable cold.** `CookieManager` may need WebView initialization in a fresh process, or may not return HttpOnly cookies. Mitigation: the U7 spike on a killed app comes first, with a hard stop.
+- **Native refresh revokes the login.** A native refresh from a stale token, older than the immediate predecessor, revokes the whole family. Mitigation: the jar is re-read at every refresh and never cached, one refresh runs at a time, and the 30 second grace window covers a concurrent WebView refresh.
+- **Two players at once during milestone A.** Mitigation: the arbiter (KTD19), covered by unit tests and the car test of A.
+- **Gapless on Opus in Ogg.** Mitigation: the U8 device check is the stop condition; the pre-roll fallback is in Open Questions.
+- **A large queue over the bridge.** Thousands of tracks as JSON may be slow to send. Mitigation: the queue goes only on change and on request at page load, with status updates kept small; measure with a long shuffle-all queue and add a cap if needed.
+- **Stale cast flag.** A cast session that outlives the WebView leaves native unable to know. Mitigation: native clears the flag when the WebView goes away (KTD20); a car start then plays locally, which the user can pause.
+- **The phone is not a DeviceConnect target with the WebView closed.** The socket lives in the WebView, as today. Accepted; R12 only requires it while the UI is running.
+- **Wasted work.** The mirror and arbiter are built in phase 1 and A, then deleted in U11. Accepted for the earlier car test.
+
 ### System-Wide Impact
 
 - The player store is the shared seam. The web build, the iPad, and the PWA must behave exactly as today; the new modules sit behind the native-platform check (KTD12).
 - DeviceConnect keeps its server protocol. Only the phone-as-target path changes in phase 2, when commands go to the native player.
-- No server changes in phase 1. Phase 2 needs none planned; re-check when re-planning.
+- No server changes in phase 1 or in phase 2: every route and cookie behavior phase 2 needs already exists. Web changes in U10 reach the app only after a Docker redeploy, because the app loads its UI from the server.
+- Wire contract: the TypeScript and Java payloads are still hand-synced, and U10 grows them. Keep both sides' tests tied to the same example payloads.
 
 ---
 
@@ -381,76 +405,181 @@ sequenceDiagram
 - **Test expectation:** none. This unit is a manual verification and a document.
 - **Verification:** The checklist passes in the car. Before phase 2 is planned in detail, the notes say whether background audio, art, and seek behaved as assumed.
 
-### Phase 2: browse and play from the car (outline; re-plan before starting)
+### Phase 2: browse and play from the car
+
+Phase 2 ships as two car-tested milestones (KTD13). Milestone A (U7 to U9) adds the native player, browsing and cold-start resume while the phone UI still plays through the WebView. Milestone B (U10, U11) turns the phone UI into a remote and removes the phase 1 mirror.
 
 ### U7. Native authenticated client
 
-- **Goal:** The native service can call the server as the signed-in user and stay signed in.
+- **Goal:** The native service can call the server and stream audio as the signed-in user, without the WebView running, and stays signed in.
 - **Requirements:** R10, R15
 - **Dependencies:** U6
-- **Files:** `android/app/src/main/java/com/adalfonso/chill/media/auth/` (new), unit tests under `android/app/src/test/`
+- **Files:**
+  - Create: `android/app/src/main/java/com/adalfonso/chill/media/auth/CookieJar.java` (interface over the WebView cookie store, so tests can fake it)
+  - Create: `android/app/src/main/java/com/adalfonso/chill/media/auth/WebViewCookieJar.java`
+  - Create: `android/app/src/main/java/com/adalfonso/chill/media/auth/SessionAuth.java`
+  - Create: `android/app/src/main/java/com/adalfonso/chill/media/auth/AuthedHttp.java`
+  - Create: `android/app/src/main/java/com/adalfonso/chill/media/auth/ServerConfig.java`
+  - Test: `android/app/src/test/java/com/adalfonso/chill/media/auth/SessionAuthTest.java`
+  - Test: `android/app/src/androidTest/java/com/adalfonso/chill/media/auth/WebViewCookieJarTest.java`
 - **Approach:**
-  - Verify first that the cookie manager returns the HttpOnly `__Secure-` access cookie for the server URL and the refresh cookie for the refresh endpoint URL. If it does not, stop and re-plan.
-  - Implement the read, refresh, write-back, and single-flight behavior from KTD6.
-  - Add the separate "sign in on phone" message state.
-  - On sign-out or a failed refresh, delete the saved queue (U8) and block resume.
+  - Spike first, on the device with the app process killed: `CookieManager` must return the HttpOnly `__Secure-` access cookie for the server URL and the refresh cookie for `<server>/auth/refresh`. If either is missing, stop and re-plan (KTD14).
+  - `ServerConfig` reads the server URL from the bundled Capacitor config, the same value the WebView loads.
+  - `WebViewCookieJar` reads cookies per URL and writes back each full `Set-Cookie` string (path, `Secure`, `HttpOnly`, `SameSite`, expiry), then flushes. It does not install a default `CookieHandler`, so nothing else touches the jar.
+  - `SessionAuth.refresh()` is single-flight, reads the jar at refresh time, and posts to the refresh endpoint with the `X-Requested-With` header and the refresh cookie. It returns one of three outcomes: refreshed, signed out (a definitive 401), or transient failure (network or 5xx). Only signed out changes state (KTD6, KTD14).
+  - `AuthedHttp` attaches the access cookie, and on a 401 refreshes once and retries once.
+  - Signed out notifies listeners. U8 deletes the saved queue on it, and the car shows a separate "sign in on phone" message (R15).
+  - Coerce `duration` at the one place server track JSON is parsed natively (KTD16), since some routes send it as a string.
+- **Execution note:** Start with the on-device cookie spike; everything else in this unit assumes its result.
+- **Patterns to follow:** `client/lib/auth/refresh.ts` for single-flight, timeout and retry-on-401 semantics; `server/lib/auth/cookies.ts` for the cookie attributes to preserve.
 - **Test scenarios:**
-  - Happy path: a 401 triggers one refresh, stores the new cookies, and retries.
-  - Error path: a refresh that returns 401 reports signed out and does not loop.
-  - Integration: two simultaneous refresh needs produce one refresh request.
-  - Edge case: after a refresh, the WebView's next request uses the renewed cookies.
-  - Integration: after a write-back, HttpOnly, Secure, and the original path survive on the stored cookie.
+  - Happy path: a 401 triggers exactly one refresh, writes the new cookies, and retries the request once.
+  - Error path: a refresh that returns 401 reports signed out, notifies listeners once, and does not loop.
+  - Error path: a network failure or 5xx on refresh reports transient failure, leaves state signed in, and notifies nobody.
+  - Integration: two simultaneous 401s produce one refresh request, and both callers retry with the new cookie.
+  - Edge case: a second 401 after the retry is returned to the caller and does not refresh again.
+  - Integration (device): after a write-back, the stored refresh cookie still has the `/auth/refresh` path, `Secure`, `HttpOnly` and `SameSite=Strict`, and the WebView's next request sends the renewed access cookie.
+  - Edge case: the jar is re-read for every refresh, so a refresh done by the WebView in between is picked up and the stale token is never replayed.
+  - Edge case: with no cookies in the jar, the result is signed out without a network call.
+- **Verification:** `./gradlew testDebugUnitTest` passes, the device test passes, and on the phone a native refresh leaves the WebView signed in.
 
 ### U8. Native player, queue, and last-queue resume
 
-- **Goal:** A native ExoPlayer plays from the server and owns the queue.
-- **Requirements:** R9, R10, R14
+- **Goal:** An ExoPlayer in the service streams from the server, owns the queue, and resumes the last queue from a cold tap with the phone UI closed.
+- **Requirements:** R9, R10, R14, R11 (volume, error recovery, quality unchanged)
 - **Dependencies:** U7
-- **Files:** `android/app/src/main/java/com/adalfonso/chill/media/ChillMediaService.java`, a new queue store file, `android/app/build.gradle`
+- **Files:**
+  - Create: `android/app/src/main/java/com/adalfonso/chill/media/playback/NativePlayerFactory.java`
+  - Create: `android/app/src/main/java/com/adalfonso/chill/media/playback/QueueStore.java`
+  - Create: `android/app/src/main/java/com/adalfonso/chill/media/playback/QueueSnapshot.java`
+  - Create: `android/app/src/main/java/com/adalfonso/chill/media/playback/TrackJson.java`
+  - Create: `android/app/src/main/java/com/adalfonso/chill/media/playback/PlaybackArbiter.java`
+  - Modify: `android/app/src/main/java/com/adalfonso/chill/media/ChillMediaService.java`
+  - Modify: `android/app/src/main/java/com/adalfonso/chill/MainActivity.java` (ask for the notification permission once)
+  - Modify: `android/app/build.gradle`, `android/variables.gradle` (media3 exoplayer and datasource, same pinned version)
+  - Test: `android/app/src/test/java/com/adalfonso/chill/media/playback/QueueStoreTest.java`
+  - Test: `android/app/src/test/java/com/adalfonso/chill/media/playback/TrackJsonTest.java`
+  - Test: `android/app/src/test/java/com/adalfonso/chill/media/playback/PlaybackArbiterTest.java`
+  - Test: `android/app/src/androidTest/java/com/adalfonso/chill/media/playback/NativePlayerTest.java`
 - **Approach:**
-  - Swap ExoPlayer in behind the existing session, per KTD2. Stream the load endpoint with the cookie attached, per KTD7.
-  - Persist the queue and position on change, and resume them on a cold tap, per KTD8.
-  - Exclude the saved queue from device backups, and never store tokens outside the cookie jar.
+  - `NativePlayerFactory` builds the ExoPlayer: music audio attributes with audio focus handled, pause on becoming noisy, a network wake mode, and a data source that adds the access cookie per request through a resolving wrapper over `AuthedHttp` (KTD7, KTD15).
+  - The queue is a list of media items, so the next track is prepared ahead and gapless comes from ExoPlayer (KTD15). The track's server JSON rides along on each item untouched.
+  - A stream that fails with 401 refreshes through `SessionAuth` and re-prepares at the same position, once per item, matching the web player's recover-once rule. Any other error leaves playback stopped, as today.
+  - `QueueStore` persists the queue snapshot (tracks as server JSON, current index, position, shuffle flag and original order, schema version) to a file in the no-backup directory with an atomic write: temp file, then rename. It saves on queue and track change, on pause, and about every 15 s while playing (KTD16). A corrupt or unknown-version file is discarded.
+  - A cold tap on Chill with no queue loaded reads the store, loads it paused at the saved position, and starts it. No store, signed out, or a cast flag set means the message state, not playback.
+  - `PlaybackArbiter` implements milestone A's coexistence rule (KTD19): the session's player is the mirror while the WebView plays, and the ExoPlayer when the car started playback. Whichever starts second pauses the first. A native start sends the WebView a pause command over the phase 1 channel.
+  - Request `POST_NOTIFICATIONS` once at first launch of the native shell. Without it, playback works but the foreground notification is hidden.
+- **Execution note:** Verify gapless on a real device with two adjacent tracks of one album before building the rest on it; if Opus-in-Ogg shows a gap, fall back to the pre-roll approach noted in Open Questions.
+- **Patterns to follow:** `MirrorPlayer.java` for how the session surface is described; `RenditionCache` behavior for what the load endpoint serves.
 - **Test scenarios:**
-  - Covers AE3. After a cold-start resume, the queue and position match what was saved.
-  - Edge case: a corrupt saved queue is discarded and the message shows.
-  - Edge case: gapless advance between two tracks has no audible gap on the device.
+  - Covers AE3. Save a queue at track 3, position 41 s, shuffled; load it in a fresh store and get the same tracks, index, position and shuffle order.
+  - Edge case: a truncated or non-JSON file is discarded and loading reports no queue.
+  - Edge case: a snapshot with an unknown schema version is discarded.
+  - Edge case: a write interrupted before the rename leaves the previous snapshot intact.
+  - Edge case: a track whose `duration` is the string "215.4" parses to 215.4 seconds, and an unparsable one becomes unknown.
+  - Error path: signed out deletes the stored queue, and a later cold tap shows the sign-in message.
+  - Happy path: the arbiter hands the session to the ExoPlayer when the car starts playback and sends the WebView a pause.
+  - Happy path: when the WebView starts playing, the arbiter pauses the ExoPlayer and hands the session back to the mirror.
+  - Error path (device): a 401 on the stream triggers one refresh and a re-prepare at the same position, and a second 401 on the same item stops playback.
+  - Integration (device): gapless advance between two tracks of one album shows no audible gap, and the notification and lock-screen controls appear exactly once.
+- **Verification:** unit tests and the device test pass. From a killed app, tapping Chill in the Desktop Head Unit resumes the saved queue. Quality tier and range seeking behave as the web player does.
 
 ### U9. Browse tree
 
-- **Goal:** The car can browse and start playback.
+- **Goal:** The car can browse the library and start playback of a track or album.
 - **Requirements:** R8
 - **Dependencies:** U7, U8
-- **Files:** `android/app/src/main/java/com/adalfonso/chill/media/ChillMediaService.java`, a new library client file
-- **Approach:** Build the tree from KTD9 using the existing library routes, with album art through the authenticated client. Apply the same caller allowlist as U1 to every browse and playback request.
-- **Test scenarios:**
-  - Happy path: the root lists shuffle all, playlists, albums, and artists.
-  - Happy path: choosing an album queues its tracks and starts playback.
-  - Error path: a failed library call shows an error item and does not crash the service.
-
-### U10. Flip the bridge: WebView as remote
-
-- **Goal:** The phone UI controls the native queue, and phone-to-phone control keeps working.
-- **Requirements:** R9, R11, R12, R13
-- **Dependencies:** U8
-- **Files:** `client/state/playerStore.ts`, `client/components/App/PlayControls/Scrubber.tsx`, `client/lib/registerClientSocket.ts`, `client/lib/native/` modules
+- **Files:**
+  - Create: `android/app/src/main/java/com/adalfonso/chill/media/library/LibraryClient.java`
+  - Create: `android/app/src/main/java/com/adalfonso/chill/media/library/LibraryTree.java`
+  - Create: `android/app/src/main/java/com/adalfonso/chill/media/library/AuthedBitmapLoader.java`
+  - Modify: `android/app/src/main/java/com/adalfonso/chill/media/ChillMediaService.java`
+  - Test: `android/app/src/test/java/com/adalfonso/chill/media/library/LibraryTreeTest.java`
+  - Test: `android/app/src/test/java/com/adalfonso/chill/media/library/LibraryClientTest.java`
 - **Approach:**
-  - Add the native delegation seam from KTD10 behind the native-platform check, and leave the web path unchanged.
-  - Route scrubber position, volume, error recovery, and DeviceConnect target commands through it. Pause native playback while casting.
+  - The tree is from KTD17: Shuffle all, Playlists, Albums, Artists. Albums and artists list tracks or albums beneath, and tapping a track plays from it within its parent list.
+  - `LibraryClient` calls the existing tRPC GET routes over plain HTTP through `AuthedHttp`, mapping the media3 page and size onto the server's `limit`, `page` and `offset` options.
+  - Browsing a list returns at most one page; keep pages within Android Auto's list limits (assumed about 100, check against Google's guide at implementation).
+  - `AuthedBitmapLoader` fetches cover art with the cookie, because Android Auto's own fetch carries none. Browse items carry art through it.
+  - Playing a browse item resolves to its track list and loads it into the ExoPlayer starting at the chosen track. Shuffle all uses the random-tracks route, whose duration may be a string.
+  - The `CallerAllowlist` check from U1 stays the single gate for browse and playback requests.
+  - A failed library call returns an error item or error result and never throws out of the service. Signed out returns only the sign-in message.
+- **Patterns to follow:** The existing `LibraryCallback` in `ChillMediaService.java`; the pagination shape in `common/schema.ts`.
 - **Test scenarios:**
-  - Covers AE4. With a cast session active, native playback does not start.
-  - Happy path: a DeviceConnect play command from the iPad starts native playback on the phone.
-  - Integration: on the web build, the store behaves as before.
-  - Happy path: the scrubber shows native position and seeks the native player.
+  - Happy path: the root lists Shuffle all, Playlists, Albums and Artists in that order.
+  - Happy path: the Albums level maps page 2 of size 50 to the server's page and offset options.
+  - Happy path: choosing an album queues its tracks in order and starts at the first.
+  - Happy path: choosing the third track of an album starts at it with the rest queued.
+  - Edge case: an empty playlist shows an empty-list result, not an error.
+  - Error path: a failed library call returns an error result and the service keeps running.
+  - Error path: signed out returns only the sign-in message, and no library call is made.
+  - Error path: a controller outside the allowlist is rejected from browse as well as playback.
+- **Verification:** unit tests pass. On the Desktop Head Unit, browse to an album and play it, then shuffle all. Milestone A is then car-tested before milestone B starts.
+
+### U10. Flip the bridge: phone UI as a remote
+
+- **Goal:** In the native shell the phone UI shows and controls the native queue and position, and DeviceConnect, Chromecast, scrubber and volume keep working.
+- **Requirements:** R9, R11, R12, R13
+- **Dependencies:** U8, U9
+- **Files:**
+  - Create: `client/lib/native/nativePlayerBackend.ts` (the seam, KTD18)
+  - Create: `client/lib/native/nativePosition.ts` (position extrapolation shared by the Scrubber and the sync)
+  - Modify: `client/state/playerStore.ts`
+  - Modify: `client/components/App/PlayControls/Scrubber.tsx`
+  - Modify: `client/lib/registerClientSocket.ts` (only to keep target echoes correct)
+  - Modify: `common/nativeMedia.ts`, `client/lib/native/mediaBridge.ts`
+  - Modify: `android/app/src/main/java/com/adalfonso/chill/media/MediaBridgePlugin.java`, `MediaBridgeHub.java`
+  - Test: `tests/nativePlayerBackend.test.ts`
+  - Test: `tests/playerStore.native.test.ts`
+  - Test: `tests/nativePosition.test.ts`
+- **Approach:**
+  - The wire contract grows a queue snapshot (sent when the queue changes, and on request when the page loads), and a light status message (index, play state, position, volume, buffering). Native also takes commands for queue edits, seek, volume, shuffle, casting and remote flags.
+  - `nativePlayerBackend` implements the store's mutators against the plugin. The store routes each mutator through it only when it is active: native shell, not casting, no outgoing DeviceConnect connection (KTD18, KTD10). Otherwise the existing code runs unchanged.
+  - Native pushes are applied to the store through the existing `replaceState`, with `_index` values assigned in one place.
+  - Casting: when a cast session starts, tell native to pause and stay out; the store's existing cast paths use the projected queue. When it ends, push the store's queue, index and position back to native, paused (KTD20).
+  - Remote controlling another device: native pauses and shows the R6 message while the flag is set; its queue is kept for when control ends.
+  - DeviceConnect as target: socket events keep calling the same store mutators, which now reach native, and the existing target echoes still fire. The phone cannot be a target while the WebView is closed, as today.
+  - Scrubber progress and the gapless trigger read from `nativePosition` in native mode, and the Audio-element crossover is skipped there, since ExoPlayer does gapless.
+  - Volume goes to ExoPlayer's player volume, not the system stream. The media error backstop is skipped in native mode, since native recovers 401s itself.
+  - Remove the phase 1 command round trip for car commands, since the car now drives the ExoPlayer directly.
+- **Technical design:** Directional sketch of who is active:
+
+  | WebView state | Who plays | Store gets state from | Car shows |
+  | --- | --- | --- | --- |
+  | Local (default) | native ExoPlayer | native snapshots | the queue |
+  | Casting | Chromecast | the store itself | message |
+  | Remote controlling a device | the other device | the remote's snapshot | message |
+
+- **Patterns to follow:** The existing `replaceState`/`getSnapshot` pair and the `is_virtual` path in `playerStore.ts`; `useNext`, `usePlay` and the other hooks as callers.
+- **Test scenarios:**
+  - Covers AE3. On page load in the native shell, the store pulls the snapshot and shows the same track at the same position as native.
+  - Covers AE4. With a cast session active, a car or phone play does not start native playback, and the store cast path runs.
+  - Happy path: a DeviceConnect play command from the iPad starts native playback on the phone, and the target echo still fires.
+  - Happy path: next, previous, shuffle, play next and add to queue each reach native in native mode, and the store updates from the next snapshot.
+  - Happy path: the scrubber shows extrapolated native position, and a drag sends a seek to native.
+  - Edge case: when casting ends, native receives the store's queue paused at the cast position.
+  - Edge case: the remote flag makes native pause, and clearing it restores the car view without restarting playback.
+  - Edge case: position extrapolation holds while buffering and is capped at the duration.
+  - Integration: on the web build and with the shell absent, every store mutator behaves as before; the existing store tests pass unchanged.
+  - Error path: a duration sent as a string is coerced before it reaches the scrubber.
+- **Verification:** `pnpm check` passes. On the phone, play from the car, open the phone UI, and see the same queue, position, volume and scrubber. Control from the iPad, cast to a Chromecast, and confirm each in the checklist.
 
 ### U11. Phase 2 verification and cleanup
 
-- **Goal:** Phase 2 is proven in the car, and leftover scaffolding is gone.
+- **Goal:** Phase 2 is proven in the car, and the phase 1 scaffolding is gone.
 - **Requirements:** R8 to R15
 - **Dependencies:** U9, U10
-- **Files:** `docs/android-auto.md`
-- **Approach:** Extend the manual checklist for browsing, cold start, DeviceConnect, and Chromecast. Remove any mirror-only code that phase 2 made unused.
-- **Test expectation:** none. This unit is manual verification and cleanup.
+- **Files:**
+  - Modify: `docs/android-auto.md`
+  - Delete: `android/app/src/main/java/com/adalfonso/chill/media/MirrorPlayer.java`, `MirrorState.java`, `MirrorStateParser.java`, `MirrorCommand.java`, `playback/PlaybackArbiter.java`
+  - Delete: `client/lib/native/syncPlayerToNative.ts`, `client/lib/native/handleNativeCommands.ts`, and their tests
+  - Modify: `android/app/src/main/AndroidManifest.xml` only if a declaration is no longer needed
+- **Approach:**
+  - Extend the manual checklist for browse, cold start, DeviceConnect as source and target, Chromecast, gapless, quality tier, sign-out, and a lock-screen duplicate check.
+  - Remove the mirror, its parser, the arbiter and the old sync and command modules, along with their tests, once nothing references them.
+  - Update `docs/android-auto.md` and the plan's Goal Capsule to say phase 2 is done.
+- **Test expectation:** none for the new behavior. The unit is a manual verification and a removal; the remaining suites must still pass after the deletions.
+- **Verification:** `pnpm check`, `./gradlew testDebugUnitTest`, and the instrumented tests pass with the mirror gone. The checklist passes in the car, and the web build and iPad behave as before.
 
 ---
 
@@ -461,6 +590,7 @@ sequenceDiagram
 | Type-check, lint, tests | `pnpm check` | every unit with client code |
 | Client tests | `pnpm test` | U2 to U5, U10 |
 | Android unit tests | `./gradlew testDebugUnitTest` (run in `android/`) | U1, U5, U7 to U9 |
+| Android device tests | `./gradlew :app:connectedDebugAndroidTest` (app module only) | U7, U8 |
 | Native build | `pnpm cap:build`, then `pnpm cap:run` with the device ID | every unit |
 | Android Auto behavior | Desktop Head Unit, then the car | U1, U3 to U6, U11 |
 
@@ -483,12 +613,22 @@ Behavior in Android Auto is checked by hand. There are no automated car-UI tests
 - U4: pause and skip from the car change the phone's player.
 - U5: each message state shows in the right situation.
 - U6: the checklist passes in the car and the notes are written.
-- U7 to U11: outlined; define their done criteria when re-planned.
+- U7: the native service signs itself in and out from the WebView's cookies, and the WebView stays signed in after a native refresh.
+- U8: a killed app resumes the last queue from a car tap, gapless, with one notification.
+- U9: the car browses and plays a track, album, playlist and shuffle all.
+- Milestone A is verified in the car before U10 starts.
+- U10: the phone UI shows the same queue and position as native, and DeviceConnect, Chromecast, scrubber and volume work.
+- U11: the mirror, arbiter and old sync modules are deleted, and the full checklist passes in the car.
 
 ## Open Questions
 
 **Deferred to Implementation**
 
 - Which media3 version to pin, and whether Google's current Android Auto guide changes any manifest detail (KTD11).
-- How the native client should call the existing tRPC routes over plain HTTP in phase 2 (KTD9).
+- The exact wire format for tRPC GET calls over plain HTTP (input encoding for the batch and non-batch forms) (KTD9, KTD17).
 - Whether position push cadence needs tuning after the car test (KTD4).
+- Whether Opus-in-Ogg is gapless on ExoPlayer. If not, the fallback is a short pre-roll or overlap on the next item, decided from what the device shows (KTD15).
+- How the bundled Capacitor config exposes the server URL to a service with no Activity (U7).
+- Which store behaviors read `play_options` (infinite or "more" play) and how native should carry them (U10).
+- Android Auto's list size limits and content-style hints for the browse levels (U9).
+- Whether cover files are served without the cookie by `nginx.conf` (KTD17); the authed bitmap loader works either way.
