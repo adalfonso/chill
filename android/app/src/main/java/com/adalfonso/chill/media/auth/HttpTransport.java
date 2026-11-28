@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -38,10 +37,10 @@ public final class HttpTransport implements Transport {
     }
   }
 
-  /** Reads a stream to text; a missing stream is an empty body. */
-  private static String read(InputStream stream) throws IOException {
+  /** Reads a stream to bytes; a missing stream is an empty body. */
+  private static byte[] read(InputStream stream) throws IOException {
     if (stream == null) {
-      return "";
+      return new byte[0];
     }
 
     try (stream) {
@@ -49,7 +48,7 @@ public final class HttpTransport implements Transport {
 
       stream.transferTo(bytes);
 
-      return bytes.toString(StandardCharsets.UTF_8);
+      return bytes.toByteArray();
     }
   }
 }

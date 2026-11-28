@@ -4,5 +4,9 @@
     <string name="title_activity_main">Chill</string>
     <string name="package_name">com.adalfonso.chill</string>
     <string name="custom_url_scheme">com.adalfonso.chill</string>
-    <string name="car_start_on_phone">Open Chill on your phone to start playback (sign in if needed)</string>
+    <string name="car_sign_in_on_phone">Sign in to Chill on your phone</string>
+    <string name="car_shuffle_all">Shuffle all</string>
+    <string name="car_playlists">Playlists</string>
+    <string name="car_albums">Albums</string>
+    <string name="car_artists">Artists</string>
 </resources>

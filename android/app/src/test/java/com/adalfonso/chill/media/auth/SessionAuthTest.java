@@ -28,7 +28,7 @@ public class SessionAuthTest {
     transport = (method, url, headers) -> {
       sentHeaders.add(headers);
 
-      return new Reply(200, "", List.of("__Secure-access_token=a2; Path=/; Secure; HttpOnly"));
+      return Reply.of(200, "", List.of("__Secure-access_token=a2; Path=/; Secure; HttpOnly"));
     };
   }
 
@@ -46,7 +46,7 @@ public class SessionAuthTest {
 
   @Test
   public void a_successful_refresh_stores_every_set_cookie_whole() {
-    transport = (m, u, h) -> new Reply(200, "", List.of("a=1; Path=/; Secure", "r=2; Path=/auth/refresh; Secure; HttpOnly; SameSite=Strict"));
+    transport = (m, u, h) -> Reply.of(200, "", List.of("a=1; Path=/; Secure", "r=2; Path=/auth/refresh; Secure; HttpOnly; SameSite=Strict"));
 
     SessionAuth.Outcome outcome = auth().refresh();
 
@@ -67,7 +67,7 @@ public class SessionAuthTest {
     transport = (m, u, h) -> {
       sentHeaders.add(h);
 
-      return new Reply(401, "", List.of());
+      return Reply.of(401, "", List.of());
     };
     int[] heard = {0};
     SessionAuth auth = auth();
@@ -87,10 +87,10 @@ public class SessionAuthTest {
       if (calls.getAndIncrement() == 0) {
         jar.byUrl.put(REFRESH_URL, "__Secure-refresh_token=r2");
 
-        return new Reply(401, "", List.of());
+        return Reply.of(401, "", List.of());
       }
 
-      return new Reply(200, "", List.of("a=1; Path=/"));
+      return Reply.of(200, "", List.of("a=1; Path=/"));
     };
 
     assertEquals(SessionAuth.Outcome.REFRESHED, auth().refresh());
@@ -108,7 +108,7 @@ public class SessionAuthTest {
     };
     assertEquals(SessionAuth.Outcome.TRANSIENT_FAILURE, auth.refresh());
 
-    transport = (m, u, h) -> new Reply(503, "", List.of());
+    transport = (m, u, h) -> Reply.of(503, "", List.of());
     assertEquals(SessionAuth.Outcome.TRANSIENT_FAILURE, auth.refresh());
     assertEquals(0, heard[0]);
   }
@@ -128,7 +128,7 @@ public class SessionAuthTest {
         throw new IOException(e);
       }
 
-      return new Reply(200, "", List.of("a=1; Path=/"));
+      return Reply.of(200, "", List.of("a=1; Path=/"));
     };
     SessionAuth auth = auth();
     SessionAuth.Outcome[] results = new SessionAuth.Outcome[2];

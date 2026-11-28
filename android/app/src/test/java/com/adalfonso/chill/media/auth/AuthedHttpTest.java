@@ -29,10 +29,10 @@ public class AuthedHttpTest {
       requests.add(method + " " + url);
 
       if (url.equals(REFRESH_URL)) {
-        return new Reply(refreshStatus, "", refreshStatus == 200 ? List.of("access=a2; Path=/") : List.of());
+        return Reply.of(refreshStatus, "", refreshStatus == 200 ? List.of("access=a2; Path=/") : List.of());
       }
 
-      return new Reply(apiStatus, "body", List.of());
+      return Reply.of(apiStatus, "body", List.of());
     };
 
     return new AuthedHttp(new SessionAuth(jar, transport, SERVER), transport, SERVER);
