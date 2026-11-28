@@ -39,6 +39,10 @@ describe("getElapsedTimeTracking", () => {
 });
 
 describe("getTimeTracking", () => {
+  it("reads a numeric string duration, as some routes send", () => {
+    expect(getTimeTracking("215.4")).toBe("3:35");
+  });
+
   it("rounds a track length to the nearest second", () => {
     expect(getTimeTracking(215.4)).toBe("3:35");
     expect(getTimeTracking(215.6)).toBe("3:36");

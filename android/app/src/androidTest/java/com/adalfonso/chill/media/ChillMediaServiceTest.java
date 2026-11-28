@@ -87,13 +87,6 @@ public class ChillMediaServiceTest {
     browser = future.get(15, TimeUnit.SECONDS);
   }
 
-  private String rootChildTitle() throws Exception {
-    LibraryResult<ImmutableList<MediaItem>> children =
-        onMain(() -> browser.getChildren("chill-root", 0, 10, null)).get(10, TimeUnit.SECONDS);
-
-    return children.value.get(0).mediaMetadata.title.toString();
-  }
-
   private static MirrorState playingTrack() {
     return new MirrorState.Builder()
         .track("7", "Test Song", "Test Artist", "Test Album", 200_000)
@@ -103,7 +96,7 @@ public class ChillMediaServiceTest {
   }
 
   @Test
-  public void with_nothing_pushed_the_browse_root_holds_only_the_message() throws Exception {
+  public void the_browse_root_lists_shuffle_playlists_albums_and_artists() throws Exception {
     connect();
 
     LibraryResult<MediaItem> root = onMain(() -> browser.getLibraryRoot(null)).get(10, TimeUnit.SECONDS);
@@ -112,50 +105,15 @@ public class ChillMediaServiceTest {
     LibraryResult<ImmutableList<MediaItem>> children =
         onMain(() -> browser.getChildren(root.value.mediaId, 0, 10, null)).get(10, TimeUnit.SECONDS);
 
-    assertEquals(1, children.value.size());
     assertEquals(
-        context.getString(R.string.car_start_on_phone),
-        children.value.get(0).mediaMetadata.title.toString());
-  }
-
-  @Test
-  public void the_browse_list_follows_the_phone_and_tells_the_car_to_reload() throws Exception {
-    AtomicInteger changes = new AtomicInteger();
-    connect(changes);
-    onMain(() -> browser.subscribe("chill-root", null));
-    String message = context.getString(R.string.car_start_on_phone);
-    assertEquals(message, rootChildTitle());
-
-    // The phone becomes ready: the message must give way to the track on its own
-    hub.publish(playingTrack());
-    waitUntil(() -> changes.get() >= 1);
-    assertEquals("Test Song", rootChildTitle());
-
-    // The phone signs out: back to the message
-    int before = changes.get();
-    hub.clear();
-    waitUntil(() -> changes.get() > before);
-    assertEquals(message, rootChildTitle());
-  }
-
-  @Test
-  public void position_only_updates_do_not_reload_the_browse_list() throws Exception {
-    hub.publish(playingTrack());
-    AtomicInteger changes = new AtomicInteger();
-    connect(changes);
-    onMain(() -> browser.subscribe("chill-root", null));
-    waitUntil(() -> browser.getCurrentMediaItem() != null);
-    int before = changes.get();
-
-    hub.publish(
-        new MirrorState.Builder()
-            .track("7", "Test Song", "Test Artist", "Test Album", 200_000)
-            .playback(true, false, 90_000)
-            .queue(true, true)
-            .build());
-    Thread.sleep(800);
-
-    assertEquals(before, changes.get());
+        java.util.List.of(
+            context.getString(R.string.car_shuffle_all),
+            context.getString(R.string.car_playlists),
+            context.getString(R.string.car_albums),
+            context.getString(R.string.car_artists)),
+        children.value.stream()
+            .map(item -> item.mediaMetadata.title.toString())
+            .collect(java.util.stream.Collectors.toList()));
   }
 
   @Test
@@ -282,7 +240,7 @@ public class ChillMediaServiceTest {
   }
 
   @Test
-  public void remote_control_shows_the_message_even_with_a_local_track() throws Exception {
+  public void remote_control_shows_no_current_item_even_with_a_local_track() throws Exception {
     hub.publish(
         new MirrorState.Builder()
             .track("7", "Remote Song", "A", "B", 100_000)
@@ -291,11 +249,7 @@ public class ChillMediaServiceTest {
             .build());
     connect();
 
-    LibraryResult<ImmutableList<MediaItem>> children =
-        onMain(() -> browser.getChildren("chill-root", 0, 10, null)).get(10, TimeUnit.SECONDS);
-
     assertNull(onMain(() -> browser.getCurrentMediaItem()));
-    assertEquals(1, children.value.size());
   }
 
   @Test
